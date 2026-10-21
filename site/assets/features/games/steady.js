@@ -29,7 +29,13 @@
  *   z<w>x<h> stage size, n<level> new line, d<x>,<y> press, m<x>,<y> move (sampled every 50 ms),
  *   u release, s line started at the start dot, ok<points> line done, x<reason> line failed (off|back|lift|time).
  *   Coordinates are stage pixels, rounded.
+ *
+ * Look: a skin panel with an incision, faint surgical-marker dots along the band edges and marker
+ *   ticks where each stitch goes. A curved needle follows the finger and lays simple interrupted
+ *   stitches across the incision behind it. Drawing never touches the run rng after the first call.
  */
+
+import { sfx } from './framework.js';
 
 const STR = {
   en: {
@@ -243,7 +249,7 @@ function genPath(r, n) {
 
 /* ---------- game ---------- */
 function run(host, opts = {}) {
-  const { lang = 'en', level: startLevel = 1, rng = Math.random, signal, onHud = () => {}, muted = true, probe = false } = opts;
+  const { lang = 'en', level: startLevel = 1, rng = Math.random, signal, onHud = () => {}, muted = false, probe = false } = opts;
   return new Promise((resolve, reject) => {
     if (signal && signal.aborted) { reject(abortError()); return; }
     const S = STR[lang] || STR.en;
@@ -277,18 +283,8 @@ function run(host, opts = {}) {
     let phase = 'show', phaseT = t0, phaseEnd = 0, line = null, lastLevelShown = 0;
     let pressed = false, ptr = { x: 0, y: 0 }, liftAt = 0, lastMoveLog = -1e9, endMs = 0;
     let pops = [], parts = [], shakeT = -1e9, glowT = -1e9, raf = 0, done = false, lastHud = '';
-    let ac = null;
 
-    function blip(freq, dur = 0.09, type = 'sine', gain = 0.04) {
-      if (muted) return;
-      try {
-        ac = ac || new (window.AudioContext || window.webkitAudioContext)();
-        const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime;
-        o.type = type; o.frequency.setValueAtTime(freq, t);
-        g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-        o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur + 0.02);
-      } catch { /* audio unavailable */ }
-    }
+    const play = (name, o) => { if (!muted) sfx.play(name, o); };
 
     function hud(force) {
       const time = line && phase === 'play' ? Math.max(0, Math.ceil((line.T - line.time) * 10) / 10) : line ? Math.round(line.T * 10) / 10 : 0;
@@ -319,27 +315,54 @@ function run(host, opts = {}) {
       c.setTransform(dpr, 0, 0, dpr, 0, 0);
       c.clearRect(0, 0, W, H);
       const { x, y, w, h, r } = panel;
+      // soft drop shadow under the skin panel
       c.save();
-      c.shadowColor = 'rgba(63,27,85,.22)'; c.shadowBlur = 30; c.shadowOffsetY = 12;
+      c.shadowColor = 'rgba(8,2,14,.55)'; c.shadowBlur = 40; c.shadowOffsetY = 16;
       rrect(c, x, y, w, h, r);
-      const g = c.createLinearGradient(x, y, x + w, y + h);
-      g.addColorStop(0, '#F9ECE6'); g.addColorStop(0.55, '#F5E2DA'); g.addColorStop(1, '#EFD6CC');
-      c.fillStyle = g; c.fill();
+      c.fillStyle = '#E9C2AC'; c.fill();
       c.restore();
       c.save();
       rrect(c, x, y, w, h, r); c.clip();
-      const hl = c.createRadialGradient(x + w * 0.25, y + h * 0.2, 0, x + w * 0.25, y + h * 0.2, Math.max(w, h) * 0.75);
-      hl.addColorStop(0, 'rgba(255,255,255,.55)'); hl.addColorStop(1, 'rgba(255,255,255,0)');
-      c.fillStyle = hl; c.fillRect(x, y, w, h);
-      const pr = mulberry32(1234567); // fixed pore pattern, independent of the run rng
-      const count = Math.round((w * h) / 420);
+      // base tone with directional light from the top left
+      const g = c.createLinearGradient(x, y, x + w * 0.6, y + h);
+      g.addColorStop(0, '#F6DCCB'); g.addColorStop(0.5, '#EECBB6'); g.addColorStop(1, '#E2B59D');
+      c.fillStyle = g; c.fillRect(x, y, w, h);
+      const pr = mulberry32(1234567); // fixed texture, independent of the run rng
+      // warm blotches under the surface
+      for (let i = 0; i < 26; i++) {
+        const px = x + pr() * w, py = y + pr() * h, rad = 40 + pr() * 120;
+        const bg = c.createRadialGradient(px, py, 0, px, py, rad);
+        const warm = pr() < 0.5;
+        bg.addColorStop(0, warm ? 'rgba(226,150,128,.03)' : 'rgba(255,238,228,.14)');
+        bg.addColorStop(1, 'rgba(0,0,0,0)');
+        c.fillStyle = bg; c.fillRect(px - rad, py - rad, rad * 2, rad * 2);
+      }
+      // fine skin creases: short soft strokes in two crossing directions
+      c.lineCap = 'round';
+      const creases = Math.round((w * h) / 2600);
+      for (let i = 0; i < creases; i++) {
+        const px = x + pr() * w, py = y + pr() * h, len = 6 + pr() * 16, ang = (pr() < 0.5 ? 0.5 : 2.3) + (pr() - 0.5) * 0.5;
+        c.beginPath(); c.moveTo(px, py);
+        c.quadraticCurveTo(px + Math.cos(ang) * len * 0.5 + (pr() - 0.5) * 3, py + Math.sin(ang) * len * 0.5, px + Math.cos(ang) * len, py + Math.sin(ang) * len);
+        c.strokeStyle = `rgba(160,98,84,${0.05 + pr() * 0.05})`; c.lineWidth = 0.7; c.stroke();
+      }
+      // pores
+      const count = Math.round((w * h) / 260);
       for (let i = 0; i < count; i++) {
-        const px = x + pr() * w, py = y + pr() * h, rr = 0.4 + pr() * 0.9;
-        c.fillStyle = pr() < 0.5 ? 'rgba(176,120,112,.10)' : 'rgba(255,255,255,.35)';
+        const px = x + pr() * w, py = y + pr() * h, rr = 0.35 + pr() * 0.7;
+        c.fillStyle = pr() < 0.55 ? 'rgba(150,86,74,.13)' : 'rgba(255,248,242,.42)';
         c.beginPath(); c.arc(px, py, rr, 0, 6.283); c.fill();
       }
-      c.lineWidth = 1; c.strokeStyle = 'rgba(106,56,140,.10)';
-      rrect(c, x + 0.5, y + 0.5, w - 1, h - 1, r); c.stroke();
+      // key light and edge falloff
+      const hl = c.createRadialGradient(x + w * 0.28, y + h * 0.18, 0, x + w * 0.28, y + h * 0.18, Math.max(w, h) * 0.8);
+      hl.addColorStop(0, 'rgba(255,250,245,.42)'); hl.addColorStop(1, 'rgba(255,250,245,0)');
+      c.fillStyle = hl; c.fillRect(x, y, w, h);
+      const vg = c.createRadialGradient(x + w / 2, y + h / 2, Math.min(w, h) * 0.35, x + w / 2, y + h / 2, Math.max(w, h) * 0.75);
+      vg.addColorStop(0, 'rgba(120,60,50,0)'); vg.addColorStop(1, 'rgba(120,60,50,.16)');
+      c.fillStyle = vg; c.fillRect(x, y, w, h);
+      // inner rim
+      c.lineWidth = 1.5; c.strokeStyle = 'rgba(255,255,255,.35)';
+      rrect(c, x + 0.75, y + 0.75, w - 1.5, h - 1.5, r); c.stroke();
       c.restore();
     }
     function fitLine() {
@@ -404,6 +427,7 @@ function run(host, opts = {}) {
         started: false, u: 0, d: 0, steady: 1, accN: 0, accD: 0, trace: [], time: 0, t0: 0,
       };
       lineId++;
+      laid.length = 0;
       fitLine();
       maxLevel = Math.max(maxLevel, n);
       phase = 'show'; phaseT = now();
@@ -428,7 +452,7 @@ function run(host, opts = {}) {
       shakeT = t;
       const at = line.started ? ptr : pointAt(0);
       pop(S.miss[reason], clamp(at.x, 90, W - 90), clamp(at.y - 46, panel.y + 70, H - 40), { color: C.rose, dur: 1000 });
-      blip(196, 0.22, 'triangle', 0.05);
+      play('bad');
       hud(true);
     }
     function win() {
@@ -442,11 +466,7 @@ function run(host, opts = {}) {
       phase = 'win'; phaseEnd = t + 850; glowT = t;
       const e = pointAt(1);
       pop(`+${pts}`, clamp(e.x, 50, W - 50), clamp(e.y - 34, panel.y + 70, H - 30), { color: C.plum, dur: 900 });
-      if (!reduce()) for (let i = 0; i < 26; i++) {
-        const p = pointAt(fx());
-        parts.push({ x: p.x, y: p.y, vx: (fx() - 0.5) * 70, vy: -20 - fx() * 60, t: t, life: 600 + fx() * 400, c: fx() < 0.5 ? C.rose : C.lilac, r: 1 + fx() * 2 });
-      }
-      blip(660, 0.09); setTimeout(() => blip(880, 0.12), 90);
+      play('good');
       level = line.n + 1;
       hud(true);
     }
@@ -493,7 +513,7 @@ function run(host, opts = {}) {
         if (Math.hypot(p.x - s.x, p.y - s.y) <= Math.max(hb * 1.5, 22)) {
           line.started = true;
           L('s');
-          blip(520, 0.06);
+          play('tap');
           evalPointer(p);
         }
       } else {
@@ -544,7 +564,6 @@ function run(host, opts = {}) {
       cv.removeEventListener('pointercancel', onUp);
       window.removeEventListener('resize', onWinResize);
       if (ro) ro.disconnect();
-      if (ac) { try { ac.close(); } catch { /* closed */ } ac = null; }
       if (probe) delete host.__probe;
     }
 
@@ -593,46 +612,138 @@ function run(host, opts = {}) {
     }
 
     let lineId = 0;
+    const MARKER = '107,63,160';           // gentian violet surgical marker
+    const stitchGap = (hb) => clamp(hb * 1.5, 16, 30);
+    const stitchHalf = (hb) => clamp(hb * 0.9, 6, 13);
+    /* guide band edges as faint marker dots, marker ticks where stitches go, then the incision */
     function drawSuture(c, reveal, hb) {
-      // guide band: soft lilac fill with crisper edges, rendered off-screen so self-crossing loops stay clean
-      bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      bctx.clearRect(0, 0, W, H);
-      bctx.lineCap = 'round'; bctx.lineJoin = 'round';
-      strokePath(bctx, reveal);
-      bctx.strokeStyle = 'rgba(168,134,205,.95)'; bctx.lineWidth = hb * 2 + 2.5; bctx.stroke();
-      bctx.globalCompositeOperation = 'destination-out';
-      bctx.strokeStyle = 'rgba(0,0,0,.7)'; bctx.lineWidth = Math.max(1, hb * 2 - 2); bctx.stroke();
-      bctx.globalCompositeOperation = 'source-over';
+      const { N, X, Y } = line;
+      const end = Math.max(1, Math.min(N - 1, Math.round(reveal * (N - 1))));
       c.save();
-      c.setTransform(1, 0, 0, 1, 0, 0);
-      c.globalAlpha = 0.62;
-      c.drawImage(bandCv, 0, 0);
-      c.restore();
-      // dotted suture line
       c.lineCap = 'round'; c.lineJoin = 'round';
-      strokePath(c, reveal);
-      c.setLineDash([0.01, 7]);
-      c.strokeStyle = 'rgba(85,40,111,.55)'; c.lineWidth = 2.2; c.stroke();
-      c.setLineDash([]);
-      stitches(c, reveal, hb, false);
-    }
-    function stitches(c, reveal, hb, passedOnly) {
-      const Lpx = line.Lpx;
-      const gap = clamp(hb * 1.5, 16, 30);
-      const tick = clamp(hb * 0.62, 4, 11);
-      const lim = passedOnly ? (line.started ? line.u * Lpx : 0) : Lpx * reveal;
-      for (let s = gap * 0.5; s < lim; s += gap) {
-        const p = pointAt(s / Lpx);
-        const nx = -p.ty, ny = p.tx;
-        const sl = 0.35; // slant like a running stitch
-        const ax = nx + p.tx * sl, ay = ny + p.ty * sl, al = Math.hypot(ax, ay);
+      // marker dots along both band edges
+      const step = Math.max(5, hb * 0.32);
+      c.fillStyle = `rgba(${MARKER},.42)`;
+      let acc = 0;
+      for (let i = 1; i <= end; i++) {
+        acc += Math.hypot(X[i] - X[i - 1], Y[i] - Y[i - 1]);
+        if (acc < step) continue;
+        acc = 0;
+        const dx = X[i] - X[i - 1], dy = Y[i] - Y[i - 1], l = Math.hypot(dx, dy) || 1, nx = -dy / l, ny = dx / l;
+        for (const sgn of [-1, 1]) { c.beginPath(); c.arc(X[i] + nx * hb * sgn, Y[i] + ny * hb * sgn, 0.95, 0, 6.283); c.fill(); }
+      }
+      // planned stitch ticks just outside the incision
+      const gap = stitchGap(hb), k = stitchHalf(hb), lim = line.Lpx * reveal;
+      c.strokeStyle = `rgba(${MARKER},.38)`; c.lineWidth = 1.3;
+      for (let sd = gap * 0.5; sd < lim; sd += gap) {
+        const p = pointAt(sd / line.Lpx), nx = -p.ty, ny = p.tx;
         c.beginPath();
-        c.moveTo(p.x - (ax / al) * tick, p.y - (ay / al) * tick);
-        c.lineTo(p.x + (ax / al) * tick, p.y + (ay / al) * tick);
-        c.strokeStyle = passedOnly ? 'rgba(204,51,102,.9)' : 'rgba(106,56,140,.45)';
-        c.lineWidth = passedOnly ? 2.2 : 1.6;
+        c.moveTo(p.x + nx * (k + 2), p.y + ny * (k + 2)); c.lineTo(p.x + nx * (k + 5), p.y + ny * (k + 5));
+        c.moveTo(p.x - nx * (k + 2), p.y - ny * (k + 2)); c.lineTo(p.x - nx * (k + 5), p.y - ny * (k + 5));
         c.stroke();
       }
+      // incision: soft pink margin, fine dark line, light bevel on one edge
+      strokePath(c, reveal);
+      c.strokeStyle = 'rgba(206,120,112,.22)'; c.lineWidth = 6; c.stroke();
+      c.strokeStyle = 'rgba(196,104,96,.35)'; c.lineWidth = 2.6; c.stroke();
+      c.strokeStyle = 'rgba(122,52,52,.85)'; c.lineWidth = 1.1; c.stroke();
+      c.save(); c.translate(-0.7, -0.9);
+      strokePath(c, reveal);
+      c.strokeStyle = 'rgba(255,240,232,.55)'; c.lineWidth = 0.7; c.stroke();
+      c.restore();
+      c.restore();
+    }
+    /* simple interrupted stitches laid behind the needle; each carries the lateral offset the player
+       traced there, so a steady hand gives a neat, centred row */
+    const laid = [];  // {s, lat, t}
+    function layStitches(t, hb) {
+      if (!line.started) return;
+      const gap = stitchGap(hb), have = laid.length;
+      const target = Math.floor((line.u * line.Lpx - gap * 0.5) / gap) + 1;
+      for (let i = have; i < target; i++) {
+        const sd = gap * 0.5 + i * gap, u = sd / line.Lpx;
+        let lat = 0, best = 1e9;
+        for (const q of line.trace) { const d = Math.abs(q.u - u); if (d < best) { best = d; lat = q.lat; } }
+        laid.push({ s: sd, lat: clamp(lat, -hb, hb) * 0.6, t });
+        if (i === target - 1) play('stitch', { vol: 0.8 });
+      }
+    }
+    function filament(c, pts, w) {
+      // a fine violet monofilament with a soft specular line
+      c.beginPath(); c.moveTo(pts[0][0], pts[0][1]);
+      if (pts.length === 3) c.quadraticCurveTo(pts[1][0], pts[1][1], pts[2][0], pts[2][1]); else c.lineTo(pts[1][0], pts[1][1]);
+      c.strokeStyle = 'rgba(30,10,40,.25)'; c.lineWidth = w + 1.6; c.stroke();
+      c.strokeStyle = '#3E2366'; c.lineWidth = w; c.stroke();
+      c.save(); c.translate(-0.45, -0.55);
+      c.beginPath(); c.moveTo(pts[0][0], pts[0][1]);
+      if (pts.length === 3) c.quadraticCurveTo(pts[1][0], pts[1][1], pts[2][0], pts[2][1]); else c.lineTo(pts[1][0], pts[1][1]);
+      c.strokeStyle = 'rgba(214,196,242,.85)'; c.lineWidth = Math.max(0.5, w * 0.32); c.stroke();
+      c.restore();
+    }
+    function drawStitches(c, t, hb) {
+      const k = stitchHalf(hb);
+      // the closed part of the incision reads calmer: tone down the pink margin behind the needle
+      if (line.started && line.u > 0) {
+        c.save();
+        strokePath(c, line.u);
+        c.strokeStyle = 'rgba(238,201,184,.55)'; c.lineWidth = 5; c.stroke();
+        c.strokeStyle = 'rgba(122,52,52,.55)'; c.lineWidth = 0.9; c.stroke();
+        c.restore();
+      }
+      c.lineCap = 'round';
+      for (const st of laid) {
+        const p = pointAt(st.s / line.Lpx), nx = -p.ty, ny = p.tx;
+        const age = reduce() ? 1 : clamp((t - st.t) / 200, 0, 1), e = easeOut(age);
+        const cx = p.x + nx * st.lat, cy = p.y + ny * st.lat, kk = k * (0.4 + 0.6 * e);
+        const ax = cx - nx * kk, ay = cy - ny * kk, bx = cx + nx * kk, by = cy + ny * kk;
+        // puncture dimples
+        for (const [px, py] of [[ax, ay], [bx, by]]) {
+          c.beginPath(); c.arc(px, py, 1.5, 0, 6.283); c.fillStyle = 'rgba(140,72,64,.45)'; c.fill();
+          c.beginPath(); c.arc(px - 0.4, py - 0.5, 0.6, 0, 6.283); c.fillStyle = 'rgba(255,240,232,.6)'; c.fill();
+        }
+        filament(c, [[ax, ay], [bx, by]], 1.6);
+        // square knot to one side with two short cut tails
+        if (e > 0.6) {
+          const kx = bx + nx * 1.6, ky = by + ny * 1.6, tx = p.tx, ty = p.ty;
+          c.globalAlpha = (e - 0.6) / 0.4;
+          filament(c, [[kx, ky], [kx + tx * 2.5 + nx * 3.2, ky + ty * 2.5 + ny * 3.2]], 1);
+          filament(c, [[kx, ky], [kx - tx * 2.2 + nx * 3.6, ky - ty * 2.2 + ny * 3.6]], 1);
+          c.beginPath(); c.arc(kx, ky, 1.6, 0, 6.283); c.fillStyle = '#3E2366'; c.fill();
+          c.beginPath(); c.arc(kx - 0.5, ky - 0.6, 0.7, 0, 6.283); c.fillStyle = 'rgba(214,196,242,.9)'; c.fill();
+          c.globalAlpha = 1;
+        }
+      }
+    }
+    /* curved 3/8 surgical needle; the point sits at (x, y) heading along (tx, ty) */
+    function needle(c, x, y, tx, ty, tint) {
+      const R = clamp(unit * 0.06, 17, 24);
+      const ang = Math.atan2(ty, tx);
+      c.save();
+      c.translate(x, y); c.rotate(ang);
+      // arc centre sits behind the point, below the travel line
+      const cx = -R * 0.5, cy = R * 0.86, a0 = -Math.PI / 2 + 0.52, a1 = a0 - Math.PI * 0.75;
+      c.shadowColor = 'rgba(40,10,30,.35)'; c.shadowBlur = 6; c.shadowOffsetY = 3;
+      const g = c.createLinearGradient(-R, -R, R, R * 0.6);
+      g.addColorStop(0, tint ? '#F2A7BF' : '#9AA1B0'); g.addColorStop(0.45, '#FBFCFE'); g.addColorStop(1, tint ? '#B23A62' : '#6B7282');
+      c.beginPath(); c.arc(cx, cy, R, a0, a1, true);
+      c.strokeStyle = 'rgba(40,30,60,.55)'; c.lineWidth = 4; c.lineCap = 'round'; c.stroke();
+      c.strokeStyle = g; c.lineWidth = 2.8; c.stroke();
+      c.shadowColor = 'transparent';
+      c.beginPath(); c.arc(cx, cy, R - 0.6, a0 - 0.15, a1 + 0.35, true);
+      c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 0.7; c.stroke();
+      // swaged end, where the thread joins
+      const ex = cx + Math.cos(a1) * R, ey = cy + Math.sin(a1) * R;
+      c.beginPath(); c.arc(ex, ey, 2, 0, 6.283); c.fillStyle = tint ? '#B23A62' : '#7A8090'; c.fill();
+      c.restore();
+      const cs = Math.cos(ang), sn = Math.sin(ang);
+      return { x: x + ex * cs - ey * sn, y: y + ex * sn + ey * cs };
+    }
+    function sparkle(c, x, y, s, a) {
+      c.save(); c.globalAlpha = a; c.translate(x, y);
+      c.fillStyle = '#fff'; c.shadowColor = 'rgba(201,179,221,.9)'; c.shadowBlur = 8;
+      c.beginPath();
+      c.moveTo(0, -s); c.quadraticCurveTo(0, 0, s, 0); c.quadraticCurveTo(0, 0, 0, s); c.quadraticCurveTo(0, 0, -s, 0); c.quadraticCurveTo(0, 0, 0, -s);
+      c.fill(); c.restore();
     }
 
     function draw(t) {
@@ -668,90 +779,93 @@ function run(host, opts = {}) {
       rrect(ctx, panel.x, panel.y, panel.w, panel.h, panel.r);
       ctx.clip();
       if (!still) drawSuture(ctx, reveal, hb);
-      if (line.started) stitches(ctx, 1, hb, true);
+      layStitches(t, hb);
+      drawStitches(ctx, t, hb);
 
-      // success glow
+      // success: a few small glints along the finished row
       const gt = t - glowT;
-      if (gt < 850) {
-        const a = 1 - gt / 850;
-        ctx.save();
-        ctx.shadowColor = `rgba(204,51,102,${0.55 * a})`; ctx.shadowBlur = 18;
-        strokePath(ctx, 1);
-        ctx.strokeStyle = `rgba(255,255,255,${0.75 * a})`; ctx.lineWidth = hb * 2; ctx.stroke();
-        ctx.restore();
+      if (gt < 900 && laid.length) {
+        const n = Math.min(5, laid.length);
+        for (let i = 0; i < n; i++) {
+          const st = laid[Math.floor((i + 0.5) * laid.length / n)];
+          const p = pointAt(st.s / line.Lpx);
+          const k = clamp((gt - i * 90) / 500, 0, 1);
+          if (k > 0 && k < 1) sparkle(ctx, p.x - p.ty * 10, p.y + p.tx * 10, 3 + 3 * Math.sin(k * Math.PI), Math.sin(k * Math.PI) * 0.9);
+        }
       }
 
-      // trace
-      if (line.trace.length > 1) {
-        ctx.save();
-        ctx.beginPath();
-        const P = line.trace.map((q) => { const p = pointAt(q.u); return [p.x - p.ty * q.lat, p.y + p.tx * q.lat]; });
-        ctx.moveTo(P[0][0], P[0][1]);
-        for (let i = 1; i < P.length - 1; i++) ctx.quadraticCurveTo(P[i][0], P[i][1], (P[i][0] + P[i + 1][0]) / 2, (P[i][1] + P[i + 1][1]) / 2);
-        ctx.lineTo(P[P.length - 1][0], P[P.length - 1][1]);
-        const tw = clamp(hb * 0.32, 2.4, 4);
-        ctx.strokeStyle = 'rgba(204,51,102,.16)'; ctx.lineWidth = tw + 6; ctx.stroke();
-        ctx.strokeStyle = C.rose; ctx.lineWidth = tw; ctx.stroke();
-        ctx.restore();
-      }
-
-      // start and end dots
+      // start and end marks: marker rings with labels before the needle goes in
       if (reveal > 0.15) {
         const s = pointAt(0), e = pointAt(1);
         const r0 = clamp(hb * 0.55, 7, 11);
         const ctrX = panel.x + panel.w / 2, ctrY = panel.y + panel.h / 2;
-        // end
-        ctx.beginPath(); ctx.arc(e.x, e.y, r0 + 1, 0, 6.283);
-        ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.fill();
-        ctx.lineWidth = 2; ctx.strokeStyle = C.plum; ctx.stroke();
-        ctx.beginPath(); ctx.arc(e.x, e.y, r0 * 0.38, 0, 6.283); ctx.fillStyle = C.plum; ctx.fill();
-        // start
+        ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.arc(e.x, e.y, r0, 0, 6.283); ctx.strokeStyle = `rgba(${MARKER},.7)`; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(e.x - r0 * 0.5, e.y); ctx.lineTo(e.x + r0 * 0.5, e.y); ctx.moveTo(e.x, e.y - r0 * 0.5); ctx.lineTo(e.x, e.y + r0 * 0.5); ctx.stroke();
         if (!line.started && phase === 'play' && !reduce()) {
           const k = ((t - line.t0) % 1300) / 1300;
-          ctx.beginPath(); ctx.arc(s.x, s.y, r0 + 4 + k * 16, 0, 6.283);
-          ctx.strokeStyle = `rgba(106,56,140,${0.45 * (1 - k)})`; ctx.lineWidth = 2; ctx.stroke();
+          ctx.beginPath(); ctx.arc(s.x, s.y, r0 + 3 + k * 16, 0, 6.283);
+          ctx.strokeStyle = `rgba(${MARKER},${0.5 * (1 - k)})`; ctx.lineWidth = 2; ctx.stroke();
         }
-        ctx.beginPath(); ctx.arc(s.x, s.y, r0 + 2.5, 0, 6.283); ctx.fillStyle = '#fff'; ctx.fill();
-        ctx.beginPath(); ctx.arc(s.x, s.y, r0, 0, 6.283); ctx.fillStyle = line.started ? C.rose : C.plum; ctx.fill();
-        // labels, pushed toward the panel centre
-        ctx.font = `600 12px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.beginPath(); ctx.arc(s.x, s.y, r0, 0, 6.283); ctx.fillStyle = `rgba(${MARKER},${line.started ? 0.25 : 0.85})`; ctx.fill();
+        ctx.beginPath(); ctx.arc(s.x, s.y, r0 * 0.38, 0, 6.283); ctx.fillStyle = '#fff'; ctx.fill();
+        ctx.font = `700 12px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         const lab = (p, txt) => {
           let dx = ctrX - p.x, dy = ctrY - p.y; const dl = Math.hypot(dx, dy) || 1; dx /= dl; dy /= dl;
-          // keep the label off the path: offset along the normal on the side facing the centre
           let nx = -p.ty, ny = p.tx; if (nx * dx + ny * dy < 0) { nx = -nx; ny = -ny; }
-          const off = r0 + hb + 14;
-          const lx = clamp(p.x + nx * off, panel.x + 26, panel.x + panel.w - 26), ly = clamp(p.y + ny * off, panel.y + 58, panel.y + panel.h - 14);
-          const tw = ctx.measureText(txt).width + 14;
-          rrect(ctx, lx - tw / 2, ly - 10, tw, 20, 10);
-          ctx.fillStyle = 'rgba(255,255,255,.82)'; ctx.fill();
+          const off = r0 + hb + 16;
+          const tw = ctx.measureText(txt).width + 20;
+          const lx = clamp(p.x + nx * off, panel.x + tw / 2 + 8, panel.x + panel.w - tw / 2 - 8), ly = clamp(p.y + ny * off, panel.y + 72, panel.y + panel.h - 18);
+          ctx.save();
+          ctx.shadowColor = 'rgba(60,20,40,.25)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2;
+          rrect(ctx, lx - tw / 2, ly - 12, tw, 24, 12);
+          ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.fill();
+          ctx.restore();
           ctx.fillStyle = C.plum7; ctx.fillText(txt, lx, ly + 0.5);
         };
         if (!line.started) { lab(s, S.start); lab(e, S.end); }
       }
 
-      // pointer ring
-      if (pressed && line.started && phase === 'play') {
-        const out = line.d > hb;
-        ctx.beginPath(); ctx.arc(ptr.x, ptr.y, 9, 0, 6.283);
-        ctx.strokeStyle = out ? 'rgba(204,51,102,.9)' : 'rgba(106,56,140,.55)'; ctx.lineWidth = 2; ctx.stroke();
+      // needle and the working thread back to the last stitch
+      if (reveal > 0.3 && phase !== 'over') {
+        let nx, ny, tx, ty, tint = false;
+        if (line.started && (pressed || phase !== 'play')) {
+          const p = pointAt(line.u);
+          nx = pressed ? ptr.x : p.x; ny = pressed ? ptr.y : p.y; tx = p.tx; ty = p.ty;
+          tint = pressed && line.d > halfBand();
+        } else {
+          const p = pointAt(line.started ? line.u : 0);
+          const bob = reduce() || line.started ? 0 : Math.sin(t / 420) * 2;
+          nx = p.x - p.tx * 6; ny = p.y - p.ty * 6 + bob; tx = p.tx; ty = p.ty;
+        }
+        const eye = needle(ctx, nx, ny, tx, ty, tint);
+        if (line.started) {
+          const lastSt = laid[laid.length - 1];
+          let ax, ay;
+          if (lastSt) {
+            const p = pointAt(lastSt.s / line.Lpx), k = stitchHalf(hb);
+            ax = p.x + (-p.ty) * (lastSt.lat + k); ay = p.y + p.tx * (lastSt.lat + k);
+          } else { const p = pointAt(0); ax = p.x; ay = p.y; }
+          const mx = (ax + eye.x) / 2, my = (ay + eye.y) / 2 + clamp(Math.hypot(eye.x - ax, eye.y - ay) * 0.18, 4, 26);
+          filament(ctx, [[ax, ay], [mx, my], [eye.x, eye.y]], 1.4);
+        }
+        if (pressed && line.started && phase === 'play' && line.d > halfBand()) {
+          ctx.beginPath(); ctx.arc(ptr.x, ptr.y, 13, 0, 6.283);
+          ctx.strokeStyle = 'rgba(204,51,102,.7)'; ctx.lineWidth = 1.6; ctx.setLineDash([3, 4]); ctx.stroke(); ctx.setLineDash([]);
+        }
       }
-
-      // particles
-      parts = parts.filter((p) => t - p.t < p.life);
-      for (const p of parts) {
-        const k = (t - p.t) / p.life, s = (t - p.t) / 1000;
-        ctx.globalAlpha = 1 - k;
-        ctx.beginPath(); ctx.arc(p.x + p.vx * s, p.y + p.vy * s + 40 * s * s, p.r, 0, 6.283);
-        ctx.fillStyle = p.c; ctx.fill();
-      }
-      ctx.globalAlpha = 1;
       ctx.restore();
 
       // bars: time and steadiness
-      const bx = panel.x + 18, by = panel.y + 16, bw = (panel.w - 18 * 3) / 2;
-      const timeLeft = phase === 'play' ? clamp(1 - line.time / line.T, 0, 1) : phase === 'show' ? 1 : clamp(1 - line.time / line.T, 0, 1);
+      const fx0 = panel.x + 10, fy0 = panel.y + 10, fw = panel.w - 20;
+      ctx.save();
+      ctx.shadowColor = 'rgba(60,20,40,.18)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 4;
+      rrect(ctx, fx0, fy0, fw, 42, 16); ctx.fillStyle = 'rgba(255,250,247,.78)'; ctx.fill();
+      ctx.restore();
+      const bx = fx0 + 14, by = fy0 + 9, bw = (fw - 14 * 3) / 2;
+      const timeLeft = phase === 'show' ? 1 : clamp(1 - line.time / line.T, 0, 1);
       bar(bx, by, bw, S.time, timeLeft, timeLeft < 0.25 ? C.rose : C.plum);
-      bar(bx + bw + 18, by, bw, S.steady, line.steady, line.steady < 0.35 ? C.rose : C.lilac);
+      bar(bx + bw + 14, by, bw, S.steady, line.steady, line.steady < 0.35 ? C.rose : '#8C5FB8');
 
       // pops
       pops = pops.filter((p) => t - p.t < p.dur);
@@ -778,10 +892,14 @@ function run(host, opts = {}) {
       }
     }
     function bar(x, y, w, label, v, color) {
-      ctx.font = `600 11.5px ${FONT}`; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      ctx.font = `700 11.5px ${FONT}`; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
       ctx.fillStyle = C.ink2; ctx.fillText(label, x, y + 10);
-      rrect(ctx, x, y + 17, w, 5, 2.5); ctx.fillStyle = 'rgba(106,56,140,.12)'; ctx.fill();
-      if (v > 0.002) { rrect(ctx, x, y + 17, Math.max(5, w * v), 5, 2.5); ctx.fillStyle = color; ctx.fill(); }
+      rrect(ctx, x, y + 16, w, 6, 3); ctx.fillStyle = 'rgba(106,56,140,.13)'; ctx.fill();
+      if (v > 0.002) {
+        rrect(ctx, x, y + 16, Math.max(6, w * v), 6, 3);
+        const g = ctx.createLinearGradient(x, 0, x + w, 0); g.addColorStop(0, color); g.addColorStop(1, color === C.rose ? '#E8668F' : '#B48BDC');
+        ctx.fillStyle = g; ctx.fill();
+      }
     }
 
     let last = now();

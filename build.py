@@ -15,10 +15,10 @@ PROD = 'https://www.apexsurgeryhospital.com/'
 # page file -> (data-page key, extra data files, production path, title key or data id, i18n fallback keys)
 PAGES = [
     ('index.html',      'home',       ['home', 'about'],        '',               'home'),
-    ('about.html',      'about',      ['about'],                'about-us/',      'about'),
+    ('about.html',      'about',      ['about', 'founder'],                'about-us/',      'about'),
     ('services.html',   'services',   ['services'],             'surgery/',       'services'),
     ('service.html',    'service',    [],                       'surgery/',       None),
-    ('doctor.html',     'doctor',     [],                       'doctor/',        None),
+    ('doctor.html',     'doctor',     ['founder'],                       'doctor/',        None),
     ('promotions.html', 'promotions', ['promotions'],           'promotions/',    'promotions'),
     ('reviews.html',    'reviews',    ['reviews', 'posts', 'home'], 'reviews/',   'reviews'),
     ('blog.html',       'blog',       ['blogs', 'posts'],       'blogs/',         'blogs'),
@@ -36,7 +36,7 @@ PAGES = [
 META = {
     'en': {
         'service': ('Procedures | Apex Surgery Hospital', 'Facelift, brow lift, rhinoplasty, double eyelid surgery, breast augmentation and liposuction at Apex Surgery Hospital in Bangkok and Phuket.'),
-        'doctor': ('Dr. Somboon Waiphrip, plastic surgeon | Apex Surgery Hospital', 'Plastic and reconstructive surgeon at Apex Surgery Hospital. Trained at Ramathibodi, Siriraj and Boston University. Member of ISAPS.'),
+        'doctor': ('Our doctors: Dr. Somboon Waiphrip and Dr. Nantapat Supapannachart | Apex Surgery Hospital', 'Dr. Somboon Waiphrip, plastic and reconstructive surgeon, trained at Ramathibodi, Siriraj and Boston University. Founder Dr. Nantapat Supapannachart, American Board-certified dermatologist.'),
         'article': ('Articles | Apex Surgery Hospital', 'Articles, reviews and news from Apex Surgery Hospital.'),
         'nose': ('Nose preview | Apex Surgery Hospital', 'Try preset nose shapes on a front, 45 degree or side photo. Simulation only.'),
         'play': ('Play and win | Apex Surgery Hospital', 'Five short skill games. Reach a target score and claim a voucher to show at reception.'),
@@ -47,7 +47,7 @@ META = {
     },
     'th': {
         'service': ('บริการศัลยกรรม | Apex Surgery Hospital', 'ดึงหน้า ยกคิ้ว เสริมจมูก ทำตาสองชั้น เสริมหน้าอก และดูดไขมัน ที่ Apex Surgery Hospital เพลินจิตและภูเก็ต'),
-        'doctor': ('นพ.สมบูรณ์ ไหวพริบ ศัลยแพทย์ตกแต่ง | Apex Surgery Hospital', 'ศัลยแพทย์ตกแต่งเฉพาะทาง สาขาศัลยศาสตร์และศัลยศาสตร์ตกแต่ง โรงพยาบาลศัลยกรรมตกแต่งเอเพ็กซ์'),
+        'doctor': ('แพทย์ของเรา: นพ.สมบูรณ์ ไหวพริบ และ พญ.นันทภัทร์ สุภาพรรณชาติ | Apex Surgery Hospital', 'นพ.สมบูรณ์ ไหวพริบ ศัลยแพทย์ตกแต่งเฉพาะทาง และผู้ก่อตั้ง พญ.นันทภัทร์ สุภาพรรณชาติ แพทย์ผู้เชี่ยวชาญด้านผิวหนัง วุฒิบัตร American Board'),
         'article': ('บทความศัลยกรรม | Apex Surgery Hospital', 'บทความ รีวิว และข่าวสารจาก Apex Surgery Hospital'),
         'nose': ('ลองทรงจมูก | Apex Surgery Hospital', 'ลองทรงจมูกสำเร็จรูปบนรูปหน้าตรง หน้าเฉียง 45 องศา หรือด้านข้าง ภาพจำลองเท่านั้น'),
         'play': ('เล่นเกมรับรางวัล | Apex Surgery Hospital', 'เกมสั้นห้าเกม ทำคะแนนถึงเป้าแล้วรับบัตรกำนัลไปแสดงที่เคาน์เตอร์'),

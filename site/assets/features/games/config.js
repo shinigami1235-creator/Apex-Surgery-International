@@ -26,7 +26,7 @@ export const GAMES = {
   },
   proportion: {
     order: 2,
-    /* Placeholder thresholds: the Proportion build sets these from its own playtests. */
+    /* Stencil build, bot playtests (Oct 2026): careful player median 2,194, sloppy player median about 530. */
     tiers: [{ score: 600, prize: TOTE }, { score: 1200, prize: KIT }, { score: 2000, prize: PICKUP }],
     monthly: MONTHLY,
     title: { en: 'Proportion', th: 'สัดส่วน' }

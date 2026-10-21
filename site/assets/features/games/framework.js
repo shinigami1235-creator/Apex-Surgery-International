@@ -45,7 +45,7 @@ export function h(tag, attrs, ...kids) {
     if (v == null || v === false) continue;
     if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
     else if (k === 'html') el.innerHTML = v;
-    else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    else if (k === 'style' && typeof v === 'object') { for (const p in v) { if (p.startsWith('--')) el.style.setProperty(p, v[p]); else el.style[p] = v[p]; } }
     else el.setAttribute(k, v === true ? '' : v);
   }
   for (const c of kids.flat()) if (c != null && c !== false) el.append(c.nodeType ? c : document.createTextNode(String(c)));
@@ -134,57 +134,8 @@ export function floatText(parent, x, y, text, cls = '') {
 css('gx-base', `.gx-float{position:absolute;pointer-events:none;font-weight:800;font-size:20px;color:#fff;text-shadow:0 2px 10px rgba(31,10,48,.6);white-space:nowrap;z-index:30}
 .gx-float.bad{color:#FFC2D6}`);
 
-/* ---------- sound: synthesised with WebAudio, off by default ---------- */
-export const sfx = (() => {
-  let ctx = null, master = null;
-  const s = { on: store.get('apxg.sound', false) === true };
-  const ensure = () => {
-    if (ctx) return ctx;
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return null;
-    ctx = new AC();
-    master = ctx.createGain();
-    master.gain.value = 0.16;
-    master.connect(ctx.destination);
-    return ctx;
-  };
-  const tone = (f, t0, dur, type = 'sine', vol = 1, f2) => {
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.type = type;
-    o.frequency.setValueAtTime(f, t0);
-    if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + dur);
-    g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(vol, t0 + 0.008);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    o.connect(g); g.connect(master);
-    o.start(t0); o.stop(t0 + dur + 0.02);
-  };
-  const SOUNDS = {
-    tap: t => tone(700, t, 0.05, 'sine', 0.5),
-    flip: t => tone(1300, t, 0.035, 'triangle', 0.35, 900),
-    good: t => { tone(660, t, 0.09, 'triangle', 0.8); tone(990, t + 0.06, 0.12, 'triangle', 0.7); },
-    bad: t => tone(220, t, 0.26, 'sawtooth', 0.35, 110),
-    level: t => [523, 659, 784, 1047].forEach((f, i) => tone(f, t + i * 0.07, 0.14, 'triangle', 0.6)),
-    tick: t => tone(880, t, 0.08, 'sine', 0.6),
-    go: t => tone(1320, t, 0.18, 'triangle', 0.7),
-    end: t => [523, 392, 262].forEach((f, i) => tone(f, t + i * 0.12, 0.2, 'triangle', 0.6)),
-    prize: t => [784, 988, 1175, 1568].forEach((f, i) => tone(f, t + i * 0.09, 0.2, 'triangle', 0.55))
-  };
-  s.play = name => {
-    if (!s.on || !SOUNDS[name]) return;
-    try {
-      if (!ensure()) return;
-      if (ctx.state === 'suspended') ctx.resume();
-      SOUNDS[name](ctx.currentTime + 0.005);
-    } catch (e) { /* audio is optional */ }
-  };
-  s.set = on => {
-    s.on = !!on;
-    store.set('apxg.sound', s.on);
-    if (s.on) { try { ensure(); ctx && ctx.state === 'suspended' && ctx.resume(); } catch (e) {} }
-  };
-  return s;
-})();
+/* ---------- sound: music loops and sound effects live in audio.js ---------- */
+export { sfx, music } from './audio.js';
 
 /* ---------- pointer helpers ---------- */
 /* Tracks a drag on el. cb.start(e) may return false to refuse. cb.move(dx, dy, e), cb.end(dx, dy, vx, e). */
@@ -227,3 +178,9 @@ export const COLORS = {
   lilac: 'var(--lilac,#A886CD)', lilac300: 'var(--lilac-300,#C9B3DD)', lilac100: 'var(--lilac-100,#F1EAF7)', wash: 'var(--wash,#FBF3FB)',
   ink: 'var(--ink,#2A1F33)', ink2: 'var(--ink-2,#5A4A66)', onNight: 'var(--on-night,#F6EEFB)', onNight2: 'var(--on-night-2,#CDB9DD)', rose: '#CC3366'
 };
+
+/* ---------- textures (no image files): film grain, a diamond lattice and a fine silk weave ---------- */
+const svgUrl = s => `url("data:image/svg+xml,${encodeURIComponent(s)}")`;
+export const GRAIN = svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='180' height='180' filter='url(#n)' opacity='.55'/></svg>`);
+export const LATTICE = (c = '#C9B3DD', a = 0.22) => svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28'><path d='M14 0L28 14 14 28 0 14z' fill='none' stroke='${c}' stroke-opacity='${a}' stroke-width='1'/><circle cx='14' cy='14' r='1.2' fill='${c}' fill-opacity='${a * 1.6}'/></svg>`);
+export const SILK = (c = '#ffffff', a = 0.06) => svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='240' height='120'><g fill='none' stroke='${c}' stroke-opacity='${a}' stroke-width='1'>${Array.from({ length: 12 }, (_, i) => `<path d='M0 ${i * 10 + 4} C60 ${i * 10 - 6} 120 ${i * 10 + 14} 240 ${i * 10 + 4}'/>`).join('')}</g></svg>`);

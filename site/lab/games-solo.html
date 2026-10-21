@@ -28,9 +28,10 @@
   .stage{position:relative;width:100%;max-width:1100px;height:100%;min-height:420px}
   @media (min-width:700px){body{height:auto;min-height:100svh}.stage{height:auto;min-height:0;aspect-ratio:16/10;width:min(1100px,100%,calc((100svh - 150px) * 1.6))}}
   .stage>div{position:absolute;inset:0}
+  .stage{background:var(--night);border-radius:20px;overflow:hidden}
   pre.result{flex:none;max-width:1140px;width:calc(100% - 32px);margin:0 auto 16px;padding:12px 14px;border-radius:12px;background:#fff;font-size:12px;white-space:pre-wrap;word-break:break-all;color:var(--ink-2);box-shadow:0 0 0 1px rgba(106,56,140,.1)}
   pre.result:empty{display:none}
-  @media (max-width:699px){.bar h1{display:none}.ctl span{display:none}.ctl input{width:60px;padding:0 10px}.seg button{padding:0 10px}.go{padding:0 14px}.bar{gap:6px}#gameSeg{flex:1 1 100%;justify-content:space-between}#gameSeg button{flex:1}.hud .how{display:none}.stat{height:28px;padding:0 10px}.stat b{line-height:28px;font-size:14px}}
+  @media (max-width:699px){.bar h1{display:none}.ctl span{display:none}.ctl input{width:60px;padding:0 10px}.seg button{padding:0 10px}.go{padding:0 14px}.bar{gap:6px}#gameSeg{flex:1 1 100%;flex-wrap:wrap;justify-content:center;border-radius:18px}#gameSeg button{flex:1 1 30%}.hud .how{display:none}.stat{height:28px;padding:0 10px}.stat b{line-height:28px;font-size:14px}}
 </style>
 </head>
 <body>
@@ -39,6 +40,9 @@
   <div class="seg" id="gameSeg">
     <button type="button" data-game="steady" aria-pressed="true">Steady Hand</button>
     <button type="button" data-game="proportion" aria-pressed="false">Proportion</button>
+    <button type="button" data-game="factrush" aria-pressed="false">Fact Rush</button>
+    <button type="button" data-game="recoverysort" aria-pressed="false">Recovery Sort</button>
+    <button type="button" data-game="memorymatch" aria-pressed="false">Memory Match</button>
   </div>
   <label class="ctl"><span id="seedLbl">Seed</span><input id="seed" inputmode="numeric" value="1"></label>
   <div class="seg" id="langSeg">
@@ -61,8 +65,12 @@
 <script type="module">
 import steady from '../assets/features/games/steady.js';
 import proportion from '../assets/features/games/proportion.js';
+import factrush from '../assets/features/games/factrush.js';
+import recoverysort from '../assets/features/games/recoverysort.js';
+import memorymatch from '../assets/features/games/memorymatch.js';
+import { sfx, music } from '../assets/features/games/framework.js';
 
-const GAMES = { steady, proportion };
+const GAMES = { steady, proportion, factrush, recoverysort, memorymatch };
 const UI = {
   en: { title: 'Skill games lab', seed: 'Seed', start: 'Start', sound: 'Sound', score: 'Score', level: 'Level', lives: 'Lives', time: 'Time' },
   th: { title: 'ทดสอบเกมทักษะ', seed: 'ซีด', start: 'เริ่ม', sound: 'เสียง', score: 'คะแนน', level: 'ระดับ', lives: 'ชีวิต', time: 'เวลา' },
@@ -72,7 +80,7 @@ const state = {
   game: GAMES[q.get('game')] ? q.get('game') : 'steady',
   lang: q.get('lang') === 'th' ? 'th' : 'en',
   seed: q.get('seed') || '1',
-  sound: false,
+  sound: sfx.on,
 };
 const $ = (id) => document.getElementById(id);
 $('seed').value = state.seed;
@@ -109,6 +117,7 @@ function start() {
   $('out').textContent = '';
   window.__result = null;
   window.__host = host;
+  if (state.sound) music.play(state.game);
   const game = GAMES[state.game];
   const seed = $('seed').value || '1';
   const onHud = (h) => {
@@ -126,7 +135,7 @@ function start() {
 
 $('gameSeg').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; state.game = b.dataset.game; paint(); start(); });
 $('langSeg').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; state.lang = b.dataset.lang; paint(); start(); });
-$('snd').addEventListener('click', () => { state.sound = !state.sound; paint(); start(); });
+$('snd').addEventListener('click', () => { state.sound = !state.sound; sfx.set(state.sound); music.set(state.sound); music.play(state.game); paint(); });
 $('go').addEventListener('click', start);
 paint();
 window.__start = start;

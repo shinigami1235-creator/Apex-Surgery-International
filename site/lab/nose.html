@@ -31,13 +31,12 @@
 </main>
 <script type="module">
   import {mount} from '../assets/features/nose/index.js';
-  // ?lang=en, and for offline testing ?mp=<face_mesh folder URL>&sample=<front photo URL>
+  // ?lang=en, and for offline testing ?mp=<face_mesh folder URL>
   const q = new URLSearchParams(location.search);
   let lang = q.get('lang') === 'en' ? 'en' : 'th';
   const log = document.getElementById('log');
   const extra = {};
   if (q.get('mp')) extra.mpBase = q.get('mp').replace(/\/?$/, '/');
-  if (q.get('sample')) extra.samples = {front:{src:q.get('sample'), lm:null}};
   let app = null;
   function start(){
     if (app) app.destroy();

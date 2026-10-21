@@ -1,5 +1,6 @@
 /* Fact Rush: statement cards fall; swipe right or press the right arrow for Fact, left for Myth. */
-import { css, h, loop, recorder, sfx, shake, floatText, reduced, shuffle, drag, tx, EASE } from './framework.js';
+import { css, h, loop, recorder, sfx, shake, floatText, reduced, shuffle, drag, tx, EASE, GRAIN, LATTICE } from './framework.js';
+import { procIcon } from './art.js';
 import { FACTS, PROCS } from './content.js';
 
 const UI = {
@@ -17,38 +18,65 @@ const secondAt = L => Math.max(0.3, 0.55 - 0.04 * (L - 3));          // progress
 const points = (L, streak) => 10 * L + (streak >= 3 ? 5 * Math.min(streak - 2, 6) : 0);
 
 const CSS = `
-.fr{position:absolute;inset:0;overflow:hidden;color:#fff;touch-action:none;user-select:none;-webkit-user-select:none;
-  background:radial-gradient(120% 70% at 50% 0%,#3B1758 0%,var(--night,#1F0A30) 62%);--ctrl:84px}
+.fr{position:absolute;inset:0;overflow:hidden;color:#fff;touch-action:none;user-select:none;-webkit-user-select:none;--ctrl:88px;--pull:0;
+  background:radial-gradient(90% 60% at 50% 0%,#4A1E66 0%,transparent 70%),radial-gradient(60% 50% at 50% 100%,rgba(106,56,140,.45),transparent 70%),var(--night,#1F0A30)}
+.fr::before{content:"";position:absolute;inset:0;background:${LATTICE('#C9B3DD', 0.07)} center/36px 36px;pointer-events:none}
+.fr::after{content:"";position:absolute;inset:0;background:${GRAIN};mix-blend-mode:overlay;opacity:.3;pointer-events:none}
+.fr-zone{position:absolute;top:0;bottom:var(--ctrl);width:46%;pointer-events:none;transition:opacity .25s}
+.fr-zone.m{left:0;background:radial-gradient(70% 55% at 0% 50%,rgba(204,51,102,.55),transparent 70%);opacity:calc(.25 + max(0, var(--pull) * -1) * .75)}
+.fr-zone.f{right:0;background:radial-gradient(70% 55% at 100% 50%,rgba(168,134,205,.6),transparent 70%);opacity:calc(.25 + max(0, var(--pull)) * .75)}
+.fr-side{position:absolute;top:50%;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.06em;color:rgba(246,238,251,.55);pointer-events:none;transform:translateY(-50%)}
+.fr-side svg{width:16px;height:16px}
+.fr-side.m{left:10px}.fr-side.f{right:10px}
+.fr-orb{position:absolute;border-radius:50%;filter:blur(30px);opacity:.35;pointer-events:none}
+@media (prefers-reduced-motion:no-preference){.fr-orb{animation:frOrb 14s ease-in-out infinite alternate}}
+@keyframes frOrb{to{transform:translate3d(30px,-40px,0) scale(1.15)}}
 .fr-field{position:absolute;left:0;right:0;top:0;bottom:var(--ctrl)}
-.fr-lane{position:absolute;top:0;bottom:0;width:0;border-left:1px dashed rgba(201,179,221,.16)}
-.fr-floor{position:absolute;left:16px;right:16px;bottom:2px;height:3px;border-radius:3px;background:linear-gradient(90deg,rgba(204,51,102,0),#CC3366,rgba(204,51,102,0));opacity:.75}
+.fr-lane{position:absolute;top:0;bottom:0;width:0;border-left:1px dashed rgba(201,179,221,.18)}
+.fr-floor{position:absolute;left:16px;right:16px;bottom:2px;height:2px;border-radius:2px;background:linear-gradient(90deg,rgba(204,51,102,0),#CC3366 20%,#E8668F 50%,#CC3366 80%,rgba(204,51,102,0));box-shadow:0 0 18px 2px rgba(204,51,102,.55)}
 .fr-card{position:absolute;left:0;top:0;will-change:transform}
-.fr-inner{position:relative;background:#fff;color:var(--ink,#2A1F33);border-radius:20px;padding:14px 16px 16px;box-shadow:0 18px 40px -18px rgba(0,0,0,.65);transform-origin:50% 120%;touch-action:none;cursor:grab;transition:box-shadow .2s}
-.fr-card.active .fr-inner{box-shadow:0 0 0 3px var(--lilac,#A886CD),0 18px 40px -18px rgba(0,0,0,.65)}
-.fr-inner.ok{box-shadow:0 0 0 4px var(--lilac-300,#C9B3DD),0 0 30px 6px rgba(168,134,205,.7)}
-.fr-inner.no{box-shadow:0 0 0 4px #CC3366,0 0 30px 6px rgba(204,51,102,.55)}
-.fr-tag{display:inline-block;font-size:12px;line-height:1.5;font-weight:700;color:var(--plum,#6A388C);background:var(--lilac-100,#F1EAF7);border-radius:999px;padding:2px 10px;margin-bottom:8px}
-.fr-text{font-size:17px;line-height:1.42;font-weight:600}
+.fr-inner{position:relative;color:var(--ink,#2A1F33);border-radius:22px;padding:14px 16px 18px;touch-action:none;cursor:grab;
+  background:linear-gradient(180deg,#fff 0%,#FBF7FD 100%);
+  box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 2px 4px rgba(12,2,22,.2),0 24px 44px -20px rgba(0,0,0,.75);transform-origin:50% 120%;transition:box-shadow .2s}
+.fr-card::before,.fr-card::after{content:"";position:absolute;left:10px;right:10px;border-radius:22px;z-index:-1;pointer-events:none;transition:opacity .2s}
+.fr-card::before{bottom:-7px;top:7px;background:#E9DDF3;box-shadow:0 10px 20px -12px rgba(0,0,0,.6)}
+.fr-card::after{bottom:-13px;top:13px;left:20px;right:20px;background:#C9B3DD;opacity:.7}
+.fr-card[data-done]::before,.fr-card[data-done]::after{opacity:0}
+.fr-face{position:relative;border-radius:inherit}
+.fr-face::after{content:"";position:absolute;right:-6px;bottom:-10px;width:56px;height:56px;background:${LATTICE('#6A388C', 0.16)} center/14px 14px;-webkit-mask:radial-gradient(circle,#000 30%,transparent 72%);mask:radial-gradient(circle,#000 30%,transparent 72%);pointer-events:none}
+.fr-card.active .fr-inner{box-shadow:0 0 0 3px var(--lilac,#A886CD),0 24px 44px -20px rgba(0,0,0,.75)}
+.fr-inner.ok{box-shadow:0 0 0 4px var(--lilac-300,#C9B3DD),0 0 34px 8px rgba(168,134,205,.65)}
+.fr-inner.no{box-shadow:0 0 0 4px #CC3366,0 0 34px 8px rgba(204,51,102,.5)}
+.fr-hd{display:flex;align-items:center;gap:10px;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid #EFE6F5}
+.fr-ic{flex:none;width:34px;height:34px;border-radius:12px;display:grid;place-items:center;color:var(--plum,#6A388C);background:linear-gradient(145deg,#F6EFFB,#E6D8F1);box-shadow:inset 0 1px 0 #fff}
+.fr-ic svg{width:20px;height:20px}
+.fr-tag{font-size:13px;line-height:1.2;font-weight:800;color:var(--plum-700,#55286F);letter-spacing:.01em}
+.fr-text{font-size:17px;line-height:1.45;font-weight:600;color:var(--ink,#2A1F33)}
 .fr.two .fr-text{font-size:15px}
 .fr.two .fr-inner{padding:12px 12px 14px}
-.fr-stamp{position:absolute;top:10px;padding:1px 10px;border:2px solid currentColor;border-radius:10px;font-weight:800;font-size:14px;opacity:0;background:#fff;pointer-events:none}
-.fr-stamp.f{right:10px;color:var(--plum,#6A388C);transform:rotate(8deg)}
-.fr-stamp.m{left:10px;color:#CC3366;transform:rotate(-8deg)}
-.fr-ctrl{position:absolute;left:0;right:0;bottom:0;height:var(--ctrl);display:flex;gap:12px;padding:12px 16px;box-sizing:border-box}
-.fr-btn{flex:1;min-height:56px;border-radius:999px;font:inherit;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:transform .12s ${EASE},background-color .15s}
+.fr.two .fr-ic{width:28px;height:28px;border-radius:10px}.fr.two .fr-ic svg{width:17px;height:17px}
+.fr-stamp{position:absolute;top:12px;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:999px;font-weight:800;font-size:13px;line-height:1;opacity:0;pointer-events:none;color:#fff;box-shadow:0 6px 14px -6px rgba(0,0,0,.5)}
+.fr-stamp.f{right:12px;background:var(--plum,#6A388C);transform:rotate(6deg)}
+.fr-stamp.m{left:12px;background:#CC3366;transform:rotate(-6deg)}
+.fr-ghost{position:absolute;inset:0;border-radius:22px;pointer-events:none;background:linear-gradient(90deg,rgba(201,179,221,0),rgba(201,179,221,.55));filter:blur(6px)}
+.fr-ghost.m{background:linear-gradient(270deg,rgba(204,51,102,0),rgba(204,51,102,.5))}
+.fr-ctrl{position:absolute;left:0;right:0;bottom:0;height:var(--ctrl);display:flex;gap:12px;padding:14px 16px;box-sizing:border-box;z-index:5}
+.fr-btn{flex:1;min-height:56px;border-radius:999px;font:inherit;font-weight:800;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:transform .12s ${EASE},filter .15s}
 .fr-btn:active{transform:scale(.95)}
 .fr-btn svg{width:22px;height:22px;flex:none}
-.fr-btn.m{background:rgba(204,51,102,.14);color:#FFD3E1;border:2px solid #CC3366}
-.fr-btn.f{background:var(--plum,#6A388C);color:#fff;border:2px solid var(--lilac,#A886CD)}
+.fr-btn.m{background:linear-gradient(180deg,rgba(204,51,102,.28),rgba(204,51,102,.12));color:#FFE1EA;border:1.5px solid rgba(232,102,143,.8);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 10px 24px -14px rgba(204,51,102,.9)}
+.fr-btn.f{background:linear-gradient(180deg,#7A44A0,var(--plum,#6A388C) 55%,var(--plum-700,#55286F));color:#fff;border:1.5px solid rgba(201,179,221,.7);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 10px 24px -14px rgba(106,56,140,.95)}
 .fr-btn:focus-visible{outline:3px solid #fff;outline-offset:2px}
-.fr-note{position:absolute;left:16px;right:16px;top:12px;background:rgba(31,10,48,.94);border:1px solid rgba(204,51,102,.7);border-radius:16px;padding:10px 14px;font-size:14px;line-height:1.5;color:var(--on-night,#F6EEFB);opacity:0;transform:translateY(-8px);transition:opacity .2s,transform .25s ${EASE};pointer-events:none;z-index:20;max-width:560px;margin:0 auto}
+.fr-note{position:absolute;left:16px;right:16px;top:12px;display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:start;background:rgba(31,10,48,.95);border:1px solid rgba(204,51,102,.6);border-radius:18px;padding:12px 14px;font-size:14px;line-height:1.5;color:var(--on-night,#F6EEFB);opacity:0;transform:translateY(-8px);transition:opacity .2s,transform .25s ${EASE};pointer-events:none;z-index:20;max-width:560px;margin:0 auto;box-shadow:0 20px 40px -20px rgba(0,0,0,.8)}
 .fr-note.show{opacity:1;transform:none}
-.fr-note b{display:inline-block;margin-right:8px;padding:0 8px;border-radius:999px;background:#CC3366;color:#fff;font-size:12px;line-height:20px;vertical-align:1px}
+.fr-note .chips{display:flex;flex-direction:column;gap:6px}
+.fr-note b{display:inline-flex;align-items:center;justify-content:center;height:22px;padding:0 10px;border-radius:999px;background:#CC3366;color:#fff;font-size:12px;line-height:1;white-space:nowrap}
 .fr-note b.fact{background:var(--plum,#6A388C)}
-.fr-toast{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;z-index:25;opacity:0;white-space:nowrap}
-.fr-toast b{display:block;font-size:36px;line-height:1.1;font-weight:800}
-.fr-toast span{font-size:15px;color:var(--on-night-2,#CDB9DD)}
-@media (min-width:700px){.fr-text{font-size:21px}.fr.two .fr-text{font-size:18px}.fr-tag{font-size:13px}}
+.fr-toast{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;z-index:25;opacity:0;white-space:nowrap;padding:16px 28px;border-radius:22px;background:rgba(31,10,48,.86);border:1px solid rgba(201,179,221,.3);box-shadow:0 24px 50px -20px rgba(0,0,0,.8)}
+.fr-toast b{display:block;font-size:34px;line-height:1.1;font-weight:800}
+.fr-toast span{display:block;margin-top:4px;font-size:15px;color:var(--on-night-2,#CDB9DD)}
+@media (min-width:700px){.fr-text{font-size:21px}.fr.two .fr-text{font-size:18px}.fr-tag{font-size:14px}}
+@media (max-width:420px){.fr-side{display:none}}
 `;
 
 const ARROW_L = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
@@ -76,13 +104,18 @@ export default {
       const root = h('div', { class: 'fr', role: 'application', 'aria-label': tx(TITLE, lang) });
       const field = h('div', { class: 'fr-field' });
       const laneLine = h('div', { class: 'fr-lane' });
+      const zones = [h('div', { class: 'fr-zone m' }), h('div', { class: 'fr-zone f' }),
+        h('div', { class: 'fr-orb', style: { right: '-60px', top: '14%', width: '240px', height: '240px', background: '#8B5CB0' } }),
+        h('div', { class: 'fr-orb', style: { left: '-90px', top: '58%', width: '240px', height: '240px', background: '#CC3366', animationDelay: '-6s' } }),
+        h('div', { class: 'fr-side m', html: ARROW_L + `<span>${tx(UI.myth, lang)}</span>` }),
+        h('div', { class: 'fr-side f', html: `<span>${tx(UI.fact, lang)}</span>` + ARROW_R })];
       const floor = h('div', { class: 'fr-floor' });
       const note = h('div', { class: 'fr-note', 'aria-live': 'polite' });
       const toast = h('div', { class: 'fr-toast' });
       const bMyth = h('button', { class: 'fr-btn m', type: 'button', html: ARROW_L + `<span>${tx(UI.myth, lang)}</span>` });
       const bFact = h('button', { class: 'fr-btn f', type: 'button', html: `<span>${tx(UI.fact, lang)}</span>` + ARROW_R });
       field.append(laneLine, floor);
-      root.append(field, note, toast, h('div', { class: 'fr-ctrl' }, bMyth, bFact));
+      root.append(...zones, field, note, toast, h('div', { class: 'fr-ctrl' }, bMyth, bFact));
       host.appendChild(root);
 
       let W = 0, FH = 0;
@@ -111,8 +144,10 @@ export default {
       };
       const showNote = (f, missed) => {
         note.innerHTML = '';
-        note.append(h('b', { class: f.answer }, tx(f.answer === 'fact' ? UI.fact : UI.myth, lang)), tx(f.why, lang));
-        if (missed) note.prepend(h('b', null, tx(UI.missed, lang)));
+        const chips = h('span', { class: 'chips' });
+        if (missed) chips.append(h('b', null, tx(UI.missed, lang)));
+        chips.append(h('b', { class: f.answer }, tx(f.answer === 'fact' ? UI.fact : UI.myth, lang)));
+        note.append(chips, h('span', null, tx(f.why, lang)));
         note.classList.add('show');
         clearTimeout(noteTimer);
         noteTimer = setTimeout(() => note.classList.remove('show'), 2600);
@@ -134,13 +169,14 @@ export default {
       const spawn = lane => {
         const f = draw();
         const inner = h('div', { class: 'fr-inner' },
-          h('span', { class: 'fr-tag' }, tx(PROCS[f.proc], lang)),
-          h('div', { class: 'fr-text' }, tx(f.text, lang)),
+          h('div', { class: 'fr-face' },
+            h('div', { class: 'fr-hd' }, h('span', { class: 'fr-ic', html: procIcon(f.proc) }), h('span', { class: 'fr-tag' }, tx(PROCS[f.proc], lang))),
+            h('div', { class: 'fr-text' }, tx(f.text, lang))),
           h('span', { class: 'fr-stamp f' }, tx(UI.fact, lang)),
           h('span', { class: 'fr-stamp m' }, tx(UI.myth, lang)));
         const el = h('div', { class: 'fr-card' }, inner);
         field.appendChild(el);
-        const c = { f, el, inner, lane, p: 0, dx: 0, done: false, w: 0, h: 0, dur: fallMs(level), stampF: inner.children[2], stampM: inner.children[3] };
+        const c = { f, el, inner, lane, p: 0, dx: 0, done: false, w: 0, h: 0, dur: fallMs(level), stampF: inner.children[1], stampM: inner.children[2] };
         sizeCard(c);
         c.off = drag(inner, {
           start: () => !c.done && !ended,
@@ -163,6 +199,7 @@ export default {
         const k = Math.max(-1, Math.min(1, c.dx / Math.min(90, c.w * 0.28)));
         c.stampF.style.opacity = k > 0 ? k : 0;
         c.stampM.style.opacity = k < 0 ? -k : 0;
+        if (c.dx || c.pulled) { root.style.setProperty('--pull', k.toFixed(3)); c.pulled = !!c.dx; }
       };
       const remove = (c, dir) => {
         c.done = true;
@@ -172,6 +209,17 @@ export default {
         const kill = () => { c.el.remove(); const i = cards.indexOf(c); if (i >= 0) cards.splice(i, 1); };
         if (reduced() || !c.inner.animate) { c.inner.style.opacity = 0; setTimeout(kill, 140); return; }
         const from = c.inner.style.transform || 'none';
+        if (dir) {
+          root.style.setProperty('--pull', '0');
+          sfx.play('swipe');
+          // motion trail: two soft ghosts follow the card out
+          [0.5, 0.25].forEach((o, i) => {
+            const g = h('div', { class: 'fr-ghost' + (dir < 0 ? ' m' : '') });
+            c.el.insertBefore(g, c.inner);
+            g.animate([{ transform: from, opacity: o }, { transform: `translate3d(${dir * (W * 0.8 + c.w)}px,-40px,0) rotate(${dir * 22}deg)`, opacity: 0 }],
+              { duration: 300, delay: 35 * (i + 1), easing: 'cubic-bezier(.3,.1,.6,1)', fill: 'both' });
+          });
+        }
         const to = dir === 0
           ? 'translate3d(0,40px,0) scale(.9)'
           : `translate3d(${dir * (W * 0.8 + c.w)}px,-40px,0) rotate(${dir * 22}deg)`;

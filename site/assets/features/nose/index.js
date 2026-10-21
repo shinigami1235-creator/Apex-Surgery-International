@@ -5,7 +5,7 @@
 
    mount(container, opts) -> {destroy()}
    opts: lang 'th' | 'en', base (assets/ URL), serviceUrl(key), onEvent(name, data)
-   Testing only: mpBase (folder of @mediapipe/face_mesh), samples ({front:{src, lm}}) */
+   Testing only: mpBase (folder of @mediapipe/face_mesh) */
 
 /* =====================================================================
    PRESETS
@@ -44,10 +44,13 @@ export const PRESETS = [
    p:{bridge:.1, hump:1, tipProj:.15, tipRot:.15, tipWidth:-.12, alar:0, bridgeWidth:-.12, slope:.1}},
 ];
 
-/* Sample photos, loaded the way the main site's What-if tool loads its sample.
-   Only the front sample is set: a 45 degree and a profile Unsplash photo could not be checked. */
+/* Sample photos, one per view. Landmarks come from the same live face-mesh detection that
+   uploaded photos use. The profile sample faces left, so its fallback outline starts facing left.
+   The front photo is a wide landscape frame; the crop parameters keep the face. */
 const SAMPLES = {
-  front: {src:'https://images.unsplash.com/photo-1790574318874-8837efcfc519?w=1080&q=82&fm=jpg&fit=max', lm:'./sample-landmarks.js'},
+  front:{src:'https://images.unsplash.com/photo-1589525231707-f2de2428f59c?w=1200&h=1500&fit=crop&crop=faces&q=85'},
+  '45':{src:'https://images.unsplash.com/photo-1641351841616-faa0d3760980?w=1200&q=85'},
+  '90':{src:'https://images.unsplash.com/photo-1736439538470-88b66bd307ce?w=1400&q=85', side:-1},
 };
 const MP_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/';
 
@@ -68,28 +71,30 @@ const STR = {
     photo:'Photo', take:'Take photo', choose:'Choose photo', sample:'Sample face', privacy:'No photo uploaded.',
     adjust:'Adjust points', done:'Done', flip:'Flip', manual:'Place points by hand',
     dragHint:'Drag a point to correct it.', placeHint:'Place the points on your nose.',
-    busy:'Finding the nose', style:'Nose style', amount:'Amount',
+    busy:'Finding the nose', credit:'Sample photo: Unsplash', style:'Nose style', amount:'Amount',
     before:'Before', after:'After', sim:'Simulation only', compare:'Before and after',
     save:'Save', saveBtn:'Save to phone', plan:'Add rhinoplasty to My Plan', planned:'Added to My Plan',
     vary:'Results may vary from person to person.', service:'Rhinoplasty',
     camHint:'Line up your face with the outline.', shutter:'Take photo', cancel:'Cancel', views:'Views',
     brand:'Apex Surgery Hospital',
     err:{noFace:'No face found in this photo.', camera:'The camera could not be opened.', read:'The photo could not be read.',
-         model:'The face model could not be loaded.', save:'The image could not be saved.'},
+         model:'The face model could not be loaded.', save:'The image could not be saved.',
+         sample:name => `The ${name.toLowerCase()} sample photo could not be loaded.`},
     pt:{N:'Nasion', D:'Bridge midpoint', T:'Tip', C:'Columella base', A:'Alar crease', AL:'Left nostril edge', AR:'Right nostril edge'},
   },
   th:{
     photo:'รูปภาพ', take:'ถ่ายรูป', choose:'เลือกรูป', sample:'ใบหน้าตัวอย่าง', privacy:'ไม่มีการอัปโหลดรูปภาพ',
     adjust:'ปรับจุด', done:'เสร็จ', flip:'กลับด้าน', manual:'วางจุดเอง',
     dragHint:'ลากจุดเพื่อปรับตำแหน่ง', placeHint:'วางจุดให้ตรงกับจมูก',
-    busy:'กำลังหาตำแหน่งจมูก', style:'ทรงจมูก', amount:'ระดับ',
+    busy:'กำลังหาตำแหน่งจมูก', credit:'ภาพตัวอย่าง: Unsplash', style:'ทรงจมูก', amount:'ระดับ',
     before:'ก่อน', after:'หลัง', sim:'ภาพจำลองเท่านั้น', compare:'ก่อนและหลัง',
     save:'บันทึก', saveBtn:'บันทึกลงโทรศัพท์', plan:'เพิ่มเสริมจมูกในแผนของฉัน', planned:'เพิ่มในแผนแล้ว',
     vary:'ผลลัพธ์อาจแตกต่างกันในแต่ละบุคคล', service:'เสริมจมูก',
     camHint:'จัดใบหน้าให้อยู่ในเส้น', shutter:'ถ่ายรูป', cancel:'ยกเลิก', views:'มุมภาพ',
     brand:'Apex Surgery Hospital',
     err:{noFace:'ไม่พบใบหน้าในรูปนี้', camera:'เปิดกล้องไม่ได้', read:'อ่านรูปไม่ได้',
-         model:'โหลดโมเดลใบหน้าไม่ได้', save:'บันทึกรูปไม่ได้'},
+         model:'โหลดโมเดลใบหน้าไม่ได้', save:'บันทึกรูปไม่ได้',
+         sample:name => `โหลดรูปตัวอย่าง${name}ไม่ได้`},
     pt:{N:'โคนจมูก', D:'กลางสันจมูก', T:'ปลายจมูก', C:'ฐานแกนกลางจมูก', A:'ร่องปีกจมูก', AL:'ปีกจมูกซ้าย', AR:'ปีกจมูกขวา'},
   },
 };
@@ -212,6 +217,7 @@ const CSS = `
 .np-bar .np-row{justify-content:flex-end}
 .np-cap{margin:0;font-size:14px;color:var(--np-on-2)}
 .np-cap b{color:#fff;font-weight:700}
+.np-credit{margin:0;padding:0 8px 4px;font-size:12px;line-height:1.4;color:var(--np-on-2)}
 
 /* buttons */
 .np .np-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5em;height:44px;padding:0 18px;border-radius:999px;font-size:15px;font-weight:700;
@@ -642,7 +648,6 @@ let styleRefs = 0, styleEl = null;
 export function mount(container, opts = {}){
   const lang = opts.lang === 'en' ? 'en' : 'th', S = STR[lang];
   const mpBase = opts.mpBase || MP_CDN;
-  const samples = opts.samples || SAMPLES;
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) {} };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
   if (!styleRefs++) { styleEl = document.createElement('style'); styleEl.dataset.feature = 'nose'; styleEl.textContent = CSS; document.head.append(styleEl); }
@@ -678,7 +683,9 @@ export function mount(container, opts = {}){
           <span class="np-big">${ic('alert')}</span>
           <h3 data-r="emsg"></h3>
           <div class="np-row">
-            <button class="np-btn lt" data-act="choose">${ic('upload')}${esc(S.choose)}</button>
+            <button class="np-btn lt" data-act="take">${ic('camera')}${esc(S.take)}</button>
+            <button class="np-btn gh" data-act="choose">${ic('upload')}${esc(S.choose)}</button>
+            <button class="np-btn gh" data-act="sample">${ic('image')}${esc(S.sample)}</button>
             <button class="np-btn gh" data-act="manual">${ic('points')}${esc(S.manual)}</button>
           </div>
         </div>
@@ -710,6 +717,7 @@ export function mount(container, opts = {}){
         </div>
       </div>
       <div class="np-bar np-cbar" hidden><p class="np-cap" data-r="cap"></p></div>
+      <p class="np-credit" data-r="credit" hidden>${esc(S.credit)}</p>
     </section>
     <aside class="np-panel">
       <div class="np-sec">
@@ -871,8 +879,10 @@ export function mount(container, opts = {}){
     R('ename').textContent = info.name[lang];
     R('etext').textContent = info.empty[lang];
     R('hint').textContent = info.hint[lang];
-    const hasSample = !!samples[state.view];
+    const hasSample = !!SAMPLES[state.view];
     $$('[data-act="sample"]').forEach(b => b.hidden = !hasSample);
+    $('.np-error [data-act="manual"]').hidden = v.err === 'sample';
+    R('credit').hidden = !(has && v.sample && !camOn && !v.err);
     cam.hidden = !camOn;
     errBox.hidden = camOn || !v.err;
     empty.hidden = camOn || has || !!v.err;
@@ -885,7 +895,8 @@ export function mount(container, opts = {}){
     $('[data-act="flip"]').hidden = state.view !== '90';
     $('[data-act="adjust"]').hidden = !has;
     R('cap').innerHTML = `<b>${esc(info.name[lang])}</b> · ${esc(preset()[lang])}`;
-    R('emsg').textContent = v.err ? S.err[v.err] : '';
+    const em = v.err && S.err[v.err];
+    R('emsg').textContent = typeof em === 'function' ? em(info.name[lang]) : (em || '');
     $$('.np-chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.preset === state.preset));
     R('desc').textContent = preset().desc[lang];
     amt.value = Math.round(state.amt * 100);
@@ -899,16 +910,16 @@ export function mount(container, opts = {}){
   const setBusy = on => { busy.hidden = !on; };
 
   /* ---------- photos ---------- */
-  async function usePhoto(canvas, lmGiven){
-    const vid = state.view, v = state.views[vid];
+  async function usePhoto(canvas, sample){
+    const vid = state.view, v = state.views[vid], isSample = !!sample;
     stopCam();
     v.err = null; setBusy(true); sync();
-    let lm = lmGiven || null, err = null;
-    if (!lm) { try { lm = await detect(mpBase, canvas); } catch (e) { err = 'model'; } }
+    let lm = null, err = null;
+    try { lm = await detect(mpBase, canvas); } catch (e) { err = 'model'; }
     setBusy(false);
     if (vid !== state.view) return;
     if (!lm && vid !== '90') {
-      Object.assign(v, {base:null, h:null, err:err || 'noFace'}); state.pending = canvas;
+      Object.assign(v, {base:null, h:null, sample:false, err:err || 'noFace'}); state.pending = canvas; state.pendingSample = isSample;
       emit('nose:error', {view:vid, error:v.err}); sync(); return;
     }
     let base = canvas, res;
@@ -916,12 +927,12 @@ export function mount(container, opts = {}){
     if (!res || !res.h) {
       if (res && vid === '90') base = canvas; // keep the full frame when the mesh is unreliable
       const data = base.getContext('2d').getImageData(0, 0, base.width, base.height);
-      res = {h:defaultHandles(vid, base.width, base.height, data, res ? res.side : 1), auto:false};
+      res = {h:defaultHandles(vid, base.width, base.height, data, res ? res.side : (sample && sample.side) || 1), auto:false};
     }
-    setPhoto(v, base, res.h, res.auto);
+    setPhoto(v, base, res.h, res.auto, isSample);
   }
-  function setPhoto(v, base, h, auto){
-    Object.assign(v, {base, h, auto, err:null, data:base.getContext('2d').getImageData(0, 0, base.width, base.height)});
+  function setPhoto(v, base, h, auto, sample){
+    Object.assign(v, {base, h, auto, sample:!!sample, err:null, data:base.getContext('2d').getImageData(0, 0, base.width, base.height)});
     showPhoto(); setX(50);
     emit('nose:photo', {view:state.view, auto});
     setMode('points');
@@ -932,19 +943,21 @@ export function mount(container, opts = {}){
     if (!/^image\//.test(f.type)) { v.err = 'read'; v.base = null; sync(); return; }
     const url = URL.createObjectURL(f);
     try { const im = await loadImage(url); await usePhoto(toCanvas(im)); }
-    catch (e) { v.err = 'read'; v.base = null; v.h = null; setBusy(false); sync(); }
+    catch (e) { v.err = 'read'; v.base = null; v.h = null; v.sample = false; setBusy(false); sync(); }
     URL.revokeObjectURL(url);
   }
+  let loadingSample = false;
   async function useSample(){
-    const vid = state.view, sm = samples[vid]; if (!sm) return;
-    const v = cur(); setBusy(true);
+    const vid = state.view, sm = SAMPLES[vid]; if (!sm || loadingSample) return;
+    const v = cur(); loadingSample = true; setBusy(true);
     try {
-      const im = await loadImage(sm.src);
-      let lm = null;
-      if (sm.lm) { try { const mod = await import(new URL(sm.lm, import.meta.url).href); lm = mod.default.map(p => ({x:p[0], y:p[1], z:0})); } catch (e) {} }
-      await usePhoto(toCanvas(im), lm);
+      let im = null;
+      try { im = await loadImage(sm.src); } catch (e) { /* named below */ }
+      if (!im) { setBusy(false); Object.assign(v, {base:null, h:null, sample:false, err:'sample'}); emit('nose:error', {view:vid, error:'sample'}); sync(); return; }
+      await usePhoto(toCanvas(im), sm);
       emit('nose:sample', {view:vid});
-    } catch (e) { setBusy(false); v.err = 'read'; v.base = null; v.h = null; sync(); }
+    } catch (e) { setBusy(false); Object.assign(v, {base:null, h:null, sample:false, err:'read'}); sync(); }
+    finally { loadingSample = false; }
   }
 
   /* ---------- camera ---------- */
@@ -1040,7 +1053,7 @@ export function mount(container, opts = {}){
     else if (a === 'shutter') shoot();
     else if (a === 'done') setMode('compare');
     else if (a === 'adjust') setMode(state.mode === 'points' ? 'compare' : 'points');
-    else if (a === 'manual') { const v = cur(), c = state.pending; if (c) { v.err = null; setPhoto(v, c, defaultHandles(state.view, c.width, c.height, c.getContext('2d').getImageData(0, 0, c.width, c.height)), false); } else file.click(); }
+    else if (a === 'manual') { const v = cur(), c = state.pending; if (c) { v.err = null; setPhoto(v, c, defaultHandles(state.view, c.width, c.height, c.getContext('2d').getImageData(0, 0, c.width, c.height)), false, state.pendingSample); } else file.click(); }
     else if (a === 'flip') {
       const v = cur(); if (!ready(v)) return;
       const xs = Object.values(v.h).map(p => p.x), mid = (Math.min(...xs) + Math.max(...xs)) / 2;

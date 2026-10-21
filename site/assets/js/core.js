@@ -179,12 +179,14 @@
     f.className = 'ftr';
     const ext = ' target="_blank" rel="noopener"';
     const br = (S.branches || []).map(b => `<div class="ftr-br"><h5>${A.esc(b.short || b.name)}</h5><p>${A.esc(b.addr)}</p>
-      <a href="${b.tel}">${A.ic('phone')}${A.esc(b.phone)}</a><a href="${b.map}"${ext}>${A.ic('map-pin')}${A.esc(A.t('map'))}</a></div>`).join('');
+      <button type="button" class="ftr-copy" data-copy="${A.esc(b.name + ', ' + b.addr)}">${A.ic('copy')}${A.ic('check')}<span>${A.esc(A.t('copyAddr'))}</span></button>
+      <a href="${b.tel}">${A.ic('phone')}${A.esc(b.phone)}</a><a href="${b.map}"${ext}>${A.ic('navigation')}${A.esc(A.t('directions'))}</a></div>`).join('');
+    const aaci = S.aaci ? `<a class="ftr-aaci" href="${S.aaci.h}"${ext} aria-label="${A.esc(A.t('aaciH'))}"><img src="${A.img(S.aaci.src)}" alt="${A.esc(S.aaci.alt)}" loading="lazy" width="84" height="84"><span><b>${A.esc(A.t('aaciH'))}</b><small>APEX Surgery Hospital Ploenchit</small></span></a>` : '';
     const svcs = (S.services || []).map(s => `<a href="${A.svcUrl(s.key)}">${A.esc(s.short || s.name)}</a>`).join('');
     f.innerHTML = `<div class="wrap"><div class="ftr-top surg">
       <div class="brand"><span class="logo-txt light">APEX<small>Surgery Hospital</small></span>
         <p>${A.esc(A.lang === 'th' ? S.brandTh : (S.brandTh && S.brand ? S.brand : S.brand))}</p>
-        <p class="ftr-lic">${A.esc(S.license || '')}</p>
+        <p class="ftr-lic">${A.esc(S.license || '')}</p>${aaci}
         <div class="ftr-socials">${(S.socials || []).map(s => `<a href="${s.h}"${ext} aria-label="${A.esc(s.x || s.k)}">${A.socIcon(s.k)}</a>`).join('')}<a href="${A.WA.h}"${ext} aria-label="WhatsApp">${A.ic('whatsapp')}</a></div></div>
       <div><h5>${A.esc(A.t('ourServices'))}</h5>${svcs}<a href="nose.html">${A.esc(A.t('nose'))}</a><a href="play.html">${A.esc(A.t('games'))}</a></div>
       ${br}
@@ -332,11 +334,7 @@
         <div><h4>${A.esc(D.moreH || A.t('moreH'))}</h4><ul class="ticks">${(D.more || []).map(x => `<li>${A.esc(x)}</li>`).join('')}</ul></div></div>
         <div class="doc-acts">${full ? '' : `<a class="btn btn-plum btn-sm" href="doctor.html">${A.esc(A.t('doctorCta'))} ${A.ic('arrow-right')}</a>`}<a class="btn btn-ghost on-light btn-sm" href="${(S.line && S.line.h) || '#'}" target="_blank" rel="noopener">${A.ic('line')}${A.esc(A.t('book'))}</a></div></div></div>`;
   };
-  A.branchesHtml = (S, h, p) => `<div class="shead"><div><h2 class="h-xl rv">${A.esc(h || S.branchesH || A.t('branchesH'))}</h2>${(p || S.branchesP) ? `<p class="lead rv" style="margin-top:18px;max-width:60ch">${A.esc(p || S.branchesP)}</p>` : ''}</div></div>
-    <div class="branch-grid">${(S.branches || []).map((b, i) => `<article class="branch rv" data-d="${i*90}">
-      <div class="branch-ph ph-img"><img src="${A.img(b.img)}" alt="${A.esc(b.name)}" loading="lazy"><span class="branch-n">0${i+1}</span></div>
-      <div class="branch-body"><h3 class="h-m">${A.esc(b.name)}</h3><p class="branch-addr">${A.ic('map-pin')}${A.esc(b.addr)}</p>
-      <div class="branch-acts"><a class="btn btn-plum btn-sm" href="${b.tel}">${A.ic('phone')}${A.esc(b.phone)}</a><a class="btn btn-ghost on-light btn-sm" href="${b.map}" target="_blank" rel="noopener">${A.ic('navigation')}${A.esc(A.t('map'))}</a></div></div></article>`).join('')}</div>`;
+  A.branchesHtml = (S, h, p) => A.branches(S, h, p);
   A.consultBand = (S) => `<div class="consult-band rv">
     <div class="cb-copy"><p class="eyebrow">${A.esc(A.t('consultShort'))}</p><h2 class="h-xl">${A.esc(A.t('consultH'))}</h2><p class="lead">${A.esc(A.t('consultP'))}</p></div>
     <div class="cb-acts"><a class="cb-big" href="consult.html">${A.ic('message-circle')}<span><b>${A.esc(A.t('consultBtn'))}</b><small>${A.esc(A.t('consultPageH'))}</small></span>${A.ic('arrow-right')}</a>
@@ -346,12 +344,174 @@
   A.svcCards = (S, keys) => {
     const list = (S.services || []).filter(s => !keys || keys.includes(s.key));
     return `<div class="svc-grid">${list.map((s, i) => `<a class="svc-tile rv" data-d="${i*60}" href="${A.svcUrl(s.key)}">
-      <span class="st-n">0${i+1}</span><span class="st-ic"><img src="${A.img(s.icon)}" alt="" loading="lazy"></span>
+      <span class="st-glow" aria-hidden="true"></span><span class="st-ic"><img src="${A.img(s.icon)}" alt="" loading="lazy"></span>
       <span class="st-name">${A.esc(s.short || s.name)}</span><span class="st-en">${A.esc(A.lang === 'en' ? (s.name !== s.short ? s.name : '') : s.en)}</span>
       <span class="st-go">${A.ic('arrow-up-right')}</span></a>`).join('')}</div>`;
   };
   A.promoCard = (p, i) => `<figure class="promo rv" data-d="${(i%4)*70}"><button type="button" class="promo-img ph-img" data-gal="${p._g}" data-i="${p._i}"><img src="${A.img(p.src)}" alt="${A.esc(p.alt || '')}" loading="lazy"></button>
     ${p.price ? `<figcaption><span>${A.esc(A.t('promoPrice'))}</span><b>${A.fmtNum(p.price)}</b><span>${A.esc(A.t('baht'))}</span></figcaption>` : ''}</figure>`;
+
+  /* ---------- section flow: gradient bleeds between tones, a shaped edge under page heads ---------- */
+  const HEADS = '.phead,.svc-head,.art-head,.hero-body';
+  const tone = el => el.tagName === 'FOOTER' || el.matches('.night,.night-s,' + HEADS) ? 'night'
+    : el.matches('.washed,.play-s') ? 'wash' : 'light';
+  const CURVE = '<svg viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path class="sx-fill" d="M0 90V54C190 20 400 6 640 30S1090 88 1440 32V90Z"/><path class="sx-stitch" d="M0 46C190 12 400 -2 640 22S1090 80 1440 24"/></svg>';
+  A.flow = () => {
+    const m = A.qs('#main');
+    if (!m) return;
+    const seq = [...m.children].filter(e => e.tagName === 'SECTION' || e.matches('figure.about-banner,figure.art-banner'));
+    const ft = A.qs('footer.ftr');
+    if (ft) seq.push(ft);
+    let prev = null;
+    seq.forEach(el => {
+      const t = el.tagName === 'FIGURE' ? 'light' : tone(el);
+      if (el.tagName !== 'FIGURE') el.dataset.tone = t;
+      if (prev && prev.t !== t) {
+        if (prev.el.matches && prev.el.matches(HEADS)) {
+          if (!A.qs(':scope>.sx-c', prev.el)) prev.el.insertAdjacentHTML('beforeend', `<div class="sx sx-c sx-to-${t}" aria-hidden="true">${CURVE}</div>`);
+          prev.el.classList.add('has-curve');
+        } else if (el.tagName !== 'FIGURE' && !A.qs(':scope>.sx-b', el)) {
+          el.insertAdjacentHTML('afterbegin', `<div class="sx sx-b sx-${prev.t}-${t}" aria-hidden="true"></div>`);
+          el.classList.add('has-sx');
+        }
+      } else if (prev && prev.t === t && t === 'night' && el.tagName !== 'FIGURE') {
+        el.classList.add('sx-join');
+      }
+      prev = {el, t};
+    });
+  };
+
+  /* ---------- pointer sheen on cards (fine pointers only) ---------- */
+  const SHEEN = '.tool-card,.svc-tile,.promo,.mini-tool,.chan,.who-card,.story,.br-stage,.fbframe,.facts,.faq-cta,.doc-card .doc-ph,.role-card,.aaci-card,.post-card .pc-ph';
+  A.sheen = (root=document) => {
+    if (!matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+    A.qsa(SHEEN, root).forEach(e => e.setAttribute('data-sheen', ''));
+    if (A._sheenOn) return;
+    A._sheenOn = true;
+    document.addEventListener('pointermove', e => {
+      const c = e.target.closest && e.target.closest('[data-sheen]');
+      if (!c) return;
+      const r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
+      c.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
+    }, {passive:true});
+  };
+
+  /* ---------- gentle parallax on marked images ---------- */
+  A.parallax = () => {
+    if (A.reduced || A._parOn) return;
+    A._parOn = true;
+    let tick = false;
+    const run = () => {
+      tick = false;
+      const H = innerHeight;
+      A.qsa('[data-par]').forEach(el => {
+        const r = el.parentElement.getBoundingClientRect();
+        if (r.bottom < -100 || r.top > H + 100) return;
+        const p = (r.top + r.height / 2 - H / 2) / H;
+        el.style.transform = `translate3d(0,${(p * -(+el.dataset.par || 36)).toFixed(1)}px,0) scale(1.12)`;
+      });
+    };
+    addEventListener('scroll', () => { if (!tick) { tick = true; requestAnimationFrame(run); } }, {passive:true});
+    addEventListener('resize', run);
+    run();
+  };
+
+  /* ---------- copy and toast ---------- */
+  A.toast = msg => {
+    let t = A.qs('.toast');
+    if (!t) { t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.setAttribute('aria-live', 'polite'); document.body.append(t); }
+    t.textContent = msg; t.classList.add('on');
+    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 2200);
+  };
+  A.copy = async (text, btn) => {
+    let ok = false;
+    try { await navigator.clipboard.writeText(text); ok = true; }
+    catch (e) {
+      try { const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;opacity:0;top:0'; document.body.append(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (e2) { ok = false; }
+    }
+    A.toast(A.t(ok ? 'copied' : 'copyFail'));
+    if (ok && btn) { btn.classList.add('ok'); setTimeout(() => btn.classList.remove('ok'), 1800); }
+    if (ok) A.emit('branch:copy', {});
+  };
+  document.addEventListener('click', e => { const b = e.target.closest('[data-copy]'); if (b) { e.preventDefault(); A.copy(b.dataset.copy, b); } });
+
+  /* ---------- Facebook page plugin, mounted when it comes near the viewport ---------- */
+  A.fbFrame = (f, h=640, tabs='timeline') => `<div class="fbframe rv"><div class="fbhead"><span class="fb-ic">${A.ic('facebook')}</span><span class="fb-name"><b>${A.esc(f.x)}</b><small>facebook.com/${A.esc(f.h.split('/').filter(Boolean).pop())}</small></span><a class="fb-open" href="${f.h}" target="_blank" rel="noopener" aria-label="${A.esc(A.t('fbOpen'))}" title="${A.esc(A.t('fbOpen'))}">${A.ic('arrow-up-right')}</a></div>
+    <div class="fb-box" style="height:${h}px"><div class="fb-skel" aria-hidden="true"><i></i><i></i><i></i><i></i></div><iframe data-fb="${encodeURIComponent(f.h)}" data-h="${h}" data-tabs="${tabs}" height="${h}" title="${A.esc(f.x)} · Facebook" allow="encrypted-media" loading="lazy"></iframe></div></div>`;
+  A.fbMount = root => {
+    const frs = A.qsa('iframe[data-fb]', root);
+    const set = fr => {
+      const w = Math.max(180, Math.min(500, Math.floor(fr.clientWidth)));
+      if (!fr.clientWidth || Math.abs(w - (+fr.dataset.w || 0)) < 30) return;
+      fr.dataset.w = w;
+      fr.src = `https://www.facebook.com/plugins/page.php?href=${fr.dataset.fb}&tabs=${fr.dataset.tabs}&width=${w}&height=${fr.dataset.h}&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false`;
+      fr.addEventListener('load', () => fr.classList.add('on'), {once:true});
+    };
+    const go = fr => { fr.dataset.go = 1; set(fr); };
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { io.unobserve(e.target); go(e.target); } }), {rootMargin:'300px 0px'});
+      frs.forEach(f => io.observe(f));
+    } else frs.forEach(go);
+    let t; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => frs.filter(f => f.dataset.go).forEach(set), 300); });
+  };
+
+  /* ---------- branches: switcher, photo, address copy, actions, lazy Google map ---------- */
+  A.mapSrc = b => `https://www.google.com/maps?q=${encodeURIComponent(b.name + ', ' + b.addr)}&output=embed`;
+  A.branches = (S, h, p) => {
+    const B = S.branches || [], E = A.esc, T = A.t;
+    const id = 'br' + (A._brn = (A._brn || 0) + 1);
+    const line = (S.line && S.line.h) || 'https://lin.ee/D2Ir4vJ';
+    const card = (b, i) => `<div class="br-card${i ? '' : ' on'}" data-i="${i}"${i ? ' hidden' : ''}>
+        <h3 class="h-m">${E(b.name)}</h3>
+        <div class="br-addr"><span class="br-pin">${A.ic('map-pin')}</span><p>${E(b.addr)}</p>
+          <button type="button" class="br-copy" data-copy="${E(b.name + ', ' + b.addr)}" aria-label="${E(T('copyAddr'))}: ${E(b.short || b.name)}">${A.ic('copy')}${A.ic('check')}<span>${E(T('copyAddr'))}</span></button></div>
+        <div class="br-acts">
+          <a class="br-act call" href="${b.tel}">${A.ic('phone')}<span><b>${E(T('callUs'))}</b><small>${E(b.phone)}</small></span></a>
+          <a class="br-act ln" href="${line}" target="_blank" rel="noopener">${A.ic('line')}<span><b>LINE</b><small>${E((S.line && S.line.x) || '@apexsurgery')}</small></span></a>
+          <a class="br-act map" href="${b.map}" target="_blank" rel="noopener">${A.ic('navigation')}<span><b>${E(T('directions'))}</b><small>Google Maps</small></span></a>
+        </div></div>`;
+    return `<div class="br" id="${id}" data-branches>
+      <div class="shead br-head"><div><h2 class="h-xl rv">${E(h || S.branchesH || T('branchesH'))}</h2>${(p || S.branchesP) ? `<p class="lead rv" style="margin-top:18px;max-width:58ch">${E(p || S.branchesP)}</p>` : ''}</div>
+        ${B.length > 1 ? `<div class="br-tabs rv" role="tablist" aria-label="${E(T('branchPick'))}">${B.map((b, i) => `<button type="button" role="tab" id="${id}-t${i}" aria-controls="${id}-p" aria-selected="${!i}" tabindex="${i ? -1 : 0}" data-i="${i}">${E(b.short || b.name)}</button>`).join('')}<span class="br-ink" aria-hidden="true"></span></div>` : ''}</div>
+      <div class="br-stage rv" id="${id}-p" role="tabpanel" aria-labelledby="${id}-t0">
+        <div class="br-photo ph-img">${B.map((b, i) => `<img src="${A.img(b.img)}" alt="${E(b.name)}" loading="lazy" data-i="${i}" class="${i ? '' : 'on'}">`).join('')}<span class="br-count" aria-hidden="true"><b>${B.length > 1 ? '1' : ''}</b>${B.length > 1 ? ' / ' + B.length : ''}</span></div>
+        <div class="br-info">${B.map(card).join('')}</div>
+        <div class="br-map"><div class="br-map-ph" aria-hidden="true">${A.ic('map')}</div>${B.map((b, i) => `<iframe data-src="${A.mapSrc(b)}" data-i="${i}" title="${E(T('mapTitle'))}: ${E(b.name)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"${i ? ' hidden' : ''}></iframe>`).join('')}</div>
+      </div></div>`;
+  };
+  A.bindBranches = (root=document) => A.qsa('[data-branches]:not([data-bound])', root).forEach(br => {
+    br.dataset.bound = 1;
+    const tabs = A.qsa('[role=tab]', br), stage = A.qs('.br-stage', br), ink = A.qs('.br-ink', br);
+    let cur = 0, seen = false;
+    const loadMap = i => { const f = A.qs(`.br-map iframe[data-i="${i}"]`, br); if (f && !f.src) { f.src = f.dataset.src; f.addEventListener('load', () => f.classList.add('on'), {once:true}); } };
+    const moveInk = () => { const t = tabs[cur]; if (!ink || !t) return; ink.style.width = t.offsetWidth + 'px'; ink.style.transform = `translateX(${t.offsetLeft}px)`; };
+    const show = (i, focus) => {
+      if (i === cur && !focus) return;
+      cur = i;
+      tabs.forEach((t, j) => { t.setAttribute('aria-selected', j === i); t.tabIndex = j === i ? 0 : -1; });
+      stage.setAttribute('aria-labelledby', tabs[i] ? tabs[i].id : '');
+      A.qsa('.br-photo img', br).forEach(im => im.classList.toggle('on', +im.dataset.i === i));
+      A.qsa('.br-card', br).forEach(c => { const on = +c.dataset.i === i; c.hidden = !on; c.classList.toggle('on', on); });
+      A.qsa('.br-map iframe', br).forEach(f => f.hidden = +f.dataset.i !== i);
+      const n = A.qs('.br-count b', br); if (n) n.textContent = i + 1;
+      if (seen) loadMap(i);
+      moveInk();
+      if (focus) tabs[i].focus();
+      A.emit('branch:switch', {branch:i});
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => show(i));
+      t.addEventListener('keydown', e => { const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (d) { e.preventDefault(); show((cur + d + tabs.length) % tabs.length, true); } });
+    });
+    A.qsa('.br-act', br).forEach(a => a.addEventListener('click', () => A.emit('contact:click', {channel:a.className.replace('br-act ', ''), from:'branches'})));
+    requestAnimationFrame(moveInk);
+    addEventListener('resize', moveInk);
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); seen = true; loadMap(cur); } }, {rootMargin:'200px 0px'});
+      io.observe(stage);
+    } else { seen = true; loadMap(cur); }
+  });
 
   // static labels written in the HTML templates are filled from i18n by key
   function fillStatic(){ A.qsa('[data-t]').forEach(e => { e.textContent = A.t(e.dataset.t); }); }
@@ -360,7 +520,7 @@
     const go = async () => {
       fillStatic(); header(); planBadge();
       try { await (fn && fn()); } catch (e) { console.error('[apex] page', e); }
-      footer(); fab(); A.imgFallback(); A.reveal();
+      footer(); fab(); A.flow(); A.bindBranches(); A.sheen(); A.parallax(); A.imgFallback(); A.reveal();
       document.dispatchEvent(new Event('apex:ready'));
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();

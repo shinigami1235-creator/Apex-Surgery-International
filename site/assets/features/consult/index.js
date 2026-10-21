@@ -96,12 +96,13 @@ const COUNTRIES = {
 };
 
 const VIEWS = ['front', 'angle', 'profile'];
-/* Outline drawings for the empty photo slots: front face, three-quarter face, side profile. */
-const VIEW_SVG = {
-  front: '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><ellipse cx="32" cy="30" rx="15" ry="19"/><path d="M26 26h3M35 26h3M32 29v6l-2 1M28 41c2.5 1.6 5.5 1.6 8 0"/></svg>',
-  angle: '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M36 11c-9 0-17 7-17 19 0 11 7 19 15 19 6 0 11-5 12-12l2-5-2-2c0-11-3-19-10-19z"/><path d="M38 26h3M28 26h2M43 29l1 6-3 1M33 42c2.5 1 4.5.6 6-1"/></svg>',
-  profile: '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M30 11c-8 0-14 7-14 17 0 9 4 15 9 18v7M40 53v-5c3 0 5-1 5-4v-4l3-1-3-5 1-3c0-12-6-17-16-17z"/><path d="M38 27h3"/></svg>'
-};
+/* Guide art in the empty photo boxes: the clinic's own face line drawings (front, 45 degrees, side), loaded on demand. */
+const FACE_KEY = { front: 'FACE_FRONT', angle: 'FACE_45', profile: 'FACE_SIDE' };
+const FACE_BOX = { front: '40 40 520 640', angle: '30 40 540 640', profile: '30 40 540 640' };
+let facesP = null;
+const loadFaces = () => facesP || (facesP = import('./faces.js').catch(() => null));
+const CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4a2 2 0 0 1 1.76 1.05l.49.9A2 2 0 0 0 18 7h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2a2 2 0 0 0 1.76-1.05l.49-.9A2 2 0 0 1 10 4z"/><circle cx="12" cy="13" r="3.2"/></svg>';
+const UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4"/><path d="m7 9 5-5 5 5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>';
 
 const CSS = `
 .apxc{--c-plum:var(--plum,#6A388C);--c-plum7:var(--plum-700,#55286F);--c-night:var(--night,#1F0A30);--c-night2:var(--night-2,#2A0F40);
@@ -115,7 +116,7 @@ const CSS = `
 .apxc .c-wrap{max-width:860px;margin:0 auto;padding:24px 16px 56px}
 .apxc .c-wrap>h2{font-size:clamp(30px,6vw,44px);font-weight:800;letter-spacing:-.015em;line-height:1.1}
 .apxc .c-intro{color:var(--c-ink2);margin-top:6px;max-width:56ch}
-.apxc form{margin-top:22px;background:#fff;border:1px solid var(--c-l2);border-radius:28px;padding:22px 18px}
+.apxc form{margin-top:22px;border-radius:28px;padding:22px 18px;background:radial-gradient(80% 50% at 100% 0%,rgba(201,179,221,.28),transparent 60%),linear-gradient(170deg,#fff,#fff 60%,var(--c-wash));box-shadow:0 1px 0 #fff inset,0 0 0 1px rgba(106,56,140,.1),0 40px 70px -46px rgba(63,27,85,.55)}
 @media (min-width:700px){.apxc form{padding:30px 32px}}
 .apxc fieldset{border:0;margin:0;padding:0;min-width:0}
 .apxc .c-f{margin-top:22px}
@@ -145,18 +146,58 @@ const CSS = `
 .apxc .c-err{color:var(--c-err);font-size:14px;font-weight:700;margin-top:6px}
 .apxc .c-err::before{content:"";display:inline-block;width:8px;height:8px;margin-right:8px;background:var(--c-err);transform:rotate(45deg);border-radius:1px;vertical-align:1px}
 .apxc .c-contact{margin-top:12px}
-.apxc .c-photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:540px}
-.apxc .c-ph{display:flex;flex-direction:column;gap:6px;min-width:0}
-.apxc .c-slot{position:relative;aspect-ratio:3/4;border-radius:20px;border:1.5px dashed var(--c-l3);background:var(--c-wash);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--c-lilac);overflow:hidden;cursor:pointer;transition:border-color .2s,background-color .2s}
-.apxc .c-slot:hover{border-color:var(--c-plum);background:var(--c-l1)}
-.apxc .c-slot svg{width:56%;max-width:84px}
-.apxc .c-slot b{font-size:13px;color:var(--c-plum);text-align:center;line-height:1.3;padding:0 6px}
-.apxc .c-slot input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.apxc .c-slot:focus-within{outline:3px solid var(--c-lilac);outline-offset:2px}
-.apxc .c-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.apxc .c-slot.has{border-style:solid;border-color:var(--c-plum)}
-.apxc .c-ph>span{font-size:14px;font-weight:700;text-align:center}
-.apxc .c-rm{min-height:36px;border-radius:999px;border:1.5px solid var(--c-l2);background:#fff;color:var(--c-ink2);font-size:13px;font-weight:700;cursor:pointer}
+.apxc .c-photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:600px}
+.apxc .c-ph{display:flex;flex-direction:column;gap:8px;min-width:0}
+.apxc .c-slot{--ang:0deg;position:relative;isolation:isolate;aspect-ratio:3/4;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 8px 14px;color:var(--c-plum);overflow:hidden;cursor:pointer;
+  background:radial-gradient(90% 60% at 50% 0%,rgba(201,179,221,.55),transparent 70%),radial-gradient(70% 50% at 100% 100%,rgba(204,51,102,.14),transparent 70%),linear-gradient(170deg,#fff 0%,var(--c-wash) 45%,var(--c-l1) 100%);
+  box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 22px 40px -26px rgba(63,27,85,.55),0 6px 14px -8px rgba(63,27,85,.2);
+  transition:transform .4s var(--c-ease),box-shadow .4s var(--c-ease)}
+.apxc .c-slot::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;z-index:3;pointer-events:none;
+  background:conic-gradient(from var(--ang),rgba(201,179,221,.5),#fff 8%,var(--c-l3) 14%,rgba(142,45,207,.7) 24%,rgba(204,51,102,.55) 32%,rgba(201,179,221,.45) 44%,rgba(201,179,221,.45) 70%,#fff 78%,rgba(201,179,221,.5));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.apxc .c-slot::after{content:"";position:absolute;inset:7px;border-radius:16px;border:1px dashed rgba(106,56,140,.22);pointer-events:none;z-index:1;transition:border-color .3s}
+@property --ang{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes apxcSpin{to{--ang:360deg}}
+@media (hover:hover){.apxc .c-slot:hover{transform:translateY(-4px);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 34px 54px -28px rgba(63,27,85,.6),0 10px 20px -10px rgba(63,27,85,.24)}
+  .apxc .c-slot:hover::before{animation:apxcSpin 3.2s linear infinite}
+  .apxc .c-slot:hover .c-cam{transform:translateY(-3px) scale(1.06)}}
+.apxc .c-slot:active{transform:scale(.97);transition-duration:.12s}
+.apxc .c-slot.drag{transform:scale(1.02)}
+.apxc .c-slot.drag::before{animation:apxcSpin 1.4s linear infinite}
+.apxc .c-slot.drag::after{border-color:var(--c-plum)}
+.apxc .c-guide{position:absolute;inset:6% 9% 33%;z-index:0;display:grid;place-items:center;color:var(--c-plum);opacity:.62;transition:opacity .3s}
+.apxc .c-guide svg{width:100%;height:100%;overflow:visible}
+.apxc .c-guide svg:empty{display:none}
+.apxc .c-scan{position:absolute;left:-6%;right:-6%;top:0;height:22%;background:linear-gradient(180deg,transparent,rgba(204,51,102,.0) 30%,rgba(204,51,102,.28) 92%,rgba(255,255,255,.95) 96%,transparent 100%);mix-blend-mode:multiply;border-radius:4px;animation:apxcScan 3.6s cubic-bezier(.77,0,.175,1) infinite;pointer-events:none;opacity:.8}
+@keyframes apxcScan{0%{transform:translateY(-30%);opacity:0}12%{opacity:.85}88%{opacity:.85}100%{transform:translateY(420%);opacity:0}}
+.apxc .c-ph:nth-child(2) .c-scan{animation-delay:.5s}.apxc .c-ph:nth-child(3) .c-scan{animation-delay:1s}
+.apxc .c-cnr{position:absolute;inset:14px;z-index:1;pointer-events:none;background:
+  linear-gradient(var(--c-plum),var(--c-plum)) left top/16px 2px no-repeat,linear-gradient(var(--c-plum),var(--c-plum)) left top/2px 16px no-repeat,
+  linear-gradient(var(--c-plum),var(--c-plum)) right top/16px 2px no-repeat,linear-gradient(var(--c-plum),var(--c-plum)) right top/2px 16px no-repeat,
+  linear-gradient(var(--c-plum),var(--c-plum)) left bottom/16px 2px no-repeat,linear-gradient(var(--c-plum),var(--c-plum)) left bottom/2px 16px no-repeat,
+  linear-gradient(var(--c-plum),var(--c-plum)) right bottom/16px 2px no-repeat,linear-gradient(var(--c-plum),var(--c-plum)) right bottom/2px 16px no-repeat;opacity:.45}
+.apxc .c-cam{position:relative;z-index:2;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;color:#fff;margin-bottom:8px;
+  background:linear-gradient(150deg,var(--c-plum),#8a3fa8 60%,var(--c-rose) 140%);box-shadow:0 12px 22px -10px rgba(106,56,140,.85),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .35s var(--c-ease)}
+.apxc .c-cam svg{width:22px;height:22px}
+.apxc .c-cam::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(106,56,140,.45);animation:apxcPulse 2.2s var(--c-ease) infinite}
+@keyframes apxcPulse{from{transform:scale(.85);opacity:.9}to{transform:scale(1.35);opacity:0}}
+.apxc .c-slot b{position:relative;z-index:2;display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:0 12px;border-radius:999px;background:rgba(255,255,255,.88);box-shadow:0 0 0 1px rgba(106,56,140,.14);font-size:13px;color:var(--c-plum);text-align:center;line-height:1.2}
+.apxc .c-slot b svg{width:14px;height:14px}
+.apxc .c-slot input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:4}
+.apxc .c-slot:focus-within{outline:3px solid var(--c-lilac);outline-offset:3px}
+.apxc .c-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;animation:apxcIn .5s var(--c-ease) both}
+@keyframes apxcIn{from{opacity:0;transform:scale(1.04);filter:blur(6px)}}
+.apxc .c-slot.has .c-guide,.apxc .c-slot.has .c-cnr,.apxc .c-slot.has::after{opacity:0}
+.apxc .c-slot.has .c-cam{width:38px;height:38px;position:absolute;top:10px;right:10px;margin:0}
+.apxc .c-slot.has .c-cam::after{display:none}
+.apxc .c-slot.has .c-cam svg{width:18px;height:18px}
+.apxc .c-slot.has b{background:rgba(31,10,48,.72);color:#fff;box-shadow:none}
+.apxc .c-ph>span{font-size:14px;font-weight:800;text-align:center;color:var(--c-ink)}
+.apxc .c-rm{min-height:36px;border-radius:999px;border:1.5px solid var(--c-l2);background:#fff;color:var(--c-ink2);font-size:13px;font-weight:700;cursor:pointer;transition:background-color .2s,transform .16s var(--c-ease)}
+.apxc .c-rm:hover{background:var(--c-l1)}
+.apxc .c-rm:active{transform:scale(.97)}
+@media (max-width:420px){.apxc .c-photos{gap:8px}.apxc .c-cam{width:40px;height:40px}.apxc .c-cam svg{width:18px;height:18px}.apxc .c-slot{border-radius:18px;padding-bottom:10px}.apxc .c-slot b{font-size:12px;padding:0 8px}.apxc .c-cnr{inset:10px}}
+@media (prefers-reduced-motion:reduce){.apxc .c-scan,.apxc .c-cam::after,.apxc .c-slot:hover::before,.apxc .c-slot.drag::before{animation:none!important}.apxc .c-scan{display:none}}
 .apxc .c-note{margin-top:10px;font-size:14px;color:var(--c-plum7);font-weight:700}
 .apxc .c-consent{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:12px;background:var(--c-l1);cursor:pointer}
 .apxc .c-consent input{width:22px;height:22px;margin:2px 0 0;flex:none;accent-color:var(--c-plum)}
@@ -308,14 +349,18 @@ export function mount(container, opts = {}) {
 
   const slots = VIEWS.map(v => {
     const input = h('input', { type: 'file', accept: 'image/*', id: id('ph-' + v), 'aria-label': `${L(T.photos)}: ${L(T[v])}` });
-    const label = h('b', null, L(T.addPhoto));
-    const slot = h('label', { class: 'c-slot', 'data-view': v }, h('span', { html: VIEW_SVG[v], style: 'display:contents' }), label, input);
+    const label = h('b', { html: UP }, L(T.addPhoto));
+    const guide = h('span', { class: 'c-guide', 'aria-hidden': 'true' }, h('span', { class: 'c-scan' }));
+    const slot = h('label', { class: 'c-slot', 'data-view': v }, guide, h('span', { class: 'c-cnr', 'aria-hidden': 'true' }), h('span', { class: 'c-cam', 'aria-hidden': 'true', html: CAM }), label, input);
+    loadFaces().then(F => { if (F && F[FACE_KEY[v]]) guide.insertAdjacentHTML('afterbegin', `<svg viewBox="${FACE_BOX[v]}" preserveAspectRatio="xMidYMid meet">${F[FACE_KEY[v]]}</svg>`); });
+    ['dragenter', 'dragover'].forEach(n => slot.addEventListener(n, () => slot.classList.add('drag')));
+    ['dragleave', 'drop'].forEach(n => slot.addEventListener(n, () => slot.classList.remove('drag')));
     const rm = h('button', { type: 'button', class: 'c-rm', hidden: true }, L(T.remove));
     const perr = h('p', { class: 'c-err', hidden: true, role: 'alert' });
     const set = file => {
       slot.querySelector('img') && slot.querySelector('img').remove();
       perr.hidden = true;
-      if (!file) { delete photos[v]; slot.classList.remove('has'); rm.hidden = true; label.textContent = L(T.addPhoto); input.value = ''; return; }
+      if (!file) { delete photos[v]; slot.classList.remove('has'); rm.hidden = true; label.innerHTML = UP; label.append(L(T.addPhoto)); input.value = ''; return; }
       const url = URL.createObjectURL(file); urls.push(url);
       const img = h('img', { alt: `${L(T[v])}`, src: url });
       img.onerror = () => { set(null); perr.textContent = L(T.photoErr); perr.hidden = false; };

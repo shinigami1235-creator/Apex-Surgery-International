@@ -11,7 +11,7 @@ Output per body: <name>.bin
   Uint8   reg[N]
 """
 import sys, json, struct, numpy as np
-sys.path.insert(0, '.')
+sys.path.insert(0, __import__('os').path.dirname(__import__('os').path.abspath(__file__)))
 from mhload import load_obj, apply, D
 
 OUT = sys.argv[1]
@@ -151,13 +151,5 @@ def build_all(morphF, morphM):
     write('female', VF, pick, bary, RG)
     write('male', VM, pick, bary, RG)
 
-M = 'macrodetails/'
-mix = [('african', .2), ('asian', .5), ('caucasian', .3)]
-female = [(M + f'{r}-female-young.target', w) for r, w in mix] + [
-    (M + 'proportions/female-young-averagemuscle-averageweight-idealproportions.target', .6),
-    (M + 'universal-female-young-averagemuscle-minweight.target', .15)]
-male = [(M + f'{r}-male-young.target', w) for r, w in mix] + [
-    (M + 'proportions/male-young-averagemuscle-averageweight-idealproportions.target', .6),
-    (M + 'universal-male-young-maxmuscle-averageweight.target', .3),
-]
-build_all(female, male)
+from morphs import FEMALE, MALE
+build_all(FEMALE, MALE)

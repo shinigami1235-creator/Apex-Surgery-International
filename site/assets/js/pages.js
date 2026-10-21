@@ -27,6 +27,116 @@
   const SVC_CATS = ['facelift','browlift','rhinoplasty','eyelid','breast','lipo'];
   const svcName = (S, k) => { const s = (S.services || []).find(x => x.key === k); return s ? (s.short || s.name) : k; };
 
+  /* ---------- photos for pages and articles that have none of their own (Unsplash, each one checked by search) ---------- */
+  const PH = {
+    consult1: ['1758691461935-202e2ef6b69f', 'A doctor talks with a patient in a clinic office', 'แพทย์พูดคุยกับผู้รับบริการในห้องตรวจ'],
+    consult2: ['1631217868264-e5b90bb7e133', 'A doctor in a white coat talks with a patient', 'แพทย์ในเสื้อกาวน์พูดคุยกับผู้รับบริการ'],
+    consult3: ['1758691463198-dc663b8a64e4', 'A doctor writes notes during a consultation', 'แพทย์จดบันทึกระหว่างการปรึกษา'],
+    or1: ['1579684453423-f84349ef60b0', 'A surgical team at work in an operating room', 'ทีมศัลยแพทย์ในห้องผ่าตัด'],
+    or2: ['1775947933085-30050ddad6b3', 'Surgeons in a modern operating room', 'ศัลยแพทย์ในห้องผ่าตัดที่ทันสมัย'],
+    face1: ['1600481176431-47ad2ab2745d', 'A smiling woman in a black shirt', 'ผู้หญิงยิ้มในเสื้อสีดำ'],
+    face2: ['1534528741775-53994a69daeb', 'Portrait of a woman', 'ภาพบุคคลผู้หญิง'],
+    face3: ['1628501023521-48cece9a6909', 'Close portrait of a woman', 'ภาพใบหน้าผู้หญิงระยะใกล้'],
+    face4: ['1687298703924-0d11be697d8b', 'A woman in a white top', 'ผู้หญิงในเสื้อสีขาว'],
+    face5: ['1526413232644-8a40f03cc03b', 'A woman resting her arms on a white table', 'ผู้หญิงวางแขนบนโต๊ะสีขาว'],
+    mature: ['1583767582213-8fd4531cef22', 'A smiling woman', 'ผู้หญิงยิ้ม'],
+    eye: ['1516220362602-dba5272034e7', 'Close-up of an eye', 'ภาพดวงตาระยะใกล้'],
+    eye2: ['1551392505-f4056032826e', 'Eye makeup in pink and gold', 'การแต่งตาโทนชมพูทอง'],
+    profile: ['1532074205216-d0e1f4b87368', 'A woman in profile', 'ผู้หญิงหันด้านข้าง'],
+    profile2: ['1541715301255-12a4839b424a', 'Side view of a woman\'s face', 'ใบหน้าผู้หญิงด้านข้าง'],
+    tape: ['1523901839036-a3030662f220', 'A tape measure', 'สายวัด'],
+    dress: ['1562904403-a5106bef8319', 'A woman in a floral top by the water', 'ผู้หญิงในเสื้อลายดอกริมน้ำ'],
+    dress2: ['1621390842036-f01b53d9cbfd', 'A woman in a brown shirt', 'ผู้หญิงในเสื้อสีน้ำตาล']
+  };
+  const ph = (k, w=1400) => { const p = PH[k]; return p ? {src:`https://images.unsplash.com/photo-${p[0]}?auto=format&fit=crop&w=${w}&q=80`, alt:A.lang === 'th' ? p[2] : p[1], un:true} : null; };
+  const SVC_PHOTOS = {facelift:['mature', 'or2'], browlift:['face4', 'consult3'], rhinoplasty:['profile', 'or1'], eyelid:['eye', 'consult2'], breast:['dress', 'or2'], lipo:['tape', 'consult3']};
+  const POST_PHOTOS = {
+    smas:['mature', 'or1', 'face1'], 'deep-plane-face-lift':['mature', 'or2'], 'rhinoplasty-faq-questions':['profile', 'consult1'],
+    'double-eyelid-surgery-facts':['eye', 'face3'], 'facelift-faq':['mature', 'consult2', 'face2'], 'endotine-browlift-fact':['face4', 'consult3'],
+    'mentor-vs-motiva-breast-augmentation':['dress', 'consult1'], 'forehead-lift-endotine':['face2', 'or1', 'consult3'], 'liposuction-facts':['tape', 'dress2'],
+    'nose-surgery-without-silicone':['profile2', 'consult2'], 'breast-augmentation-guide':['dress', 'consult3', 'or2'], 'endotine-browlift':['face4', 'consult1']
+  };
+  const procOf = s => {
+    s = String(s || '');
+    if (/lipo|ดูดไขมัน/i.test(s)) return 'lipo';
+    if (/breast|หน้าอก|motiva|mentor/i.test(s)) return 'breast';
+    if (/brow|forehead|endotine|คิ้ว|หน้าผาก/i.test(s)) return 'browlift';
+    if (/rhino|nose|จมูก/i.test(s)) return 'rhinoplasty';
+    if (/eyelid|double eye|ตาสองชั้น|ทำตา/i.test(s)) return 'eyelid';
+    if (/face ?lift|smas|deep plane|ดึงหน้า|ยกกระชับ/i.test(s)) return 'facelift';
+    return null;
+  };
+  /* sentences or clauses of the client's own text, used verbatim for pull quotes */
+  const clauses = t => A.lang === 'th' ? String(t).split(/\s+/).filter(Boolean) : String(t).split(/(?<!\b(?:[Dd]r|[Nn]o|Mr|Ms|Mrs|St|vs|approx|e\.g|i\.e)\.)(?<=[.!?])\s+(?=[A-Z“"0-9])/);
+  const pickQuote = (paras, skipFirst=true) => {
+    const pool = [];
+    paras.forEach((p, pi) => clauses(p).forEach((c, ci) => { c = c.trim(); if (skipFirst && pi === 0 && ci === 0) return; if (A.lang === 'th' && /^(ก็|และ|ซึ่ง|เพราะ|โดย|ที่|หรือ|แต่|จึง|ทำให้|เพื่อ|ด้วย|รวมถึง|ไม่ว่า|อีกทั้ง|นอกจาก|จะ|ได้|เป็น|คือ|ให้)/.test(c)) return; if (c.length >= 45 && c.length <= 190) pool.push(c); }));
+    if (!pool.length) return '';
+    return pool.sort((a, b) => Math.abs(a.length - 120) - Math.abs(b.length - 120))[0];
+  };
+  const spoken = paras => {
+    const out = [];
+    paras.forEach(p => { (String(p).match(/[“"]([^”"“]{30,200})[”"]/g) || []).forEach(q => out.push(q.slice(1, -1).trim())); });
+    return out.sort((a, b) => Math.abs(a.length - 110) - Math.abs(b.length - 110));
+  };
+  const pullQuote = (q, cls='') => q ? `<figure class="pq rv ${cls}"><span class="pq-mark" aria-hidden="true">${I('quote')}</span><blockquote><p>${E(q)}</p></blockquote></figure>` : '';
+  const readMins = text => Math.max(1, Math.round(A.lang === 'th' ? text.length / 800 : text.split(/\s+/).length / 230));
+
+  /* icon for a card, matched from the client's own label */
+  const ICON_RULES = [
+    [/smok|nicotine|บุหรี่/i, 'ban'], [/expect|คาดหวัง/i, 'target'], [/weight|น้ำหนัก/i, 'weight'], [/exercis|ออกกำลัง/i, 'dumbbell'],
+    [/aged|\b40\b|อายุ/i, 'hourglass'], [/localized fat|fat |ไขมันสะสม|ไขมันเฉพาะ/i, 'ruler'], [/health|underlying|สุขภาพ|โรคประจำตัว/i, 'heart-pulse'], [/elastic|skin|ผิว/i, 'sparkles'],
+    [/revision|previous|เคยทำ|แก้ไข/i, 'repeat'], [/nostril|ปีกจมูก/i, 'scan-face'], [/tip|ปลายจมูก/i, 'pen'], [/dimension|bridge|สันจมูก|มิติ/i, 'scan-face'],
+    [/structur|crooked|hump|โครงสร้าง/i, 'layers'], [/eyelid|eye|ตา/i, 'eye'], [/surgeon|team|doctor|ศัลยแพทย์|ทีมแพทย์|แพทย์/i, 'stethoscope'],
+    [/anesth|วิสัญญี|ดมยา/i, 'syringe'], [/technolog|technique|implant|เทคนิค|เทคโนโลยี|ซิลิโคน/i, 'cpu'], [/standard|operating room|safety|มาตรฐาน|ห้องผ่าตัด|ปลอดภัย/i, 'shield-check'],
+    [/warrant|ประกัน|รับประกัน/i, 'award'], [/design|shape|ออกแบบ|รูปทรง/i, 'pen'], [/care|ดูแล/i, 'heart'], [/natural|ธรรมชาติ/i, 'smile'],
+    [/experience|ประสบการณ์/i, 'award'], [/instructor|teach|อาจารย์/i, 'book-open'], [/found|ก่อตั้ง/i, 'building-2'], [/consult|ที่ปรึกษา/i, 'users'],
+    [/speaker|chair|วิทยากร/i, 'message-circle'], [/protocol|โปรโตคอล/i, 'clipboard-check'], [/specialist|เชี่ยวชาญ/i, 'badge-check']
+  ];
+  const FALLBACK_IC = ['sparkles', 'badge-check', 'gem', 'heart', 'shield-check', 'smile'];
+  const pickIcon = (t, i) => (ICON_RULES.find(([r]) => r.test(t)) || [0, FALLBACK_IC[i % FALLBACK_IC.length]])[1];
+  const splitLabel = x => { const m = String(x).match(/^([^:]{2,90}?)\s?:\s(.+)$/s); return m && !/https?$/.test(m[1]) ? [m[1].trim(), m[2].trim()] : [null, String(x)]; };
+  /* liposuction areas: a small figure with the treated zone lit */
+  const AREA_Y = [[/abdomen|ท้อง/i, 47, 0], [/upper arm|แขน/i, 36, 13], [/thigh|ต้นขา/i, 66, 6], [/waist|back|เอว|หลัง/i, 42, 9], [/chin|jaw|คาง/i, 14, 0], [/hip|buttock|สะโพก|ก้น/i, 56, 9], [/calf|calves|น่อง/i, 84, 5]];
+  const areaFig = t => {
+    const a = AREA_Y.find(([r]) => r.test(t));
+    if (!a) return null;
+    const [, y, dx] = a;
+    const dots = dx ? `<circle cx="${30 - dx}" cy="${y}" r="5.5"/><circle cx="${30 + dx}" cy="${y}" r="5.5"/>` : `<circle cx="30" cy="${y}" r="6"/>`;
+    return `<svg class="area-fig" viewBox="0 0 60 100" aria-hidden="true"><path class="af-body" d="M30 4a7 7 0 1 1 0 14 7 7 0 0 1 0-14Zm-9 18h18c4 0 7 3 8 7l5 24c.4 2-1 3.6-3 3.6-1.4 0-2.6-1-3-2.4L42 38v20l3 38c.1 2-1.4 3.6-3.4 3.6-1.8 0-3.2-1.3-3.4-3l-4-34h-4l-4 34c-.2 1.7-1.6 3-3.4 3-2 0-3.5-1.6-3.4-3.6l3-38V38l-4 16.2c-.4 1.4-1.6 2.4-3 2.4-2 0-3.4-1.6-3-3.6l5-24c1-4 4-7 8-7Z"/><g class="af-dot">${dots}</g></svg>`;
+  };
+  const figure = (img, cls='', par=true) => img && img.src ? `<figure class="xfig ${cls} ${img.un ? 'un' : 'own'} rv-clip"><span class="xfig-in ph-img">${(() => { const g = A.gallery([{src:img.src, alt:img.alt}]); return `<button type="button" class="xfig-btn" ${g.attr(0)} aria-label="${E(img.alt || T('image'))}"><img src="${IMG(img.src)}" alt="${E(img.alt || '')}" loading="lazy"${par ? ' data-par="28"' : ''}></button>`; })()}</span>${img.un ? `<figcaption>${E(T('photoCredit'))}</figcaption>` : ''}</figure>` : '';
+
+  /* a service section: rich cards for lists, numbered steps for h3/p sequences, with a side photo */
+  const svcSection = (sec, i, key, alt) => {
+    const bl = sec.blocks || [];
+    const firstStruct = bl.findIndex(b => b.t === 'list' || b.t === 'h3');
+    const lead = bl.slice(0, firstStruct < 0 ? bl.length : firstStruct).filter(b => b.t === 'p').map(b => b.x);
+    const tail = firstStruct < 0 || bl.some(b => b.t === 'h3') ? [] : (() => { let k = bl.length; while (k > 0 && bl[k - 1].t === 'p') k--; return k > firstStruct ? bl.slice(k).map(b => b.x) : []; })();
+    const h3n = bl.filter(b => b.t === 'h3').length;
+    let body = '';
+    if (h3n >= 3) {
+      const steps = [];
+      bl.forEach((b, j) => { if (b.t === 'h3') steps.push({h:b.x, p:[]}); else if (b.t === 'p' && steps.length && j > firstStruct) steps[steps.length - 1].p.push(b.x); });
+      body = `<ol class="steps">${steps.map((s, j) => `<li class="step rv" data-d="${(j % 3) * 70}"><span class="step-n" aria-hidden="true">${String(j + 1).padStart(2, '0')}</span><div class="step-b"><h3>${E(s.h)}</h3>${s.p.map(p => `<p>${E(p)}</p>`).join('')}</div></li>`).join('')}</ol>`;
+    } else {
+      const items = bl.filter(b => b.t === 'list').flatMap(b => (b.items || []).map(x => x.x || x));
+      const isAreas = items.length >= 4 && items.filter(x => areaFig(splitLabel(x)[0] || x)).length >= items.length - 1;
+      body = `<ul class="who-grid${items.length % 3 === 1 && items.length > 3 ? ' odd' : ''}${isAreas ? ' areas' : ''}">${items.map((x, j) => {
+        const [lab, txt] = splitLabel(x);
+        const art = isAreas ? (areaFig(lab || x) || `<span class="wc-ic">${I(pickIcon(x, j))}</span>`) : `<span class="wc-ic">${I(pickIcon(lab || x, j))}</span>`;
+        return `<li class="who-card rv" data-d="${(j % 3) * 60}">${art}${lab ? `<h3>${E(lab)}</h3><p>${E(txt)}</p>` : `<p class="${txt.length < 90 ? 'wc-solo' : 'wc-long'}">${E(txt)}</p>`}</li>`;
+      }).join('')}</ul>`;
+    }
+    const pic = (SVC_PHOTOS[key] || [])[i] ? ph(SVC_PHOTOS[key][i], 1000) : null;
+    return `<section class="section svc-sec${alt ? ' washed' : ''}" id="sec-${i}">
+      <div class="wrap">
+        <div class="ss-head${pic ? ' has-pic' : ''}"><div class="ss-copy"><h2 class="h-l rv">${E(sec.h || '')}</h2>${lead.map(p => `<p class="lead rv">${E(p)}</p>`).join('')}</div>${pic ? figure(pic, 'ss-pic') : ''}</div>
+        ${body}
+        ${tail.length ? `<div class="ss-tail rv">${tail.map(p => `<p>${E(p)}</p>`).join('')}</div>` : ''}
+      </div></section>`;
+  };
+
   /* ---------- small builders ---------- */
   const phead = (h, lead, crumbs, extra='') => `<section class="phead"><div class="phead-lines" aria-hidden="true"></div><div class="wrap">${crumbs ? A.crumbs(crumbs) : ''}<h1 class="display-s rv">${E(h)}</h1>${lead ? `<p class="lead rv" data-d="80" style="max-width:62ch;margin-top:20px">${E(lead)}</p>` : ''}${extra}</div></section>`;
   const homeCrumb = () => [T('home'), 'index.html'];
@@ -161,9 +271,9 @@
 
     <section class="section washed"><div class="wrap">${A.branchesHtml(S, H.branches && H.branches.h, H.branches && H.branches.p)}</div></section>
 
-    <section class="section">
+    <section class="section updates-s">
       <div class="wrap"><div class="shead"><h2 class="h-xl rv" data-field="home.news.h">${E((H.news && H.news.h) || T('newsH'))}</h2><a class="link-arrow rv" href="blog.html">${E(T('viewAll'))} ${I('arrow-right')}</a></div>
-      <div class="post-grid">${news.map((p, i) => postCard(p, i)).join('')}</div></div>
+      <div class="updates2">${S.facebook ? A.fbFrame(S.facebook, 640) : ''}<div class="upd-list">${news.slice(0, 4).map((p, i) => postCard(p, i)).join('')}</div></div></div>
     </section>
 
     <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
@@ -174,6 +284,7 @@
     A.railCtrl(rail, A.qs('#rv-prev'), A.qs('#rv-next'));
     bindChips(A.qs('.reviews-s'), k => { A.qsa('.ba-card', rail).forEach(c => c.hidden = !(k === 'all' || c.dataset.cat === k)); rail.scrollTo({left:0}); });
     mountStories(A.qs('#stories'));
+    A.fbMount(main());
   }
 
   /* =================== SERVICES =================== */
@@ -205,9 +316,13 @@
     const crumbs = [homeCrumb(), [T('services'), 'services.html'], [nm]];
     const intro = (D.intro || []);
     const introP = intro.filter(x => !/^✔/.test(x)), ticks = intro.filter(x => /^✔/.test(x)).map(x => x.replace(/^✔\s*/, ''));
+    const q = introP.join(' ').length > 420 ? pickQuote(introP) : '';
+    const aa = D.atApex || null;
+    const aaImg = aa && aa.img ? {src:aa.img, alt:aa.alt || aa.h} : ph((SVC_PHOTOS[key] || [])[0]);
+    const secs = D.sections || [];
     main().innerHTML = `
     <section class="svc-head">
-      <div class="phead-lines" aria-hidden="true"></div>
+      <div class="phead-lines" aria-hidden="true"></div><div class="sh-glow" aria-hidden="true"></div>
       <div class="wrap">
         ${A.crumbs(crumbs)}
         <div class="sh-grid">
@@ -220,20 +335,24 @@
           ${recoveryCard(key, S)}
         </div>
       </div>
-      ${D.hero ? `<figure class="sh-banner rv-clip ph-img wrap-wide"><img src="${IMG(D.hero)}" alt="${E(D.heroAlt || D.name)}" data-field="svc.hero"></figure>` : ''}
+      ${D.hero ? `<figure class="sh-banner rv-clip ph-img wrap-wide"><img src="${IMG(D.hero)}" alt="${E(D.heroAlt || D.name)}" data-field="svc.hero" data-par="24"></figure>` : ''}
     </section>
 
     <section class="section svc-intro">
-      <div class="wrap si-grid">
-        <div class="prose big" data-field="svc.intro">${introP.map(p => `<p class="rv">${E(p)}</p>`).join('')}${ticks.length ? `<ul class="ticks lg">${ticks.map(x => `<li class="rv">${E(x)}</li>`).join('')}</ul>` : ''}</div>
-        <div class="tagline rv" aria-hidden="true">${(D.tagline || []).map(x => `<span>${E(x)}</span>`).join('')}</div>
+      <div class="wrap si2">
+        <div class="si-copy" data-field="svc.intro">
+          ${aa ? `<h2 class="h-l rv" data-field="svc.atApex.h">${E(aa.h)}</h2>` : ''}
+          ${introP.map((p, i) => `<p class="${i ? '' : 'si-lead '}rv">${E(p)}</p>${i === 0 && q && introP.length > 1 ? pullQuote(q) : ''}`).join('')}
+          ${q && introP.length === 1 ? pullQuote(q) : ''}
+          ${ticks.length ? `<ul class="tick-chips">${ticks.map((x, i) => `<li class="rv" data-d="${i * 60}">${I('check')}<span>${E(x)}</span></li>`).join('')}</ul>` : ''}
+        </div>
+        <aside class="si-media">${figure(aaImg, 'si-fig', false)}
+          <p class="si-tag rv" aria-hidden="true">${(D.tagline || []).map(x => `<span>${E(x)}</span>`).join('')}</p></aside>
       </div>
-      ${(D.badges || []).length ? `<div class="wrap"><div class="badges">${D.badges.map((b, i) => `<figure class="badge ph-img rv" data-d="${i*80}"><img src="${IMG(b.src)}" alt="${E(b.alt || '')}" loading="lazy"></figure>`).join('')}</div></div>` : ''}
+      ${(D.badges || []).length ? `<div class="wrap"><div class="badges">${D.badges.map((b, i) => `<figure class="badge ph-img rv" data-d="${i * 80}"><img src="${IMG(b.src)}" alt="${E(b.alt || '')}" loading="lazy"></figure>`).join('')}</div></div>` : ''}
     </section>
 
-    ${D.atApex ? `<section class="section washed at-apex"><div class="wrap aa-grid"><h2 class="h-xl rv" data-field="svc.atApex.h">${E(D.atApex.h)}</h2><figure class="aa-ph ph-img rv-clip"><img src="${IMG(D.atApex.img)}" alt="${E(D.atApex.alt || '')}" loading="lazy"></figure></div></section>` : ''}
-
-    ${(D.sections || []).length ? `<section class="section svc-secs"><div class="wrap sec-grid"><nav class="toc" id="toc" aria-label="${E(D.name)}"></nav><div class="prose" id="secs" data-field="svc.sections"></div></div></section>` : ''}
+    ${secs.map((sec, i) => svcSection(sec, i, key, i % 2 === 0)).join('')}
 
     ${(D.ba || []).length ? `<section class="section night ba-s"><div class="wrap"><div class="shead"><div><p class="eyebrow on-night rv">${E(nm)}</p><h2 class="h-xl rv">${E(D.baH || T('baH'))}</h2></div><p class="note on-night rv">${E(T('resultsVary'))}</p></div>
       <div id="ba" class="ba-host">${baGrid(D.ba, D.baH)}</div></div></section>` : ''}
@@ -250,22 +369,17 @@
 
     ${promos.length ? `<section class="section washed"><div class="wrap"><div class="shead"><div><p class="eyebrow rv">${E((D.promoTag || []).join(' · '))}</p><h2 class="h-xl rv">${E(D.promoH || T('promosH'))}</h2></div><a class="link-arrow rv" href="promotions.html?c=${E(key)}">${E(T('viewAll'))} ${I('arrow-right')}</a></div>${promoGrid(promos)}</div></section>` : ''}
 
-    ${(D.faqs || []).length ? `<section class="section"><div class="wrap faq-grid"><div><p class="eyebrow rv">${E(T('faqH'))}</p><h2 class="h-xl rv" data-field="svc.faqH">${E(D.faqH || T('faqH'))}</h2>
-      <a class="btn btn-plum rv" style="margin-top:28px" href="${(S.line && S.line.h) || '#'}" target="_blank" rel="noopener">${I('line')}${E((S.cta && S.cta.free) || T('consult'))}</a></div>
-      <div data-field="svc.faqs">${A.faqHtml(D.faqs)}</div></div></section>` : ''}
+    ${(D.faqs || []).length ? `<section class="section faq-s"><div class="wrap">
+      <h2 class="h-l faq-h rv" data-field="svc.faqH">${E(D.faqH || T('faqH'))}</h2>
+      <div class="faq-grid2"><div data-field="svc.faqs">${A.faqHtml(D.faqs)}</div>
+        <aside class="faq-cta rv"><span class="fc-ic">${I('line')}</span><b class="h-s">${E((S.cta && S.cta.consult) || T('consult'))}</b><p>${E(T('consultP'))}</p>
+          <a class="btn btn-plum" href="${(S.line && S.line.h) || '#'}" target="_blank" rel="noopener">${I('line')}${E((S.cta && S.cta.free) || T('consult'))}</a>
+          <a class="link-arrow" href="consult.html?p=${E(key)}">${E(T('consultBtn'))} ${I('arrow-right')}</a></aside></div></div></section>` : ''}
 
     <section class="section washed"><div class="wrap">${A.doctorCard(S)}</div></section>
-    <section class="section"><div class="wrap">${A.branchesHtml(S)}</div></section>
+    <section class="section"><div class="wrap">${A.branches(S)}</div></section>
     <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
 
-    if ((D.sections || []).length) {
-      const blocks = [];
-      D.sections.forEach(s => { if (s.h) blocks.push({t:'h2', x:s.h}); blocks.push(...(s.blocks || [])); });
-      const toc = A.renderBlocks(blocks, A.qs('#secs'));
-      const tocEl = A.qs('#toc');
-      if (toc.length > 1) { tocEl.innerHTML = `<p class="eyebrow">${E(nm)}</p>` + toc.map(x => `<a href="#${x.id}">${E(x.x)}</a>`).join(''); A.tocSpy(tocEl, toc.map(x => x.id)); }
-      else { tocEl.parentElement.classList.add('notoc'); tocEl.remove(); }
-    }
     A.bindMedia(main()); bindPlan(main());
     A.railCtrl(A.qs('#rv-rail'), A.qs('#rv-prev'), A.qs('#rv-next'));
     mountStories(A.qs('#stories'), {procedure:key});
@@ -275,30 +389,61 @@
     A.breadcrumbLd(crumbs.map((c, i) => [c[0], c[1] || location.href]));
   }
 
+  /* =================== FOUNDER (about + doctor) =================== */
+  const founderBlock = (F, full) => {
+    if (!F || !F.name) return '';
+    const rest = F.bio.slice(1);
+    return `<div class="founder2" id="founder">
+      <div class="f2-media rv">
+        <figure class="f2-ph ph-img"><img src="${IMG(full ? F.portrait || F.photo : F.photo)}" alt="${E(F.name)}" loading="lazy"></figure>
+        <div class="f2-card"><span class="f2-ic">${I('award')}</span><span><b>${E(F.license)}</b><small>${E(F.role)}</small></span></div>
+      </div>
+      <div class="f2-body">
+        <h2 class="h-l rv" data-field="founder.name">${E(F.name)}</h2>
+        <p class="f2-alt rv">${E(A.lang === 'en' ? F.nameTh : F.nameEn)}${F.nick ? ` · ${E(F.nick)}` : ''}</p>
+        <p class="doc-meta rv"><span>${E(F.role)}</span><span>${E(F.license)}</span></p>
+        <p class="f2-lead rv" data-field="founder.bio">${E(F.bio[0])}</p>
+        <ol class="f2-years rv" aria-label="${E(T('yearsH'))}">${(F.years || []).map(y => `<li><b>${E(y.y)}</b><span>${E(y.x)}</span></li>`).join('')}</ol>
+        ${pullQuote(F.quote)}
+        ${full ? `<ul class="who-grid role-grid">${(F.roles || []).map((x, j) => { const [l, t] = splitLabel(x); return `<li class="who-card role-card rv" data-d="${(j % 2) * 60}"><span class="wc-ic">${I(pickIcon(l || x, j))}</span>${l ? `<h3>${E(l)}</h3><p>${E(t)}</p>` : `<p class="wc-solo">${E(t)}</p>`}</li>`; }).join('')}</ul>
+          <div class="f2-edu rv"><h3 class="h-s">${E(F.eduH)}</h3><ul class="ticks">${(F.edu || []).map(x => `<li>${E(x)}</li>`).join('')}</ul></div>` : ''}
+        <details class="f2-more rv"><summary><span>${E(T('readMore'))}</span>${I('chevron-down')}</summary><div class="f2-rest">${rest.map(x => `<p>${E(x)}</p>`).join('')}</div></details>
+        <div class="doc-acts rv">${full ? `<a class="btn btn-ghost on-light btn-sm" href="${F.check.h}" target="_blank" rel="noopener">${I('shield-check')}${E(F.checkX)}</a>` : `<a class="btn btn-plum btn-sm" href="doctor.html#founder">${E(T('founderCta'))} ${I('arrow-right')}</a>`}</div>
+      </div></div>`;
+  };
+  const aaciCard = S => S.aaci ? `<a class="aaci-card rv" href="${S.aaci.h}" target="_blank" rel="noopener"><img src="${IMG(S.aaci.src)}" alt="${E(S.aaci.alt)}" loading="lazy" width="96" height="96"><span><b>${E(T('aaciH'))}</b><small>${E(T('aaciP'))}</small></span>${I('arrow-up-right')}</a>` : '';
+
   /* =================== ABOUT =================== */
   async function about(){
-    const S = A.d('shared') || {}, D = A.d('about') || {};
+    const S = A.d('shared') || {}, D = A.d('about') || {}, F = A.d('founder');
     A.setMeta(D.title, D.desc);
     main().innerHTML = phead(D.h1 || T('about'), null, [homeCrumb(), [T('about')]]) + `
-      ${D.hero && D.hero.src ? `<figure class="about-banner ph-img rv-clip wrap-wide"><img src="${IMG(D.hero.src)}" alt="${E(D.hero.alt || D.h1)}"></figure>` : ''}
+      ${D.hero && D.hero.src ? `<figure class="about-banner ph-img rv-clip wrap-wide"><img src="${IMG(D.hero.src)}" alt="${E(D.hero.alt || D.h1)}" data-par="22"></figure>` : ''}
       <section class="section"><div class="wrap about-grid">
-        <div class="prose big" data-field="about.intro">${(D.intro || []).map(p => `<p class="rv">${E(p)}</p>`).join('')}</div>
-        <aside class="about-side rv"><p class="eyebrow">${E(T('foundedBy'))}</p><p>${E(S.founder || '')}</p></aside></div></section>
+        <div class="prose big" data-field="about.intro">${(D.intro || []).map((p, i) => `<p class="rv${i ? '' : ' si-lead'}">${E(p)}</p>${i === 0 && (D.intro || []).length > 1 ? pullQuote(pickQuote((D.intro || []).slice(1), false)) : ''}`).join('')}</div>
+        <aside class="about-aside">
+          ${F ? `<a class="f-mini rv" href="#founder"><span class="f-mini-ph ph-img"><img src="${IMG(F.photo)}" alt="" loading="lazy"></span><span><small>${E(T('foundedBy'))}</small><b>${E(F.name)}</b><span>${E(F.role)}</span></span>${I('arrow-right')}</a>` : `<div class="about-side rv"><p class="eyebrow">${E(T('foundedBy'))}</p><p>${E(S.founder || '')}</p></div>`}
+          ${aaciCard(S)}
+        </aside></div></section>
       <section class="section night vision-s"><div class="wrap"><p class="eyebrow on-night rv">${E(D.visionH || T('visionH'))}</p><p class="vision rv" data-field="about.vision">${E(D.vision || '')}</p>
-        <ul class="pillars on-night">${(D.pillars || []).map((p, i) => `<li class="rv" data-d="${i*90}"><span class="pl-n">0${i+1}</span><b>${E(p.h)}</b><span>${E(p.x)}</span></li>`).join('')}</ul></div></section>
-      <section class="section"><div class="wrap">${A.doctorCard(S)}</div></section>
-      <section class="section washed"><div class="wrap">${A.branchesHtml(S, D.branches && D.branches.h, D.branches && D.branches.p)}</div></section>
+        <ul class="pillars on-night">${(D.pillars || []).map((p, i) => `<li class="rv" data-d="${i*90}"><span class="pl-ic">${I(['stethoscope', 'cpu', 'shield-check'][i % 3])}</span><b>${E(p.h)}</b><span>${E(p.x)}</span></li>`).join('')}</ul></div></section>
+      ${F ? `<section class="section founder-s"><div class="wrap">${founderBlock(F, false)}</div></section>` : ''}
+      <section class="section washed"><div class="wrap">${A.doctorCard(S)}</div></section>
+      <section class="section"><div class="wrap">${A.branches(S, D.branches && D.branches.h, D.branches && D.branches.p)}</div></section>
       <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
   }
 
   /* =================== DOCTOR =================== */
   async function doctor(){
-    const S = A.d('shared') || {}, Dr = S.doctor || {};
-    A.setMeta(`${Dr.name} ${Dr.license || ''} | Apex Surgery Hospital`, Dr.specialty);
-    main().innerHTML = phead(Dr.name, `${Dr.title || ''} · ${Dr.license || ''}`, [homeCrumb(), [T('doctor')]]) + `
+    const S = A.d('shared') || {}, Dr = S.doctor || {}, F = A.d('founder');
+    A.setMeta(`${T('doctorsH')}: ${Dr.name}${F ? ', ' + F.name : ''} | Apex Surgery Hospital`, Dr.specialty);
+    main().innerHTML = phead(T('doctorsH'), `${Dr.name} · ${Dr.title || ''}${F ? ` · ${F.name}` : ''}`, [homeCrumb(), [T('doctorsH')]]) + `
       <section class="section"><div class="wrap">${A.doctorCard(S, true)}</div></section>
-      <section class="section washed"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(T('servicesH'))}</h2></div>${A.svcCards(S)}</div></section>
+      ${F ? `<section class="section washed founder-s"><div class="wrap">${founderBlock(F, true)}</div></section>` : ''}
+      <section class="section"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(T('servicesH'))}</h2></div>${A.svcCards(S)}</div></section>
       <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
+    if (F) A.jsonld({'@context':'https://schema.org','@type':'Physician', name:F.name, image:F.portrait, identifier:F.license, description:F.specialty, worksFor:{'@type':'Organization', name:'Apex Medical Center'}});
+    if (location.hash === '#founder') setTimeout(() => { const f = A.qs('#founder'); f && f.scrollIntoView(); }, 60);
   }
 
   /* =================== PROMOTIONS =================== */
@@ -321,24 +466,52 @@
   }
 
   /* =================== REVIEWS =================== */
+  const storyCard = (x, i, S) => {
+    const {p, d} = x;
+    const inner = (d.blocks || []).filter(b => b.t === 'img' && b.src).map(b => b.src);
+    const imgs = [p.img || inner[0], ...inner.filter(src => src !== p.img)].filter(Boolean).slice(0, 4);
+    const q = spoken((d.blocks || []).filter(b => b.t === 'p').map(b => b.x))[0] || '';
+    const proc = procOf((d.tag || '') + ' ' + p.title + ' ' + p.key);
+    return `<article class="story${i === 0 ? ' big' : ''} rv" data-d="${(i % 2) * 80}" data-cat="${E(proc || '')}">
+      <a class="st-media" href="${A.postUrl(p.key)}" aria-label="${E(p.title)}" tabindex="-1">
+        <span class="st-main ph-img"><img src="${IMG(imgs[0])}" alt="" loading="lazy"></span>
+        ${imgs.length > 1 ? `<span class="st-stack" aria-hidden="true">${imgs.slice(1, 4).map((src, j) => `<span class="st-th ph-img" style="--k:${j}"><img src="${IMG(src)}" alt="" loading="lazy"></span>`).join('')}</span>` : ''}
+      </a>
+      <div class="st-body">
+        <p class="st-meta">${proc ? `<span class="pc-cat">${E(svcName(S, proc))}</span>` : ''}${p.date ? `<time datetime="${E(p.date)}">${E(A.fmtDate(p.date))}</time>` : ''}</p>
+        <h3><a href="${A.postUrl(p.key)}">${E(p.title)}</a></h3>
+        ${q ? `<blockquote class="st-q">${I('quote')}<p>${E(q)}</p></blockquote>` : (p.desc ? `<p class="st-ex">${E(p.desc)}</p>` : '')}
+        <a class="link-arrow" href="${A.postUrl(p.key)}">${E(T('readStory'))} ${I('arrow-right')}</a>
+      </div></article>`;
+  };
   async function reviews(){
     const S = A.d('shared') || {}, D = A.d('reviews') || {}, P = A.d('posts') || [], H = A.d('home') || {};
     A.setMeta(D.title, D.desc);
     const items = D.items || [];
     const g = A.gallery(items.map(r => ({src:r.src, alt:r.alt || ''})));
     const rp = P.filter(p => p.cat === 'review');
+    const loaded = await Promise.all(rp.map(p => A.data('post/' + p.key, 'post:' + p.key).catch(() => null)));
+    const stories = rp.map((p, i) => ({p, d:loaded[i]})).filter(x => x.d && (x.d.blocks || []).some(b => b.t === 'img'));
+    const others = rp.filter(p => !stories.some(x => x.p.key === p.key));
+    const sCats = SVC_CATS.filter(k => stories.some(x => procOf((x.d.tag || '') + ' ' + x.p.title + ' ' + x.p.key) === k));
     main().innerHTML = phead(D.h1 || T('reviews'), T('reviewsSub'), [homeCrumb(), [T('reviews')]]) + `
-      <section class="section" style="padding-top:50px"><div class="wrap">
-        ${chips([['all', T('all')], ...SVC_CATS.filter(k => items.some(r => r.cat === k)).map(k => [k, svcName(S, k)])], 'all')}
-        <div class="rev-grid" id="rgrid">${items.map((r, i) => `<button type="button" class="rev-tile ph-img rv" data-d="${(i%4)*50}" data-cat="${E(r.cat || '')}" ${g.attr(i)}><img src="${IMG(r.src)}" alt="${E(r.alt || svcName(S, r.cat))}" loading="lazy"></button>`).join('')}</div>
-        <p class="note">${E(T('resultsVary'))}</p></div></section>
+      ${stories.length ? `<section class="section stories-s"><div class="wrap">
+        <div class="shead"><h2 class="h-xl rv">${E(T('storiesH'))}</h2>${sCats.length > 1 ? chips([['all', T('all')], ...sCats.map(k => [k, svcName(S, k)])], 'all').replace('class="chips"', 'class="chips st-chips"') : ''}</div>
+        <div class="story-grid" id="sgrid">${stories.map((x, i) => storyCard(x, i, S)).join('')}</div></div></section>` : ''}
+      <section class="section washed ba-wall"><div class="wrap">
+        <div class="shead"><h2 class="h-xl rv">${E(T('baH'))}</h2><p class="note rv">${E(T('resultsVary'))}</p></div>
+        ${chips([['all', T('all')], ...SVC_CATS.filter(k => items.some(r => r.cat === k)).map(k => [k, svcName(S, k)])], 'all').replace('class="chips"', 'class="chips ba-chips"')}
+        <div class="rev-grid" id="rgrid">${items.map((r, i) => `<button type="button" class="rev-tile ph-img rv" data-d="${(i%4)*50}" data-cat="${E(r.cat || '')}" ${g.attr(i)}><img src="${IMG(r.src)}" alt="${E(r.alt || svcName(S, r.cat))}" loading="lazy"><span class="rt-tag">${E(svcName(S, r.cat))}</span></button>`).join('')}</div></div></section>
       <section class="section night"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(H.reviewsRealH || T('storiesH'))}</h2></div>${storiesHost(H.videos, 'stories', H.reviewsRealH)}</div></section>
-      <section class="section"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(T('reviewPosts'))}</h2><a class="link-arrow rv" href="blog.html?c=review">${E(T('viewAll'))} ${I('arrow-right')}</a></div>
-        <div class="post-grid">${rp.map((p, i) => postCard(p, i)).join('')}</div></div></section>
+      <section class="section"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(T('updatesH'))}</h2><a class="link-arrow rv" href="blog.html?c=review">${E(T('viewAll'))} ${I('arrow-right')}</a></div>
+        <div class="updates2">${S.facebook ? A.fbFrame(S.facebook, 640) : ''}<div class="upd-list">${others.slice(0, 4).map((p, i) => postCard(p, i)).join('')}</div></div></div></section>
       <section class="section washed"><div class="wrap">${A.consultBand(S)}</div></section>`;
-    bindChips(main(), k => A.qsa('#rgrid .rev-tile').forEach(el => el.hidden = !(k === 'all' || el.dataset.cat === k)));
+    const sg = A.qs('#sgrid');
+    if (sg) bindChips(A.qs('.stories-s'), k => A.qsa('.story', sg).forEach(el => el.hidden = !(k === 'all' || el.dataset.cat === k)));
+    bindChips(A.qs('.ba-wall'), k => A.qsa('#rgrid .rev-tile').forEach(el => el.hidden = !(k === 'all' || el.dataset.cat === k)));
     A.bindMedia(main());
     mountStories(A.qs('#stories'));
+    A.fbMount(main());
   }
 
   /* =================== BLOG =================== */
@@ -358,6 +531,77 @@
   }
 
   /* =================== ARTICLE =================== */
+  /* editorial body: lede, drop-in key facts, pull quotes from the client's own words, interleaved photos, numbered questions, card lists */
+  const factsBox = (proc, S) => {
+    const R = (RECOVERY[A.lang] || RECOVERY.en)[proc];
+    if (!R) return '';
+    return `<aside class="facts rv"><p class="facts-h">${I('clipboard-check')}<span>${E(T('keyFacts'))}</span></p>
+      <dl><div class="f-proc"><dt>${E(T('procedure'))}</dt><dd><a href="${A.svcUrl(proc)}">${E(svcName(S, proc))}</a></dd></div>
+      ${R.map(([w, x]) => `<div><dt>${E(x)}</dt><dd>${E(w)}</dd></div>`).join('')}</dl>
+      <p class="note">${E(T('resultsVary'))}</p><a class="link-arrow" href="${A.svcUrl(proc)}">${E(T('seeService'))} ${I('arrow-right')}</a></aside>`;
+  };
+  function articleBody(D, key, S){
+    const bl = (D.blocks || []).filter(b => !(b.t === 'p' && !String(b.x || '').trim()));
+    const paras = bl.filter(b => b.t === 'p').map(b => b.x);
+    const total = bl.map(b => (b.x || '') + ' ' + (b.items || []).map(i => i.x || i).join(' ')).join(' ');
+    const long = total.length > (A.lang === 'th' ? 2600 : 3200);
+    const proc = D.cat === 'news' ? null : procOf((D.tag || '') + ' ' + D.title + ' ' + key);
+    const imgN = bl.filter(b => b.t === 'img').length;
+    const extra = (imgN === 0 && long ? (POST_PHOTOS[key] || []) : imgN <= 1 && total.length > 9000 ? (POST_PHOTOS[key] || []).slice(0, 2) : []).map(k => ph(k)).filter(Boolean);
+    let quotes = D.cat === 'review' ? spoken(paras.slice(1)) : [];
+    if (!quotes.length && long) { const q = pickQuote(paras.slice(1), false); if (q) quotes.push(q); }
+    quotes = quotes.slice(0, total.length > 6000 ? 2 : 1);
+    const heads = bl.map((b, i) => (b.t === 'h2' || b.t === 'h3') && i > 2 ? i : -1).filter(i => i > 0);
+    const ins = {};
+    const put = (i, html) => { (ins[i] = ins[i] || []).push(html); };
+    const used = new Set();
+    const slot = frac => { if (!heads.length) return null; let k = Math.min(heads.length - 1, Math.floor(frac * heads.length)); while (used.has(heads[k]) && k < heads.length - 1) k++; used.add(heads[k]); return heads[k]; };
+    extra.forEach((img, j) => { const at = slot((j + 1) / (extra.length + 1)); if (at != null) put(at, figure(img, j % 2 ? 'side' : 'wide')); });
+    quotes.forEach((q, j) => { const at = slot(j ? .78 : .42); if (at != null) put(at, pullQuote(q, j % 2 ? 'alt' : '')); });
+    if (proc) { const p2 = bl.findIndex((b, i) => b.t === 'p' && bl.slice(0, i).filter(x => x.t === 'p').length === 1); const at = p2 > 0 ? p2 + 1 : (heads[0] || 1); put(at, factsBox(proc, S)); }
+    const useH3 = bl.filter(b => b.t === 'h2').length < 3 && bl.filter(b => b.t === 'h3').length >= 3;
+    const toc = [];
+    let html = '', firstP = true;
+    for (let i = 0; i < bl.length; i++) {
+      (ins[i] || []).forEach(x => html += x);
+      const b = bl[i];
+      switch (b.t) {
+        case 'h2': case 'h3': {
+          const isToc = b.t === 'h2' || useH3;
+          const id = isToc ? 's-' + toc.length : '';
+          if (isToc) toc.push({id, x:b.x});
+          const m = String(b.x).match(/^(\d{1,2})[.)]\s*(.+)$/);
+          html += m ? `<${b.t} ${id ? `id="${id}" ` : ''}class="qnum"><span class="qn" aria-hidden="true">${m[1]}</span><span class="qt"><span class="sr">${m[1]}. </span>${E(m[2])}</span></${b.t}>` : `<${b.t}${id ? ` id="${id}"` : ''}>${E(b.x)}</${b.t}>`;
+          break;
+        }
+        case 'h4': case 'h5': case 'h6': html += `<h4>${E(b.x)}</h4>`; break;
+        case 'p': html += `<p class="${firstP ? 'lede' : ''}${b.b ? ' b' : ''}">${E(b.x)}</p>`; firstP = false; break;
+        case 'list': {
+          const items = (b.items || []).map(li => li.x || li);
+          const lab = items.filter(x => splitLabel(x)[0]).length;
+          if (items.length >= 3 && lab >= items.length - 1 && items.join('').length / items.length > 70) {
+            html += `<ul class="li-cards">${items.map((x, j) => { const [l, t] = splitLabel(x); return `<li><span class="lc-ic">${I(pickIcon(l || x, j))}</span><div>${l ? `<b>${E(l)}</b><p>${E(t)}</p>` : `<p>${E(t)}</p>`}</div></li>`; }).join('')}</ul>`;
+          } else { const tag = b.o ? 'ol' : 'ul'; html += `<${tag}>${items.map(x => `<li>${A.fmtLi(x)}</li>`).join('')}</${tag}>`; }
+          break;
+        }
+        case 'img': {
+          const run = [];
+          while (i < bl.length && bl[i].t === 'img') { if (bl[i].src) run.push(bl[i]); i++; }
+          i--;
+          if (run.length === 1) html += figure({src:run[0].src, alt:run[0].alt || D.title}, 'wide', false);
+          else if (run.length > 1) { const g = A.gallery(run.map(r => ({src:r.src, alt:r.alt || D.title}))); html += `<div class="art-gal n${Math.min(run.length, 3)} rv">${run.map((r, j) => `<button type="button" class="ag-i ph-img" ${g.attr(j)} aria-label="${E(T('image'))} ${j + 1}"><img src="${IMG(r.src)}" alt="${E(r.alt || D.title)}" loading="lazy"></button>`).join('')}</div>`; }
+          break;
+        }
+        case 'yt': html += `<div class="ytbox"><button type="button" data-yt="${b.id}" aria-label="${E(T('playVideo'))}"><img loading="lazy" src="${A.yt(b.id)}" alt=""><span class="pl">${I('play')}</span></button></div>`; break;
+        case 'faqs': html += A.faqHtml((b.items || []).map(q => ({q:q.q, a:q.a}))); break;
+        case 'table': html += `<div class="tbl"><table>${(b.rows || []).map((r, j) => `<tr>${r.map(c => j === 0 ? `<th>${E(c)}</th>` : `<td>${E(c)}</td>`).join('')}</tr>`).join('')}</table></div>`; break;
+        case 'btn': if (b.h) html += `<p><a class="btn btn-plum btn-sm" href="${b.h}" target="_blank" rel="noopener">${E(b.x)}</a></p>`; break;
+      }
+    }
+    (ins[bl.length] || []).forEach(x => html += x);
+    return {html, toc, mins:readMins(total), proc};
+  }
+
   async function article(){
     const S = A.d('shared') || {}, P = A.d('posts') || [];
     const key = A.param('p') || (P[0] && P[0].key);
@@ -369,17 +613,19 @@
     const catName = T({review:'catReview', blog:'catBlog', news:'catNews'}[D.cat] || 'articles');
     const crumbs = [homeCrumb(), [T('articles'), 'blog.html'], [catName, 'blog.html?c=' + (D.cat || '')]];
     const related = P.filter(p => p.key !== key && p.cat === D.cat).slice(0, 3);
+    const body = articleBody(D, key, S);
+    const hasToc = body.toc.length > 2;
     main().innerHTML = `
-      <section class="art-head"><div class="phead-lines" aria-hidden="true"></div><div class="wrap">${A.crumbs(crumbs)}
-        <p class="art-meta rv"><span class="pc-cat">${E(catName)}</span>${D.date ? `<time datetime="${E(D.date)}">${E(A.fmtDate(D.date))}</time>` : ''}</p>
-        <h1 class="h-xl rv" data-d="60" data-field="post.title">${E(D.title)}</h1></div></section>
-      ${D.img ? `<figure class="art-banner ph-img rv-clip wrap-mid"><img src="${IMG(D.img)}" alt="${E(D.title)}"></figure>` : ''}
-      <section class="section art-s"><div class="wrap sec-grid"><nav class="toc" id="toc"></nav><article class="prose" id="body" data-field="post.blocks"></article></div></section>
+      <section class="art-head"><div class="phead-lines" aria-hidden="true"></div><div class="sh-glow" aria-hidden="true"></div><div class="wrap">${A.crumbs(crumbs)}
+        <p class="art-meta rv"><span class="pc-cat">${E(catName)}</span>${D.date ? `<time datetime="${E(D.date)}">${E(A.fmtDate(D.date))}</time>` : ''}<span class="art-read">${I('clock')}${E(T('readMin').replace('{n}', body.mins))}</span></p>
+        <h1 class="h-xl rv" data-d="60" data-field="post.title">${E(D.title)}</h1>
+</div></section>
+      ${D.img ? `<figure class="art-banner ph-img rv-clip wrap-mid"><img src="${IMG(D.img)}" alt="${E(D.title)}" data-par="22"></figure>` : ''}
+      <section class="section art-s"><div class="wrap art-grid${hasToc ? '' : ' notoc'}">${hasToc ? `<nav class="toc art-toc" id="toc" aria-label="${E(T('inArticle'))}"><p class="toc-h">${E(T('inArticle'))}</p>${body.toc.map(x => `<a href="#${x.id}">${E(x.x)}</a>`).join('')}</nav>` : ''}<article class="prose art-prose" id="body" data-field="post.blocks">${body.html}</article></div></section>
       ${related.length ? `<section class="section washed"><div class="wrap"><div class="shead"><h2 class="h-l rv">${E(catName)}</h2><a class="link-arrow rv" href="blog.html">${E(T('backToArticles'))} ${I('arrow-right')}</a></div><div class="post-grid">${related.map((p, i) => postCard(p, i)).join('')}</div></div></section>` : ''}
       <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
-    const toc = A.renderBlocks(D.blocks || [], A.qs('#body'));
-    const tocEl = A.qs('#toc');
-    if (toc.length > 2) { tocEl.innerHTML = toc.map(x => `<a href="#${x.id}">${E(x.x)}</a>`).join(''); A.tocSpy(tocEl, toc.map(x => x.id)); } else { tocEl.parentElement.classList.add('notoc'); tocEl.remove(); }
+    A.bindMedia(main());
+    if (hasToc) A.tocSpy(A.qs('#toc'), body.toc.map(x => x.id));
     A.readBar();
     A.jsonld({'@context':'https://schema.org','@type':'Article', headline:D.title, datePublished:D.date, image:IMG(D.img), inLanguage:A.lang, publisher:{'@type':'Organization', name:'Apex Surgery Hospital'}});
     const faq = (D.blocks || []).filter(b => b.t === 'faqs').flatMap(b => b.items || []);

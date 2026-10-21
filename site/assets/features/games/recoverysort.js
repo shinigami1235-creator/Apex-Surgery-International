@@ -1,5 +1,6 @@
 /* Recovery Sort: cards ride a conveyor; drag each one (or tap it, then tap a bucket) into its recovery time. */
-import { css, h, loop, recorder, sfx, shake, floatText, reduced, shuffle, tx, EASE } from './framework.js';
+import { css, h, loop, recorder, sfx, shake, floatText, reduced, shuffle, tx, EASE, GRAIN, LATTICE } from './framework.js';
+import { procIcon } from './art.js';
 import { RECOVERY, BUCKETS, PROCS } from './content.js';
 
 const TITLE = { en: 'Recovery Sort', th: 'จัดช่วงพักฟื้น' };
@@ -18,33 +19,54 @@ const spawnMs = L => Math.max(700, 2500 * Math.pow(0.88, L - 1));
 const points = (L, streak) => 10 * L + (streak >= 3 ? 5 * Math.min(streak - 2, 6) : 0);
 const bucketsFor = L => Object.keys(BUCKETS).filter(k => BUCKETS[k].level <= L).sort((a, b) => BUCKETS[a].order - BUCKETS[b].order);
 
+const CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
 const CSS = `
 .rs{position:absolute;inset:0;overflow:hidden;color:#fff;touch-action:none;user-select:none;-webkit-user-select:none;
-  background:radial-gradient(120% 70% at 50% 100%,#3B1758 0%,var(--night,#1F0A30) 65%)}
-.rs-belt{position:absolute;left:0;right:0;background:linear-gradient(#2E1146,#230A36);border-top:1px solid rgba(201,179,221,.22);border-bottom:1px solid rgba(201,179,221,.22);overflow:hidden}
-.rs-belt i{position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(201,179,221,.09) 0 2px,transparent 2px 34px);will-change:transform}
-.rs-belt::after{content:"";position:absolute;left:0;top:0;bottom:0;width:36px;background:linear-gradient(90deg,rgba(204,51,102,.55),rgba(204,51,102,0))}
+  background:radial-gradient(90% 60% at 50% 100%,#43195F 0%,transparent 70%),radial-gradient(70% 40% at 50% 0%,rgba(106,56,140,.35),transparent 70%),var(--night,#1F0A30)}
+.rs::before{content:"";position:absolute;inset:0;background:${LATTICE('#C9B3DD', 0.06)} center/36px 36px;pointer-events:none}
+.rs::after{content:"";position:absolute;inset:0;background:${GRAIN};mix-blend-mode:overlay;opacity:.3;pointer-events:none;z-index:30}
+.rs-belt{position:absolute;left:10px;right:10px;border-radius:14px;overflow:hidden;
+  background:linear-gradient(180deg,#5B2A7C 0%,#3A1556 18%,#2A0F40 78%,#1A0629 100%);
+  box-shadow:inset 0 1px 0 rgba(241,234,247,.35),inset 0 -10px 14px -8px rgba(0,0,0,.6),0 16px 30px -12px rgba(0,0,0,.8)}
+.rs-belt i{position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(201,179,221,.16) 0 2px,transparent 2px 34px);will-change:transform;-webkit-mask:linear-gradient(180deg,transparent,#000 22%,#000 80%,transparent);mask:linear-gradient(180deg,transparent,#000 22%,#000 80%,transparent)}
+.rs-belt::before{content:"";position:absolute;left:0;right:0;top:0;height:40%;background:linear-gradient(180deg,rgba(255,255,255,.12),transparent);pointer-events:none}
+.rs-belt::after{content:"";position:absolute;left:0;top:0;bottom:0;width:48px;background:linear-gradient(90deg,rgba(204,51,102,.6),rgba(204,51,102,0))}
+.rs-lip{position:absolute;left:18px;right:18px;height:10px;border-radius:0 0 10px 10px;background:linear-gradient(180deg,#14041F,rgba(20,4,31,0))}
+.rs-roller{position:absolute;width:26px;border-radius:13px;background:linear-gradient(90deg,#3B1858,#C9B3DD 45%,#E6DAF2 55%,#5A2A7A);box-shadow:0 6px 12px -4px rgba(0,0,0,.6);z-index:1}
 .rs-hint{position:absolute;left:16px;right:16px;text-align:center;font-size:13px;line-height:1.4;color:var(--on-night-2,#CDB9DD)}
-.rs-card{position:absolute;left:0;top:0;box-sizing:border-box;background:#fff;color:var(--ink,#2A1F33);border-radius:16px;padding:9px 12px 10px;box-shadow:0 14px 30px -14px rgba(0,0,0,.7);touch-action:none;cursor:grab;will-change:transform;z-index:2;display:flex;flex-direction:column;justify-content:center;transition:box-shadow .15s}
-.rs-card .p{font-size:12px;line-height:1.3;font-weight:700;color:var(--plum,#6A388C);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rs-card{position:absolute;left:0;top:0;box-sizing:border-box;color:var(--ink,#2A1F33);border-radius:16px;padding:10px 12px;touch-action:none;cursor:grab;will-change:transform;z-index:2;
+  display:grid;grid-template-rows:auto auto;row-gap:6px;align-content:center;transition:box-shadow .15s;
+  background:linear-gradient(180deg,#fff,#F8F2FB);box-shadow:inset 0 1px 0 #fff,0 2px 3px rgba(12,2,22,.3),0 16px 26px -12px rgba(0,0,0,.8)}
+.rs-card .p{display:flex;align-items:center;gap:6px;font-size:12px;line-height:1.2;font-weight:800;color:var(--plum,#6A388C);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.rs-card .p svg{width:16px;height:16px;flex:none}
 .rs-card .t{font-size:15px;line-height:1.28;font-weight:700;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .rs-card.sel{box-shadow:0 0 0 3px var(--lilac,#A886CD),0 0 24px 4px rgba(168,134,205,.6)}
-.rs-card.drag{cursor:grabbing;z-index:9;box-shadow:0 0 0 3px var(--lilac-300,#C9B3DD),0 24px 44px -12px rgba(0,0,0,.8)}
+.rs-card.drag{cursor:grabbing;z-index:9;box-shadow:0 0 0 3px var(--lilac-300,#C9B3DD),0 30px 50px -14px rgba(0,0,0,.85)}
 .rs-bins{position:absolute;left:12px;right:12px;display:grid;gap:10px;max-width:980px;margin:0 auto}
-.rs-bin{position:relative;border-radius:16px;border:2px dashed rgba(201,179,221,.5);background:rgba(106,56,140,.24);display:flex;align-items:center;justify-content:center;text-align:center;font:inherit;font-weight:800;font-size:16px;line-height:1.25;color:#fff;min-height:48px;padding:6px 8px;cursor:pointer;transition:background-color .15s,border-color .15s,transform .18s ${EASE}}
-.rs-bin.hot{background:rgba(168,134,205,.42);border-style:solid;border-color:var(--lilac-300,#C9B3DD);transform:scale(1.04)}
-.rs-bin.armed{border-color:var(--lilac,#A886CD)}
-.rs-bin.ok{background:rgba(168,134,205,.75);border-style:solid;border-color:#fff}
-.rs-bin.bad{background:rgba(204,51,102,.55);border-style:solid;border-color:#CC3366}
-.rs-bin .new{position:absolute;top:-9px;right:8px;background:#CC3366;color:#fff;font-size:11px;line-height:18px;padding:0 8px;border-radius:999px;font-weight:800}
+.rs-bin{position:relative;border-radius:26px;border:1px solid rgba(201,179,221,.45);display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;font:inherit;font-weight:800;font-size:16px;line-height:1.2;color:#fff;min-height:48px;padding:6px 14px;cursor:pointer;isolation:isolate;overflow:hidden;
+  background:linear-gradient(180deg,rgba(201,179,221,.32),rgba(106,56,140,.22) 50%,rgba(42,15,64,.55));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -8px 16px -8px rgba(0,0,0,.5),0 12px 22px -14px rgba(0,0,0,.9);
+  transition:background-color .15s,border-color .15s,transform .18s ${EASE},box-shadow .2s}
+.rs-bin::before{content:"";position:absolute;left:10%;right:10%;top:3px;height:16px;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0));z-index:-1}
+.rs-bin svg{width:16px;height:16px;flex:none;opacity:.75}
+.rs-bin.hot{border-color:var(--lilac-300,#C9B3DD);transform:scale(1.04);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 3px rgba(201,179,221,.35),0 0 30px 4px rgba(168,134,205,.45)}
+.rs-bin.armed{border-color:var(--lilac,#A886CD);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 2px rgba(168,134,205,.5),0 12px 22px -14px rgba(0,0,0,.9)}
+.rs-bin.ok{background:linear-gradient(180deg,#C9B3DD,#8B5CB0);border-color:#fff}
+.rs-bin.bad{background:linear-gradient(180deg,#E8668F,#B02654);border-color:#CC3366}
+.rs-bin .new{position:absolute;top:4px;right:14px;background:#CC3366;color:#fff;font-size:10px;line-height:16px;padding:0 7px;border-radius:999px;font-weight:800}
 .rs-bin:focus-visible{outline:3px solid #fff;outline-offset:2px}
-.rs-note{position:absolute;left:16px;right:16px;background:rgba(31,10,48,.95);border:1px solid rgba(204,51,102,.7);border-radius:16px;padding:10px 14px;font-size:14px;line-height:1.45;color:var(--on-night,#F6EEFB);opacity:0;transform:translateY(-6px);transition:opacity .2s,transform .25s ${EASE};pointer-events:none;z-index:20;max-width:560px;margin:0 auto}
+.rs-bin:not(.eor)::after{content:"";position:absolute;right:-11px;top:50%;width:12px;height:0;border-top:2px dotted rgba(201,179,221,.5);z-index:-2}
+.rs-bins{overflow:visible}
+.rs-note{position:absolute;left:16px;right:16px;display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:start;background:rgba(31,10,48,.96);border:1px solid rgba(204,51,102,.6);border-radius:18px;padding:12px 14px;font-size:14px;line-height:1.45;color:var(--on-night,#F6EEFB);opacity:0;transform:translateY(-6px);transition:opacity .2s,transform .25s ${EASE};pointer-events:none;z-index:20;max-width:560px;margin:0 auto;box-shadow:0 20px 40px -20px rgba(0,0,0,.8)}
 .rs-note.show{opacity:1;transform:none}
-.rs-note b{display:inline-block;margin-right:8px;padding:0 8px;border-radius:999px;background:var(--plum,#6A388C);color:#fff;font-size:12px;line-height:20px;vertical-align:1px}
-.rs-toast{position:absolute;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;z-index:25;opacity:0;white-space:nowrap}
-.rs-toast b{display:block;font-size:34px;line-height:1.1;font-weight:800}
-.rs-toast span{font-size:15px;color:var(--on-night-2,#CDB9DD)}
+.rs-note .chips{display:flex;flex-direction:column;gap:6px}
+.rs-note b{display:inline-flex;align-items:center;justify-content:center;height:22px;padding:0 10px;border-radius:999px;background:var(--plum,#6A388C);color:#fff;font-size:12px;line-height:1;white-space:nowrap}
+.rs-note b.miss{background:#CC3366}
+.rs-toast{position:absolute;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;z-index:25;opacity:0;white-space:nowrap;padding:16px 28px;border-radius:22px;background:rgba(31,10,48,.9);border:1px solid rgba(201,179,221,.3);box-shadow:0 24px 50px -20px rgba(0,0,0,.8)}
+.rs-toast b{display:block;font-size:32px;line-height:1.1;font-weight:800}
+.rs-toast span{display:block;margin-top:4px;font-size:15px;color:var(--on-night-2,#CDB9DD)}
 @media (min-width:700px){.rs-card .t{font-size:16px}.rs-bin{font-size:18px}}
+@media (max-width:520px){.rs-bin svg{display:none}.rs-bin{padding:6px 8px;border-radius:20px}}
 `;
 
 export default {
@@ -71,7 +93,8 @@ export default {
       const bins = h('div', { class: 'rs-bins' });
       const note = h('div', { class: 'rs-note', 'aria-live': 'polite' });
       const toast = h('div', { class: 'rs-toast' });
-      root.append(belt, hint, bins, note, toast);
+      const lip = h('div', { class: 'rs-lip' }), rollL = h('div', { class: 'rs-roller' }), rollR = h('div', { class: 'rs-roller' });
+      root.append(lip, belt, rollL, rollR, hint, bins, note, toast);
       host.appendChild(root);
 
       /* ---------- layout ---------- */
@@ -83,15 +106,18 @@ export default {
         CH = wide ? 100 : 96;
         beltH = CH + 28; beltY = 12;
         belt.style.top = beltY + 'px'; belt.style.height = beltH + 'px';
+        lip.style.top = (beltY + beltH) + 'px';
+        for (const [r, side] of [[rollL, 'left'], [rollR, 'right']]) { r.style.top = (beltY - 4) + 'px'; r.style.height = (beltH + 8) + 'px'; r.style[side] = '2px'; }
         hint.style.top = (beltY + beltH + 8) + 'px';
         const top = beltY + beltH + 44;
         note.style.top = (beltY + beltH + 6) + 'px';
         toast.style.top = (top + (H - top) / 2) + 'px';
         const n = active.length;
-        const cols = wide ? Math.min(n, 5) : (n <= 4 ? 2 : 3);
+        const cols = wide ? (n <= 5 ? n : Math.ceil(n / 2)) : (n <= 4 ? 2 : 3);
         const rows = Math.ceil(n / cols), free = H - top - 12;
-        const rowH = Math.max(48, Math.min(wide ? 130 : 150, (free - 10 * (rows - 1)) / rows));
+        const rowH = Math.max(48, Math.min(wide ? 88 : 92, (free - 10 * (rows - 1)) / rows));
         bins.style.gridTemplateColumns = `repeat(${cols},1fr)`;
+        [...bins.children].forEach((b, i) => b.classList.toggle('eor', (i + 1) % cols === 0 || i === n - 1));
         bins.style.gridAutoRows = rowH + 'px';
         bins.style.top = (top + Math.max(0, (free - (rowH * rows + 10 * (rows - 1))) / 2)) + 'px';
         cards.forEach(c => { c.el.style.width = CW + 'px'; c.el.style.height = CH + 'px'; });
@@ -99,7 +125,7 @@ export default {
       const renderBins = () => {
         bins.innerHTML = ''; binEls = {};
         active.forEach(k => {
-          const b = h('button', { class: 'rs-bin', type: 'button', 'data-b': k }, tx(BUCKETS[k], lang));
+          const b = h('button', { class: 'rs-bin', type: 'button', 'data-b': k, html: CLOCK }, h('span', null, tx(BUCKETS[k], lang)));
           if (fresh.has(k)) b.append(h('span', { class: 'new' }, tx(UI.newTag, lang)));
           b.addEventListener('click', () => { if (selected && !selected.done) assign(selected, k, 't'); });
           bins.appendChild(b); binEls[k] = b;
@@ -122,8 +148,10 @@ export default {
       };
       const showNote = (it, missed) => {
         note.innerHTML = '';
-        note.append(h('b', null, tx(BUCKETS[it.b], lang)), `${tx(PROCS[it.proc], lang)}: ${tx(it.text, lang)}`);
-        if (missed) note.prepend(h('b', { style: { background: '#CC3366' } }, tx(UI.missed, lang)));
+        const chips = h('span', { class: 'chips' });
+        if (missed) chips.append(h('b', { class: 'miss' }, tx(UI.missed, lang)));
+        chips.append(h('b', null, tx(BUCKETS[it.b], lang)));
+        note.append(chips, h('span', null, `${tx(PROCS[it.proc], lang)}: ${tx(it.text, lang)}`));
         note.classList.add('show');
         clearTimeout(noteTimer);
         noteTimer = setTimeout(() => note.classList.remove('show'), 2600);
@@ -163,7 +191,7 @@ export default {
       const spawn = () => {
         const it = draw();
         const el = h('div', { class: 'rs-card', 'aria-label': `${tx(PROCS[it.proc], lang)}: ${tx(it.text, lang)}` },
-          h('div', { class: 'p' }, tx(PROCS[it.proc], lang)),
+          h('div', { class: 'p', html: procIcon(it.proc) }, h('span', null, tx(PROCS[it.proc], lang))),
           h('div', { class: 't' }, tx(it.text, lang)));
         el.style.width = CW + 'px'; el.style.height = CH + 'px';
         root.appendChild(el);
@@ -254,6 +282,7 @@ export default {
           const pts = points(level, streak);
           score += pts; okInLevel++;
           flashBin(k, 'ok');
+          sfx.play('drop');
           floatText(root, fx, fy - 10, '+' + pts);
           sfx.play('good');
           if (okInLevel >= PER_LEVEL) levelUp();

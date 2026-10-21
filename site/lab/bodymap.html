@@ -16,7 +16,8 @@
   }
 </script>
 <style>
-  body{background:var(--night);color:var(--on-night);margin:0}
+  /* same night gradient as the home hero, so the feathered stage edges are tested against it */
+  body{background:radial-gradient(120% 90% at 70% 40%,#3a1358 0%,var(--night) 55%,#14061f 100%) fixed var(--night);color:var(--on-night);margin:0}
   .lab-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;max-width:var(--maxw);margin:0 auto}
   .lab-bar h1{font-size:18px;font-weight:700;letter-spacing:-.01em}
   .lab-bar small{display:block;font-size:12px;font-weight:400;color:var(--on-night-2);letter-spacing:.08em;text-transform:uppercase}
