@@ -285,7 +285,7 @@ export function mount(container, opts = {}) {
   let track = null, live = null, liveT = 0, filterKey = null;
   const canHover = () => { try { return matchMedia('(hover:hover) and (pointer:fine)').matches; } catch (e) { return false; } };
   function setGroups(key) {
-    const order = [...PROC_KEYS, null];
+    const order = [...(opts.focus ? [opts.focus] : []), ...PROC_KEYS.filter(k => k !== opts.focus), null];
     const src = key ? all.filter(x => x.procedure === key) : all;
     groups = order.map(k => ({ key: k, items: src.filter(x => x.procedure === k) })).filter(g => g.items.length);
     items = groups.flatMap(g => g.items).map((x, i) => Object.assign({}, x, { i }));
