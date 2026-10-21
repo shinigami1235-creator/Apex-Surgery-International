@@ -44,13 +44,19 @@ export const PRESETS = [
    p:{bridge:.1, hump:1, tipProj:.15, tipRot:.15, tipWidth:-.12, alar:0, bridgeWidth:-.12, slope:.1}},
 ];
 
-/* Sample photos, one per view. Landmarks come from the same live face-mesh detection that
-   uploaded photos use. The profile sample faces left, so its fallback outline starts facing left.
-   The front photo is a wide landscape frame; the crop parameters keep the face. */
+/* Sample photos, one per view. Each sample carries hand-placed nose points and a crop,
+   both as fractions of the full photo, so the sample opens with the points on the nose.
+   Uploaded photos still use live face-mesh detection. */
 const SAMPLES = {
-  front:{src:'https://images.unsplash.com/photo-1589525231707-f2de2428f59c?w=1200&h=1500&fit=crop&crop=faces&q=85'},
-  '45':{src:'https://images.unsplash.com/photo-1641351841616-faa0d3760980?w=1200&q=85'},
-  '90':{src:'https://images.unsplash.com/photo-1736439538470-88b66bd307ce?w=1400&q=85', side:-1},
+  front:{src:'https://images.unsplash.com/photo-1589525231707-f2de2428f59c?w=1200&h=1500&fit=crop&crop=faces&q=85',
+    crop:[.14, .14, .86, .78],
+    h:{N:[.500, .398], D:[.4995, .455], T:[.4985, .507], C:[.4985, .522], AL:[.4335, .511], AR:[.5635, .511]}},
+  '45':{src:'https://images.unsplash.com/photo-1641351841616-faa0d3760980?w=1200&q=85',
+    crop:[.12, .30, .82, .86],
+    h:{N:[.462, .517], D:[.466, .553], T:[.472, .592], C:[.477, .611], AL:[.426, .602], AR:[.518, .597]}},
+  '90':{src:'https://images.unsplash.com/photo-1736439538470-88b66bd307ce?w=1400&q=85', side:-1,
+    crop:[.38, 0, .98, 1],
+    h:{N:[.5805, .3931], D:[.5665, .455], T:[.5335, .526], C:[.5565, .583], A:[.5863, .5307]}},
 };
 const MP_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/';
 
@@ -614,6 +620,18 @@ function defaultHandles(view, W, H, data, side = 1){
   return {N:{x, y}, D:{x, y:y + .42 * s}, T:{x, y:y + .86 * s}, C:{x, y:y + s}, AL:{x:x - .36 * s, y:y + .84 * s}, AR:{x:x + .36 * s, y:y + .84 * s}};
 }
 
+/* crop a sample photo to its set frame and move its hand-placed points into that frame */
+function sampleCrop(canvas, sm){
+  const W = canvas.width, H = canvas.height, [a, b, c, d] = sm.crop || [0, 0, 1, 1];
+  const cx = a * W, cy = b * H, cw = (c - a) * W, ch = (d - b) * H;
+  const r = Math.min(1, 1100 / Math.max(cw, ch));
+  const out = document.createElement('canvas'); out.width = Math.round(cw * r); out.height = Math.round(ch * r);
+  out.getContext('2d').drawImage(canvas, cx, cy, cw, ch, 0, 0, out.width, out.height);
+  const h = {};
+  for (const k in sm.h) h[k] = {x:(sm.h[k][0] * W - cx) * r, y:(sm.h[k][1] * H - cy) * r};
+  return {base:out, h};
+}
+
 /* crop a wide shot to the face so the nose is large enough to work on */
 function cropToFace(canvas, lm){
   const W = canvas.width, H = canvas.height;
@@ -954,7 +972,8 @@ export function mount(container, opts = {}){
       let im = null;
       try { im = await loadImage(sm.src); } catch (e) { /* named below */ }
       if (!im) { setBusy(false); Object.assign(v, {base:null, h:null, sample:false, err:'sample'}); emit('nose:error', {view:vid, error:'sample'}); sync(); return; }
-      await usePhoto(toCanvas(im), sm);
+      if (sm.h) { setBusy(false); stopCam(); const c = sampleCrop(toCanvas(im), sm); setPhoto(v, c.base, c.h, true, true); }
+      else await usePhoto(toCanvas(im), sm);
       emit('nose:sample', {view:vid});
     } catch (e) { setBusy(false); Object.assign(v, {base:null, h:null, sample:false, err:'read'}); sync(); }
     finally { loadingSample = false; }
