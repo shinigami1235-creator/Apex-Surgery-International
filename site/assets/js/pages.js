@@ -155,7 +155,7 @@
     try {
       const m = await import(new URL(A.assets + 'features/stories/index.js', location.href).href);
       el.innerHTML = ''; el.classList.add('feat-on');
-      m.mount(el, A.featureOpts(Object.assign({videos, title:el.dataset.title}, extra)));
+      m.mount(el, A.featureOpts(Object.assign({videos, title:false, layout:'reels'}, extra)));
     } catch (e) { /* keep the plain rail */ }
   };
   // How each procedure's before/after composites are split: lr = before left, after right; tb = before on top; single = a collage shown whole
@@ -368,7 +368,7 @@
             <span class="tc-foot"><span class="btn btn-light btn-sm">${E(T('noseCta'))} ${I('arrow-right')}</span><small>${I('shield-check')}${E(T('noseNote'))}</small></span></span></a>
           <a class="tool-card tool-games rv" data-d="90" href="play.html">
             <span class="tc-art dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-            <span class="tc-body"><span class="eyebrow on-night">${E(T('games'))}</span><b class="h-m">${E(T('gamesH'))}</b><span class="tc-p">${E(T('gamesP'))}</span><span class="tc-list">${E(T('gamesList'))}</span>
+            <span class="tc-body"><span class="eyebrow on-night">${E(T('gamesEb'))}</span><b class="h-m">${E(T('gamesH'))}</b><span class="tc-p">${E(T('gamesP'))}</span><span class="tc-list">${E(T('gamesList'))}</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">${E(T('gamesCta'))} ${I('arrow-right')}</span></span></span></a>
           <a class="tool-card tool-trip rv" data-d="180" href="trip.html">
             <span class="tc-art cal" aria-hidden="true">${Array.from({length:21}, (_, i) => `<i class="${[3,4,5,6,7,8,9,10,11,12,13].includes(i) ? 'on' : ''}${i === 17 ? ' fly' : ''}"></i>`).join('')}</span>
@@ -387,8 +387,14 @@
         ${chips([['all', T('all')], ...SVC_CATS.filter(k => reviews.some(r => r.cat === k)).map(k => [k, svcName(S, k)])], 'all')}
         ${reviewRail(reviews, 'rv-rail')}
         <p class="note">${E(T('resultsVary'))}</p>
-        <div class="stories-wrap"><h3 class="h-m rv">${E(H.reviewsRealH || T('storiesH'))}</h3>${storiesHost(H.videos || (H.tiktok && H.tiktok.videos), 'stories', H.reviewsRealH)}
-          ${H.tiktok && H.tiktok.link ? `<a class="tiktok-link" href="${E(H.tiktok.link.h)}" target="_blank" rel="noopener">${I('tiktok')}<span><b>${E(H.tiktok.h || '')}</b><small>@${E(H.tiktok.link.handle || 'apex_surgery')}</small></span>${I('arrow-up-right')}</a>` : ''}</div>
+      </div>
+    </section>
+
+    <section class="section night reels-s">
+      <div class="wrap">
+        <div class="shead"><div><p class="eyebrow on-night rv">${E(T('reelsEb'))}</p><h2 class="h-xl rv" data-field="home.reviewsRealH">${E(H.reviewsRealH || T('storiesH'))}</h2><p class="reels-sub rv">${E(T('reelsSub'))}</p></div></div>
+        ${storiesHost(H.videos || (H.tiktok && H.tiktok.videos), 'stories', H.reviewsRealH)}
+        ${H.tiktok && H.tiktok.link ? `<a class="tiktok-link" href="${E(H.tiktok.link.h)}" target="_blank" rel="noopener">${I('tiktok')}<span><b>${E(H.tiktok.h || '')}</b><small>@${E(H.tiktok.link.handle || 'apex_surgery')}</small></span>${I('arrow-up-right')}</a>` : ''}
       </div>
     </section>
 
@@ -490,7 +496,7 @@
       <div class="wrap"><div class="shead"><h2 class="h-xl rv" data-field="svc.reviewsH">${E((D.reviewsH || T('reviews')).replace(/\s*!+\s*$/, ''))}</h2>
         <div class="rail-ctrl rv"><button type="button" id="rv-prev" aria-label="${E(T('prev'))}">${I('chevron-left')}</button><button type="button" id="rv-next" aria-label="${E(T('next'))}">${I('chevron-right')}</button></div></div>
       ${reviewRail(D.reviewImgs || [], 'rv-rail')}
-      <div class="stories-wrap">${storiesHost(D.videos, 'stories', D.reviewsH)}</div>
+      <div class="stories-wrap"><div class="sw-head"><h3 class="h-m rv">${E(T('reelsEb'))}</h3><p class="reels-sub rv">${E(T('reelsTap'))}</p></div>${storiesHost(D.videos, 'stories', D.reviewsH)}</div>
       ${(D.yt || []).length || D.tiktok ? `<div class="yt-row">${(D.yt || []).map(id => `<div class="ytbox rv"><button type="button" data-yt="${E(id)}" aria-label="${E(T('playVideo'))}"><img loading="lazy" src="${A.yt(id)}" alt=""><span class="pl">${I('play')}</span></button></div>`).join('')}
         ${D.tiktok ? `<a class="tiktok-link rv" href="${E(D.tiktok.h)}" target="_blank" rel="noopener">${I('tiktok')}<span><b>${E(D.tiktok.x)}</b><small>@apex_surgery</small></span>${I('arrow-up-right')}</a>` : ''}</div>` : ''}
       </div>
@@ -511,7 +517,7 @@
 
     A.bindMedia(main()); bindPlan(main());
     A.railCtrl(A.qs('#rv-rail'), A.qs('#rv-prev'), A.qs('#rv-next'));
-    mountStories(A.qs('#stories'), {procedure:key});
+    mountStories(A.qs('#stories'), {procedure:key, focus:key});
     mountShowcase(A.qs('#ba'), baCases(D.ba || [], S, {cat:key, onService:true}), {tileFacts:true});
     bindOffers(main());
     A.jsonld({'@context':'https://schema.org','@type':'MedicalProcedure', name:D.name, alternateName:D.en, description:D.desc, procedureType:'https://schema.org/SurgicalProcedure', howPerformed:(D.intro || [])[0], followup:((RECOVERY[A.lang] || {})[key] || []).map(r => r.join(': ')).join('; '), performer:{'@type':'Physician', name:(S.doctor || {}).name}});

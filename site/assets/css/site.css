@@ -1048,3 +1048,12 @@ html[lang=en] .art-prose p.lede::first-letter{float:left;font-size:4.1em;line-he
 .ifd-cap b{font-size:20px;font-weight:700}
 .ifd-cap span{font-size:14px;color:var(--on-night-2);line-height:1.45}
 @media (max-width:900px){.intro-fd{aspect-ratio:4/4.2}}
+
+/* Revision 1d: review videos get their own band on the home page */
+.reels-s .shead{margin-bottom:26px}
+.reels-sub{margin:10px 0 0;max-width:560px;color:var(--ink-2);font-size:16px;line-height:1.6}
+.night .reels-sub{color:var(--on-night-2)}
+.reels-s .tiktok-link{margin-top:8px}
+.stories-wrap .sw-head{margin-bottom:18px}
+.stories-wrap .sw-head h3{margin-bottom:4px}
+.stories-wrap .sw-head .reels-sub{margin-top:0}
