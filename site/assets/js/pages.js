@@ -48,12 +48,14 @@
       m.mount(el, A.featureOpts(Object.assign({videos, title:el.dataset.title}, extra)));
     } catch (e) { /* keep the plain rail */ }
   };
-  const mountCompare = async (el, pairs) => {
+  // How each procedure's before/after composites are split: lr = before left, after right; tb = before on top; single = a collage shown whole
+  const BA_LAYOUT = {facelift:'lr', rhinoplasty:'lr', lipo:'lr', eyelid:'tb', breast:'tb', browlift:'single'};
+  const mountCompare = async (el, pairs, key) => {
     if (!el) return;
     try {
       const m = await import(new URL(A.assets + 'features/compare/index.js', location.href).href);
       el.innerHTML = ''; el.classList.add('feat-on');
-      m.mount(el, A.featureOpts({images:pairs.map(s => IMG(s))}));
+      m.mount(el, A.featureOpts({items:pairs.map(s => IMG(s)), layout:BA_LAYOUT[key] || 'single', title:false}));
     } catch (e) { /* keep the gallery grid */ }
   };
   const baGrid = (imgs, cap) => {
@@ -267,7 +269,7 @@
     A.bindMedia(main()); bindPlan(main());
     A.railCtrl(A.qs('#rv-rail'), A.qs('#rv-prev'), A.qs('#rv-next'));
     mountStories(A.qs('#stories'), {procedure:key});
-    mountCompare(A.qs('#ba'), D.ba || []);
+    mountCompare(A.qs('#ba'), D.ba || [], D.key);
     A.jsonld({'@context':'https://schema.org','@type':'MedicalProcedure', name:D.name, alternateName:D.en, description:D.desc, procedureType:'https://schema.org/SurgicalProcedure', howPerformed:(D.intro || [])[0], followup:((RECOVERY[A.lang] || {})[key] || []).map(r => r.join(': ')).join('; '), performer:{'@type':'Physician', name:(S.doctor || {}).name}});
     if ((D.faqs || []).length) A.jsonld({'@context':'https://schema.org','@type':'FAQPage', mainEntity:D.faqs.map(q => ({'@type':'Question', name:q.q, acceptedAnswer:{'@type':'Answer', text:(q.a || []).join(' ')}}))});
     A.breadcrumbLd(crumbs.map((c, i) => [c[0], c[1] || location.href]));

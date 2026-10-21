@@ -407,3 +407,6 @@ img.img-x{opacity:0}
 .feat-page-host .apxp>.p-wrap>.p-head>h2:first-child,.feat-page-host .apxp>.p-wrap>.p-head>h2:first-child+p,
 .feat-page-host .apxt>.t-wrap>h2:first-child,.feat-page-host .apxt>.t-wrap>h2:first-child+p,
 .feat-page-host .apxc>.c-wrap>h2:first-child,.feat-page-host .apxc>.c-wrap>h2:first-child+p{display:none}
+
+/* the surgery logo file is white: tint it plum on the light header pill */
+.hdr-logo img{filter:brightness(0) saturate(100%) invert(24%) sepia(41%) saturate(1588%) hue-rotate(254deg) brightness(92%) contrast(92%)}
