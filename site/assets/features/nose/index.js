@@ -972,7 +972,7 @@ export function mount(container, opts = {}){
       let im = null;
       try { im = await loadImage(sm.src); } catch (e) { /* named below */ }
       if (!im) { setBusy(false); Object.assign(v, {base:null, h:null, sample:false, err:'sample'}); emit('nose:error', {view:vid, error:'sample'}); sync(); return; }
-      if (sm.h) { setBusy(false); stopCam(); const c = sampleCrop(toCanvas(im), sm); setPhoto(v, c.base, c.h, true, true); }
+      if (sm.h) { setBusy(false); stopCam(); const c = sampleCrop(toCanvas(im, 2400), sm); setPhoto(v, c.base, c.h, true, true); }
       else await usePhoto(toCanvas(im), sm);
       emit('nose:sample', {view:vid});
     } catch (e) { setBusy(false); Object.assign(v, {base:null, h:null, sample:false, err:'read'}); sync(); }
