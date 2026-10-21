@@ -168,6 +168,46 @@
       m.mount(el, A.featureOpts({items:pairs.map(s => IMG(s)), layout:BA_LAYOUT[key] || 'single', title:false}));
     } catch (e) { /* keep the gallery grid */ }
   };
+  /* before/after cases: facts come only from each composite's filename and the patient's own review post */
+  const BA_STORY = {DeePathama:['deep-plane-facelift-review-by-dy', 'Deep Plane Facelift'], TopFacelift:['dfl-review-khun-top', 'DFL facelift'], Wanna:['facelift-review-by-wanna', ''], Som:['dfl-review-by-som', 'DFL facelift'], 'กู๊ดดี้':['motiva-ergonomix-breast-augmentation-review-by-goody', 'Motiva Ergonomix']};
+  const BA_AREA = [[/ต้นขา/, 'Thighs', 'ต้นขา'], [/ต้นแขน/, 'Upper arms', 'ต้นแขน'], [/หน้าท้อง|ท้อง/, 'Abdomen', 'หน้าท้อง'], [/กรอบหน้า/, 'Face contour', 'กรอบหน้า'], [/เหนียง/, 'Double chin', 'เหนียง'], [/FaceNeck/i, 'Face and neck', 'ใบหน้าและลำคอ'], [/eye-bag/i, 'Under-eye bags', 'ถุงใต้ตา']];
+  const BA_L = {tech:['Technique', 'เทคนิค'], area:['Area', 'บริเวณ'], follow:['Follow-up', 'ติดตามผล']};
+  const baL = k => BA_L[k][A.lang === 'th' ? 1 : 0];
+  const baCases = (list, S, opts={}) => {
+    const P = A.d('posts') || [];
+    const cases = list.map(x => {
+      const src = typeof x === 'string' ? x : x.src;
+      const cat = (typeof x === 'string' ? opts.cat : x.cat) || opts.cat;
+      let file = String(src).split('/').pop();
+      try { file = decodeURIComponent(file); } catch (e) { /* keep raw */ }
+      const facts = [];
+      const st = Object.keys(BA_STORY).find(k => file.includes(k));
+      const post = st && P.find(p => p.key === BA_STORY[st][0]);
+      const tech = (st && BA_STORY[st][1]) || (/J-Plasma/i.test(file) ? 'J-Plasma' : '');
+      if (tech) facts.push([baL('tech'), tech]);
+      const ar = BA_AREA.find(([r]) => r.test(file));
+      if (ar) facts.push([baL('area'), A.lang === 'th' ? ar[2] : ar[1]]);
+      const fm = file.match(/(\d{1,2})([MY])(?=[_\-.]|$)/);
+      if (fm) facts.push([baL('follow'), A.lang === 'th' ? `${fm[1]} ${fm[2] === 'Y' ? 'ปี' : 'เดือน'}` : `${fm[1]} ${fm[2] === 'Y' ? (fm[1] === '1' ? 'year' : 'years') : (fm[1] === '1' ? 'month' : 'months')}`]);
+      const eyeBag = /eye-bag/i.test(file);
+      const procName = eyeBag ? (A.lang === 'th' ? 'ผ่าตัดถุงใต้ตา' : 'Eye bag surgery') : svcName(S, cat);
+      const msg = A.lang === 'th' ? `สวัสดี ขอสอบถามเรื่อง${procName} จากเคสก่อนและหลังบนเว็บไซต์ Apex Surgery Hospital` : `Hello, I would like to ask about ${procName.toLowerCase()} after seeing a before and after case on the Apex Surgery Hospital website.`;
+      const links = [];
+      if (cat === 'rhinoplasty') links.push({x:T('noseTry'), url:'nose.html'});
+      if (!opts.onService) links.push({x:T('seeService'), url:A.svcUrl(cat)});
+      return {src, cat, layout:BA_LAYOUT[cat] || 'single', procName, facts, story:post ? {title:post.title, url:A.postUrl(post.key)} : null,
+        ask:{line:`https://line.me/R/oaMessage/@apexsurgery/?${encodeURIComponent(msg)}`, wa:`${A.WA.h}?text=${encodeURIComponent(msg)}`}, links};
+    });
+    return cases.filter(c => c.story).concat(cases.filter(c => !c.story));
+  };
+  const mountShowcase = async (el, cases, extra={}) => {
+    if (!el || !cases.length) return;
+    try {
+      const m = await import(new URL(A.assets + 'features/compare/showcase.js', location.href).href);
+      el.innerHTML = ''; el.classList.add('feat-on');
+      m.mount(el, A.featureOpts(Object.assign({cases, vary:T('resultsVary')}, extra)));
+    } catch (e) { console.warn('[apex] showcase', e); }
+  };
   const baGrid = (imgs, cap) => {
     const g = A.gallery(imgs.map(s => ({src:s})));
     return `<div class="ba-grid">${imgs.map((s, i) => `<button type="button" class="ba-tile ph-img rv" data-d="${(i%6)*50}" ${g.attr(i)}><img src="${IMG(s)}" alt="${E(cap || 'Before / After')} ${i+1}" loading="lazy"></button>`).join('')}</div>`;
@@ -176,10 +216,90 @@
     <span class="pc-ph ph-img"><img src="${IMG(p.img)}" alt="" loading="lazy"></span>
     <span class="pc-meta"><span class="pc-cat">${E(T({review:'catReview', blog:'catBlog', news:'catNews'}[p.cat] || 'articles'))}</span>${p.date ? `<time datetime="${E(p.date)}">${E(A.fmtDate(p.date))}</time>` : ''}</span>
     <span class="pc-title">${E(p.title)}</span>${p.excerpt || p.desc ? `<span class="pc-ex">${E(p.excerpt || p.desc)}</span>` : ''}</a>`;
-  const promoGrid = (items) => {
-    const g = A.gallery(items.map(p => ({src:p.src, alt:p.alt})));
-    return `<div class="promo-grid${items.length <= 2 ? ' few' : ''}">${items.map((p, i) => A.promoCard(Object.assign({_g:g.gi, _i:i}, p), i)).join('')}</div>`;
+  /* ---------- offers: names, tags and prices come only from the poster's alt text, filename and price field ---------- */
+  const OFFER_WORDS = [[/Mentor/i, 'Mentor'], [/Motiva/i, 'Motiva'], [/MemoryGel/i, 'MemoryGel'], [/Endotine/i, 'Endotine'], [/LipoSlim/i, 'LipoSlim'], [/J-?Plasma/i, 'J-Plasma'], [/V-?Line/i, 'V-Line'], [/Facial/i, 'Facial']];
+  const OFFER_AREA = [[/หน้าท้อง|abdominal/i, 'Abdomen', 'หน้าท้อง'], [/เหนียง|double chin/i, 'Double chin', 'เหนียง']];
+  const offerOf = (p, S, cat0) => {
+    let file = String(p.src || '').split('/').pop();
+    try { file = decodeURIComponent(file); } catch (e) { /* raw */ }
+    const text = (p.alt || '') + ' ' + file;
+    const cat = p.cat || procOf(text) || cat0;
+    const words = [...new Set(OFFER_WORDS.filter(([r]) => r.test(text)).map(w => w[1]))];
+    const area = OFFER_AREA.find(([r]) => r.test(text));
+    if (area) words.push(A.lang === 'th' ? area[2] : area[1]);
+    const name = cat ? svcName(S, cat) : (words.shift() || T('promotions'));
+    const price = +p.price || +((file.match(/(?:^|[-_ ])(\d{5,6})(?=[-_ .])/) || [])[1]) || 0;
+    const allIn = /จ่ายจบ|เหมา|all-in/i.test(text);
+    const review = /case-review/i.test(text);
+    const label = name + (words.length ? ' · ' + words.join(' · ') : '');
+    const priceTxt = price ? `${A.fmtNum(price)} ${T('baht')}` : '';
+    const msg = (A.lang === 'th' ? `สวัสดี ขอสอบถามโปรโมชั่น ${label}` : `Hello, I would like to ask about this offer: ${label}`) + (priceTxt ? ` (${priceTxt})` : '') + (A.lang === 'th' ? '' : '.');
+    return {src:p.src, alt:p.alt || label, cat, name, words, price, allIn, review, label,
+      line:`https://line.me/R/oaMessage/@apexsurgery/?${encodeURIComponent(msg)}`, wa:`${A.WA.h}?text=${encodeURIComponent(msg)}`};
   };
+  const fxSpan = thb => `<span class="apx-price op-fx" data-thb="${thb}" data-lang="${A.lang}"><span class="apx-fx" hidden></span><small>${E(T('approx'))}</small></span>`;
+  const offerTags = o => `${o.allIn ? `<span class="o-tag hot">${E(T('allIn'))}</span>` : ''}${o.review ? `<span class="o-tag">${E(T('reviewCase'))}</span>` : ''}`;
+  const offerCard = (o, i, g) => `<article class="offer rv" data-d="${(i % 4) * 60}" data-cat="${E(o.cat || '')}">
+      <button type="button" class="offer-img ph-img" ${g.attr(i)} aria-label="${E(T('image'))}: ${E(o.label)}"><img src="${IMG(o.src)}" alt="${E(o.alt)}" loading="lazy"><span class="o-zoom" aria-hidden="true">${I('arrow-up-right')}</span></button>
+      <div class="offer-body">
+        <div class="o-tags">${o.cat && o.words.length ? `<span class="o-proc">${E(o.name)}</span>` : ''}${offerTags(o)}</div>
+        <h3 class="o-title">${E(o.cat ? (o.words.join(' · ') || o.name) : o.label)}</h3>
+        <div class="o-price">${o.price ? `<span class="op-row"><b class="op-n">${E(A.fmtNum(o.price))}</b><span class="op-u">${E(T('baht'))}</span></span>${fxSpan(o.price)}` : `<span class="op-ask">${I('message-circle')}${E(T('askPrice'))}</span>`}</div>
+        <div class="o-acts"><span class="o-ask">${E(T('askOffer'))}</span>
+          <a class="o-btn ln" href="${o.line}" target="_blank" rel="noopener" aria-label="${E(T('askOffer'))}: LINE">${I('line')}<span>LINE</span></a>
+          <a class="o-btn wa" href="${o.wa}" target="_blank" rel="noopener" aria-label="${E(T('askOffer'))}: WhatsApp">${I('whatsapp')}<span>WhatsApp</span></a>
+          ${o.cat ? `<a class="o-more" href="${A.svcUrl(o.cat)}">${E(T('seeService'))} ${I('arrow-right')}</a>` : ''}</div>
+      </div></article>`;
+  const gameCard = () => `<a class="offer offer-game rv" href="play.html"><span class="og-art" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="og-ic">${I('sparkles')}</span><b class="h-s">${E(T('gameTie'))}</b><span class="og-p">${E(T('gamesP'))}</span><span class="btn btn-light btn-sm">${E(T('gamesCta'))} ${I('arrow-right')}</span></a>`;
+  const promoGrid = (items, S, opts={}) => {
+    S = S || A.d('shared') || {};
+    const offers = items.map(p => offerOf(p, S, opts.cat));
+    const g = A.gallery(offers.map(o => ({src:o.src, alt:o.alt})));
+    return `<div class="offer-grid${offers.length + (opts.game ? 1 : 0) <= 2 ? ' few' : ''}">${offers.map((o, i) => offerCard(o, i, g)).join('')}${opts.game ? gameCard() : ''}</div>`;
+  };
+  const offerSpot = (p, S) => {
+    const o = offerOf(p, S);
+    const g = A.gallery([{src:o.src, alt:o.alt}]);
+    return `<div class="offer-spot rv">
+      <div class="os-media"><button type="button" class="os-card ph-img" ${g.attr(0)} aria-label="${E(T('image'))}: ${E(o.label)}"><img src="${IMG(o.src)}" alt="${E(o.alt)}" loading="lazy"><span class="os-glare" aria-hidden="true"></span></button></div>
+      <div class="os-body">
+        <p class="os-kick">${E(T('featuredOffer'))}</p>
+        <h3 class="os-title">${E(o.name)}</h3>
+        <div class="o-tags">${o.words.map(w => `<span class="o-tag">${E(w)}</span>`).join('')}${offerTags(o)}</div>
+        ${o.price ? `<div class="os-price"><span class="op-row"><b class="os-n" data-count="${o.price}">${E(A.fmtNum(o.price))}</b><span class="op-u">${E(T('baht'))}</span></span>${fxSpan(o.price)}</div>` : `<p class="os-ask">${I('message-circle')}${E(T('askPrice'))}</p>`}
+        <div class="os-pick" data-cur-picker></div>
+        <p class="os-ask-l">${E(T('askOffer'))}</p>
+        <div class="os-acts"><a class="o-btn ln lg" href="${o.line}" target="_blank" rel="noopener">${I('line')}<span>LINE</span></a><a class="o-btn wa lg" href="${o.wa}" target="_blank" rel="noopener">${I('whatsapp')}<span>WhatsApp</span></a>${o.cat ? `<a class="btn btn-ghost btn-sm os-more" href="${A.svcUrl(o.cat)}">${E(T('seeService'))} ${I('arrow-right')}</a>` : ''}</div>
+        <p class="note">${E(T('promosSub'))}</p>
+      </div></div>`;
+  };
+  /* currency, count-up and tilt for offers */
+  const bindOffers = async root => {
+    if (!root) return;
+    try {
+      const C = await import(new URL(A.assets + 'features/currency/index.js', location.href).href);
+      C.refresh(root);
+      A.qsa('[data-cur-picker]', root).forEach(el => C.picker(el, {lang:A.lang, onEvent:(n, d) => A.emit(n, d)}));
+    } catch (e) { /* prices stay in baht */ }
+    A.qsa('.os-n[data-count]', root).forEach(el => {
+      const to = +el.dataset.count;
+      if (A.reduced || !('IntersectionObserver' in window)) return;
+      el.textContent = A.fmtNum(0);
+      const io = new IntersectionObserver(es => { if (!es.some(e => e.isIntersecting)) return; io.disconnect();
+        const t0 = performance.now(), d = 1300;
+        const step = now => { const k = Math.min(1, (now - t0) / d), v = 1 - Math.pow(1 - k, 4); el.textContent = A.fmtNum(Math.round(to * v / 10) * 10 || 0); if (k < 1) requestAnimationFrame(step); else el.textContent = A.fmtNum(to); };
+        requestAnimationFrame(step); }, {threshold:.6});
+      io.observe(el);
+    });
+    if (!A.reduced && matchMedia('(hover:hover) and (pointer:fine)').matches) A.qsa('.os-media', root).forEach(m => {
+      const c = A.qs('.os-card', m);
+      m.addEventListener('pointermove', e => { const r = m.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+        c.style.transform = `rotateY(${(x * 14).toFixed(2)}deg) rotateX(${(-y * 12).toFixed(2)}deg) translateZ(0)`; c.style.setProperty('--gx', ((x + .5) * 100).toFixed(1) + '%'); c.style.setProperty('--gy', ((y + .5) * 100).toFixed(1) + '%'); });
+      m.addEventListener('pointerleave', () => { c.style.transform = ''; });
+    });
+    A.qsa('.o-btn,.os-acts a', root).forEach(a => a.addEventListener('click', () => A.emit('promo:ask', {channel:a.classList.contains('wa') ? 'whatsapp' : 'line'})));
+  };
+  const chipsCount = (pairs, items, on) => `<div class="chips c-count" role="group" aria-label="${E(T('filter'))}">${pairs.map(([k, x]) => `<button type="button" class="chip" data-k="${E(k)}" aria-pressed="${k === on}">${E(x)}<i>${k === 'all' ? items.length : items.filter(i => i.cat === k).length}</i></button>`).join('')}</div>`;
   const recoveryCard = (key, S) => {
     const R = (RECOVERY[A.lang] || RECOVERY.en)[key];
     if (!R) return '';
@@ -264,16 +384,16 @@
       </div>
     </section>
 
-    <section class="section">
-      <div class="wrap"><div class="shead"><div><p class="eyebrow rv">${E(T('promotions'))}</p><h2 class="h-xl rv" data-field="home.promos.h">${E((H.promos && H.promos.h) || T('promosH'))}</h2><p class="muted rv" style="margin-top:10px">${E(T('promosSub'))}</p></div><a class="link-arrow rv" href="promotions.html">${E(T('viewAll'))} ${I('arrow-right')}</a></div>
-      ${promoGrid(promos.slice(0, 8))}</div>
+    <section class="section promos-s">
+      <div class="wrap"><div class="shead"><div><p class="eyebrow rv">${E(T('promotions'))}</p><h2 class="h-xl rv" data-field="home.promos.h">${E((H.promos && H.promos.h) || T('promosH'))}</h2></div><a class="link-arrow rv" href="promotions.html">${E(T('viewAll'))} ${I('arrow-right')}</a></div>
+      ${(() => { const si = Math.max(0, promos.findIndex(p => p.price)); return promos.length ? offerSpot(promos[si], S) + promoGrid(promos.filter((p, i) => i !== si).slice(0, 7), S, {game:true}) : ''; })()}</div>
     </section>
 
     <section class="section washed"><div class="wrap">${A.branchesHtml(S, H.branches && H.branches.h, H.branches && H.branches.p)}</div></section>
 
     <section class="section updates-s">
       <div class="wrap"><div class="shead"><h2 class="h-xl rv" data-field="home.news.h">${E((H.news && H.news.h) || T('newsH'))}</h2><a class="link-arrow rv" href="blog.html">${E(T('viewAll'))} ${I('arrow-right')}</a></div>
-      <div class="updates2">${S.facebook ? A.fbFrame(S.facebook, 640) : ''}<div class="upd-list">${news.slice(0, 4).map((p, i) => postCard(p, i)).join('')}</div></div></div>
+      <div class="updates2">${S.facebook ? `<div class="fb-col">${A.fbLink(S.facebookSurgery, 'big')}${A.fbFrame(S.facebook, 600, 'timeline', S.facebookSurgery)}</div>` : ''}<div class="upd-list">${news.slice(0, 4).map((p, i) => postCard(p, i)).join('')}</div></div></div>
     </section>
 
     <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
@@ -285,6 +405,7 @@
     bindChips(A.qs('.reviews-s'), k => { A.qsa('.ba-card', rail).forEach(c => c.hidden = !(k === 'all' || c.dataset.cat === k)); rail.scrollTo({left:0}); });
     mountStories(A.qs('#stories'));
     A.fbMount(main());
+    bindOffers(A.qs('.promos-s'));
   }
 
   /* =================== SERVICES =================== */
@@ -367,7 +488,7 @@
       </div>
     </section>
 
-    ${promos.length ? `<section class="section washed"><div class="wrap"><div class="shead"><div><p class="eyebrow rv">${E((D.promoTag || []).join(' · '))}</p><h2 class="h-xl rv">${E(D.promoH || T('promosH'))}</h2></div><a class="link-arrow rv" href="promotions.html?c=${E(key)}">${E(T('viewAll'))} ${I('arrow-right')}</a></div>${promoGrid(promos)}</div></section>` : ''}
+    ${promos.length ? `<section class="section washed"><div class="wrap"><div class="shead"><div><p class="eyebrow rv">${E((D.promoTag || []).join(' · '))}</p><h2 class="h-xl rv">${E(D.promoH || T('promosH'))}</h2></div><a class="link-arrow rv" href="promotions.html?c=${E(key)}">${E(T('viewAll'))} ${I('arrow-right')}</a></div>${promoGrid(promos, S, {cat:key})}</div></section>` : ''}
 
     ${(D.faqs || []).length ? `<section class="section faq-s"><div class="wrap">
       <h2 class="h-l faq-h rv" data-field="svc.faqH">${E(D.faqH || T('faqH'))}</h2>
@@ -383,7 +504,8 @@
     A.bindMedia(main()); bindPlan(main());
     A.railCtrl(A.qs('#rv-rail'), A.qs('#rv-prev'), A.qs('#rv-next'));
     mountStories(A.qs('#stories'), {procedure:key});
-    mountCompare(A.qs('#ba'), D.ba || [], D.key);
+    mountShowcase(A.qs('#ba'), baCases(D.ba || [], S, {cat:key, onService:true}), {tileFacts:true});
+    bindOffers(main());
     A.jsonld({'@context':'https://schema.org','@type':'MedicalProcedure', name:D.name, alternateName:D.en, description:D.desc, procedureType:'https://schema.org/SurgicalProcedure', howPerformed:(D.intro || [])[0], followup:((RECOVERY[A.lang] || {})[key] || []).map(r => r.join(': ')).join('; '), performer:{'@type':'Physician', name:(S.doctor || {}).name}});
     if ((D.faqs || []).length) A.jsonld({'@context':'https://schema.org','@type':'FAQPage', mainEntity:D.faqs.map(q => ({'@type':'Question', name:q.q, acceptedAnswer:{'@type':'Answer', text:(q.a || []).join(' ')}}))});
     A.breadcrumbLd(crumbs.map((c, i) => [c[0], c[1] || location.href]));
@@ -453,16 +575,20 @@
     const items = D.items || [];
     const start = A.param('c') && SVC_CATS.includes(A.param('c')) ? A.param('c') : 'all';
     const filters = (D.filters || [{k:'all', x:T('all')}]).map(f => [f.k, f.k === 'all' ? T('all') : f.x]).filter(([k]) => k === 'all' || items.some(i => i.cat === k));
+    const si = items.findIndex(p => p.price);
+    const offers = items.map(p => offerOf(p, S));
     main().innerHTML = phead(D.h1 || T('promotions'), T('promosSub'), [homeCrumb(), [T('promotions')]]) + `
-      <section class="section" style="padding-top:50px"><div class="wrap">
-        ${chips(filters, start)}
-        <div id="pgrid">${promoGrid(items)}</div>
+      ${si >= 0 ? `<section class="section night offer-spot-s"><div class="wrap">${offerSpot(items[si], S)}</div></section>` : ''}
+      <section class="section offers-s"><div class="wrap">
+        <div class="offers-bar">${chipsCount(filters, offers, start)}<div class="offers-cur" data-cur-picker></div></div>
+        <div id="pgrid">${promoGrid(items, S, {game:true})}</div>
         <p class="note" style="margin-top:30px">${E(S.footerNote || '')}</p></div></section>
       <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
-    const apply = k => A.qsa('#pgrid .promo').forEach((el, i) => el.hidden = !(k === 'all' || items[i].cat === k));
+    const apply = k => A.qsa('#pgrid .offer:not(.offer-game)').forEach(el => el.hidden = !(k === 'all' || el.dataset.cat === k));
     apply(start);
     bindChips(main(), apply);
     A.bindMedia(main());
+    bindOffers(main());
   }
 
   /* =================== REVIEWS =================== */
@@ -498,17 +624,16 @@
       ${stories.length ? `<section class="section stories-s"><div class="wrap">
         <div class="shead"><h2 class="h-xl rv">${E(T('storiesH'))}</h2>${sCats.length > 1 ? chips([['all', T('all')], ...sCats.map(k => [k, svcName(S, k)])], 'all').replace('class="chips"', 'class="chips st-chips"') : ''}</div>
         <div class="story-grid" id="sgrid">${stories.map((x, i) => storyCard(x, i, S)).join('')}</div></div></section>` : ''}
-      <section class="section washed ba-wall"><div class="wrap">
-        <div class="shead"><h2 class="h-xl rv">${E(T('baH'))}</h2><p class="note rv">${E(T('resultsVary'))}</p></div>
-        ${chips([['all', T('all')], ...SVC_CATS.filter(k => items.some(r => r.cat === k)).map(k => [k, svcName(S, k)])], 'all').replace('class="chips"', 'class="chips ba-chips"')}
-        <div class="rev-grid" id="rgrid">${items.map((r, i) => `<button type="button" class="rev-tile ph-img rv" data-d="${(i%4)*50}" data-cat="${E(r.cat || '')}" ${g.attr(i)}><img src="${IMG(r.src)}" alt="${E(r.alt || svcName(S, r.cat))}" loading="lazy"><span class="rt-tag">${E(svcName(S, r.cat))}</span></button>`).join('')}</div></div></section>
+      <section class="section night ba-wall"><div class="wrap">
+        <div class="shead"><h2 class="h-xl rv">${E(T('baH'))}</h2><p class="note on-night rv">${E(T('resultsVary'))}</p></div>
+        <div id="ba" class="ba-host">${baGrid(items.map(r => r.src), T('baH'))}</div></div></section>
       <section class="section night"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(H.reviewsRealH || T('storiesH'))}</h2></div>${storiesHost(H.videos, 'stories', H.reviewsRealH)}</div></section>
       <section class="section"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(T('updatesH'))}</h2><a class="link-arrow rv" href="blog.html?c=review">${E(T('viewAll'))} ${I('arrow-right')}</a></div>
-        <div class="updates2">${S.facebook ? A.fbFrame(S.facebook, 640) : ''}<div class="upd-list">${others.slice(0, 4).map((p, i) => postCard(p, i)).join('')}</div></div></div></section>
+        <div class="updates2">${S.facebook ? `<div class="fb-col">${A.fbLink(S.facebookSurgery, 'big')}${A.fbFrame(S.facebook, 600, 'timeline', S.facebookSurgery)}</div>` : ''}<div class="upd-list">${others.slice(0, 4).map((p, i) => postCard(p, i)).join('')}</div></div></div></section>
       <section class="section washed"><div class="wrap">${A.consultBand(S)}</div></section>`;
     const sg = A.qs('#sgrid');
     if (sg) bindChips(A.qs('.stories-s'), k => A.qsa('.story', sg).forEach(el => el.hidden = !(k === 'all' || el.dataset.cat === k)));
-    bindChips(A.qs('.ba-wall'), k => A.qsa('#rgrid .rev-tile').forEach(el => el.hidden = !(k === 'all' || el.dataset.cat === k)));
+    mountShowcase(A.qs('#ba'), baCases(items, S), {cats:SVC_CATS.map(k => ({k, x:svcName(S, k)}))});
     A.bindMedia(main());
     mountStories(A.qs('#stories'));
     A.fbMount(main());

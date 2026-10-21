@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Before and after showcase lab</title>
+<link rel="icon" href="../assets/img/favicon.svg">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="_lab.css">
+<style>#show{background:#1F0A30;padding:24px 16px 48px}</style>
+</head>
+<body>
+<div class="lab-bar">
+  <b>Before and after showcase lab</b>
+  <div class="grp">
+    <button type="button" data-lang="th">TH</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+</div>
+<div id="show"></div>
+<div id="events"></div>
+<script type="module">
+  import { mount } from '../assets/features/compare/showcase.js';
+  import { lab } from './_lab.js';
+  /* Lab fixtures: compare-demo/composite-lr.svg is a line drawing for testing offline. */
+  const ask = { line: 'https://line.me/R/oaMessage/@apexsurgery/', wa: 'https://wa.me/66850002001' };
+  const cases = lang => [0, 1, 2, 3, 4, 5].map(i => ({ src: 'compare-demo/composite-lr.svg', layout: 'lr', cat: i < 3 ? 'facelift' : 'lipo',
+    procName: i < 3 ? (lang === 'th' ? 'ดึงหน้า' : 'Facelift') : (lang === 'th' ? 'ดูดไขมัน' : 'Liposuction'),
+    facts: i < 3 ? [[lang === 'th' ? 'บริเวณ' : 'Area', lang === 'th' ? 'ใบหน้าและลำคอ' : 'Face and neck']] : [[lang === 'th' ? 'เทคนิค' : 'Technique', 'J-Plasma']],
+    ask, links: [] }));
+  lab({ el: document.getElementById('show'), mountFn: (el, o) => mount(el, { ...o, cases: cases(o.lang),
+    cats: [{ k: 'facelift', x: o.lang === 'th' ? 'ดึงหน้า' : 'Facelift' }, { k: 'lipo', x: o.lang === 'th' ? 'ดูดไขมัน' : 'Liposuction' }],
+    vary: o.lang === 'th' ? 'ผลลัพธ์ขึ้นอยู่กับแต่ละบุคคล' : 'Results may vary from person to person.' }) });
+</script>
+</body>
+</html>

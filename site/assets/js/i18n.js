@@ -70,10 +70,12 @@ APEX.I18N = {
     directions: 'Directions', mapTitle: 'Map', branchPick: 'Choose a branch',
     readMin: '{n} min read', keyFacts: 'Key facts', procedure: 'Procedure', inArticle: 'In this article',
     readStory: 'Read the story', storyPhotos: 'Photos from the review',
-    fbH: 'Apex Surgery on Facebook', fbOpen: 'Open the Facebook page', updatesH: 'News and updates',
+    fbH: 'Apex on Facebook', fbOpen: 'Open the Facebook page', updatesH: 'News and updates',
     aaciH: 'AACI accreditation', aaciP: 'APEX Surgery Hospital Ploenchit holds AACI accreditation.',
     doctorsH: 'Our doctors', founderCta: 'Founder profile', yearsH: 'Milestones',
     stepN: 'Step', photoCredit: 'Photo: Unsplash', image: 'Open image',
+    askOffer: 'Ask about this offer', askPrice: 'Ask for the price', allIn: 'All-in price', reviewCase: 'Review case',
+    featuredOffer: 'Featured offer', approx: 'Approximate', gameTie: 'Play and win an Apex voucher',
   },
   th: {
     home: 'หน้าแรก', about: 'เกี่ยวกับเรา', services: 'บริการ', promotions: 'โปรโมชั่น', reviews: 'รีวิว',
@@ -144,9 +146,11 @@ APEX.I18N = {
     directions: 'เส้นทาง', mapTitle: 'แผนที่', branchPick: 'เลือกสาขา',
     readMin: 'อ่าน {n} นาที', keyFacts: 'ข้อมูลสำคัญ', procedure: 'หัตถการ', inArticle: 'ในบทความนี้',
     readStory: 'อ่านเรื่องราว', storyPhotos: 'รูปจากรีวิว',
-    fbH: 'Apex Surgery บน Facebook', fbOpen: 'เปิดเพจ Facebook', updatesH: 'ข่าวสารและอัปเดต',
+    fbH: 'Apex บน Facebook', fbOpen: 'เปิดเพจ Facebook', updatesH: 'ข่าวสารและอัปเดต',
     aaciH: 'การรับรองมาตรฐาน AACI', aaciP: 'APEX Surgery Hospital Ploenchit ได้รับการรับรองมาตรฐาน AACI',
     doctorsH: 'แพทย์ของเรา', founderCta: 'ประวัติผู้ก่อตั้ง', yearsH: 'เส้นทางการทำงาน',
     stepN: 'ขั้นตอน', photoCredit: 'ภาพ: Unsplash', image: 'เปิดรูป',
+    askOffer: 'สอบถามโปรโมชั่นนี้', askPrice: 'สอบถามราคา', allIn: 'ราคาเหมา', reviewCase: 'เคสรีวิว',
+    featuredOffer: 'โปรโมชั่นแนะนำ', approx: 'โดยประมาณ', gameTie: 'เล่นเกมรับบัตรกำนัล Apex',
   }
 };

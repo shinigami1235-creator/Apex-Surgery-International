@@ -17,7 +17,7 @@ PAGES = [
     ('index.html',      'home',       ['home', 'about'],        '',               'home'),
     ('about.html',      'about',      ['about', 'founder'],                'about-us/',      'about'),
     ('services.html',   'services',   ['services'],             'surgery/',       'services'),
-    ('service.html',    'service',    [],                       'surgery/',       None),
+    ('service.html',    'service',    ['posts'],                       'surgery/',       None),
     ('doctor.html',     'doctor',     ['founder'],                       'doctor/',        None),
     ('promotions.html', 'promotions', ['promotions'],           'promotions/',    'promotions'),
     ('reviews.html',    'reviews',    ['reviews', 'posts', 'home'], 'reviews/',   'reviews'),

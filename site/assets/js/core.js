@@ -436,24 +436,37 @@
   };
   document.addEventListener('click', e => { const b = e.target.closest('[data-copy]'); if (b) { e.preventDefault(); A.copy(b.dataset.copy, b); } });
 
-  /* ---------- Facebook page plugin, mounted when it comes near the viewport ---------- */
-  A.fbFrame = (f, h=640, tabs='timeline') => `<div class="fbframe rv"><div class="fbhead"><span class="fb-ic">${A.ic('facebook')}</span><span class="fb-name"><b>${A.esc(f.x)}</b><small>facebook.com/${A.esc(f.h.split('/').filter(Boolean).pop())}</small></span><a class="fb-open" href="${f.h}" target="_blank" rel="noopener" aria-label="${A.esc(A.t('fbOpen'))}" title="${A.esc(A.t('fbOpen'))}">${A.ic('arrow-up-right')}</a></div>
-    <div class="fb-box" style="height:${h}px"><div class="fb-skel" aria-hidden="true"><i></i><i></i><i></i><i></i></div><iframe data-fb="${encodeURIComponent(f.h)}" data-h="${h}" data-tabs="${tabs}" height="${h}" title="${A.esc(f.x)} · Facebook" allow="encrypted-media" loading="lazy"></iframe></div></div>`;
+  /* ---------- Facebook page plugin, mounted when it comes near the viewport ----------
+     apexsurgerythailand is restricted (age or country), so the plugin returns an empty page for it.
+     The live feed is the group's international page; the surgery page gets its own link card.
+     If the plugin has not loaded within 8 seconds, a follow card with both pages replaces the empty box. */
+  const fbHandle = f => f.h.split('/').filter(Boolean).pop();
+  A.fbLink = (f, cls='') => f ? `<a class="fb-link ${cls}" href="${f.h}" target="_blank" rel="noopener"><span class="fb-ic">${A.ic('facebook')}</span><span class="fb-name"><b>${A.esc(f.x)}</b><small>facebook.com/${A.esc(fbHandle(f))}</small></span>${A.ic('arrow-up-right')}</a>` : '';
+  A.fbFrame = (f, h=640, tabs='timeline', also) => `<div class="fbframe rv"><div class="fbhead"><span class="fb-ic">${A.ic('facebook')}</span><span class="fb-name"><b>${A.esc(f.x)}</b><small>facebook.com/${A.esc(fbHandle(f))}</small></span><a class="fb-open" href="${f.h}" target="_blank" rel="noopener" aria-label="${A.esc(A.t('fbOpen'))}: ${A.esc(f.x)}" title="${A.esc(A.t('fbOpen'))}">${A.ic('arrow-up-right')}</a></div>
+    <div class="fb-box" style="height:${h}px"><div class="fb-skel" aria-hidden="true"><i></i><i></i><i></i><i></i></div><iframe data-fb="${encodeURIComponent(f.h)}" data-h="${h}" data-tabs="${tabs}" height="${h}" title="${A.esc(f.x)} · Facebook" allow="encrypted-media" loading="lazy"></iframe>
+      <div class="fb-fallback" hidden><span class="fb-big">${A.ic('facebook')}</span><b class="h-s">${A.esc(A.t('fbH'))}</b>${A.fbLink(f)}${A.fbLink(also)}</div></div></div>`;
   A.fbMount = root => {
     const frs = A.qsa('iframe[data-fb]', root);
     const set = fr => {
-      const w = Math.max(180, Math.min(500, Math.floor(fr.clientWidth)));
-      if (!fr.clientWidth || Math.abs(w - (+fr.dataset.w || 0)) < 30) return;
+      const box = fr.parentElement;
+      const w = Math.max(180, Math.min(500, Math.floor(box.clientWidth)));
+      if (!box.clientWidth || Math.abs(w - (+fr.dataset.w || 0)) < 30) return;
       fr.dataset.w = w;
+      fr.style.width = w + 'px';
       fr.src = `https://www.facebook.com/plugins/page.php?href=${fr.dataset.fb}&tabs=${fr.dataset.tabs}&width=${w}&height=${fr.dataset.h}&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false`;
-      fr.addEventListener('load', () => fr.classList.add('on'), {once:true});
     };
-    const go = fr => { fr.dataset.go = 1; set(fr); };
+    const go = fr => {
+      fr.dataset.go = 1;
+      const box = fr.parentElement;
+      fr.addEventListener('load', () => { fr.dataset.ok = 1; fr.classList.add('on'); box.classList.add('loaded'); }, {once:true});
+      set(fr);
+      setTimeout(() => { if (!fr.dataset.ok) { box.classList.add('fb-fail'); fr.remove(); const fb = A.qs('.fb-fallback', box); if (fb) fb.hidden = false; A.emit('facebook:fallback', {}); } }, 8000);
+    };
     if ('IntersectionObserver' in window) {
       const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { io.unobserve(e.target); go(e.target); } }), {rootMargin:'300px 0px'});
       frs.forEach(f => io.observe(f));
     } else frs.forEach(go);
-    let t; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => frs.filter(f => f.dataset.go).forEach(set), 300); });
+    let t; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => frs.filter(f => f.dataset.go && f.isConnected).forEach(set), 300); });
   };
 
   /* ---------- branches: switcher, photo, address copy, actions, lazy Google map ---------- */
