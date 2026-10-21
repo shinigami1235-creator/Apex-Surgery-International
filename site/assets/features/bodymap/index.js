@@ -72,8 +72,8 @@ const AREAS = [
   { k: 'calves', zr: 3.2, lvl: 'body', reg: [REG.calves], a: 2.6, side: 1, proc: 'lipo', name: C('Calves', 'น่อง'),
     cn: [C('Large calves from fat', 'น่องใหญ่จากไขมันสะสม')] },
   /* face level */
-  { k: 'facelift', zr: 1.0, lvl: 'face', reg: [REG.neck], a: .62, side: 1, proc: 'facelift', name: C('Face and neck', 'ใบหน้าและลำคอ'),
-    cn: [C('Sagging cheeks', 'แก้มหย่อนคล้อย'), C('Deep smile lines', 'ร่องน้ำหมากลึก'), C('Jowls and a blurred jawline', 'กรอบหน้าหย่อน ไม่ชัดเหมือนเก่า'), C('Loose neck skin', 'ผิวลำคอหย่อนคล้อย')] },
+  { k: 'facelift', zr: 1.0, lvl: 'face', a: .62, side: 1, proc: 'facelift', name: C('Face', 'ใบหน้า'),
+    cn: [C('Sagging cheeks', 'แก้มหย่อนคล้อย'), C('Deep smile lines', 'ร่องน้ำหมากลึก'), C('Jowls and a blurred jawline', 'กรอบหน้าหย่อน ไม่ชัดเหมือนเก่า')] },
   { k: 'brows', zr: 0.85, lvl: 'face', a: .12, proc: 'browlift', name: C('Forehead and brows', 'หน้าผากและคิ้ว'),
     cn: [C('Low or heavy brows', 'คิ้วตก'), C('Deep forehead lines', 'ริ้วรอยลึกบริเวณหน้าผาก'), C('Sagging forehead skin', 'ผิวหน้าผากหย่อนคล้อย')] },
   { k: 'eyes', zr: 0.75, lvl: 'face', a: .18, proc: 'eyelid', name: C('Eyes', 'ดวงตา'),
@@ -81,7 +81,10 @@ const AREAS = [
   { k: 'nose', zr: 0.8, lvl: 'face', a: .48, proc: 'rhinoplasty', name: C('Nose', 'จมูก'),
     cn: [C('Low bridge', 'จมูกแบน สันจมูกน้อย'), C('Short or bulbous tip', 'ปลายจมูกสั้นทู่ หรือปลายจมูกชมพู่'), C('Hump or crooked nose', 'จมูกเบี้ยวคด หรือมีฮัมพ์'), C('Wide nostrils', 'ปีกจมูกกว้างหรือบาน'), C('Problems from a previous nose surgery', 'ปัญหาจากจมูกที่เคยเสริมมาแล้ว')] },
   { k: 'chin', zr: 0.95, lvl: 'face', a: .5, proc: 'lipo', name: C('Chin and jaw', 'เหนียงและกรอบหน้า'),
-    cn: [C('Fat under the chin', 'ไขมันใต้คาง'), C('Undefined jawline', 'กรอบหน้าไม่คมชัด')] }
+    cn: [C('Fat under the chin', 'ไขมันใต้คาง'), C('Undefined jawline', 'กรอบหน้าไม่คมชัด')] },
+  /* area ids in heads.bin follow this order: 0 face, 1 brows, 2 eyes, 3 nose, 4 chin, 5 neck */
+  { k: 'neck', zr: 1.25, lvl: 'face', reg: [REG.neck], a: .55, side: 1, proc: 'facelift', name: C('Neck', 'ลำคอ'),
+    cn: [C('Loose neck skin', 'ผิวลำคอหย่อนคล้อย'), C('Sagging skin under the chin', 'เหนียงใต้คางหย่อน'), C('Deep neck lines', 'ริ้วรอยลึกบริเวณลำคอ')] }
 ];
 const AREA = Object.fromEntries(AREAS.map(a => [a.k, a]));
 const FACE_KEYS = AREAS.filter(a => a.lvl === 'face').map(a => a.k);
@@ -634,7 +637,7 @@ export function mount(container, opts = {}){
   async function start(){
     const THREE = await import(opts.threeUrl || THREE_URL);
     if (destroyed) return;
-    const r = await fetch(opts.bodiesUrl || new URL('bodies.bin', HERE).href).catch(() => null);
+    const r = await fetch(opts.bodiesUrl || new URL('bodies.bin' + new URL(import.meta.url).search, HERE).href).catch(() => null);
     if (!r || !r.ok) throw Object.assign(new Error('body'), { bodymap: 1 });
     const bodies = decodeBodies(await r.arrayBuffer());
     if (destroyed) return;
@@ -772,7 +775,8 @@ export function mount(container, opts = {}){
           const f = Nn[j * 3] * dir[0] + Nn[j * 3 + 2] * dir[2];
           let ok = f > .55;
           if (k === 'eyes') ok = ok && x > .08;
-          if (k === 'facelift') ok = ok && x > .22 && y < cen[1] - .5 && y > cen[1] - .66;
+          if (k === 'facelift') ok = ok && x > .3 && Math.abs(y - cen[1]) < .14;
+          if (k === 'neck') ok = ok && x > .2;
           if (ok) { ax += x; ay += y; az += z; ac++; }
         }
         let anc = ac ? [ax / ac + dir[0] * .05, ay / ac, az / ac + dir[2] * .05] : cen;
@@ -802,7 +806,7 @@ export function mount(container, opts = {}){
     }
     function ensureFace(){
       if (face) return Promise.resolve(face);
-      if (!faceLoading) faceLoading = fetch(opts.headsUrl || new URL('heads.bin', HERE).href)
+      if (!faceLoading) faceLoading = fetch(opts.headsUrl || new URL('heads.bin' + new URL(import.meta.url).search, HERE).href)
         .then(r => { if (!r.ok) throw new Error('heads'); return r.arrayBuffer(); })
         .then(b => { if (destroyed) return null; face = buildHead(decodeHeads(b)); return face; })
         .catch(() => { faceLoading = null; const p = document.createElement('p'); p.className = 'bm-err'; p.setAttribute('role', 'status'); p.textContent = T.faceError; root.appendChild(p); setTimeout(() => p.remove(), 4000); return null; });
@@ -898,7 +902,7 @@ export function mount(container, opts = {}){
           const s = faceArea(k); if (!s) return;
           requestAnimationFrame(() => {
             const { d, li } = fitDist(a.zr, a.zr);
-            const ty = k === 'facelift' ? s.cen[1] - .25 : s.cen[1];
+            const ty = k === 'neck' ? s.cen[1] + .4 : s.cen[1];
             goTo({ tx: s.cen[0] * .6, ty, tz: s.cen[2] - .1, dist: d, el: k === 'chin' ? -.12 : .03, ox: li.ox, oy: li.oy }, keep ? undefined : a.a, keep ? 700 : 1300);
           });
         };
@@ -976,7 +980,7 @@ export function mount(container, opts = {}){
         if (dd < thr && dd + depth * .5 < bestD) { bestD = dd + depth * .5; best = reg; }
       }
       if (best === null) return null;
-      if (best === REG.neck && mode === 'face') return 'facelift';
+      if (best === REG.neck && mode === 'face') return 'neck';
       if (best === REG.head || best === REG.neck) return mode === 'face' ? null : 'face';
       const a = AREAS.find(x => x.lvl === 'body' && x.reg[0] === best);
       return a ? a.k : null;

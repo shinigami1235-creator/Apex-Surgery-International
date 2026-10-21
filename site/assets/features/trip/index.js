@@ -26,7 +26,19 @@ export const SURGERY_AFTER_CONSULT = 1;
 /* Follow-up check this many days before the earliest flight home. */
 export const FOLLOWUP_BEFORE_FLIGHT = 1;
 
+const WHATSAPP = '66850002001';
+const LINE_OA = '@apexsurgery';
 const T = {
+  sendH: { en: 'Send these dates to Apex', th: 'ส่งวันเหล่านี้ให้ Apex' },
+  sendP: { en: 'The team checks the surgeon\'s schedule and replies with the dates they can do.', th: 'ทีมงานจะเช็กตารางศัลยแพทย์และตอบกลับวันที่ทำได้' },
+  sendWa: { en: 'Send on WhatsApp', th: 'ส่งทาง WhatsApp' },
+  sendLine: { en: 'Send on LINE', th: 'ส่งทาง LINE' },
+  msgHi: { en: 'Hello Apex, I would like to book these dates.', th: 'สวัสดี Apex อยากจองวันตามนี้' },
+  msgProc: { en: 'Procedure', th: 'หัตถการ' },
+  msgBranch: { en: 'Branch', th: 'สาขา' },
+  msgArrive: { en: 'Arrival', th: 'วันเดินทางมาถึง' },
+  msgSurgery: { en: 'Surgery', th: 'วันผ่าตัด' },
+  msgFly: { en: 'Flying home', th: 'วันเดินทางกลับ' },
   title: { en: 'Trip planner', th: 'วางแผนการเดินทาง' },
   procs: { en: 'Procedure', th: 'หัตถการ' },
   procsHint: { en: 'Which procedures are you planning? Choose one or more.', th: 'วางแผนทำหัตถการอะไรบ้าง เลือกได้มากกว่าหนึ่ง' },
@@ -153,6 +165,12 @@ const CSS = `
 .apxt .t-btn.plum:hover{background:var(--t-plum7)}
 .apxt .t-btn.ghost{background:#fff;color:var(--t-plum);border-color:var(--t-l3)}
 .apxt .t-btn.ghost:hover{border-color:var(--t-plum)}
+.apxt .t-btn.wa{background:#25D366;color:#fff}.apxt .t-btn.wa:hover{background:#1ebe5a}
+.apxt .t-btn.line{background:#06C755;color:#fff}.apxt .t-btn.line:hover{background:#05b04b}
+.apxt .t-send{margin-top:22px;padding:18px;border-radius:18px;background:var(--t-l1);box-shadow:inset 0 0 0 1px var(--t-l2)}
+.apxt .t-send h4{margin:0 0 4px;font-size:17px}
+.apxt .t-send p{margin:0;color:var(--t-ink2,#5A4A66);font-size:15px}
+.apxt .t-send .t-acts{margin-top:12px}
 .apxt .t-btn.done{background:var(--t-l1);color:var(--t-plum7);border-color:var(--t-l2)}
 .apxt :is(a,button):focus-visible{outline:3px solid var(--t-lilac);outline-offset:2px}
 .apxt [hidden]{display:none!important}
@@ -435,6 +453,16 @@ export function mount(container, opts = {}) {
       saveBtn.innerHTML = ICON.check + `<span>${L(T.savedPlan)}</span>`;
     });
     out.append(h('div', { class: 't-acts' }, icsBtn, saveBtn));
+    const msg = [L(T.msgHi),
+      `${L(T.msgProc)}: ${p.procedures.map(k => procName(k, lang)).join(', ')}`,
+      `${L(T.msgBranch)}: ${bName}`,
+      `${L(T.msgArrive)}: ${fmtLong(p.arrival, lang)}`,
+      `${L(T.msgSurgery)}: ${fmtLong(p.surgery, lang)}`,
+      `${L(T.msgFly)}: ${fmtLong(p.flyHome, lang)}`].join('\n');
+    const wa = h('a', { class: 't-btn wa', target: '_blank', rel: 'noopener', 'data-act': 'wa', href: `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`, html: `<span>${L(T.sendWa)}</span>` });
+    const ln = h('a', { class: 't-btn line', target: '_blank', rel: 'noopener', 'data-act': 'line', href: `https://line.me/R/oaMessage/${LINE_OA}/?${encodeURIComponent(msg)}`, html: `<span>${L(T.sendLine)}</span>` });
+    [wa, ln].forEach(a => a.addEventListener('click', () => emit('trip:send', { channel: a.dataset.act, procedures: p.procedures, branch: p.branch, arrival: p.arrival })));
+    out.append(h('div', { class: 't-send' }, h('h4', null, L(T.sendH)), h('p', null, L(T.sendP)), h('div', { class: 't-acts' }, wa, ln)));
     if (savedNow || links.plan) out.append(h('p', null, h('a', { class: 't-link', href: links.plan }, L(T.openPlan))));
   }
 

@@ -13,6 +13,17 @@ SITE = os.path.join(ROOT, 'site')
 PROD = 'https://www.apexsurgeryhospital.com/'
 
 # page file -> (data-page key, extra data files, production path, title key or data id, i18n fallback keys)
+import hashlib
+def _asset_version():
+    h = hashlib.sha1()
+    for root, dirs, files in sorted(os.walk(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'site', 'assets'))):
+        dirs.sort()
+        for f in sorted(files):
+            if f.endswith(('.js', '.css', '.bin')):
+                h.update(open(os.path.join(root, f), 'rb').read())
+    return h.hexdigest()[:8]
+ASSET_V = _asset_version()  # added to asset URLs so browsers fetch new files after each change
+
 PAGES = [
     ('index.html',      'home',       ['home', 'about', 'founder'],        '',               'home'),
     ('about.html',      'about',      ['about', 'founder'],                'about-us/',      'about'),
@@ -144,7 +155,7 @@ def page_html(lang, fname, key, extras, prod_path, meta_id):
             {'@type': 'ListItem', 'position': 2, 'name': title.split('|')[0].strip(), 'item': canon}]})
     ld_html = '\n'.join(f'<script type="application/ld+json">{json.dumps(x, ensure_ascii=False)}</script>' for x in ld)
 
-    data_scripts = ''.join(f'<script src="{up}assets/data/{lang}/{n}.js"></script>\n' for n in ['shared'] + extras)
+    data_scripts = ''.join(f'<script src="{up}assets/data/{lang}/{n}.js?v={ASSET_V}"></script>\n' for n in ['shared'] + extras)
     # PREVIEW is True for the GitHub Pages review copy so search engines skip it. Set it to False for the live site.
     robots = '<meta name="robots" content="noindex">' if (PREVIEW or key in ('notfound', 'plan')) else ''
     return f'''<!doctype html>
@@ -172,8 +183,8 @@ def page_html(lang, fname, key, extras, prod_path, meta_id):
 <link rel="icon" href="{up}assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="{up}assets/fonts/LINESeedSansTH-Rg.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preconnect" href="https://www.apexsurgeryhospital.com">
-<link rel="stylesheet" href="{up}assets/css/base.css">
-<link rel="stylesheet" href="{up}assets/css/site.css">
+<link rel="stylesheet" href="{up}assets/css/base.css?v={ASSET_V}">
+<link rel="stylesheet" href="{up}assets/css/site.css?v={ASSET_V}">
 <script>
 /* local testing only: serve the 3D library from the lab copy when the page runs on this machine */
 if (/^(localhost|127\\.0\\.0\\.1)$/.test(location.hostname)) {{
@@ -187,10 +198,11 @@ if (/^(localhost|127\\.0\\.0\\.1)$/.test(location.hostname)) {{
 <body data-page="{key}">
 <main id="main" tabindex="-1"></main>
 <noscript><p style="padding:120px 20px;text-align:center">Apex Surgery Hospital · 088-870-0039 · LINE @apexsurgery</p></noscript>
-<script src="{up}assets/js/icons.js"></script>
-<script src="{up}assets/js/i18n.js"></script>
-{data_scripts}<script src="{up}assets/js/core.js"></script>
-<script src="{up}assets/js/pages.js"></script>
+<script>window.APEX_V="{ASSET_V}"</script>
+<script src="{up}assets/js/icons.js?v={ASSET_V}"></script>
+<script src="{up}assets/js/i18n.js?v={ASSET_V}"></script>
+{data_scripts}<script src="{up}assets/js/core.js?v={ASSET_V}"></script>
+<script src="{up}assets/js/pages.js?v={ASSET_V}"></script>
 </body>
 </html>
 '''

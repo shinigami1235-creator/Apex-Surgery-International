@@ -153,7 +153,7 @@
     if (!el) return;
     const videos = JSON.parse(el.dataset.videos || '[]').map(v => IMG(v));
     try {
-      const m = await import(new URL(A.assets + 'features/stories/index.js', location.href).href);
+      const m = await import(A.vurl(A.assets + 'features/stories/index.js'));
       el.innerHTML = ''; el.classList.add('feat-on');
       m.mount(el, A.featureOpts(Object.assign({videos, title:false, layout:'reels'}, extra)));
     } catch (e) { /* keep the plain rail */ }
@@ -163,7 +163,7 @@
   const mountCompare = async (el, pairs, key) => {
     if (!el) return;
     try {
-      const m = await import(new URL(A.assets + 'features/compare/index.js', location.href).href);
+      const m = await import(A.vurl(A.assets + 'features/compare/index.js'));
       el.innerHTML = ''; el.classList.add('feat-on');
       m.mount(el, A.featureOpts({items:pairs.map(s => IMG(s)), layout:BA_LAYOUT[key] || 'single', title:false}));
     } catch (e) { /* keep the gallery grid */ }
@@ -203,7 +203,7 @@
   const mountShowcase = async (el, cases, extra={}) => {
     if (!el || !cases.length) return;
     try {
-      const m = await import(new URL(A.assets + 'features/compare/showcase.js', location.href).href);
+      const m = await import(A.vurl(A.assets + 'features/compare/showcase.js'));
       el.innerHTML = ''; el.classList.add('feat-on');
       m.mount(el, A.featureOpts(Object.assign({cases, vary:T('resultsVary')}, extra)));
     } catch (e) { console.warn('[apex] showcase', e); }
@@ -277,7 +277,7 @@
   const bindOffers = async root => {
     if (!root) return;
     try {
-      const C = await import(new URL(A.assets + 'features/currency/index.js', location.href).href);
+      const C = await import(A.vurl(A.assets + 'features/currency/index.js'));
       C.refresh(root);
       A.qsa('[data-cur-picker]', root).forEach(el => C.picker(el, {lang:A.lang, onEvent:(n, d) => A.emit(n, d)}));
     } catch (e) { /* prices stay in baht */ }

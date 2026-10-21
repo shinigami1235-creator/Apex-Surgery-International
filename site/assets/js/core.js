@@ -51,6 +51,8 @@
     try { window.dispatchEvent(new CustomEvent('apex:event', {detail:{name, data:data || {}, lang:A.lang, page:document.body.dataset.page}})); } catch (e) {}
     try { (window.dataLayer = window.dataLayer || []).push({event:'apex_' + name.replace(/[^a-z0-9]+/gi, '_'), apex:data || {}}); } catch (e) {}
   };
+  /* feature modules carry the build version so a new deploy is fetched fresh */
+  A.vurl = path => { const u = new URL(path, location.href); if (window.APEX_V) u.searchParams.set('v', window.APEX_V); return u.href; };
   A.featureOpts = (extra={}) => Object.assign({
     lang: A.lang,
     base: new URL(A.assets, location.href).href,
@@ -63,7 +65,7 @@
     if (!el) return null;
     el.classList.add('feat-host');
     try {
-      const m = await import(new URL(A.assets + 'features/' + name + '/index.js', location.href).href);
+      const m = await import(A.vurl(A.assets + 'features/' + name + '/index.js'));
       el.innerHTML = ''; el.classList.add('feat-on');
       return m.mount(el, A.featureOpts(extra));
     } catch (e) {

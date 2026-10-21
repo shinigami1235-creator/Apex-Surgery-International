@@ -30,7 +30,8 @@ Output heads.bin (little endian):
   Uint8    x 2N  female normal, octahedral (u, v)
   Uint8    x 2N  male normal, octahedral
   Uint8    x N   area id (low 4 bits) | kind (high 4 bits)
-     area: 0 face and neck, 1 forehead and brows, 2 eyes, 3 nose, 4 chin and jaw, 15 none
+     area: 0 face, 1 forehead and brows, 2 eyes, 3 nose, 4 chin and jaw, 5 neck, 15 none
+     (eyes and neck are set by relabel_areas.py, run on heads.bin after this script)
      kind: 0 skin, 1 lips, 2 eyeball, 3 ear, 4 scalp, 5 upper lid margin, 6 lower lid margin, 7 lip seam
   Uint8    x N   light occlusion, 0 enclosed to 255 open
 """
