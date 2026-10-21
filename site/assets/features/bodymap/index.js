@@ -253,7 +253,7 @@ void main(){
   /* the detailed head replaces the body's head and upper neck in the face view */
   float keep = r > .5 && r < 1.5 ? 1. - uHide : (r > 1.5 && r < 2.5 ? 1. - uHide * smoothstep(uCut - .12, uCut + .14, p.y) : 1.);
   /* faint contour rings that follow the form */
-  vLine = smoothstep(.05, .0, .5 - abs(fract(p.y * 2.4) - .5)) * (1. - on);
+  vLine = (1. - smoothstep(.0, .05, .5 - abs(fract(p.y * 2.4) - .5))) * (1. - on);
   vHue = hue(p); vJ = aRnd - .5;
   p += n * (sin(uTime * 1.5 + aRnd * 40.) * .012 + on * (.035 + .025 * sin(uTime * 3. + aRnd * 9.)));
   /* satellite copies fill the surface when the camera is close */
@@ -347,8 +347,8 @@ const GROUND_FS = `varying vec2 vUv; uniform float uTime, uIntro;
 void main(){
   float d = length(vUv - .5) * 2.;
   float glow = exp(-d * d * 7.) * .42;
-  float ring = smoothstep(.018, 0., abs(d - .52)) * (.16 + .08 * sin(uTime * 1.2));
-  float ring2 = smoothstep(.012, 0., abs(d - .78)) * .07;
+  float ring = (1. - smoothstep(0., .018, abs(d - .52))) * (.16 + .08 * sin(uTime * 1.2));
+  float ring2 = (1. - smoothstep(0., .012, abs(d - .78))) * .07;
   vec3 col = mix(vec3(.62, .45, .82), vec3(.85, .35, .55), .25);
   gl_FragColor = vec4(col, (glow + ring + ring2) * uIntro);
 }`;
@@ -699,7 +699,7 @@ export function mount(container, opts = {}){
       vertexShader: `attribute float aRnd; uniform float uTime, uPix, uIntro; varying float vA;
         void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.); gl_Position = projectionMatrix * mv;
           vA = (.25 + .35 * sin(uTime * (.8 + aRnd) + aRnd * 30.)) * uIntro; gl_PointSize = clamp(1.6 * 40. / -mv.z, 1., 3.) * uPix; }`,
-      fragmentShader: `varying float vA; void main(){ float d = length(gl_PointCoord - .5); if (d > .5) discard; gl_FragColor = vec4(.78,.66,.92, smoothstep(.5,.0,d) * max(vA, 0.)); }`,
+      fragmentShader: `varying float vA; void main(){ float d = length(gl_PointCoord - .5); if (d > .5) discard; gl_FragColor = vec4(.78,.66,.92, (1. - smoothstep(.0, .5,d)) * max(vA, 0.)); }`,
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
     dust.frustumCulled = false;
     scene.add(dust);
