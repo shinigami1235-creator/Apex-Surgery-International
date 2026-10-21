@@ -144,7 +144,7 @@
   const bindChips = (root, fn) => root.addEventListener('click', e => { const c = e.target.closest('.chip[data-k]'); if (!c) return; A.qsa('.chip[data-k]', c.parentElement).forEach(b => b.setAttribute('aria-pressed', b === c)); fn(c.dataset.k); });
   const reviewRail = (items, id) => {
     const g = A.gallery(items.map(i => ({src:i.src, alt:i.alt || ''})));
-    return `<div class="rail rv-rail" id="${id}">${items.map((r, i) => `<button type="button" class="ba-card ph-img" ${g.attr(i)} data-cat="${E(r.cat || '')}"><img src="${IMG(r.src)}" alt="${E(r.alt || '')}" loading="lazy"></button>`).join('')}</div>`;
+    return `<div class="rail rv-rail" id="${id}">${items.map((r, i) => `<button type="button" class="ba-card ph-img" ${g.attr(i)} data-cat="${E(r.cat || '')}"><img src="${IMG(r.src)}" alt="${E(r.alt || '')}" loading="lazy" decoding="async" decoding="async"></button>`).join('')}</div>`;
   };
   /* review videos: the stories module renders them as a swipe viewer; until it exists, a plain rail */
   const storiesHost = (videos, id='stories', title) => `<div class="stories-host" id="${id}" data-videos='${E(JSON.stringify(videos || []))}' data-title="${E(title || '')}">${videoRail(videos)}</div>`;
@@ -210,10 +210,10 @@
   };
   const baGrid = (imgs, cap) => {
     const g = A.gallery(imgs.map(s => ({src:s})));
-    return `<div class="ba-grid">${imgs.map((s, i) => `<button type="button" class="ba-tile ph-img rv" data-d="${(i%6)*50}" ${g.attr(i)}><img src="${IMG(s)}" alt="${E(cap || 'Before / After')} ${i+1}" loading="lazy"></button>`).join('')}</div>`;
+    return `<div class="ba-grid">${imgs.map((s, i) => `<button type="button" class="ba-tile ph-img rv" data-d="${(i%6)*50}" ${g.attr(i)}><img src="${IMG(s)}" alt="${E(cap || 'Before / After')} ${i+1}" loading="lazy" decoding="async" decoding="async"></button>`).join('')}</div>`;
   };
   const postCard = (p, i=0, big) => `<a class="post-card rv${big ? ' big' : ''}" data-d="${(i%3)*70}" href="${A.postUrl(p.key)}" data-cat="${E(p.cat || '')}">
-    <span class="pc-ph ph-img"><img src="${IMG(p.img)}" alt="" loading="lazy"></span>
+    <span class="pc-ph ph-img"><img src="${IMG(p.img)}" alt="" loading="lazy" decoding="async" decoding="async"></span>
     <span class="pc-meta"><span class="pc-cat">${E(T({review:'catReview', blog:'catBlog', news:'catNews'}[p.cat] || 'articles'))}</span>${p.date ? `<time datetime="${E(p.date)}">${E(A.fmtDate(p.date))}</time>` : ''}</span>
     <span class="pc-title">${E(p.title)}</span>${p.excerpt || p.desc ? `<span class="pc-ex">${E(p.excerpt || p.desc)}</span>` : ''}</a>`;
   /* ---------- offers: names, tags and prices come only from the poster's alt text, filename and price field ---------- */
@@ -240,7 +240,7 @@
   const fxSpan = thb => `<span class="apx-price op-fx" data-thb="${thb}" data-lang="${A.lang}"><span class="apx-fx" hidden></span><small>${E(T('approx'))}</small></span>`;
   const offerTags = o => `${o.allIn ? `<span class="o-tag hot">${E(T('allIn'))}</span>` : ''}${o.review ? `<span class="o-tag">${E(T('reviewCase'))}</span>` : ''}`;
   const offerCard = (o, i, g) => `<article class="offer rv" data-d="${(i % 4) * 60}" data-cat="${E(o.cat || '')}">
-      <button type="button" class="offer-img ph-img" ${g.attr(i)} aria-label="${E(T('image'))}: ${E(o.label)}"><img src="${IMG(o.src)}" alt="${E(o.alt)}" loading="lazy"><span class="o-zoom" aria-hidden="true">${I('arrow-up-right')}</span></button>
+      <button type="button" class="offer-img ph-img" ${g.attr(i)} aria-label="${E(T('image'))}: ${E(o.label)}"><img src="${IMG(o.src)}" alt="${E(o.alt)}" loading="lazy" decoding="async" decoding="async"><span class="o-zoom" aria-hidden="true">${I('arrow-up-right')}</span></button>
       <div class="offer-body">
         <div class="o-tags">${o.cat && o.words.length ? `<span class="o-proc">${E(o.name)}</span>` : ''}${offerTags(o)}</div>
         <h3 class="o-title">${E(o.cat ? (o.words.join(' · ') || o.name) : o.label)}</h3>
@@ -261,7 +261,7 @@
     const o = offerOf(p, S);
     const g = A.gallery([{src:o.src, alt:o.alt}]);
     return `<div class="offer-spot rv">
-      <div class="os-media"><button type="button" class="os-card ph-img" ${g.attr(0)} aria-label="${E(T('image'))}: ${E(o.label)}"><img src="${IMG(o.src)}" alt="${E(o.alt)}" loading="lazy"><span class="os-glare" aria-hidden="true"></span></button></div>
+      <div class="os-media"><button type="button" class="os-card ph-img" ${g.attr(0)} aria-label="${E(T('image'))}: ${E(o.label)}"><img src="${IMG(o.src)}" alt="${E(o.alt)}" loading="lazy" decoding="async" decoding="async"><span class="os-glare" aria-hidden="true"></span></button></div>
       <div class="os-body">
         <p class="os-kick">${E(T('featuredOffer'))}</p>
         <h3 class="os-title">${E(o.name)}</h3>
@@ -345,8 +345,8 @@
           <a class="link-arrow rv" href="about.html">${E((H.intro && H.intro.btn && H.intro.btn.x) || T('readMore'))} ${I('arrow-right')}</a></div>
         <div class="intro-side">
           ${Fd ? `<a class="intro-fd rv-clip" href="about.html#founder">
-            <span class="ifd-ph"><img src="${IMG(Fd.portrait || Fd.photo)}" alt="${E(Fd.name)}" loading="lazy" data-par="14"></span>
-            ${Fd.aaci ? `<span class="ifd-badge"><img src="${IMG(Fd.aaci.src)}" alt="${E(Fd.aaci.alt || 'AACI')}" loading="lazy"></span>` : ''}
+            <span class="ifd-ph"><img src="${IMG(Fd.portrait || Fd.photo)}" alt="${E(Fd.name)}" loading="lazy" decoding="async" data-par="14"></span>
+            ${Fd.aaci ? `<span class="ifd-badge"><img src="${IMG(Fd.aaci.src)}" alt="${E(Fd.aaci.alt || 'AACI')}" loading="lazy" decoding="async" decoding="async"></span>` : ''}
             <span class="ifd-cap"><small>${E(T('foundedBy'))}</small><b>${E(Fd.name)}</b><span>${E(Fd.specialty || Fd.role)}</span></span>
           </a>` : ''}
           <ul class="pillars">${(About.pillars || []).map((p, i) => `<li class="rv" data-d="${i*90}"><span class="pl-n">0${i+1}</span><b>${E(p.h)}</b><span>${E(p.x)}</span></li>`).join('')}</ul>
@@ -484,7 +484,7 @@
         <aside class="si-media">${figure(aaImg, 'si-fig', false)}
           <p class="si-tag rv" aria-hidden="true">${(D.tagline || []).map(x => `<span>${E(x)}</span>`).join('')}</p></aside>
       </div>
-      ${(D.badges || []).length ? `<div class="wrap"><div class="badges">${D.badges.map((b, i) => `<figure class="badge ph-img rv" data-d="${i * 80}"><img src="${IMG(b.src)}" alt="${E(b.alt || '')}" loading="lazy"></figure>`).join('')}</div></div>` : ''}
+      ${(D.badges || []).length ? `<div class="wrap"><div class="badges">${D.badges.map((b, i) => `<figure class="badge ph-img rv" data-d="${i * 80}"><img src="${IMG(b.src)}" alt="${E(b.alt || '')}" loading="lazy" decoding="async" decoding="async"></figure>`).join('')}</div></div>` : ''}
     </section>
 
     ${secs.map((sec, i) => svcSection(sec, i, key, i % 2 === 0)).join('')}
@@ -497,7 +497,7 @@
         <div class="rail-ctrl rv"><button type="button" id="rv-prev" aria-label="${E(T('prev'))}">${I('chevron-left')}</button><button type="button" id="rv-next" aria-label="${E(T('next'))}">${I('chevron-right')}</button></div></div>
       ${reviewRail(D.reviewImgs || [], 'rv-rail')}
       <div class="stories-wrap"><div class="sw-head"><h3 class="h-m rv">${E(T('reelsEb'))}</h3><p class="reels-sub rv">${E(T('reelsTap'))}</p></div>${storiesHost(D.videos, 'stories', D.reviewsH)}</div>
-      ${(D.yt || []).length || D.tiktok ? `<div class="yt-row">${(D.yt || []).map(id => `<div class="ytbox rv"><button type="button" data-yt="${E(id)}" aria-label="${E(T('playVideo'))}"><img loading="lazy" src="${A.yt(id)}" alt=""><span class="pl">${I('play')}</span></button></div>`).join('')}
+      ${(D.yt || []).length || D.tiktok ? `<div class="yt-row">${(D.yt || []).map(id => `<div class="ytbox rv"><button type="button" data-yt="${E(id)}" aria-label="${E(T('playVideo'))}"><img loading="lazy" decoding="async" src="${A.yt(id)}" alt=""><span class="pl">${I('play')}</span></button></div>`).join('')}
         ${D.tiktok ? `<a class="tiktok-link rv" href="${E(D.tiktok.h)}" target="_blank" rel="noopener">${I('tiktok')}<span><b>${E(D.tiktok.x)}</b><small>@apex_surgery</small></span>${I('arrow-up-right')}</a>` : ''}</div>` : ''}
       </div>
     </section>
@@ -531,7 +531,7 @@
     const rest = F.bio.slice(1);
     return `<div class="founder2" id="founder">
       <div class="f2-media rv">
-        <figure class="f2-ph ph-img"><img src="${IMG(full ? F.portrait || F.photo : F.photo)}" alt="${E(F.name)}" loading="lazy"></figure>
+        <figure class="f2-ph ph-img"><img src="${IMG(full ? F.portrait || F.photo : F.photo)}" alt="${E(F.name)}" loading="lazy" decoding="async" decoding="async"></figure>
         <div class="f2-card"><span class="f2-ic">${I('award')}</span><span><b>${E(F.license)}</b><small>${E(F.role)}</small></span></div>
       </div>
       <div class="f2-body">
@@ -547,7 +547,7 @@
         <div class="doc-acts rv">${full ? `<a class="btn btn-ghost on-light btn-sm" href="${F.check.h}" target="_blank" rel="noopener">${I('shield-check')}${E(F.checkX)}</a>` : `<a class="btn btn-plum btn-sm" href="doctor.html#founder">${E(T('founderCta'))} ${I('arrow-right')}</a>`}</div>
       </div></div>`;
   };
-  const aaciCard = S => S.aaci ? `<a class="aaci-card rv" href="${S.aaci.h}" target="_blank" rel="noopener"><img src="${IMG(S.aaci.src)}" alt="${E(S.aaci.alt)}" loading="lazy" width="96" height="96"><span><b>${E(T('aaciH'))}</b><small>${E(T('aaciP'))}</small></span>${I('arrow-up-right')}</a>` : '';
+  const aaciCard = S => S.aaci ? `<a class="aaci-card rv" href="${S.aaci.h}" target="_blank" rel="noopener"><img src="${IMG(S.aaci.src)}" alt="${E(S.aaci.alt)}" loading="lazy" decoding="async" width="96" height="96"><span><b>${E(T('aaciH'))}</b><small>${E(T('aaciP'))}</small></span>${I('arrow-up-right')}</a>` : '';
 
   /* =================== ABOUT =================== */
   async function about(){
@@ -558,7 +558,7 @@
       <section class="section"><div class="wrap about-grid">
         <div class="prose big" data-field="about.intro">${(D.intro || []).map((p, i) => `<p class="rv${i ? '' : ' si-lead'}">${E(p)}</p>${i === 0 && (D.intro || []).length > 1 ? pullQuote(pickQuote((D.intro || []).slice(1), false)) : ''}`).join('')}</div>
         <aside class="about-aside">
-          ${F ? `<a class="f-mini rv" href="#founder"><span class="f-mini-ph ph-img"><img src="${IMG(F.photo)}" alt="" loading="lazy"></span><span><small>${E(T('foundedBy'))}</small><b>${E(F.name)}</b><span>${E(F.role)}</span></span>${I('arrow-right')}</a>` : `<div class="about-side rv"><p class="eyebrow">${E(T('foundedBy'))}</p><p>${E(S.founder || '')}</p></div>`}
+          ${F ? `<a class="f-mini rv" href="#founder"><span class="f-mini-ph ph-img"><img src="${IMG(F.photo)}" alt="" loading="lazy" decoding="async" decoding="async"></span><span><small>${E(T('foundedBy'))}</small><b>${E(F.name)}</b><span>${E(F.role)}</span></span>${I('arrow-right')}</a>` : `<div class="about-side rv"><p class="eyebrow">${E(T('foundedBy'))}</p><p>${E(S.founder || '')}</p></div>`}
           ${aaciCard(S)}
         </aside></div></section>
       <section class="section night vision-s"><div class="wrap"><p class="eyebrow on-night rv">${E(D.visionH || T('visionH'))}</p><p class="vision rv" data-field="about.vision">${E(D.vision || '')}</p>
@@ -614,8 +614,8 @@
     const proc = procOf((d.tag || '') + ' ' + p.title + ' ' + p.key);
     return `<article class="story${i === 0 ? ' big' : ''} rv" data-d="${(i % 2) * 80}" data-cat="${E(proc || '')}">
       <a class="st-media" href="${A.postUrl(p.key)}" aria-label="${E(p.title)}" tabindex="-1">
-        <span class="st-main ph-img"><img src="${IMG(imgs[0])}" alt="" loading="lazy"></span>
-        ${imgs.length > 1 ? `<span class="st-stack" aria-hidden="true">${imgs.slice(1, 4).map((src, j) => `<span class="st-th ph-img" style="--k:${j}"><img src="${IMG(src)}" alt="" loading="lazy"></span>`).join('')}</span>` : ''}
+        <span class="st-main ph-img"><img src="${IMG(imgs[0])}" alt="" loading="lazy" decoding="async" decoding="async"></span>
+        ${imgs.length > 1 ? `<span class="st-stack" aria-hidden="true">${imgs.slice(1, 4).map((src, j) => `<span class="st-th ph-img" style="--k:${j}"><img src="${IMG(src)}" alt="" loading="lazy" decoding="async" decoding="async"></span>`).join('')}</span>` : ''}
       </a>
       <div class="st-body">
         <p class="st-meta">${proc ? `<span class="pc-cat">${E(svcName(S, proc))}</span>` : ''}${p.date ? `<time datetime="${E(p.date)}">${E(A.fmtDate(p.date))}</time>` : ''}</p>
@@ -728,10 +728,10 @@
           while (i < bl.length && bl[i].t === 'img') { if (bl[i].src) run.push(bl[i]); i++; }
           i--;
           if (run.length === 1) html += figure({src:run[0].src, alt:run[0].alt || D.title}, 'wide', false);
-          else if (run.length > 1) { const g = A.gallery(run.map(r => ({src:r.src, alt:r.alt || D.title}))); html += `<div class="art-gal n${Math.min(run.length, 3)} rv">${run.map((r, j) => `<button type="button" class="ag-i ph-img" ${g.attr(j)} aria-label="${E(T('image'))} ${j + 1}"><img src="${IMG(r.src)}" alt="${E(r.alt || D.title)}" loading="lazy"></button>`).join('')}</div>`; }
+          else if (run.length > 1) { const g = A.gallery(run.map(r => ({src:r.src, alt:r.alt || D.title}))); html += `<div class="art-gal n${Math.min(run.length, 3)} rv">${run.map((r, j) => `<button type="button" class="ag-i ph-img" ${g.attr(j)} aria-label="${E(T('image'))} ${j + 1}"><img src="${IMG(r.src)}" alt="${E(r.alt || D.title)}" loading="lazy" decoding="async" decoding="async"></button>`).join('')}</div>`; }
           break;
         }
-        case 'yt': html += `<div class="ytbox"><button type="button" data-yt="${b.id}" aria-label="${E(T('playVideo'))}"><img loading="lazy" src="${A.yt(b.id)}" alt=""><span class="pl">${I('play')}</span></button></div>`; break;
+        case 'yt': html += `<div class="ytbox"><button type="button" data-yt="${b.id}" aria-label="${E(T('playVideo'))}"><img loading="lazy" decoding="async" src="${A.yt(b.id)}" alt=""><span class="pl">${I('play')}</span></button></div>`; break;
         case 'faqs': html += A.faqHtml((b.items || []).map(q => ({q:q.q, a:q.a}))); break;
         case 'table': html += `<div class="tbl"><table>${(b.rows || []).map((r, j) => `<tr>${r.map(c => j === 0 ? `<th>${E(c)}</th>` : `<td>${E(c)}</td>`).join('')}</tr>`).join('')}</table></div>`; break;
         case 'btn': if (b.h) html += `<p><a class="btn btn-plum btn-sm" href="${b.h}" target="_blank" rel="noopener">${E(b.x)}</a></p>`; break;
@@ -780,7 +780,7 @@
     main().innerHTML = phead(D.h1 || T('contact'), null, [homeCrumb(), [T('contact')]]) + `
       <section class="section" style="padding-top:50px"><div class="wrap contact2">
         <div class="channels">
-          <a class="chan rv" href="${(S.line && S.line.h) || '#'}" target="_blank" rel="noopener"><span class="chan-ic ln">${I('line')}</span><span><b>LINE</b><small>${E((S.line && S.line.x) || '')}</small></span><img class="chan-qr" src="${IMG(S.line && S.line.qr)}" alt="LINE QR" loading="lazy"></a>
+          <a class="chan rv" href="${(S.line && S.line.h) || '#'}" target="_blank" rel="noopener"><span class="chan-ic ln">${I('line')}</span><span><b>LINE</b><small>${E((S.line && S.line.x) || '')}</small></span><img class="chan-qr" src="${IMG(S.line && S.line.qr)}" alt="LINE QR" loading="lazy" decoding="async" decoding="async"></a>
           <a class="chan rv" data-d="60" href="${A.WA.h}" target="_blank" rel="noopener"><span class="chan-ic wa">${I('whatsapp')}</span><span><b>WhatsApp</b><small>${E(T('whatsappSub'))} · ${E(A.WA.x)}</small></span>${I('arrow-up-right')}</a>
           ${(S.branches || []).map((b, i) => `<a class="chan rv" data-d="${120 + i*60}" href="${b.tel}"><span class="chan-ic">${I('phone')}</span><span><b>${E(b.phone)}</b><small>${E(b.short || b.name)}</small></span>${I('arrow-up-right')}</a>`).join('')}
           ${(S.socials || []).filter(s => s.k !== 'line').map(s => `<a class="chan sm rv" href="${s.h}" target="_blank" rel="noopener"><span class="chan-ic">${A.socIcon(s.k)}</span><span><b>${E(s.x)}</b></span>${I('arrow-up-right')}</a>`).join('')}
