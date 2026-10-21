@@ -401,20 +401,32 @@
   A.parallax = () => {
     if (A.reduced || A._parOn) return;
     A._parOn = true;
+    /* only images near the screen are measured, and every read happens before any write,
+       so a scroll frame never forces the browser to lay the page out more than once */
+    const near = new Set();
     let tick = false;
     const run = () => {
       tick = false;
-      const H = innerHeight;
-      A.qsa('[data-par]').forEach(el => {
-        const r = el.parentElement.getBoundingClientRect();
-        if (r.bottom < -100 || r.top > H + 100) return;
+      if (!near.size) return;
+      const H = innerHeight, list = [...near];
+      const rects = list.map(el => el.parentElement.getBoundingClientRect());
+      list.forEach((el, i) => {
+        const r = rects[i];
         const p = (r.top + r.height / 2 - H / 2) / H;
         el.style.transform = `translate3d(0,${(p * -(+el.dataset.par || 36)).toFixed(1)}px,0) scale(1.12)`;
       });
     };
-    addEventListener('scroll', () => { if (!tick) { tick = true; requestAnimationFrame(run); } }, {passive:true});
-    addEventListener('resize', run);
-    run();
+    const kick = () => { if (!tick) { tick = true; requestAnimationFrame(run); } };
+    const watch = () => {
+      if (!('IntersectionObserver' in window)) { A.qsa('[data-par]').forEach(el => near.add(el)); return; }
+      A._parIO = A._parIO || new IntersectionObserver(es => { es.forEach(e => e.isIntersecting ? near.add(e.target) : near.delete(e.target)); kick(); }, {rootMargin:'150px 0px'});
+      A.qsa('[data-par]:not([data-par-on])').forEach(el => { el.dataset.parOn = 1; A._parIO.observe(el); });
+    };
+    A.parallaxWatch = watch;
+    watch();
+    addEventListener('scroll', kick, {passive:true});
+    addEventListener('resize', kick);
+    let mt = 0; new MutationObserver(() => { clearTimeout(mt); mt = setTimeout(watch, 250); }).observe(document.body, {childList:true, subtree:true});
   };
 
   /* ---------- copy and toast ---------- */

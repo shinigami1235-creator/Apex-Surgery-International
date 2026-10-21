@@ -1057,3 +1057,12 @@ html[lang=en] .art-prose p.lede::first-letter{float:left;font-size:4.1em;line-he
 .stories-wrap .sw-head{margin-bottom:18px}
 .stories-wrap .sw-head h3{margin-bottom:4px}
 .stories-wrap .sw-head .reels-sub{margin-top:0}
+
+/* Revision 1e: smoother scrolling.
+   The blur-in reveal stays on short text only, since blurring a whole card or photo block repaints it every frame.
+   The tool cards' grain no longer blends with the animated art underneath, and each card paints on its own. */
+.rv:not(:is(h1,h2,h3,h4,p,.eyebrow,.h-xl,.h-l,.h-m)){filter:none}
+.rv:not(:is(h1,h2,h3,h4,p,.eyebrow,.h-xl,.h-l,.h-m)).in{filter:none}
+.tool-card{contain:paint}
+.tool-card::before{mix-blend-mode:normal;opacity:.08}
+.doc-ph img{transform:translateZ(0)}
