@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Games lab</title>
+<link rel="icon" href="../assets/img/favicon.svg">
+<style>
+  :root{--plum:#6A388C;--wash:#FBF3FB;--ink:#2A1F33;--ink-2:#5A4A66;--lilac-300:#C9B3DD;--lilac-100:#F1EAF7}
+  html,body{margin:0}
+  body{background:var(--wash);color:var(--ink);font-family:"LINE Seed","Sarabun","Noto Sans Thai",system-ui,sans-serif}
+  .lab-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;max-width:1180px;margin:0 auto;padding:14px 16px 0}
+  .lab-bar b{font-size:14px;color:var(--ink-2)}
+  .lab-bar .grp{display:flex;gap:8px;flex-wrap:wrap}
+  .lab-bar button{min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--lilac-300);background:#fff;color:var(--plum);font:inherit;font-weight:700;cursor:pointer}
+  .lab-bar button[aria-pressed="true"]{background:var(--plum);color:#fff;border-color:var(--plum)}
+  #events{max-width:1180px;margin:0 auto 40px;padding:0 16px;font:12px/1.5 ui-monospace,monospace;color:var(--ink-2);white-space:pre-wrap;word-break:break-all;max-height:160px;overflow:auto}
+</style>
+</head>
+<body>
+<div class="lab-bar">
+  <b>Games lab</b>
+  <div class="grp">
+    <button type="button" data-lang="th">TH</button>
+    <button type="button" data-lang="en">EN</button>
+    <button type="button" id="reset">Reset demo data</button>
+  </div>
+</div>
+<div id="games"></div>
+<div id="events"></div>
+<script type="module">
+  import { mount } from '../assets/features/games/index.js';
+  const box = document.getElementById('games');
+  const log = document.getElementById('events');
+  const params = new URLSearchParams(location.search);
+  let lang = params.get('lang') === 'th' ? 'th' : 'en';
+  let inst = null;
+  const start = () => {
+    inst && inst.destroy();
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    inst = mount(box, {
+      lang,
+      base: '../assets/',
+      serviceUrl: k => (lang === 'en' ? '../en/' : '../') + 'service.html?p=' + k,
+      onEvent: (name, data) => {
+        const d = { ...data };
+        if (Array.isArray(d.log)) d.log = `[${d.log.length} entries]`;
+        log.textContent = `${new Date().toLocaleTimeString()} ${name} ${JSON.stringify(d)}\n` + log.textContent;
+        (window.__events = window.__events || []).push({ name, data });
+      }
+    });
+    window.__games = inst;
+  };
+  document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => {
+    lang = b.dataset.lang;
+    const u = new URL(location.href); u.searchParams.set('lang', lang); history.replaceState(null, '', u);
+    start();
+  }));
+  document.getElementById('reset').addEventListener('click', () => {
+    try { Object.keys(localStorage).filter(k => k.startsWith('apxg.')).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+    start();
+  });
+  start();
+</script>
+</body>
+</html>

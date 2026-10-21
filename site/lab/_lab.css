@@ -1,0 +1,11 @@
+:root{--plum:#6A388C;--wash:#FBF3FB;--ink:#2A1F33;--ink-2:#5A4A66;--lilac-300:#C9B3DD;--lilac-100:#F1EAF7}
+html,body{margin:0}
+body{background:var(--wash);color:var(--ink);font-family:"LINE Seed","Sarabun","Noto Sans Thai",system-ui,sans-serif;overflow-x:hidden}
+.lab-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;max-width:1180px;margin:0 auto;padding:14px 16px 0}
+.lab-bar b{font-size:14px;color:var(--ink-2)}
+.lab-bar .grp{display:flex;gap:8px;flex-wrap:wrap}
+.lab-bar button,.lab-bar a{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--lilac-300);background:#fff;color:var(--plum);font:inherit;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none}
+.lab-bar button[aria-pressed="true"]{background:var(--plum);color:#fff;border-color:var(--plum)}
+.lab-badge{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#CC3366;color:#fff;font-size:12px;font-weight:800}
+.lab-badge[hidden]{display:none}
+#events{max-width:1180px;margin:0 auto 40px;padding:0 16px;font:12px/1.5 ui-monospace,monospace;color:var(--ink-2);white-space:pre-wrap;word-break:break-all;max-height:160px;overflow:auto}

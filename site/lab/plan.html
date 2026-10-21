@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Plan lab</title>
+<link rel="icon" href="../assets/img/favicon.svg">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="_lab.css">
+</head>
+<body>
+<div class="lab-bar">
+  <b>My Plan lab</b>
+  <div class="grp">
+    <button type="button" data-lang="th">TH</button>
+    <button type="button" data-lang="en">EN</button>
+    <a href="#" id="hdr" aria-label="My Plan">My Plan <span class="lab-badge" id="badge" hidden></span></a>
+  </div>
+  <div class="grp">
+    <button type="button" id="fake-body">Body map event</button>
+    <button type="button" id="fake-nose">Nose event</button>
+    <button type="button" id="fake-voucher">Voucher event</button>
+    <button type="button" id="reset">Reset</button>
+  </div>
+</div>
+<div id="plan"></div>
+<div id="events"></div>
+<script type="module">
+  import { mount, badge } from '../assets/features/plan/index.js';
+  import { lab } from './_lab.js';
+  const L = lab({ title: 'plan', mountFn: mount, el: document.getElementById('plan') });
+  let b = badge(document.getElementById('badge'), { lang: L.lang });
+  const fire = (name, data) => window.dispatchEvent(new CustomEvent('apex:event', { detail: { name, data } }));
+  document.getElementById('fake-body').onclick = () => {
+    fire('plan:add', { procedure: 'lipo', area: 'thighs', concern: 'Inner thighs that rub' });
+    fire('plan:add', { procedure: 'eyelid', area: 'eyes', concern: 'Hooded upper lids' });
+  };
+  document.getElementById('fake-nose').onclick = () => fire('plan:add', { procedure: 'rhinoplasty' });
+  document.getElementById('fake-voucher').onclick = () => {
+    const now = Date.now();
+    fire('plan:voucher', { code: 'APX-K7M2QD', game: 'factrush', prize: { en: 'Apex tote bag', th: 'กระเป๋าผ้า Apex' }, score: 1240, issued: now, expires: now + 60 * 86400e3 });
+  };
+  document.getElementById('reset').onclick = () => {
+    try { localStorage.removeItem('apexPlan.v1'); localStorage.removeItem('apxg.vouchers'); } catch (e) {}
+    location.reload();
+  };
+</script>
+</body>
+</html>

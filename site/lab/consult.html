@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Consultation lab</title>
+<link rel="icon" href="../assets/img/favicon.svg">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="_lab.css">
+</head>
+<body>
+<div class="lab-bar">
+  <b>Consultation lab</b>
+  <div class="grp">
+    <button type="button" data-lang="th">TH</button>
+    <button type="button" data-lang="en">EN</button>
+    <a href="plan.html">My Plan <span class="lab-badge" id="badge" hidden></span></a>
+  </div>
+</div>
+<div id="consult"></div>
+<div id="events"></div>
+<script type="module">
+  import { mount } from '../assets/features/consult/index.js';
+  import { badge } from '../assets/features/plan/index.js';
+  import { lab } from './_lab.js';
+  lab({ mountFn: mount, el: document.getElementById('consult') });
+  badge(document.getElementById('badge'));
+</script>
+</body>
+</html>

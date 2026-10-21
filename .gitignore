@@ -1,0 +1,6 @@
+_shots/
+_ref/
+tests/**/shots/
+tests/**/*.log
+node_modules/
+__pycache__/

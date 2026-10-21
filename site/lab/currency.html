@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Currency lab</title>
+<link rel="icon" href="../assets/img/favicon.svg">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="_lab.css">
+</head>
+<body>
+<div class="lab-bar">
+  <b>Currency lab</b>
+  <div class="grp">
+    <button type="button" data-lang="th">TH</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+</div>
+<div id="prices"></div>
+<div id="events"></div>
+<script type="module">
+  import { mount } from '../assets/features/currency/index.js';
+  import { lab } from './_lab.js';
+  /* The four promo prices on the client's site, labelled from their promotion image file names. */
+  const prices = [
+    { thb: 19900, label: { en: 'Facial promotion', th: 'โปรโมชันใบหน้า' } },
+    { thb: 69000, label: { en: 'Mentor silicone breast augmentation', th: 'เสริมหน้าอกซิลิโคน Mentor' } },
+    { thb: 100000, label: { en: 'Motiva breast augmentation', th: 'เสริมหน้าอก Motiva' } },
+    { thb: 180000, label: { en: 'Endotine brow lift', th: 'ยกคิ้ว Endotine' } }
+  ];
+  lab({ mountFn: mount, el: document.getElementById('prices'), extra: () => ({ prices }) });
+</script>
+</body>
+</html>

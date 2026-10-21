@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Body Map | Lab</title>
+<link rel="icon" href="../assets/img/favicon.svg">
+<link rel="stylesheet" href="../assets/css/base.css">
+<script>
+  /* Local testing only: serve three from the lab vendor copy when the page runs on this machine. */
+  if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
+    const m = document.createElement('script');
+    m.type = 'importmap';
+    m.textContent = JSON.stringify({ imports: { 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js': './vendor/three.module.js' } });
+    document.currentScript.after(m);
+  }
+</script>
+<style>
+  body{background:var(--night);color:var(--on-night);margin:0}
+  .lab-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;max-width:var(--maxw);margin:0 auto}
+  .lab-bar h1{font-size:18px;font-weight:700;letter-spacing:-.01em}
+  .lab-bar small{display:block;font-size:12px;font-weight:400;color:var(--on-night-2);letter-spacing:.08em;text-transform:uppercase}
+  .lab-lang{display:flex;padding:3px;border-radius:var(--pill);border:1px solid rgba(201,179,221,.3)}
+  .lab-lang button{height:34px;padding:0 14px;border-radius:var(--pill);font-size:14px;color:var(--on-night-2)}
+  .lab-lang button[aria-pressed=true]{background:#fff;color:var(--plum);font-weight:700}
+  #bodymap{width:100%}
+  .lab-log{max-width:var(--maxw);margin:0 auto;padding:16px;font-size:13px;color:var(--on-night-2);min-height:3em}
+</style>
+</head>
+<body>
+  <header class="lab-bar">
+    <h1><small>Lab</small>Body Map</h1>
+    <div class="lab-lang" role="group" aria-label="Language">
+      <button type="button" data-l="th">TH</button><button type="button" data-l="en">EN</button>
+    </div>
+  </header>
+  <main>
+    <div id="bodymap"></div>
+    <p class="lab-log" id="log" aria-live="polite"></p>
+  </main>
+<script type="module">
+  import { mount } from '../assets/features/bodymap/index.js';
+  const host = document.getElementById('bodymap');
+  const log = document.getElementById('log');
+  const qs = new URLSearchParams(location.search);
+  let lang = qs.get('lang') === 'th' ? 'th' : 'en';
+  let inst = null;
+  function run(){
+    if (inst) inst.destroy();
+    document.documentElement.lang = lang;
+    document.querySelectorAll('.lab-lang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === lang));
+    inst = mount(host, {
+      lang,
+      base: new URL('../assets/', location.href).href,
+      serviceUrl: k => `../${lang === 'en' ? 'en/' : ''}service.html?p=${k}`,
+      onEvent: (name, data) => { log.textContent = `${name} ${JSON.stringify(data)}`; }
+    });
+    window.__bodymap = inst;
+  }
+  document.querySelector('.lab-lang').addEventListener('click', e => {
+    const b = e.target.closest('button[data-l]'); if (!b || b.dataset.l === lang) return;
+    lang = b.dataset.l; run();
+  });
+  run();
+</script>
+</body>
+</html>

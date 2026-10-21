@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Before and after lab</title>
+<link rel="icon" href="../assets/img/favicon.svg">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="_lab.css">
+</head>
+<body>
+<div class="lab-bar">
+  <b>Before and after lab</b>
+  <div class="grp">
+    <button type="button" data-lang="th">TH</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+</div>
+<div id="one"></div>
+<div id="gallery"></div>
+<div id="events"></div>
+<script src="../assets/data/en/svc/rhinoplasty.js"></script>
+<script type="module">
+  import { mount } from '../assets/features/compare/index.js';
+  import { lab } from './_lab.js';
+  /* Lab fixtures: compare-demo/*.svg are line drawings for testing the slider offline.
+     The rest are the client's composites from svc:rhinoplasty, shown whole since their layout is unconfirmed. */
+  const ba = ((window.APEX && APEX._d['svc:rhinoplasty']) || {}).ba || [];
+  const one = document.getElementById('one');
+  const gal = document.getElementById('gallery');
+  let g = null;
+  lab({ el: one, mountFn: (el, o) => {
+    g && g.destroy();
+    g = mount(gal, { ...o, title: o.lang === 'th' ? 'รีวิวเสริมจมูก' : 'Rhinoplasty reviews',
+      items: [{ before: 'compare-demo/before.svg', after: 'compare-demo/after.svg' }, { src: 'compare-demo/composite-lr.svg', layout: 'lr' }, ...ba.map(src => ({ src }))] });
+    return mount(el, { ...o, mode: 'slider', items: [{ src: 'compare-demo/composite-lr.svg', layout: 'lr' }] });
+  } });
+</script>
+</body>
+</html>
