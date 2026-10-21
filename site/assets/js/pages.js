@@ -284,11 +284,12 @@
     A.qsa('.os-n[data-count]', root).forEach(el => {
       const to = +el.dataset.count;
       if (A.reduced || !('IntersectionObserver' in window)) return;
-      el.textContent = A.fmtNum(0);
+      /* the real price stays in the markup; it only counts up once the number is on screen,
+         and a timer puts the final figure back if animation frames never run (background tab) */
       const io = new IntersectionObserver(es => { if (!es.some(e => e.isIntersecting)) return; io.disconnect();
         const t0 = performance.now(), d = 1300;
         const step = now => { const k = Math.min(1, (now - t0) / d), v = 1 - Math.pow(1 - k, 4); el.textContent = A.fmtNum(Math.round(to * v / 10) * 10 || 0); if (k < 1) requestAnimationFrame(step); else el.textContent = A.fmtNum(to); };
-        requestAnimationFrame(step); }, {threshold:.6});
+        requestAnimationFrame(step); setTimeout(() => { el.textContent = A.fmtNum(to); }, d + 400); }, {threshold:.6});
       io.observe(el);
     });
     if (!A.reduced && matchMedia('(hover:hover) and (pointer:fine)').matches) A.qsa('.os-media', root).forEach(m => {
