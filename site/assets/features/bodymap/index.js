@@ -1,5 +1,6 @@
-/* Body Map: a particle body (MakeHuman CC0 base mesh) with tappable areas.
-   Tapping the face swaps in a dense particle head built from the same mesh (heads.bin).
+/* Body Map: a mesh body (MakeHuman CC0 base mesh, decimated) drawn as glowing points joined by
+   faint lines, in the style of the main site's Face Atlas, with tappable areas.
+   Tapping the face swaps in a denser head mesh built from the same base mesh (heads.bin).
    Each area lists the client's own concerns and leads to its procedure. */
 
 const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
@@ -225,122 +226,94 @@ background:radial-gradient(closest-side,rgba(122,64,160,.30),rgba(106,56,140,.13
 let cssRefs = 0, cssEl = null, uidN = 0;
 
 /* ---------------- shaders ---------------- */
-/* Shared look: soft key light from the upper left, rim light where the surface turns away
-   from the view, a slow lilac-to-rose drift across the form, and size and brightness that
-   fall off with depth behind the focus point. */
-const LOOK = `
-const vec3 KEY = vec3(-.36, .46, .81);
-float hue(vec3 p){ return .5 + .5 * sin(p.y * 1.9 + p.x * 2.6 + 1.3) * cos(p.z * 2.2 - p.y * .7 + .4); }
-`;
-const SPRITE = `
-float sprite(){ vec2 c = gl_PointCoord - .5; float d2 = dot(c, c) * 4.; if (d2 > 1.) discard; return exp(-d2 * 5.5) * .85 + (1. - d2) * .18; }
-vec3 tint(float h, float j){ return mix(vec3(.62, .50, .86), vec3(.88, .50, .70), clamp(h * .5 + j * .06, 0., 1.)); }
-`;
-const BODY_VS = `
-attribute vec3 aPosB; attribute vec3 aNrmA; attribute vec3 aNrmB; attribute float aReg; attribute float aRnd; attribute vec3 aJit;
-uniform float uTime, uMorph, uPix, uIntro, uActA, uActB, uHovA, uHovB, uHide, uCut, uSize, uRef, uSat, uZoom, uDim, uFocus, uDepthR;
-varying float vOn; varying float vHov; varying float vA; varying float vRim; varying float vHue; varying float vLine; varying float vJ;
-${LOOK}
-float hit(float r, float a){ return 1. - step(.1, abs(r - a)); }
-void main(){
-  float m = smoothstep(0., 1., uMorph);
-  vec3 p = mix(position, aPosB, m);
-  vec3 n = normalize(mix(aNrmA, aNrmB, m));
-  float r = (aReg > 2.5 && aReg < 3.5 && uMorph > .5) ? 0. : aReg;
-  float on = r > .5 ? max(hit(r, uActA), hit(r, uActB)) : 0.;
-  float hov = r > .5 ? max(hit(r, uHovA), hit(r, uHovB)) : 0.;
-  vOn = on; vHov = hov * (1. - on);
-  /* the detailed head replaces the body's head and upper neck in the face view */
-  float keep = r > .5 && r < 1.5 ? 1. - uHide : (r > 1.5 && r < 2.5 ? 1. - uHide * smoothstep(uCut - .12, uCut + .14, p.y) : 1.);
-  /* faint contour rings that follow the form */
-  vLine = (1. - smoothstep(.0, .05, .5 - abs(fract(p.y * 2.4) - .5))) * (1. - on);
-  vHue = hue(p); vJ = aRnd - .5;
-  p += n * (sin(uTime * 1.5 + aRnd * 40.) * .012 + on * (.035 + .025 * sin(uTime * 3. + aRnd * 9.)));
-  /* satellite copies fill the surface when the camera is close */
-  vec3 tj = aJit * uSat; p += (tj - n * dot(tj, n)) * .085;
-  /* intro: particles gather from a wider, lower cloud */
-  float k = smoothstep(aRnd * .45, aRnd * .45 + .55, uIntro);
-  p.xz *= mix(2.2, 1., k); p.y = mix(p.y - 3. + aRnd * 2., p.y, k);
-  vec4 mv = modelViewMatrix * vec4(p, 1.);
-  gl_Position = projectionMatrix * mv;
-  vec3 vn = normalize(normalMatrix * n);
-  float f = dot(vn, normalize(-mv.xyz));
-  vRim = pow(1. - clamp(f, 0., 1.), 2.4) * step(0., f);
-  float key = .55 + .45 * max(dot(vn, normalize(KEY)), 0.);
-  float dd = clamp((-mv.z - uFocus) / uDepthR, -1., 1.);
-  float back = f < 0. ? .22 : 1.;
-  float dim = mix(1., on > .5 ? 1. : .5, uDim) * (abs(uSat) > .5 ? uZoom : 1.);
-  float tw = .78 + .22 * sin(uTime * (1.3 + aRnd * 1.7) + aRnd * 60.);
-  vA = back * keep * dim * tw * k * key * (1. - dd * .38);
-  float sz = uSize * (.7 + aRnd * .6) * (1. + on * .7 + hov * .3) * (abs(uSat) > .5 ? .8 : 1.) * (1. - dd * .22);
-  gl_PointSize = clamp(sz * pow(uRef / -mv.z, .55), 1.1, 4.8) * uPix;
-}`;
-const BODY_FS = `
-varying float vOn; varying float vHov; varying float vA; varying float vRim; varying float vHue; varying float vLine; varying float vJ;
-${SPRITE}
-void main(){
-  float a = sprite();
-  vec3 col = mix(tint(vHue, vJ), vec3(.97, .92, 1.), vRim * .8);
-  vec3 hot = mix(vec3(.80, .20, .40), vec3(.79, .70, .87), .42) * 1.5;
-  col = mix(col, hot, vOn);
-  col = mix(col, mix(col, hot, .55), vHov);
-  float alpha = a * vA * (.5 + .55 * vRim + vLine * .28 + vOn * .6 + vHov * .3);
-  gl_FragColor = vec4(col, alpha);
-}`;
-/* detailed head: kinds 1 lips, 2 eyeball, 3 ear, 4 scalp, 5 upper lid margin, 6 lower lid margin */
-const HEAD_VS = `
-attribute vec3 aPosB; attribute vec3 aNrmA; attribute vec3 aNrmB; attribute float aArea; attribute float aKind; attribute float aAo; attribute float aRnd; attribute vec3 aJit;
-uniform float uTime, uPix, uFace, uAct, uHov, uSize, uRef, uMorph, uCut, uFocus, uDepthR, uSat;
-uniform vec3 uHC;
-varying float vOn; varying float vHov; varying float vA; varying float vRim; varying float vHue; varying float vSpec; varying float vJ;
-${LOOK}
+/* Net look, matched to the Face Atlas on the group's main site: a glowing point at every
+   vertex and three more along every edge, joined by faint additive lines. The active area
+   turns white and lifts off the surface. One program serves the body and, with HEAD
+   defined, the face-zoom head. */
+const NET_HEAD = `
+attribute vec3 aPosB; attribute vec3 aNrmA; attribute vec3 aNrmB; attribute float aRnd; attribute float aEdge;
+#ifdef HEAD
+attribute float aArea; attribute float aKind; attribute float aAo;
+uniform float uFace, uAct, uHov; uniform vec3 uHC;
+#else
+attribute float aReg;
+uniform float uIntro, uActA, uActB, uHovA, uHovB, uHide, uDim;
+#endif
+uniform float uTime, uMorph, uPix, uSize, uRef, uCut, uE1, uE2, uWob, uPop, uFocus, uDepthR;
+varying float vOn; varying float vHov; varying float vA; varying float vRim;
 float is(float v, float t){ return 1. - step(.1, abs(v - t)); }
-void main(){
+`;
+/* shared body of both vertex shaders: sets p, n, on, hov, tone, keep, k */
+const NET_SETUP = `
   float m = smoothstep(0., 1., uMorph);
   vec3 p = mix(position, aPosB, m);
   vec3 n = normalize(mix(aNrmA, aNrmB, m));
+#ifdef HEAD
   float on = is(aArea, uAct);
   float hov = is(aArea, uHov) * (1. - on);
-  vOn = on; vHov = hov;
-  float lip = is(aKind, 1.), eye = is(aKind, 2.), ear = is(aKind, 3.), scalp = is(aKind, 4.), lash = is(aKind, 5.), lower = is(aKind, 6.);
-  float neck = smoothstep(uCut - .12, uCut + .14, p.y);
-  vHue = hue(p); vJ = aRnd - .5;
-  p += n * (sin(uTime * 1.6 + aRnd * 12.) * .0035 + on * (.014 + .006 * sin(uTime * 3. + aRnd * 6.)));
-  /* four satellite copies fill the surface between samples */
-  vec3 tj = (abs(uSat) > 1.5 ? aJit.yzx : aJit) * sign(uSat); p += (tj - n * dot(tj, n)) * .017;
+  /* lips and the seam stay dim so the closed mouth never reads as an outline */
+  float tone = 1. - is(aKind, 1.) * .68 - is(aKind, 7.) * .55 - is(aKind, 2.) * .5 - is(aKind, 3.) * .3 - is(aKind, 4.) * .12 + is(aKind, 5.) * .45 + is(aKind, 6.) * .15;
+  tone *= mix(.55, 1., smoothstep(.55, .95, aAo));
+  float keep = smoothstep(uCut - .12, uCut + .14, p.y);
   float k = smoothstep(aRnd * .4, aRnd * .4 + .6, uFace);
-  p = uHC + (p - uHC) * mix(1.22, 1., k);
+#else
+  float r = (aReg > 2.5 && aReg < 3.5 && uMorph > .5) ? 0. : aReg;
+  float on = r > .5 ? max(is(r, uActA), is(r, uActB)) : 0.;
+  float hov = r > .5 ? max(is(r, uHovA), is(r, uHovB)) * (1. - on) : 0.;
+  float tone = mix(1., on > .5 ? 1. : .42, uDim);
+  float keep = r > .5 && r < 1.5 ? 1. - uHide : (r > 1.5 && r < 2.5 ? 1. - uHide * smoothstep(uCut - .12, uCut + .14, p.y) : 1.);
+  float k = smoothstep(aRnd * .45, aRnd * .45 + .55, uIntro);
+#endif
+  vOn = on; vHov = hov;
+`;
+const NET_PLACE = `
+#ifdef HEAD
+  p = uHC + (p - uHC) * mix(1.35, 1., k);
+#else
+  p.xz *= mix(2.2, 1., k); p.y = mix(p.y - 3. + aRnd * 2., p.y, k);
+#endif
   vec4 mv = modelViewMatrix * vec4(p, 1.);
   gl_Position = projectionMatrix * mv;
-  vec3 vn = normalize(normalMatrix * n);
-  vec3 vd = normalize(-mv.xyz);
-  float f = dot(vn, vd);
-  float soft = 1. - lip * .45 - eye * .5;
-  vRim = pow(1. - clamp(f, 0., 1.), 2.6) * step(0., f) * soft;
-  vec3 L = normalize(KEY);
-  float key = .45 + .55 * max(dot(vn, L), 0.);
-  float occ = mix(.36, 1., smoothstep(.58, .96, aAo)); occ = max(occ, lash * .9);
-  vSpec = pow(max(dot(reflect(-L, vn), vd), 0.), 14.) * .55 * (1. - lip * .7) * (1. - eye);
-  float dd = clamp((-mv.z - uFocus) / uDepthR, -1., 1.);
-  float tone = 1. - lip * .06 - eye * .5 - ear * .35 - scalp * .15 + lash * .7 + lower * .15;
-  float back = f < 0. ? .07 : 1.;
-  float tw = .93 + .07 * sin(uTime * (1.2 + aRnd * 1.5) + aRnd * 50.);
-  /* points crowd together where the surface turns away, so they are thinned there */
-  float graze = mix(.55, 1., clamp(f, 0., 1.));
-  vA = k * back * neck * tone * key * occ * tw * graze * (1. - dd * .45) * (abs(uSat) > .5 ? .7 : 1.);
-  vRim *= occ;
-  float sz = uSize * (.88 + aRnd * .24) * (1. + on * .35) * (1. - dd * .3) * (abs(uSat) > .5 ? .9 : 1.);
-  gl_PointSize = clamp(sz * pow(uRef / -mv.z, .8), 1., 5.5) * uPix;
-}`;
-const HEAD_FS = `
-varying float vOn; varying float vHov; varying float vA; varying float vRim; varying float vHue; varying float vSpec; varying float vJ;
-${SPRITE}
+  float f = dot(normalize(normalMatrix * n), normalize(-mv.xyz));
+  vRim = pow(1. - clamp(f, 0., 1.), 3.) * step(0., f);
+  float back = f < 0. ? .06 : 1.;
+  /* nearer is brighter, as on the atlas */
+  float depth = 1. - smoothstep(0., 1., (-mv.z - uFocus) / uDepthR) * .55;
+  vA = k * keep * tone * back * depth;
+`;
+const PT_VS = NET_HEAD + `
 void main(){
-  float a = sprite();
-  vec3 col = mix(tint(vHue, vJ), vec3(.98, .94, 1.), clamp(vRim * .85 + vSpec, 0., 1.));
-  vec3 hot = mix(vec3(.80, .20, .40), vec3(.79, .70, .87), .38) * 1.45;
-  col = mix(col, hot, max(vOn * .85, vHov * .5));
-  gl_FragColor = vec4(col, a * vA * (.62 + .5 * vRim + vSpec * .6 + vOn * .35));
+${NET_SETUP}
+  p += n * (sin(uTime * 1.6 + aRnd * 12.) * uWob + on * uPop * (1. + .6 * sin(uTime * 3. + aRnd * 6.)));
+${NET_PLACE}
+  float ew = aEdge < .5 ? 1. : (aEdge < 1.5 ? uE1 : uE2);
+  vA *= ew;
+  gl_PointSize = clamp(uSize * (on > .5 ? 1.5 : 1.) * sqrt(uRef / -mv.z) * (.75 + aRnd * .5), 1., 7.) * uPix;
+  if (vA < .004) gl_Position = vec4(2., 2., 2., 1.);
+}`;
+const PT_FS = `
+varying float vOn; varying float vHov; varying float vA; varying float vRim;
+void main(){
+  vec2 c = gl_PointCoord - .5; float d = length(c);
+  if (d > .5) discard;
+  float a = 1. - smoothstep(0., .5, d);
+  vec3 col = mix(vec3(.70, .58, .86), vec3(1., .93, 1.), max(vOn, vHov * .5));
+  col = mix(col, vec3(.92, .86, 1.), vRim * .45);
+  gl_FragColor = vec4(col, a * vA * (vOn > .5 ? 1. : .7 + vHov * .15 + vRim * .2));
+}`;
+const LN_VS = NET_HEAD + `
+uniform float uLine;
+void main(){
+${NET_SETUP}
+  p += n * on * uPop;
+${NET_PLACE}
+  vA *= mix(uLine, .45, on) + hov * .08;
+}`;
+const LN_FS = `
+varying float vOn; varying float vHov; varying float vA; varying float vRim;
+void main(){
+  vec3 col = mix(vec3(.55, .42, .72), vec3(1., .85, 1.), max(vOn, vHov * .5));
+  gl_FragColor = vec4(mix(col, vec3(.8, .72, .95), vRim * .4), vA);
 }`;
 const GROUND_VS = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`;
 const GROUND_FS = `varying vec2 vUv; uniform float uTime, uIntro;
@@ -358,54 +331,91 @@ const ease = t => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 4);
 const lerp = (a, b, t) => a + (b - a) * t;
 const wrapPI = a => { a = (a + Math.PI) % (Math.PI * 2); if (a < 0) a += Math.PI * 2; return a - Math.PI; };
 
-function decodeBody(buf){
+/* bodies.bin: one decimated topology, female and male shapes (see SOURCE.md) */
+function decodeBodies(buf){
   const dv = new DataView(buf);
-  const n = dv.getUint32(0, true);
-  const h = new Float32Array(buf.slice(4, 52));
-  const q = new Int16Array(buf, 52, n * 3);
-  const nq = new Int8Array(buf, 52 + n * 6, n * 3);
-  const rg = new Uint8Array(buf, 52 + n * 9, n);
-  const pos = new Float32Array(n * 3), nrm = new Float32Array(n * 3);
-  const s = h[3] / 32767;
-  for (let i = 0; i < n * 3; i++) { pos[i] = q[i] * s + h[i % 3]; nrm[i] = nq[i] / 127; }
-  return { n, pos, nrm, reg: Float32Array.from(rg),
-    eyes: [h[4], h[5], h[6]], chin: h[7], crown: h[8], front: h[9], halfW: h[10] };
+  const n = dv.getUint32(0, true), ne = dv.getUint32(4, true);
+  const h = new Float32Array(buf.slice(8, 80));
+  const e = new Uint16Array(buf, 80 + n * 12, ne * 2);
+  const reg = Float32Array.from(new Uint8Array(buf, 80 + n * 12 + ne * 4 + n * 4, n));
+  const body = (pOff, nOff, L) => ({ n, e, reg, pos: unpackI16(buf, pOff, n, h), nrm: unpackOcta(buf, nOff, n),
+    eyes: [L[0], L[1], L[2]], chin: L[3], crown: L[4], front: L[5], halfW: L[6] });
+  const nOff = 80 + n * 12 + ne * 4;
+  return { female: body(80, nOff, h.slice(4, 11)), male: body(80 + n * 6, nOff + n * 2, h.slice(11, 18)) };
+}
+function unpackI16(buf, off, n, h){
+  const q = new Int16Array(buf, off, n * 3), p = new Float32Array(n * 3), s = h[3] / 32767;
+  for (let i = 0; i < n * 3; i++) p[i] = q[i] * s + h[i % 3];
+  return p;
+}
+function unpackOcta(buf, off, n){
+  const q = new Uint8Array(buf, off, n * 2), o = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    let x = q[i * 2] / 255 * 2 - 1, y = q[i * 2 + 1] / 255 * 2 - 1, z = 1 - Math.abs(x) - Math.abs(y);
+    if (z < 0) { const ox = x; x = (1 - Math.abs(y)) * Math.sign(ox || 1); y = (1 - Math.abs(ox)) * Math.sign(y || 1); }
+    const l = Math.hypot(x, y, z) || 1;
+    o[i * 3] = x / l; o[i * 3 + 1] = y / l; o[i * 3 + 2] = z / l;
+  }
+  return o;
 }
 
-/* heads.bin: both genders on one shared sample (see SOURCE.md) */
+/* heads.bin: the face-zoom head, one topology for both genders (see SOURCE.md) */
 function decodeHeads(buf){
   const dv = new DataView(buf);
-  const n = dv.getUint32(0, true);
-  const h = new Float32Array(buf.slice(4, 36));
-  const out = { n, cutF: h[6], cutM: h[7] };
-  const unpack = off => {
-    const q = new Uint32Array(buf, off, n), p = new Float32Array(n * 3);
-    for (let i = 0; i < n; i++) {
-      const v = q[i];
-      p[i * 3] = ((v & 2047) / 2047 * 2 - 1) * h[3] + h[0];
-      p[i * 3 + 1] = (((v >>> 11) & 2047) / 2047 * 2 - 1) * h[4] + h[1];
-      p[i * 3 + 2] = (((v >>> 22) & 1023) / 1023 * 2 - 1) * h[5] + h[2];
-    }
-    return p;
-  };
-  const octa = off => {
-    const q = new Uint8Array(buf, off, n * 2), o = new Float32Array(n * 3);
-    for (let i = 0; i < n; i++) {
-      let x = q[i * 2] / 255 * 2 - 1, y = q[i * 2 + 1] / 255 * 2 - 1, z = 1 - Math.abs(x) - Math.abs(y);
-      if (z < 0) { const ox = x; x = (1 - Math.abs(y)) * Math.sign(ox || 1); y = (1 - Math.abs(ox)) * Math.sign(y || 1); }
-      const l = Math.hypot(x, y, z) || 1;
-      o[i * 3] = x / l; o[i * 3 + 1] = y / l; o[i * 3 + 2] = z / l;
-    }
-    return o;
-  };
-  out.pf = unpack(36); out.pm = unpack(36 + n * 4);
-  out.nf = octa(36 + n * 8); out.nm = octa(36 + n * 10);
-  const ak = new Uint8Array(buf, 36 + n * 12, n);
+  const n = dv.getUint32(0, true), ne = dv.getUint32(4, true);
+  const h = new Float32Array(buf.slice(8, 32));
+  const o = 32 + n * 12 + ne * 4;
+  const out = { n, cutF: h[4], cutM: h[5], e: new Uint16Array(buf, 32 + n * 12, ne * 2),
+    pf: unpackI16(buf, 32, n, h), pm: unpackI16(buf, 32 + n * 6, n, h), nf: unpackOcta(buf, o, n), nm: unpackOcta(buf, o + n * 2, n) };
+  const ak = new Uint8Array(buf, o + n * 4, n);
   out.area = new Float32Array(n); out.kind = new Float32Array(n);
   for (let i = 0; i < n; i++) { const a = ak[i] & 15; out.area[i] = a === 15 ? 99 : a; out.kind[i] = ak[i] >> 4; }
-  const ao = new Uint8Array(buf, 36 + n * 13, n);
-  out.ao = Float32Array.from(ao, v => v / 255);
+  out.ao = Float32Array.from(new Uint8Array(buf, o + n * 5, n), v => v / 255);
   return out;
+}
+
+/* Points (every vertex plus three along each edge) and line segments for one net.
+   attrs: per-vertex Float32Arrays copied to both. */
+function buildNet(THREE, M, attrs){
+  const n = M.n, ne = M.e.length / 2, np = n + ne * 3, E = M.e;
+  const mk = k => new Float32Array(np * k);
+  const P = mk(3), PB = mk(3), NA = mk(3), NB = mk(3), rnd = mk(1), edge = mk(1);
+  const X = {}; for (const k in attrs) X[k] = mk(1);
+  P.set(M.pf); PB.set(M.pm); NA.set(M.nf); NB.set(M.nm);
+  for (const k in attrs) X[k].set(attrs[k]);
+  for (let i = 0; i < n; i++) rnd[i] = Math.random();
+  let j = n;
+  for (let q = 0; q < ne; q++) {
+    const a = E[q * 2], b = E[q * 2 + 1];
+    for (let s = 1; s < 4; s++, j++) {
+      const t = s / 4 + (Math.random() - .5) * .08;
+      for (let c = 0; c < 3; c++) {
+        P[j * 3 + c] = lerp(M.pf[a * 3 + c], M.pf[b * 3 + c], t); PB[j * 3 + c] = lerp(M.pm[a * 3 + c], M.pm[b * 3 + c], t);
+        NA[j * 3 + c] = lerp(M.nf[a * 3 + c], M.nf[b * 3 + c], t); NB[j * 3 + c] = lerp(M.nm[a * 3 + c], M.nm[b * 3 + c], t);
+      }
+      for (const k in attrs) X[k][j] = (t < .5 ? attrs[k][a] : attrs[k][b]);
+      rnd[j] = Math.random(); edge[j] = s === 2 ? 1 : 2;
+    }
+  }
+  const pg = new THREE.BufferGeometry();
+  const set = (g, name, arr, k) => g.setAttribute(name, new THREE.BufferAttribute(arr, k));
+  set(pg, 'position', P, 3); set(pg, 'aPosB', PB, 3); set(pg, 'aNrmA', NA, 3); set(pg, 'aNrmB', NB, 3); set(pg, 'aRnd', rnd, 1); set(pg, 'aEdge', edge, 1);
+  for (const k in X) set(pg, k, X[k], 1);
+  /* lines: two vertices per edge */
+  const lv = ne * 2, L = { position: new Float32Array(lv * 3), aPosB: new Float32Array(lv * 3), aNrmA: new Float32Array(lv * 3), aNrmB: new Float32Array(lv * 3) };
+  const LX = {}; for (const k in attrs) LX[k] = new Float32Array(lv);
+  const lr = new Float32Array(lv), le = new Float32Array(lv);
+  for (let q = 0; q < lv; q++) {
+    const v = E[q];
+    for (let c = 0; c < 3; c++) { L.position[q * 3 + c] = M.pf[v * 3 + c]; L.aPosB[q * 3 + c] = M.pm[v * 3 + c]; L.aNrmA[q * 3 + c] = M.nf[v * 3 + c]; L.aNrmB[q * 3 + c] = M.nm[v * 3 + c]; }
+    for (const k in attrs) LX[k][q] = attrs[k][v];
+    lr[q] = .5;
+  }
+  const lg = new THREE.BufferGeometry();
+  for (const k in L) set(lg, k, L[k], 3);
+  set(lg, 'aRnd', lr, 1); set(lg, 'aEdge', le, 1);
+  for (const k in LX) set(lg, k, LX[k], 1);
+  return { pg, lg };
 }
 
 function hasWebGL(){
@@ -624,20 +634,16 @@ export function mount(container, opts = {}){
   async function start(){
     const THREE = await import(opts.threeUrl || THREE_URL);
     if (destroyed) return;
-    const bodyUrl = g => new URL(`${g}.bin`, HERE).href;
-    const fetchBody = g => fetch(bodyUrl(g)).then(r => { if (!r.ok) throw Object.assign(new Error('body'), { bodymap: 1 }); return r.arrayBuffer(); }).then(decodeBody);
-    const other = gender === 'female' ? 'male' : 'female';
-    const first = await fetchBody(gender).catch(e => { throw Object.assign(e, { bodymap: 1 }); });
+    const r = await fetch(opts.bodiesUrl || new URL('bodies.bin', HERE).href).catch(() => null);
+    if (!r || !r.ok) throw Object.assign(new Error('body'), { bodymap: 1 });
+    const bodies = decodeBodies(await r.arrayBuffer());
     if (destroyed) return;
-    gl = createScene(THREE, first, gender);
-    fetchBody(other).then(b => { if (!destroyed && gl) gl.addBody(other, b); }).catch(() => {});
+    gl = createScene(THREE, bodies, gender);
   }
 
   /* ---------------- scene ---------------- */
-  function createScene(THREE, firstBody, firstGender){
-    let renderer;
-    try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' }); }
-    catch (e) { throw e; }
+  function createScene(THREE, bodies, firstGender){
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
     renderer.setClearColor(0x000000, 0);
     const pix = Math.min(window.devicePixelRatio || 1, 2);
     renderer.setPixelRatio(pix);
@@ -646,42 +652,19 @@ export function mount(container, opts = {}){
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(30, 1, .05, 400);
-    const bodies = { [firstGender]: firstBody };
-    const N = firstBody.n;
+    const N = bodies.female.n;
 
-    /* body points: A = female, B = male, same surface samples in both files */
-    const geo = new THREE.BufferGeometry();
-    const rnd = new Float32Array(N); for (let i = 0; i < N; i++) rnd[i] = Math.random();
-    geo.setAttribute('position', new THREE.BufferAttribute(firstBody.pos.slice(), 3));
-    geo.setAttribute('aPosB', new THREE.BufferAttribute(firstBody.pos.slice(), 3));
-    geo.setAttribute('aNrmA', new THREE.BufferAttribute(firstBody.nrm.slice(), 3));
-    geo.setAttribute('aNrmB', new THREE.BufferAttribute(firstBody.nrm.slice(), 3));
-    geo.setAttribute('aReg', new THREE.BufferAttribute(firstBody.reg, 1));
-    geo.setAttribute('aRnd', new THREE.BufferAttribute(rnd, 1));
-    const jit = new Float32Array(N * 3);
-    for (let i = 0; i < N * 3; i++) jit[i] = Math.random() * 2 - 1;
-    geo.setAttribute('aJit', new THREE.BufferAttribute(jit, 3));
+    /* body net: position = female, aPosB = male, one topology */
+    const net = buildNet(THREE, { n: N, e: bodies.female.e, pf: bodies.female.pos, pm: bodies.male.pos, nf: bodies.female.nrm, nm: bodies.male.nrm }, { aReg: bodies.female.reg });
     const U = { uTime: { value: 0 }, uMorph: { value: firstGender === 'male' ? 1 : 0 }, uPix: { value: pix }, uIntro: { value: reduced ? 1 : 0 },
-      uActA: { value: -1 }, uActB: { value: -1 }, uHovA: { value: -1 }, uHovB: { value: -1 }, uHide: { value: 0 }, uCut: { value: 0 }, uSize: { value: 2.7 }, uRef: { value: 40 }, uSat: { value: 0 }, uZoom: { value: 0 }, uDim: { value: 0 }, uFocus: { value: 40 }, uDepthR: { value: 2.2 } };
-    const mat = new THREE.ShaderMaterial({ uniforms: U, vertexShader: BODY_VS, fragmentShader: BODY_FS, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
-    const points = new THREE.Points(geo, mat);
-    points.frustumCulled = false;
-    scene.add(points);
-    const sats = [1, -1].map(sg => {
-      const su = { ...U, uSat: { value: sg } };
-      const m2 = new THREE.ShaderMaterial({ uniforms: su, vertexShader: BODY_VS, fragmentShader: BODY_FS, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
-      const p2 = new THREE.Points(geo, m2); p2.frustumCulled = false; p2.visible = false; scene.add(p2);
-      return p2;
-    });
-
-    function addBody(g, b){
-      bodies[g] = b;
-      const attr = g === 'female' ? 'position' : 'aPosB', nAttr = g === 'female' ? 'aNrmA' : 'aNrmB';
-      geo.attributes[attr].array.set(b.pos); geo.attributes[attr].needsUpdate = true;
-      geo.attributes[nAttr].array.set(b.nrm); geo.attributes[nAttr].needsUpdate = true;
-      if (g === 'female') { geo.attributes.aReg.array.set(b.reg); geo.attributes.aReg.needsUpdate = true; }
-      computeAnchors(g);
-    }
+      uActA: { value: -1 }, uActB: { value: -1 }, uHovA: { value: -1 }, uHovB: { value: -1 }, uHide: { value: 0 }, uCut: { value: 0 }, uDim: { value: 0 },
+      uSize: { value: 2.8 }, uRef: { value: 13 }, uE1: { value: 0 }, uE2: { value: 0 }, uWob: { value: reduced ? 0 : .012 }, uPop: { value: .045 },
+      uFocus: { value: 40 }, uDepthR: { value: 2.4 }, uLine: { value: .11 } };
+    const mkMat = (vs, fs, uni, defs) => new THREE.ShaderMaterial({ uniforms: uni, vertexShader: vs, fragmentShader: fs, defines: defs || {}, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+    const mat = mkMat(PT_VS, PT_FS, U), lmat = mkMat(LN_VS, LN_FS, U);
+    const lines = new THREE.LineSegments(net.lg, lmat); lines.frustumCulled = false; scene.add(lines);
+    const points = new THREE.Points(net.pg, mat); points.frustumCulled = false; scene.add(points);
+    const geo = net.pg;
 
     /* ground */
     const gU = { uTime: U.uTime, uIntro: { value: reduced ? 1 : 0 } };
@@ -747,7 +730,7 @@ export function mount(container, opts = {}){
       out._land.top = yMax; out._land.bottom = yMin;
       anchors[g] = out;
     }
-    computeAnchors(firstGender);
+    computeAnchors('female'); computeAnchors('male');
 
     /* blend helper across the morph */
     const mval = () => smooth(U.uMorph.value);
@@ -769,8 +752,9 @@ export function mount(container, opts = {}){
 
     /* ---- detailed head (loaded on demand, same units as the body) ---- */
     let face = null, faceLoading = null;
-    const fU = { uTime: U.uTime, uPix: U.uPix, uFace: { value: 0 }, uAct: { value: -1 }, uHov: { value: -1 }, uSize: { value: 2.3 }, uRef: { value: 7 },
-      uMorph: U.uMorph, uCut: U.uCut, uFocus: U.uFocus, uDepthR: { value: 1.1 }, uSat: { value: 0 }, uHC: { value: new THREE.Vector3() } };
+    const fU = { uTime: U.uTime, uPix: U.uPix, uFace: { value: 0 }, uAct: { value: -1 }, uHov: { value: -1 }, uSize: { value: 2.8 }, uRef: { value: 5.6 },
+      uMorph: U.uMorph, uCut: U.uCut, uFocus: U.uFocus, uDepthR: { value: 1.4 }, uE1: { value: 0 }, uE2: { value: 0 }, uWob: { value: reduced ? 0 : .003 }, uPop: { value: .014 },
+      uLine: { value: .14 }, uHC: { value: new THREE.Vector3() } };
     /* camera target, marker anchor and radius of each face area, per gender */
     function areaStats(P, Nn, area){
       const n = area.length;
@@ -805,28 +789,14 @@ export function mount(container, opts = {}){
       return [x / n, y / n, z / n];
     }
     function buildHead(H){
-      const n = H.n;
-      const g = new THREE.BufferGeometry();
-      const r2 = new Float32Array(n), j2 = new Float32Array(n * 3);
-      for (let i = 0; i < n; i++) r2[i] = Math.random();
-      for (let i = 0; i < n * 3; i++) j2[i] = Math.random() * 2 - 1;
-      g.setAttribute('position', new THREE.BufferAttribute(H.pf, 3));
-      g.setAttribute('aPosB', new THREE.BufferAttribute(H.pm, 3));
-      g.setAttribute('aNrmA', new THREE.BufferAttribute(H.nf, 3));
-      g.setAttribute('aNrmB', new THREE.BufferAttribute(H.nm, 3));
-      g.setAttribute('aArea', new THREE.BufferAttribute(H.area, 1));
-      g.setAttribute('aKind', new THREE.BufferAttribute(H.kind, 1));
-      g.setAttribute('aAo', new THREE.BufferAttribute(H.ao, 1));
-      g.setAttribute('aRnd', new THREE.BufferAttribute(r2, 1));
-      g.setAttribute('aJit', new THREE.BufferAttribute(j2, 3));
+      const net = buildNet(THREE, { n: H.n, e: H.e, pf: H.pf, pm: H.pm, nf: H.nf, nm: H.nm }, { aArea: H.area, aKind: H.kind, aAo: H.ao });
       const grp = new THREE.Group(); grp.visible = false;
-      const mats = [0, 1, -1, 2, -2].map(sg => {
-        const m = new THREE.ShaderMaterial({ uniforms: sg ? { ...fU, uSat: { value: sg } } : fU, vertexShader: HEAD_VS, fragmentShader: HEAD_FS, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
-        const p = new THREE.Points(g, m); p.frustumCulled = false; grp.add(p);
-        return m;
-      });
+      const mats = [mkMat(LN_VS, LN_FS, fU, { HEAD: 1 }), mkMat(PT_VS, PT_FS, fU, { HEAD: 1 })];
+      const ln = new THREE.LineSegments(net.lg, mats[0]), pt = new THREE.Points(net.pg, mats[1]);
+      ln.frustumCulled = pt.frustumCulled = false;
+      grp.add(ln, pt);
       scene.add(grp);
-      return { grp, geo: g, mats, H, n,
+      return { grp, geos: [net.pg, net.lg], mats, H, n: H.n,
         st: { female: areaStats(H.pf, H.nf, H.area), male: areaStats(H.pm, H.nm, H.area) },
         hc: { female: headCenter(H.pf), male: headCenter(H.pm) } };
     }
@@ -960,8 +930,7 @@ export function mount(container, opts = {}){
         clearTimeout(refocusT);
         refocusT = setTimeout(() => { if (destroyed) return; if (mode === 'face' && !sel) focusFace(); else if (mode !== 'body' && sel) focusArea(sel); }, reduced ? 0 : 1450);
       };
-      if (bodies[g]) go();
-      else fetch(new URL(`${g}.bin`, HERE).href).then(r => r.arrayBuffer()).then(b => { if (!destroyed) { addBody(g, decodeBody(b)); go(); } }).catch(() => {});
+      go();
     }
 
     /* ---- picking in screen space ---- */
@@ -990,7 +959,7 @@ export function mount(container, opts = {}){
         if (best) return best;
       }
       const fb = bodies.female || bodies.male, mb = bodies.male || bodies.female;
-      const t = mval(); const R = geo.attributes.aReg.array;
+      const t = mval(); const R = fb.reg;
       const nx = new THREE.Vector3();
       for (let i = 0; i < N; i++) {
         let reg = R[i]; if (!reg) continue;
@@ -1132,9 +1101,11 @@ export function mount(container, opts = {}){
       camera.position.set(view.tx + Math.sin(ang) * Math.cos(el) * view.dist, view.ty + Math.sin(el) * view.dist, view.tz + Math.cos(ang) * Math.cos(el) * view.dist);
       camera.lookAt(view.tx, view.ty, view.tz);
       camera.setViewOffset(W, H, view.ox, view.oy, W, H);
-      const zoom = Math.max(0, Math.min(1, (26 - view.dist) / 12));
-      U.uZoom.value = zoom;
-      sats.forEach(sp => { sp.visible = zoom > .01; });
+      /* edge points join in as the camera closes in, so the net stays as open as the atlas */
+      U.uE1.value = Math.max(0, Math.min(1, (30 - view.dist) / 16));
+      U.uE2.value = Math.max(0, Math.min(1, (17 - view.dist) / 7));
+      fU.uE1.value = Math.max(0, Math.min(1, (4.6 - view.dist) / 1.4));
+      fU.uE2.value = Math.max(0, Math.min(1, (3.3 - view.dist) / 1));
       U.uDim.value = fades.dim.v;
       U.uFocus.value = view.dist;
       U.uDepthR.value = mode === 'body' ? 2.2 : 1.6;
@@ -1194,11 +1165,11 @@ export function mount(container, opts = {}){
     kick();
 
     return {
-      focusArea, focusFace, focusBody, setGender, addBody,
+      focusArea, focusFace, focusBody, setGender,
       dispose(){
         cancelAnimationFrame(raf); raf = 0;
-        geo.dispose(); mat.dispose(); sats.forEach(sp => sp.material.dispose()); ground.geometry.dispose(); ground.material.dispose(); dgeo.dispose(); dust.material.dispose();
-        if (face) { face.geo.dispose(); face.mats.forEach(m => m.dispose()); }
+        net.pg.dispose(); net.lg.dispose(); mat.dispose(); lmat.dispose(); ground.geometry.dispose(); ground.material.dispose(); dgeo.dispose(); dust.material.dispose();
+        if (face) { face.geos.forEach(g => g.dispose()); face.mats.forEach(m => m.dispose()); }
         renderer.dispose();
         try { renderer.forceContextLoss(); } catch (e) { /* already lost */ }
       }
