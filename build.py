@@ -14,7 +14,7 @@ PROD = 'https://www.apexsurgeryhospital.com/'
 
 # page file -> (data-page key, extra data files, production path, title key or data id, i18n fallback keys)
 PAGES = [
-    ('index.html',      'home',       ['home', 'about'],        '',               'home'),
+    ('index.html',      'home',       ['home', 'about', 'founder'],        '',               'home'),
     ('about.html',      'about',      ['about', 'founder'],                'about-us/',      'about'),
     ('services.html',   'services',   ['services'],             'surgery/',       'services'),
     ('service.html',    'service',    ['posts'],                       'surgery/',       None),

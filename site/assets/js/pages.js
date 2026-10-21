@@ -318,7 +318,7 @@
 
   /* =================== HOME =================== */
   async function home(){
-    const S = A.d('shared') || {}, H = A.d('home') || {}, About = A.d('about') || {};
+    const S = A.d('shared') || {}, H = A.d('home') || {}, About = A.d('about') || {}, Fd = A.d('founder');
     const reviews = (H.reviews && H.reviews.items) || [];
     const promos = (H.promos && H.promos.items) || [];
     const news = (H.news && H.news.items) || [];
@@ -343,7 +343,14 @@
         <div><p class="eyebrow rv">${E(T('introH'))}</p>
           <p class="intro-big rv" data-d="60" data-field="home.intro">${E((H.intro && H.intro.x) || '')}</p>
           <a class="link-arrow rv" href="about.html">${E((H.intro && H.intro.btn && H.intro.btn.x) || T('readMore'))} ${I('arrow-right')}</a></div>
-        <ul class="pillars">${(About.pillars || []).map((p, i) => `<li class="rv" data-d="${i*90}"><span class="pl-n">0${i+1}</span><b>${E(p.h)}</b><span>${E(p.x)}</span></li>`).join('')}</ul>
+        <div class="intro-side">
+          ${Fd ? `<a class="intro-fd rv-clip" href="about.html#founder">
+            <span class="ifd-ph"><img src="${IMG(Fd.portrait || Fd.photo)}" alt="${E(Fd.name)}" loading="lazy" data-par="14"></span>
+            ${Fd.aaci ? `<span class="ifd-badge"><img src="${IMG(Fd.aaci.src)}" alt="${E(Fd.aaci.alt || 'AACI')}" loading="lazy"></span>` : ''}
+            <span class="ifd-cap"><small>${E(T('foundedBy'))}</small><b>${E(Fd.name)}</b><span>${E(Fd.specialty || Fd.role)}</span></span>
+          </a>` : ''}
+          <ul class="pillars">${(About.pillars || []).map((p, i) => `<li class="rv" data-d="${i*90}"><span class="pl-n">0${i+1}</span><b>${E(p.h)}</b><span>${E(p.x)}</span></li>`).join('')}</ul>
+        </div>
       </div>
     </section>
 
