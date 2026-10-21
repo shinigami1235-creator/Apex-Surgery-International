@@ -49,19 +49,16 @@ function steady(u) {
 </svg>`;
 }
 
+const FACE = new URL('art/face-front.webp', import.meta.url).href;
+
 function proportion(u) {
-  /* ink line face on warm paper with thirds guides; the eyes and lips drift off and settle back */
+  /* the clinic's own front face stencil on warm paper, with thirds guides */
   return `<svg viewBox="0 0 320 180" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
 <defs><linearGradient id="${u}p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFBF4"/><stop offset="1" stop-color="#F3E8DA"/></linearGradient>
 <filter id="${u}s" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#12051D" flood-opacity=".5"/></filter></defs>
 <g class="l1"><rect x="78" y="14" width="164" height="166" rx="16" fill="url(#${u}p)" filter="url(#${u}s)" transform="rotate(3 160 97)"/></g>
-<g class="l2" transform="rotate(3 160 97)"><g class="guides" stroke="#A886CD" stroke-width="1" stroke-dasharray="3 4"><path d="M96 74H224M96 100H224M96 124H224M96 158H224"/><path d="M131 64V86M147 64V86M173 64V86M189 64V86"/></g>
-<g fill="none" stroke="#2E2140" stroke-width="2" stroke-linecap="round"><path d="M160 32c-30 0-46 22-46 54 0 38 22 72 46 72s46-34 46-72c0-32-16-54-46-54z"/>
-<path d="M114 88c-6-3-9 1-8 8 1 9 5 14 10 14M206 88c6-3 9 1 8 8-1 9-5 14-10 14" stroke-width="1.6"/></g>
-<g fill="none" stroke="#2E2140" stroke-linecap="round"><path class="br" d="M128 69c6-4 13-5 20-2M172 67c7-3 14-2 20 2" stroke-width="2.4"/>
-<g class="ey"><path d="M129 78c5-5 13-5 18 0-5 4-13 4-18 0zM173 78c5-5 13-5 18 0-5 4-13 4-18 0z" stroke-width="1.6"/><circle cx="138" cy="78" r="2.4" fill="#2E2140"/><circle cx="182" cy="78" r="2.4" fill="#2E2140"/></g>
-<path class="ns" d="M157 84c-1 10-4 15-6 19 3 3 13 3 17 0-2-4-5-9-6-19" stroke-width="1.5"/>
-<g class="lp"><path d="M146 124c5-4 10-4 14-2 4-2 9-2 14 2-5 2-23 2-28 0z" stroke-width="1.6"/><path d="M149 127c6 5 16 5 22 0" stroke-width="1.4"/></g></g></g>
+<g class="l2" transform="rotate(3 160 97)"><g class="guides" stroke="#A886CD" stroke-width="1" stroke-dasharray="3 4"><path d="M92 84H228M92 123H228M92 158H228"/></g>
+<image href="${FACE}" x="105" y="20" width="110" height="162" preserveAspectRatio="xMidYMid meet"/></g>
 <g class="l3"><circle class="pin" cx="232" cy="40" r="5" fill="#CC3366"/><circle cx="232" cy="40" r="11" fill="none" stroke="#CC3366" stroke-opacity=".35"/></g>
 </svg>`;
 }
