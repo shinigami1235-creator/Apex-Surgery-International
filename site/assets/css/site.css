@@ -1205,3 +1205,14 @@ html[lang=en] .art-prose p.lede::first-letter{float:left;font-size:4.1em;line-he
 @keyframes ta-scan{0%,100%{transform:translateY(-44px);opacity:.25}50%{transform:translateY(44px);opacity:1}}
 .tool-ana .eyebrow{color:#C9B3DD}
 @media (prefers-reduced-motion:reduce){.tc-art.ana .ta-scan{animation:none}}
+
+/* revision 1k: implant viewer card on the home page */
+.tool-impl{grid-column:1/-1;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:24px}
+.tool-impl .tc-body{order:-1}
+.tc-art.impl svg{width:clamp(130px,16vw,220px);height:auto;overflow:visible;display:block}
+.tc-art.impl .ti-lens{fill:rgba(227,184,92,.2);stroke:#E3B85C;stroke-width:1.6}
+.tc-art.impl .ti-in{fill:none;stroke:rgba(227,184,92,.55);stroke-width:1.1;stroke-dasharray:3 3}
+.tc-art.impl .ti-dim{fill:none;stroke:#C9B3DD;stroke-width:1.2;stroke-linecap:round}
+.tc-art.impl .ti-t{fill:#C9B3DD;font:700 16px var(--font,system-ui)}
+.tool-impl .eyebrow{color:#E3B85C}
+@media (max-width:640px){.tool-impl{grid-template-columns:1fr}.tool-impl .tc-art.impl{position:absolute;right:20px;top:20px}.tool-impl .tc-art.impl svg{width:96px}.tool-impl .tc-body{padding-right:90px}}

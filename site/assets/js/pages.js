@@ -387,6 +387,10 @@
             <span class="tc-art ana" aria-hidden="true"><svg viewBox="0 0 120 150"><ellipse class="ta-face" cx="60" cy="74" rx="40" ry="54"/><path class="ta-l" d="M34 44q8-4 16 0M70 44q8-4 16 0M36 92q-4 10 4 20M84 92q4 10-4 20"/><circle class="ta-s" cx="44" cy="70" r="3"/><circle class="ta-s" cx="80" cy="62" r="2.2"/><circle class="ta-s" cx="72" cy="96" r="2.6"/><path class="ta-scan" d="M10 80h100"/></svg></span>
             <span class="tc-body"><span class="eyebrow on-night">${E(T('ana'))}</span><b class="h-m">${E(T('anaH'))}</b><span class="tc-p">${E(T('anaPageP'))}</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">${E(T('anaCta'))} ${I('arrow-right')}</span></span></span></a>
+          <a class="tool-card tool-impl rv" data-d="360" href="breast-implants.html">
+            <span class="tc-art impl" aria-hidden="true"><svg viewBox="0 0 220 110"><path class="ti-lens" d="M20 92 C 40 30, 120 18, 150 92 Z"/><path class="ti-in" d="M34 92 C 54 46, 116 38, 138 92"/><path class="ti-dim" d="M20 102h130M20 98v8M150 98v8M164 92V40M160 92h8M160 40h8"/><text class="ti-t" x="174" y="70">cc</text></svg></span>
+            <span class="tc-body"><span class="eyebrow on-night">${E(T('impl'))}</span><b class="h-m">${E(T('implH'))}</b><span class="tc-p">${E(T('implP'))}</span>
+            <span class="tc-foot"><span class="btn btn-light btn-sm">${E(T('implCta'))} ${I('arrow-right')}</span></span></span></a>
         </div>
       </div>
     </section>
@@ -453,6 +457,7 @@
           <a class="mini-tool rv" href="nose.html">${I('scan-face')}<b>${E(T('nose'))}</b><span>${E(T('nosePageP'))}</span></a>
           <a class="mini-tool rv" data-d="20" href="analysis.html">${I('scan-line')}<b>${E(T('ana'))}</b><span>${E(T('anaPageP'))}</span></a>
           <a class="mini-tool rv" data-d="35" href="proportions.html">${I('gem')}<b>${E(T('prop'))}</b><span>${E(T('propPageP'))}</span></a>
+          <a class="mini-tool rv" data-d="50" href="breast-implants.html">${I('ruler')}<b>${E(T('impl'))}</b><span>${E(T('implP'))}</span></a>
           <a class="mini-tool rv" data-d="70" href="trip.html">${I('calendar')}<b>${E(T('trip'))}</b><span>${E(T('tripP'))}</span></a>
           <a class="mini-tool rv" data-d="140" href="play.html">${I('sparkles')}<b>${E(T('games'))}</b><span>${E(T('gamesP'))}</span></a>
           <a class="mini-tool rv" data-d="210" href="doctor.html">${I('stethoscope')}<b>${E(T('doctor'))}</b><span>${E((S.doctor && S.doctor.name) || '')}</span></a>
@@ -904,7 +909,11 @@
   const proportions = featurePage('proportions', 'propPageH', 'propPageP', 'proportions', () => A.mpBase ? {mpBase:A.mpBase} : {}, 'prop-s');
   const analysis = featurePage('analysis', 'anaPageH', 'anaPageP', 'analysis', () => Object.assign(A.mpBase ? {mpBase:A.mpBase} : {}, {links:{consult:'consult.html', proportions:'proportions.html'}}), 'prop-s');
   const play = featurePage('games', 'playPageH', 'playPageP', 'games', {}, 'play-s');
-  const LINKS = {bodymap:'index.html#hero', nose:'nose.html', analysis:'analysis.html', proportions:'proportions.html', games:'play.html', trip:'trip.html', plan:'plan.html', consult:'consult.html'};
+  const IMPL_LINKS = {breast:'breast-implants.html', chin:'chin-implants.html', forehead:'forehead-implants.html', nose:'nose-implants.html', consult:'consult.html'};
+  const implPage = (area, h, p) => featurePage('implants', h, p, 'implants', () => ({area, links:IMPL_LINKS}), 'prop-s');
+  const implBreast = implPage('breast', 'implBreastH', 'implBreastP'), implChin = implPage('chin', 'implChinH', 'implChinP');
+  const implForehead = implPage('forehead', 'implForeheadH', 'implForeheadP'), implNose = implPage('nose', 'implNoseH', 'implNoseP');
+  const LINKS = {bodymap:'index.html#hero', nose:'nose.html', implants:'breast-implants.html', analysis:'analysis.html', proportions:'proportions.html', games:'play.html', trip:'trip.html', plan:'plan.html', consult:'consult.html'};
   const plan = featurePage('plan', 'planPageH', 'planPageP', 'plan', {links:LINKS});
   const trip = featurePage('trip', 'tripPageH', 'tripP', 'trip', () => Object.assign({links:LINKS}, A.param('p') ? {procedures:[A.param('p')]} : {}));
   const consult = featurePage('consult', 'consultPageH', 'consultPageP', 'consult', () => ({procedure:A.param('p') || undefined}));
@@ -914,6 +923,6 @@
       <div class="nf-links rv"><a class="btn btn-light" href="index.html">${E(T('goHome'))}</a><a class="btn btn-ghost" href="services.html">${E(T('services'))}</a><a class="btn btn-ghost" href="blog.html">${E(T('articles'))}</a><a class="btn btn-ghost" href="contact.html">${E(T('contact'))}</a></div></div></section>`;
   }
 
-  const PAGES = {home, services, service, about, doctor, promotions, reviews, blog, article, war, contact, nose, analysis, proportions, play, plan, trip, consult, notfound};
+  const PAGES = {home, services, service, about, doctor, promotions, reviews, blog, article, war, contact, nose, analysis, proportions, implBreast, implChin, implForehead, implNose, play, plan, trip, consult, notfound};
   A.boot(() => (PAGES[document.body.dataset.page] || home)());
 })();

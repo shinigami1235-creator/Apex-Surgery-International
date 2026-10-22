@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Implant Viewer · Lab</title>
+<link rel="stylesheet" href="../assets/css/base.css">
+<script>
+  /* Local testing only: serve three from the lab vendor copy when the page runs on this machine. */
+  if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
+    const m = document.createElement('script');
+    m.type = 'importmap';
+    m.textContent = JSON.stringify({ imports: { 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js': './vendor/three.module.js' } });
+    document.currentScript.after(m);
+  }
+</script>
+
+<link rel="icon" href="../assets/img/favicon.svg">
+<link rel="stylesheet" href="../assets/css/base.css">
+<style>
+  body{background:#fff}
+  .lab{max-width:1320px;margin:0 auto;padding:20px 16px 48px}
+  @media (min-width:960px){.lab{padding:32px 40px 64px}}
+  .lab-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+  .lab-head h1{margin:0;font-size:26px;line-height:1.2;color:var(--ink)}
+  .lab-lang{display:inline-flex;padding:3px;border-radius:999px;border:1px solid var(--lilac-300)}
+  .lab-lang button{height:34px;min-width:46px;padding:0 12px;border:0;border-radius:999px;background:none;font:inherit;font-weight:700;font-size:14px;color:var(--ink-2);cursor:pointer}
+  .lab-lang button[aria-pressed=true]{background:var(--plum);color:#fff}
+  .lab-log{margin-top:20px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3);white-space:pre-wrap;min-height:1.5em}
+</style>
+</head>
+<body>
+<main class="lab">
+  <div class="lab-head">
+    <h1 id="title">Implant Viewer</h1>
+    <div class="lab-lang" role="group" aria-label="Language">
+      <button data-lang="th">TH</button><button data-lang="en">EN</button>
+    </div>
+  </div>
+  <div id="mount"></div>
+  <pre class="lab-log" id="log"></pre>
+</main>
+<script type="module">
+  import {mount} from '../assets/features/implants/index.js';
+  // ?lang=en|th, ?area=breast|chin|forehead|nose, ?sample=<side photo URL> for offline tests
+  const q = new URLSearchParams(location.search);
+  let lang = q.get('lang') === 'th' ? 'th' : 'en';
+  const area = q.get('area') || 'breast';
+  const log = document.getElementById('log');
+  const extra = {};
+  if (q.get('sample')) extra.sample = q.get('sample');
+  let app = null;
+  function start(){
+    if (app) app.destroy();
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === lang));
+    app = mount(document.getElementById('mount'), {
+      lang, area,
+      links: {breast:'?area=breast&lang=' + lang, chin:'?area=chin&lang=' + lang, forehead:'?area=forehead&lang=' + lang, nose:'?area=nose&lang=' + lang, consult:'consult.html'},
+      onEvent: (name, data) => { log.textContent = `${name} ${JSON.stringify(data)}\n` + log.textContent; },
+      ...extra,
+    });
+    window.__im = app;
+  }
+  document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { lang = b.dataset.lang; start(); }));
+  start();
+</script>
+</body>
+</html>
