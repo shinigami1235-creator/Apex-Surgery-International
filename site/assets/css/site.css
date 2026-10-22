@@ -1066,3 +1066,12 @@ html[lang=en] .art-prose p.lede::first-letter{float:left;font-size:4.1em;line-he
 .tool-card{contain:paint}
 .tool-card::before{mix-blend-mode:normal;opacity:.08}
 .doc-ph img{transform:translateZ(0)}
+
+/* Revision 1f: the TH/EN switch stays in the header on tablets and phones */
+@media (max-width:1180px){.hdr-right .lang{display:flex}}
+@media (max-width:560px){
+  .hdr-right .lang{display:flex;padding:2px;font-size:12px}
+  .hdr-right .lang a{padding:3px 7px}
+  .hdr-right{gap:6px}
+}
+@media (max-width:360px){.hdr-right .lang a{padding:3px 5px}}
