@@ -60,6 +60,10 @@ const SAMPLES = {
 };
 const MP_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/';
 
+/* one colour per point key, the same in every view. Each dot sits in a white ring with a dark
+   shadow, so it reads on light skin, dark skin and the plum stage alike. */
+const PT_COLOR = {N:'#FF4D85', D:'#FFB020', T:'#3FA9FF', C:'#B488FF', AL:'#22D3B6', AR:'#A3E635', A:'#FF7A3D'};
+
 /* ---------- strings ---------- */
 const VIEWS = [
   {id:'front', name:{en:'Front view', th:'มุมหน้าตรง'}, tab:{en:'Front', th:'หน้าตรง'},
@@ -86,7 +90,8 @@ const STR = {
     err:{noFace:'No face found in this photo.', camera:'The camera could not be opened.', read:'The photo could not be read.',
          model:'The face model could not be loaded.', save:'The image could not be saved.',
          sample:name => `The ${name.toLowerCase()} sample photo could not be loaded.`},
-    pt:{N:'Nasion', D:'Bridge midpoint', T:'Tip', C:'Columella base', A:'Alar crease', AL:'Left nostril edge', AR:'Right nostril edge'},
+    guide:'Where the points go', glow:'Soft light', zoom:'Zoom', zoomIn:'Zoom in', zoomOut:'Zoom out',
+    pt:{N:'Top of the bridge', D:'Middle of the bridge', T:'Tip', C:'Base of the nose', A:'Nostril wing', AL:'Left nostril edge', AR:'Right nostril edge'},
   },
   th:{
     photo:'รูปภาพ', take:'ถ่ายรูป', choose:'เลือกรูป', sample:'ใบหน้าตัวอย่าง', privacy:'ไม่มีการอัปโหลดรูปภาพ',
@@ -101,7 +106,8 @@ const STR = {
     err:{noFace:'ไม่พบใบหน้าในรูปนี้', camera:'เปิดกล้องไม่ได้', read:'อ่านรูปไม่ได้',
          model:'โหลดโมเดลใบหน้าไม่ได้', save:'บันทึกรูปไม่ได้',
          sample:name => `โหลดรูปตัวอย่าง${name}ไม่ได้`},
-    pt:{N:'โคนจมูก', D:'กลางสันจมูก', T:'ปลายจมูก', C:'ฐานแกนกลางจมูก', A:'ร่องปีกจมูก', AL:'ปีกจมูกซ้าย', AR:'ปีกจมูกขวา'},
+    guide:'ตำแหน่งของจุด', glow:'แสงนวล', zoom:'ซูม', zoomIn:'ซูมเข้า', zoomOut:'ซูมออก',
+    pt:{N:'บนสุดของสันจมูก', D:'กลางสันจมูก', T:'ปลายจมูก', C:'ฐานจมูก', A:'ปีกจมูก', AL:'ขอบปีกจมูกซ้าย', AR:'ขอบปีกจมูกขวา'},
   },
 };
 
@@ -112,6 +118,7 @@ const ICON = {
   image:'<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
   download:'<path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/>',
   plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',
+  minus:'<path d="M5 12h14"/>',
   check:'<path d="M20 6 9 17l-5-5"/>',
   arrow:'<path d="M7 7h10v10"/><path d="M7 17 17 7"/>',
   face:'<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01"/><path d="M15 9h.01"/>',
@@ -155,15 +162,42 @@ const CSS = `
 .np-tab[aria-selected=true]{background:#fff;color:var(--np-plum)}
 .np-tab .np-dot{width:7px;height:7px;border-radius:50%;background:var(--np-lilac);flex:none}
 .np-tab[aria-selected=true] .np-dot{background:var(--np-rose)}
-.np-view{position:relative;display:grid;place-items:center;min-height:min(64vh,460px);border-radius:20px;overflow:hidden}
-@media (min-width:960px){.np-view{min-height:min(76vh,680px)}}
+.np-view{--mh:60vh;position:relative;display:grid;place-items:center;min-height:min(64vh,460px);border-radius:20px;overflow:hidden}
+@media (min-width:960px){.np-view{--mh:74vh;min-height:min(76vh,680px)}}
 .np-view.fit{min-height:0}
-.np-frame{--x:50%;position:relative;width:min(100%,calc(var(--mh,60vh) * var(--ar,.8)));aspect-ratio:var(--ar,.8);border-radius:20px;overflow:hidden;
+.np-view.gd{gap:10px}
+.np-fbox{position:relative;width:min(100%,calc(var(--mh) * var(--ar,.8)));aspect-ratio:var(--ar,.8)}
+.np-frame{--x:50%;position:absolute;inset:0;border-radius:20px;overflow:hidden;
   background:#12051d;touch-action:pan-y;user-select:none;-webkit-user-select:none}
-.np-frame{--mh:60vh}
-@media (min-width:960px){.np-frame{--mh:74vh}}
+.np-frame.zm{touch-action:none;cursor:grab}
+.np-frame.zm.pan{cursor:grabbing}
+.np-zl{position:absolute;inset:0;transform-origin:0 0}
 .np-frame canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.np-frame .np-after{clip-path:inset(0 0 0 var(--x))}
+.np-frame .np-after{clip-path:inset(0 0 0 var(--cx,50%))}
+/* zoom */
+.np-zui{position:absolute;right:10px;bottom:10px;z-index:4;display:flex;align-items:center;border-radius:999px;color:#fff;
+  background:rgba(31,10,48,.72);border:1px solid rgba(201,179,221,.28);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.np-zui button{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:18px;color:#fff;transition:background-color .2s}
+.np-zui button:hover:not(:disabled){background:rgba(255,255,255,.12)}
+.np-zui button:disabled{opacity:.35;cursor:default}
+.np-zui button:focus-visible{outline:2px solid var(--np-lilac);outline-offset:-3px}
+.np-zui output{min-width:30px;text-align:center;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+/* placement guide: the sample nose with its points, and a legend */
+.np-gd{width:min(100%,max(320px,calc(var(--mh) * var(--ar,.8))));display:grid;gap:8px;padding:12px;border-radius:20px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(201,179,221,.18)}
+.np-gd h4{margin:0;font-size:14px;line-height:1.3;font-weight:700;color:#fff}
+.np-gd-b{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:center}
+.np-gd-b.solo{grid-template-columns:minmax(0,1fr)}
+.np-gd canvas{width:100%;aspect-ratio:1;display:block;border-radius:12px;background:#12051d}
+.np-legend{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 12px}
+.np-legend li{display:flex;align-items:center;gap:8px;font-size:13px;line-height:1.35;color:var(--np-on);min-width:0}
+.np-legend li::before{content:"";flex:none;width:12px;height:12px;border-radius:50%;background:var(--c);box-shadow:0 0 0 2px #fff}
+.np-legend li.on{font-weight:700;color:#fff}
+@media (min-width:1200px){
+  .np-view.gd{grid-template-columns:minmax(0,calc(var(--mh) * var(--ar,.8))) 216px;justify-content:center;gap:20px}
+  .np-gd{width:100%}
+  .np-gd-b,.np-legend{grid-template-columns:minmax(0,1fr)}
+}
 .np-line{position:absolute;top:0;bottom:0;left:var(--x);width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 0 1px rgba(31,10,48,.18)}
 .np-knob{position:absolute;top:50%;left:var(--x);width:42px;height:42px;margin:-21px 0 0 -21px;border-radius:50%;background:#fff;color:var(--np-plum);
   display:grid;place-items:center;box-shadow:0 10px 24px -8px rgba(20,6,31,.6);font-size:20px;cursor:ew-resize}
@@ -186,12 +220,13 @@ const CSS = `
 .np-outline path.sh{stroke:rgba(31,10,48,.55);stroke-width:4}
 .np-pt{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;display:none;place-items:center;touch-action:none;cursor:grab;z-index:3}
 .np-frame.pts .np-pt{display:grid}
-.np-pt::before{content:"";width:18px;height:18px;border-radius:50%;background:var(--np-plum);border:3px solid #fff;box-shadow:0 2px 8px rgba(20,6,31,.55);
+.np-pt::before{content:"";width:18px;height:18px;border-radius:50%;background:var(--c,var(--np-plum));border:3px solid #fff;box-shadow:0 2px 8px rgba(20,6,31,.55);
   transition:transform .16s var(--np-ease)}
-.np-pt.on::before,.np-pt:focus-visible::before{transform:scale(1.25);background:var(--np-rose)}
+.np-pt.on::before,.np-pt:focus-visible::before{transform:scale(1.3);box-shadow:0 0 0 3px rgba(31,10,48,.55),0 2px 8px rgba(20,6,31,.55)}
 .np-pt:focus-visible{outline:none}
 .np-pt span{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);white-space:nowrap;padding:2px 8px;border-radius:999px;background:#fff;color:var(--np-plum);
   font-size:12px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .15s}
+.np-pt span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:6px;vertical-align:1px}
 .np-pt.on span,.np-pt:focus-visible span{opacity:1}
 
 .np-empty,.np-error{display:grid;justify-items:center;text-align:center;gap:12px;padding:28px 18px;max-width:420px}
@@ -223,6 +258,11 @@ const CSS = `
 .np-bar .np-row{justify-content:flex-end}
 .np-cap{margin:0;font-size:14px;color:var(--np-on-2)}
 .np-cap b{color:#fff;font-weight:700}
+.np .np-glow{gap:10px;padding:0 10px 0 14px}
+.np-sw{position:relative;flex:none;width:30px;height:18px;border-radius:999px;background:rgba(255,255,255,.2);transition:background-color .2s}
+.np-sw::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s var(--np-ease)}
+.np-glow[aria-checked=true] .np-sw{background:var(--np-rose)}
+.np-glow[aria-checked=true] .np-sw::after{transform:translateX(12px)}
 .np-credit{margin:0;padding:0 8px 4px;font-size:12px;line-height:1.4;color:var(--np-on-2)}
 
 /* buttons */
@@ -508,16 +548,81 @@ function shadeFront(ctx, F, P, k){
   }
 }
 
+/* soft light for the after picture: slight warmth, a gentle bloom and a spotlight on the face
+   that falls off toward the edges. It changes colour only, so nothing moves or changes shape. */
+function glowInto(out, view, h){
+  const W = out.width, H = out.height, ctx = out.getContext('2d');
+  // blur by shrinking and enlarging, which every browser supports
+  const resize = (src, w, hh) => {
+    const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w)); c.height = Math.max(1, Math.round(hh));
+    const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(src, 0, 0, c.width, c.height); return c;
+  };
+  const blur = resize(resize(resize(out, W / 4, H / 4), W / 14, H / 14), W / 4, H / 4);
+  // squaring the soft copy keeps the bloom on the bright skin and away from eyes and hair
+  const bg = blur.getContext('2d'); bg.globalCompositeOperation = 'multiply'; bg.drawImage(blur, 0, 0);
+  const pts = Object.values(h), xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+  const L = Math.max(V.dist(h.N, h.C), .06 * Math.min(W, H));
+  let c = {x:(Math.min(...xs) + Math.max(...xs)) / 2, y:(Math.min(...ys) + Math.max(...ys)) / 2 - .25 * L};
+  if (view === '90') c = V.sub(c, V.mul(frameSide(h).n, .9 * L)); // the face sits behind the profile line
+  const far = Math.hypot(Math.max(c.x, W - c.x), Math.max(c.y, H - c.y));
+  ctx.save();
+  ctx.imageSmoothingQuality = 'high';
+  ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = 'rgb(255,246,235)'; ctx.fillRect(0, 0, W, H);
+  ctx.globalCompositeOperation = 'screen'; ctx.globalAlpha = .24; ctx.drawImage(blur, 0, 0, W, H);
+  ctx.globalAlpha = 1;
+  let g = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 2.6 * L);
+  g.addColorStop(0, 'rgba(255,238,220,.16)'); g.addColorStop(.55, 'rgba(255,238,220,.08)'); g.addColorStop(1, 'rgba(255,238,220,0)');
+  ctx.globalCompositeOperation = 'screen'; ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  g = ctx.createRadialGradient(c.x, c.y, 2.1 * L, c.x, c.y, Math.max(2.4 * L, far));
+  g.addColorStop(0, 'rgba(70,36,52,0)'); g.addColorStop(1, 'rgba(70,36,52,.34)');
+  ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+
 /* one finished "after" picture for a view */
-function render(view, base, data, h, P, amt){
+function render(view, base, data, h, P, amt, glow){
   const out = document.createElement('canvas'); out.width = base.width; out.height = base.height;
   const ctx = out.getContext('2d', {willReadFrequently:true}); ctx.drawImage(base, 0, 0);
-  if (amt <= 0) return out;
-  const Q = {}; for (const k in P) Q[k] = P[k] * amt;
-  const ctrl = buildControls(view, h, Q);
-  warpInto(data, out, ctrl);
-  if (ctrl.F) shadeFront(ctx, ctrl.F, Q, view === 'front' ? 1 : .7);
+  if (amt > 0) {
+    const Q = {}; for (const k in P) Q[k] = P[k] * amt;
+    const ctrl = buildControls(view, h, Q);
+    warpInto(data, out, ctrl);
+    if (ctrl.F) shadeFront(ctx, ctrl.F, Q, view === 'front' ? 1 : .7);
+  }
+  if (glow) glowInto(out, view, h);
   return out;
+}
+
+/* the lines joining the points, as an SVG path in image coordinates */
+function outlineD(view, h){
+  const M = p => `${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
+  if (view === '90') return `M${M(h.N)} Q${M(V.add(h.D, V.sub(h.D, V.lerp(h.N, h.T, .5))))} ${M(h.T)} L${M(h.C)} M${M(h.A)} Q${M(V.lerp(V.lerp(h.A, h.T, .5), h.C, .5))} ${M(h.C)}`;
+  return `M${M(h.N)} L${M(h.D)} L${M(h.T)} M${M(h.AL)} Q${M(V.lerp(h.T, h.C, .6))} ${M(h.AR)} M${M(h.T)} L${M(h.C)}`;
+}
+
+/* placement guide: the sample photo cropped close around the nose, with its hand-placed points */
+function drawGuide(cv, im, sm, view){
+  const W = im.naturalWidth || im.width, H = im.naturalHeight || im.height, S = cv.width;
+  const h = {}; for (const k in sm.h) h[k] = {x:sm.h[k][0] * W, y:sm.h[k][1] * H};
+  const xs = Object.values(h).map(p => p.x), ys = Object.values(h).map(p => p.y);
+  const size = Math.min(W, H, Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) * 1.8);
+  const x0 = clamp((Math.min(...xs) + Math.max(...xs) - size) / 2, 0, W - size), y0 = clamp((Math.min(...ys) + Math.max(...ys) - size) / 2, 0, H - size);
+  const g = cv.getContext('2d'), k = S / size;
+  g.clearRect(0, 0, S, S);
+  g.drawImage(im, x0, y0, size, size, 0, 0, S, S);
+  g.save();
+  g.setTransform(k, 0, 0, k, -x0 * k, -y0 * k);
+  const path = new Path2D(outlineD(view, h));
+  g.lineJoin = g.lineCap = 'round';
+  g.strokeStyle = 'rgba(31,10,48,.55)'; g.lineWidth = 9 / k; g.stroke(path);
+  g.strokeStyle = '#fff'; g.lineWidth = 4.5 / k; g.stroke(path);
+  g.restore();
+  for (const key of KEYS[view]) {
+    const x = (h[key].x - x0) * k, y = (h[key].y - y0) * k;
+    g.beginPath(); g.arc(x, y, 16, 0, Math.PI * 2); g.fillStyle = 'rgba(31,10,48,.45)'; g.fill();
+    g.beginPath(); g.arc(x, y, 14, 0, Math.PI * 2); g.fillStyle = '#fff'; g.fill();
+    g.beginPath(); g.arc(x, y, 9.5, 0, Math.PI * 2); g.fillStyle = PT_COLOR[key]; g.fill();
+  }
 }
 
 /* ===================================================================== */
@@ -653,6 +758,12 @@ function cropToFace(canvas, lm){
 }
 
 const loadImage = src => new Promise((res, rej) => { const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => res(im); im.onerror = rej; im.src = src; });
+/* sample photos load once and serve both the sample face and the placement guide */
+const sampleImgs = new Map();
+const sampleImage = src => {
+  if (!sampleImgs.has(src)) sampleImgs.set(src, loadImage(src).catch(e => { sampleImgs.delete(src); throw e; }));
+  return sampleImgs.get(src);
+};
 function toCanvas(im, max = 1100){
   const w0 = im.naturalWidth || im.videoWidth || im.width, h0 = im.naturalHeight || im.videoHeight || im.height, r = Math.min(1, max / Math.max(w0, h0));
   const c = document.createElement('canvas'); c.width = Math.round(w0 * r); c.height = Math.round(h0 * r);
@@ -670,7 +781,7 @@ export function mount(container, opts = {}){
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
   if (!styleRefs++) { styleEl = document.createElement('style'); styleEl.dataset.feature = 'nose'; styleEl.textContent = CSS; document.head.append(styleEl); }
 
-  const state = {view:'front', preset:PRESETS[0].id, amt:.7, mode:'compare', stream:null, pending:null, planned:false,
+  const state = {view:'front', preset:PRESETS[0].id, amt:.7, mode:'compare', stream:null, pending:null, planned:false, glow:false,
     views:{front:{}, '45':{}, '90':{}}};
   let pref = null;
   try { pref = JSON.parse(localStorage.getItem('apex.nose') || 'null'); } catch (e) {}
@@ -707,13 +818,24 @@ export function mount(container, opts = {}){
             <button class="np-btn gh" data-act="manual">${ic('points')}${esc(S.manual)}</button>
           </div>
         </div>
-        <div class="np-frame" tabindex="0" role="slider" aria-label="${esc(S.compare)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" hidden>
-          <canvas class="np-before"></canvas><canvas class="np-after"></canvas>
-          <span class="np-corners"></span>
-          <span class="np-line"></span><span class="np-knob">${ic('move')}</span>
-          <span class="np-tag l">${esc(S.before)}</span><span class="np-tag r">${esc(S.after)}</span><span class="np-tag sim">${esc(S.sim)}</span>
-          <svg class="np-outline" preserveAspectRatio="none"><path class="sh"/><path class="ln"/></svg>
-          <div class="np-pts"></div>
+        <div class="np-fbox" hidden>
+          <div class="np-frame" tabindex="0" role="slider" aria-label="${esc(S.compare)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+            <div class="np-zl"><canvas class="np-before"></canvas><canvas class="np-after"></canvas></div>
+            <span class="np-corners"></span>
+            <span class="np-line"></span><span class="np-knob">${ic('move')}</span>
+            <span class="np-tag l">${esc(S.before)}</span><span class="np-tag r">${esc(S.after)}</span><span class="np-tag sim">${esc(S.sim)}</span>
+            <svg class="np-outline" preserveAspectRatio="none"><path class="sh"/><path class="ln"/></svg>
+            <div class="np-pts"></div>
+          </div>
+          <div class="np-zui" role="group" aria-label="${esc(S.zoom)}">
+            <button data-act="zout" aria-label="${esc(S.zoomOut)}">${ic('minus')}</button>
+            <output data-r="zoomv">1×</output>
+            <button data-act="zin" aria-label="${esc(S.zoomIn)}">${ic('plus')}</button>
+          </div>
+        </div>
+        <div class="np-gd" hidden>
+          <h4>${esc(S.guide)}</h4>
+          <div class="np-gd-b"><canvas width="360" height="360" aria-hidden="true"></canvas><ul class="np-legend"></ul></div>
         </div>
         <div class="np-cam" hidden>
           <video playsinline muted autoplay></video>
@@ -734,7 +856,9 @@ export function mount(container, opts = {}){
           <button class="np-btn lt sm" data-act="done">${ic('check')}${esc(S.done)}</button>
         </div>
       </div>
-      <div class="np-bar np-cbar" hidden><p class="np-cap" data-r="cap"></p></div>
+      <div class="np-bar np-cbar" hidden><p class="np-cap" data-r="cap"></p>
+        <button class="np-btn gh sm np-glow" data-act="glow" role="switch" aria-checked="false">${esc(S.glow)}<span class="np-sw" aria-hidden="true"></span></button>
+      </div>
       <p class="np-credit" data-r="credit" hidden>${esc(S.credit)}</p>
     </section>
     <aside class="np-panel">
@@ -776,7 +900,8 @@ export function mount(container, opts = {}){
   container.append(root);
 
   const $ = s => root.querySelector(s), $$ = s => [...root.querySelectorAll(s)], R = k => root.querySelector(`[data-r="${k}"]`);
-  const view = $('.np-view'), frame = $('.np-frame'), cvB = $('.np-before'), cvA = $('.np-after'), ptsEl = $('.np-pts');
+  const view = $('.np-view'), fbox = $('.np-fbox'), frame = $('.np-frame'), zl = $('.np-zl'), cvB = $('.np-before'), cvA = $('.np-after'), ptsEl = $('.np-pts');
+  const gd = $('.np-gd'), gdBody = $('.np-gd-b'), gdCv = $('.np-gd canvas'), legend = $('.np-legend');
   const empty = $('.np-empty'), errBox = $('.np-error'), cam = $('.np-cam'), video = $('video'), busy = $('.np-busy');
   const bar = $('.np-bar'), cbar = $('.np-cbar'), file = $('input[type=file]'), amt = R('amt');
   const svc = R('svc');
@@ -794,7 +919,7 @@ export function mount(container, opts = {}){
     rq = requestAnimationFrame(() => {
       const v = cur();
       if (!ready(v)) return;
-      const out = render(state.view, v.base, v.data, v.h, preset().p, state.amt);
+      const out = render(state.view, v.base, v.data, v.h, preset().p, state.amt, state.glow);
       cvA.getContext('2d').drawImage(out, 0, 0);
     });
   }
@@ -803,28 +928,57 @@ export function mount(container, opts = {}){
     cvB.width = cvA.width = v.base.width; cvB.height = cvA.height = v.base.height;
     cvB.getContext('2d').drawImage(v.base, 0, 0);
     cvA.getContext('2d').drawImage(v.base, 0, 0);
-    frame.style.setProperty('--ar', (v.base.width / v.base.height).toFixed(4));
-    $('.np-outline').setAttribute('viewBox', `0 0 ${v.base.width} ${v.base.height}`);
+    view.style.setProperty('--ar', (v.base.width / v.base.height).toFixed(4));
+    Z.z = 1; Z.ox = Z.oy = 0; // a new view or photo starts unzoomed
     buildPoints();
+    applyZoom();
   }
+
+  /* ---------- zoom ----------
+     Z.z is the scale and (Z.ox, Z.oy) the top left of the visible window, both as fractions of the photo.
+     The photo layer is transformed, while the points, slider line and labels stay in screen space,
+     so the handles keep their 44px size and every pointer position converts through toImg(). */
+  const ZMAX = 3, Z = {z:1, ox:0, oy:0};
+  const toImg = (sx, sy) => ({x:Z.ox + sx / Z.z, y:Z.oy + sy / Z.z});
+  const local = e => { const r = frame.getBoundingClientRect(); return {x:(e.clientX - r.left) / r.width, y:(e.clientY - r.top) / r.height, w:r.width, h:r.height}; };
+  function applyZoom(){
+    const {z, ox, oy} = Z, on = z > 1.001;
+    zl.style.transform = on ? `scale(${z}) translate(${-ox * 100}%,${-oy * 100}%)` : '';
+    frame.classList.toggle('zm', on);
+    R('zoomv').textContent = Math.round(z * 10) / 10 + '×';
+    $('[data-act="zout"]').disabled = !on;
+    $('[data-act="zin"]').disabled = z >= ZMAX - .001;
+    clipAfter(); placePoints();
+  }
+  /* zoom to z, keeping photo point (fx, fy) at screen point (sx, sy) */
+  function setZoom(z, fx, fy, sx = .5, sy = .5){
+    Z.z = clamp(z, 1, ZMAX);
+    Z.ox = clamp(fx - sx / Z.z, 0, 1 - 1 / Z.z); Z.oy = clamp(fy - sy / Z.z, 0, 1 - 1 / Z.z);
+    applyZoom();
+  }
+  function noseCentre(){
+    const v = cur(); if (!ready(v)) return {x:.5, y:.5};
+    const ps = Object.values(v.h), xs = ps.map(p => p.x), ys = ps.map(p => p.y);
+    return {x:(Math.min(...xs) + Math.max(...xs)) / 2 / v.base.width, y:(Math.min(...ys) + Math.max(...ys)) / 2 / v.base.height};
+  }
+  const stepZoom = d => { const c = noseCentre(); setZoom(d > 0 ? Math.floor(Z.z + .001) + 1 : Math.ceil(Z.z - .001) - 1, c.x, c.y); };
 
   /* ---------- points ---------- */
   function buildPoints(){
-    const v = cur(), keys = KEYS[state.view];
-    ptsEl.innerHTML = keys.map(k => `<button class="np-pt" data-k="${k}" aria-label="${esc(S.pt[k])}"><span>${esc(S.pt[k])}</span></button>`).join('');
+    const keys = KEYS[state.view];
+    ptsEl.innerHTML = keys.map(k => `<button class="np-pt" data-k="${k}" style="--c:${PT_COLOR[k]}" aria-label="${esc(S.pt[k])}"><span>${esc(S.pt[k])}</span></button>`).join('');
     placePoints();
-    void v;
   }
   function placePoints(){
     const v = cur(); if (!ready(v)) return;
     const W = v.base.width, H = v.base.height;
-    $$('.np-pt').forEach(b => { const p = v.h[b.dataset.k]; b.style.left = p.x / W * 100 + '%'; b.style.top = p.y / H * 100 + '%'; });
-    const h = v.h, M = p => `${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
-    let d;
-    if (state.view === '90') d = `M${M(h.N)} Q${M(V.add(h.D, V.sub(h.D, V.lerp(h.N, h.T, .5))))} ${M(h.T)} L${M(h.C)} M${M(h.A)} Q${M(V.lerp(V.lerp(h.A, h.T, .5), h.C, .5))} ${M(h.C)}`;
-    else d = `M${M(h.N)} L${M(h.D)} L${M(h.T)} M${M(h.AL)} Q${M(V.lerp(h.T, h.C, .6))} ${M(h.AR)} M${M(h.T)} L${M(h.C)}`;
+    $$('.np-pt').forEach(b => { const p = v.h[b.dataset.k]; b.style.left = (p.x / W - Z.ox) * Z.z * 100 + '%'; b.style.top = (p.y / H - Z.oy) * Z.z * 100 + '%'; });
+    // the outline stays in screen space, so its viewBox is the visible window of the photo
+    $('.np-outline').setAttribute('viewBox', `${(Z.ox * W).toFixed(2)} ${(Z.oy * H).toFixed(2)} ${(W / Z.z).toFixed(2)} ${(H / Z.z).toFixed(2)}`);
+    const d = outlineD(state.view, v.h);
     $$('.np-outline path').forEach(p => p.setAttribute('d', d));
   }
+  const mark = k => legend.querySelectorAll('li').forEach(li => li.classList.toggle('on', li.dataset.k === k));
   let drag = null;
   ptsEl.addEventListener('pointerdown', e => {
     if (!e.target.closest('.np-pt')) return;
@@ -833,19 +987,21 @@ export function mount(container, opts = {}){
     let b = null, bd = 1e9;
     $$('.np-pt').forEach(el => { const r = el.getBoundingClientRect(), d = Math.hypot(r.left + r.width / 2 - e.clientX, r.top + r.height / 2 - e.clientY); if (d < bd) { bd = d; b = el; } });
     drag = {k:b.dataset.k, el:b, id:e.pointerId};
-    b.classList.add('on'); b.setPointerCapture(e.pointerId);
+    b.classList.add('on'); b.setPointerCapture(e.pointerId); mark(drag.k);
   });
   ptsEl.addEventListener('pointermove', e => {
     if (!drag || e.pointerId !== drag.id) return;
-    const v = cur(), r = frame.getBoundingClientRect();
-    v.h[drag.k] = {x:clamp((e.clientX - r.left) / r.width, 0, 1) * v.base.width, y:clamp((e.clientY - r.top) / r.height, 0, 1) * v.base.height};
+    const v = cur(), l = local(e), q = toImg(clamp(l.x, 0, 1), clamp(l.y, 0, 1));
+    v.h[drag.k] = {x:clamp(q.x, 0, 1) * v.base.width, y:clamp(q.y, 0, 1) * v.base.height};
     placePoints();
   });
-  const endDrag = () => { if (!drag) return; drag.el.classList.remove('on'); drag = null; };
+  const endDrag = () => { if (!drag) return; drag.el.classList.remove('on'); drag = null; mark(null); };
   ptsEl.addEventListener('pointerup', endDrag); ptsEl.addEventListener('pointercancel', endDrag);
+  ptsEl.addEventListener('focusin', e => { const b = e.target.closest('.np-pt'); if (b) mark(b.dataset.k); });
+  ptsEl.addEventListener('focusout', () => { if (!drag) mark(null); });
   ptsEl.addEventListener('keydown', e => {
     const b = e.target.closest('.np-pt'); if (!b) return;
-    const v = cur(), st = Math.max(v.base.width, v.base.height) * .006 * (e.shiftKey ? 4 : 1);
+    const v = cur(), st = Math.max(v.base.width, v.base.height) * .006 * (e.shiftKey ? 4 : 1) / Z.z;
     const m = {ArrowLeft:[-st, 0], ArrowRight:[st, 0], ArrowUp:[0, -st], ArrowDown:[0, st]}[e.key];
     if (!m) return;
     e.preventDefault();
@@ -853,28 +1009,74 @@ export function mount(container, opts = {}){
     placePoints();
   });
 
-  /* ---------- compare slider ---------- */
-  let sliding = false;
-  const setX = x => { x = clamp(x, 0, 100); frame.style.setProperty('--x', x + '%'); frame.setAttribute('aria-valuenow', Math.round(x)); };
-  const slideTo = e => { const r = frame.getBoundingClientRect(); setX((e.clientX - r.left) / r.width * 100); };
+  /* ---------- compare slider, pan and pinch ---------- */
+  let sx = 50, gest = null;
+  const ptrs = new Map();
+  // the line sits at screen position sx; the after picture is clipped at the matching photo position
+  const clipAfter = () => frame.style.setProperty('--cx', clamp((Z.ox + sx / 100 / Z.z) * 100, 0, 100) + '%');
+  const setX = x => { sx = clamp(x, 0, 100); frame.style.setProperty('--x', sx + '%'); frame.setAttribute('aria-valuenow', Math.round(sx)); clipAfter(); };
+  const slideTo = e => setX(local(e).x * 100);
+  const capture = id => { try { frame.setPointerCapture(id); } catch (er) {} };
+  function pinchFrame(){
+    const [a, b] = [...ptrs.values()], r = frame.getBoundingClientRect();
+    return {d:Math.hypot(a.x - b.x, a.y - b.y) || 1, x:((a.x + b.x) / 2 - r.left) / r.width, y:((a.y + b.y) / 2 - r.top) / r.height};
+  }
   frame.addEventListener('pointerdown', e => {
-    if (state.mode !== 'compare' || e.target.closest('.np-pt')) return;
-    sliding = {x:e.clientX, y:e.clientY, id:e.pointerId, on:e.pointerType === 'mouse'};
-    if (sliding.on) { frame.setPointerCapture(e.pointerId); slideTo(e); }
+    if (e.target.closest('.np-pt') || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if (ptrs.size === 2) { const p = pinchFrame(); frame.classList.remove('pan'); gest = {type:'pinch', d0:p.d, z0:Z.z, f:toImg(p.x, p.y)}; return; }
+    if (ptrs.size > 2) return;
+    const zoomed = Z.z > 1.001, l = local(e);
+    if (state.mode === 'compare' && (!zoomed || Math.abs(l.x * 100 - sx) * l.w / 100 < 28 || e.target.closest('.np-knob'))) {
+      // touch at 1x waits for a sideways move so the page can still scroll
+      gest = {type:'slide', id:e.pointerId, x:e.clientX, y:e.clientY, on:e.pointerType === 'mouse' || zoomed};
+      if (gest.on) { capture(e.pointerId); slideTo(e); }
+    } else if (zoomed) {
+      gest = {type:'pan', id:e.pointerId, x:e.clientX, y:e.clientY, ox:Z.ox, oy:Z.oy};
+      capture(e.pointerId); frame.classList.add('pan');
+    } else gest = null;
   });
   frame.addEventListener('pointermove', e => {
-    if (!sliding || e.pointerId !== sliding.id) return;
-    if (!sliding.on) {
-      const dx = Math.abs(e.clientX - sliding.x), dy = Math.abs(e.clientY - sliding.y);
-      if (dx > 6 && dx > dy) { sliding.on = true; try { frame.setPointerCapture(e.pointerId); } catch (er) {} } else if (dy > 8) { sliding = false; return; } else return;
+    if (ptrs.has(e.pointerId)) ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if (gest && gest.type === 'pinch') {
+      if (ptrs.size === 2) { const p = pinchFrame(); setZoom(gest.z0 * p.d / gest.d0, gest.f.x, gest.f.y, p.x, p.y); }
+      return;
+    }
+    if (!gest || e.pointerId !== gest.id) return;
+    if (gest.type === 'pan') {
+      const r = frame.getBoundingClientRect();
+      Z.ox = clamp(gest.ox - (e.clientX - gest.x) / r.width / Z.z, 0, 1 - 1 / Z.z);
+      Z.oy = clamp(gest.oy - (e.clientY - gest.y) / r.height / Z.z, 0, 1 - 1 / Z.z);
+      applyZoom(); return;
+    }
+    if (!gest.on) {
+      const dx = Math.abs(e.clientX - gest.x), dy = Math.abs(e.clientY - gest.y);
+      if (dx > 6 && dx > dy) { gest.on = true; capture(e.pointerId); } else if (dy > 8) { gest = null; return; } else return;
     }
     slideTo(e);
   });
-  const stopSlide = e => { if (sliding && sliding.id === e.pointerId) { if (!sliding.on) slideTo(e); sliding = false; } };
-  frame.addEventListener('pointerup', stopSlide); frame.addEventListener('pointercancel', () => sliding = false);
+  const endGest = (e, up) => {
+    ptrs.delete(e.pointerId);
+    if (!gest) return;
+    if (gest.type === 'pinch') { if (ptrs.size < 2) gest = null; return; }
+    if (e.pointerId !== gest.id) return;
+    if (up && gest.type === 'slide' && !gest.on) slideTo(e);
+    gest = null; frame.classList.remove('pan');
+  };
+  frame.addEventListener('pointerup', e => endGest(e, true));
+  frame.addEventListener('pointercancel', e => endGest(e, false));
+  // trackpad pinch and ctrl + wheel zoom about the pointer; a plain wheel keeps scrolling the page
+  frame.addEventListener('wheel', e => {
+    if (!e.ctrlKey || !ready(cur())) return;
+    e.preventDefault();
+    const l = local(e), f = toImg(l.x, l.y);
+    setZoom(Z.z * Math.exp(-clamp(e.deltaY, -50, 50) * .01), f.x, f.y, l.x, l.y);
+  }, {passive:false});
   frame.addEventListener('keydown', e => {
+    if (e.key === '+' || e.key === '=') { e.preventDefault(); stepZoom(1); return; }
+    if (e.key === '-' || e.key === '_') { e.preventDefault(); stepZoom(-1); return; }
     if (state.mode !== 'compare') return;
-    const x = parseFloat(frame.style.getPropertyValue('--x')) || 50;
+    const x = sx;
     if (e.key === 'ArrowLeft') { e.preventDefault(); setX(x - 5); }
     if (e.key === 'ArrowRight') { e.preventDefault(); setX(x + 5); }
   });
@@ -904,9 +1106,11 @@ export function mount(container, opts = {}){
     cam.hidden = !camOn;
     errBox.hidden = camOn || !v.err;
     empty.hidden = camOn || has || !!v.err;
-    frame.hidden = camOn || !has || !!v.err;
-    view.classList.toggle('fit', !frame.hidden);
+    fbox.hidden = camOn || !has || !!v.err;
+    view.classList.toggle('fit', !fbox.hidden);
     const pts = has && !camOn && !v.err && state.mode === 'points';
+    syncGuide(pts);
+    $('[data-act="glow"]').setAttribute('aria-checked', state.glow);
     bar.hidden = !pts;
     cbar.hidden = !(has && !camOn && !v.err && state.mode === 'compare');
     R('bartext').textContent = v.auto === false ? S.placeHint : S.dragHint;
@@ -926,6 +1130,23 @@ export function mount(container, opts = {}){
     plan.innerHTML = (state.planned ? ic('check') : ic('plus')) + `<span>${esc(state.planned ? S.planned : S.plan)}</span>`;
   }
   const setBusy = on => { busy.hidden = !on; };
+
+  /* ---------- placement guide ---------- */
+  let gdView = null;
+  function syncGuide(show){
+    gd.hidden = !show; view.classList.toggle('gd', show);
+    if (!show || gdView === state.view) return;
+    const vid = gdView = state.view, sm = SAMPLES[vid];
+    legend.innerHTML = KEYS[vid].map(k => `<li data-k="${k}" style="--c:${PT_COLOR[k]}">${esc(S.pt[k])}</li>`).join('');
+    gdCv.hidden = true; gdBody.classList.add('solo');
+    if (!sm) return;
+    // reuses the sample photo when it is already loaded; without it the legend stands alone
+    sampleImage(sm.src).then(im => {
+      if (gdView !== vid) return;
+      drawGuide(gdCv, im, sm, vid);
+      gdCv.hidden = false; gdBody.classList.remove('solo');
+    }).catch(() => {});
+  }
 
   /* ---------- photos ---------- */
   async function usePhoto(canvas, sample){
@@ -970,7 +1191,7 @@ export function mount(container, opts = {}){
     const v = cur(); loadingSample = true; setBusy(true);
     try {
       let im = null;
-      try { im = await loadImage(sm.src); } catch (e) { /* named below */ }
+      try { im = await sampleImage(sm.src); } catch (e) { /* named below */ }
       if (!im) { setBusy(false); Object.assign(v, {base:null, h:null, sample:false, err:'sample'}); emit('nose:error', {view:vid, error:'sample'}); sync(); return; }
       if (sm.h) { setBusy(false); stopCam(); const c = sampleCrop(toCanvas(im, 2400), sm); setPhoto(v, c.base, c.h, true, true); }
       else await usePhoto(toCanvas(im), sm);
@@ -1013,7 +1234,7 @@ export function mount(container, opts = {}){
       const font = getComputedStyle(root).fontFamily;
       try { await document.fonts.load(`700 20px ${font}`); } catch (e) {}
       const rowH = 620, gap = 12, pad = 32, head = 64, P = preset();
-      const rows = done.map(x => { const v = state.views[x.id]; return {x, v, w:Math.round(v.base.width * rowH / v.base.height), after:render(x.id, v.base, v.data, v.h, P.p, state.amt)}; });
+      const rows = done.map(x => { const v = state.views[x.id]; return {x, v, w:Math.round(v.base.width * rowH / v.base.height), after:render(x.id, v.base, v.data, v.h, P.p, state.amt, state.glow)}; });
       const W = Math.max(...rows.map(r => r.w * 2 + gap)) + pad * 2, H = pad + rows.length * (head + rowH + 28) + 40;
       const c = document.createElement('canvas'); c.width = W; c.height = H;
       const g = c.getContext('2d');
@@ -1079,6 +1300,9 @@ export function mount(container, opts = {}){
       for (const k in v.h) v.h[k] = {x:2 * mid - v.h[k].x, y:v.h[k].y};
       placePoints();
     }
+    else if (a === 'zin') stepZoom(1);
+    else if (a === 'zout') stepZoom(-1);
+    else if (a === 'glow') { state.glow = !state.glow; emit('nose:glow', {on:state.glow}); sync(); if (state.mode === 'compare') draw(); }
     else if (a === 'save') save();
     else if (a === 'plan') { state.planned = true; emit('plan:add', {procedure:'rhinoplasty'}); sync(); }
   }
