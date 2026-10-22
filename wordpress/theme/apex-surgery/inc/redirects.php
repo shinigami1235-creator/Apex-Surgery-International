@@ -60,7 +60,9 @@ add_action( 'template_redirect', function () {
 	if ( ! $to ) return;
 	$q = (string) parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_QUERY );
 	if ( $q !== '' && ! str_contains( $to, '?' ) ) $to .= '?' . $q;
-	wp_safe_redirect( $to, 301, 'Apex' );
+	// addresses an administrator typed under Apex settings › Redirects may go to another site
+	$manual = in_array( $to, apex_manual_redirects(), true );
+	$manual ? wp_redirect( $to, 301, 'Apex' ) : wp_safe_redirect( $to, 301, 'Apex' );
 	exit;
 }, 1 );
 

@@ -74,7 +74,16 @@
   /* ---------- events bridge (features call onEvent; the plan store and analytics listen) ---------- */
   A.emit = (name, data) => {
     try { window.dispatchEvent(new CustomEvent('apex:event', {detail:{name, data:data || {}, lang:A.lang, page:document.body.dataset.page}})); } catch (e) {}
-    try { (window.dataLayer = window.dataLayer || []).push({event:'apex_' + name.replace(/[^a-z0-9]+/gi, '_'), apex:data || {}}); } catch (e) {}
+    try { (window.dataLayer = window.dataLayer || []).push({event:'apex_' + name.replace(/[^a-z0-9]+/gi, '_'), apex:A.tagSafe(name, data || {})}); } catch (e) {}
+  };
+  /* what analytics may see: the pages, procedures and buttons people used. Names, contacts, skin scores,
+     body measurements, concerns and voucher codes stay out. */
+  const TAG_KEYS = new Set(['procedure', 'procedures', 'branch', 'area', 'channel', 'method', 'photos', 'sent', 'sample', 'traced', 'view', 'views', 'preset', 'mode', 'factor', 'error', 'on', 'row', 'key', 'index', 'auto', 'ok', 'source', 'game', 'prize', 'fields', 'from', 'side', 'face', 'stayDays', 'correct', 'total', 'bonus', 'level', 'durationMs', 'code']);
+  A.tagSafe = (name, d) => {
+    const o = {};
+    Object.keys(d).forEach(k => { if (TAG_KEYS.has(k) && !(k === 'code' && !/^currency/.test(name))) o[k] = d[k]; });
+    if (/^game/.test(name) && typeof d.score === 'number') o.score = d.score;   // game scores only; the face analysis score stays out
+    return o;
   };
   /* feature modules carry the build version so a new deploy is fetched fresh */
   A.vurl = path => { const u = new URL(path, location.href); if (window.APEX_V) u.searchParams.set('v', window.APEX_V); return u.href; };

@@ -138,7 +138,7 @@ function apex_clean_link( string $s ): string {
 	if ( preg_match( '#^(img|fonts|css|js|features)/#', $s ) ) return preg_replace( '#[^\w\-./]#', '', $s );   // a file in the theme
 	return esc_url_raw( $s, [ 'http', 'https', 'tel', 'mailto' ] );
 }
-/** Plain text: tags removed, but a "<" or "&" the editor typed stays a character, not an entity. */
+/** Plain text with tags removed, where a "<" or "&" the editor typed stays the character itself. */
 function apex_plain( string $v, bool $multi = false ): string {
 	$v = $multi ? sanitize_textarea_field( $v ) : sanitize_text_field( $v );
 	return html_entity_decode( $v, ENT_QUOTES | ENT_HTML5, 'UTF-8' );

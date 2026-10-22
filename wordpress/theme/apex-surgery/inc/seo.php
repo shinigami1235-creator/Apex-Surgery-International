@@ -17,6 +17,9 @@ function apex_seo(): array {
 	$brand = 'Apex Surgery Hospital';
 	$title = ''; $desc = ''; $img = '';
 	$page = $r['id'] ? get_post( $r['id'] ) : null;
+	if ( $page && $page->post_password !== '' ) {
+		return $m = [ 'title' => get_the_title( $page ) . ' | ' . $brand, 'desc' => '', 'img' => apex_img( '~/wp-content/uploads/2025/11/Apex-Surgery.webp' ) ];
+	}
 	$pm = $page && $page->post_type === 'page' ? [ 'title' => (string) get_post_meta( $page->ID, 'apex_title', true ), 'desc' => (string) get_post_meta( $page->ID, 'apex_desc', true ) ] : [ 'title' => '', 'desc' => '' ];
 	switch ( $r['page'] ) {
 		case 'service':

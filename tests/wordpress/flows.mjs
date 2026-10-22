@@ -43,7 +43,7 @@ for (const [path, lang] of [['/consultation/', 'en'], ['/th/consultation/', 'th'
   await p.setInputFiles('.apxc .c-slot[data-view=front] input[type=file]', PHOTO);
   await p.click('.apxc input[name=consent]');
   const note = await p.textContent('.apxc .c-note');
-  ok(/Only staff|เจ้าหน้าที่/.test(note), `${lang} consult: photo note says photos go to staff`);
+  ok(/only staff|เจ้าหน้าที่/i.test(note), `${lang} consult: photo note says photos go to staff`);
   await p.click('.apxc .c-submit');
   await p.waitForSelector('.apxc .c-done', {timeout:20000}).catch(() => {});
   const head = await p.textContent('.apxc .c-done h3').catch(() => '');
@@ -73,11 +73,48 @@ for (const [path, lang] of [['/consultation/', 'en'], ['/th/consultation/', 'th'
   ok(r2.status === 422, `consult: an empty enquiry is refused (${r2.status})`);
 }
 
+/* 1b. what the review found: nothing private through the data address, links in articles cannot carry script,
+   and an editor account does not see enquiries */
+{
+  const id = wp('post list --post_type=apex_lead --post_status=any --orderby=ID --order=DESC --posts_per_page=1 --format=ids');
+  const r = await fetch(`${BASE}/?apex_data=en/post/${id}`);
+  const body = await r.text();
+  ok(r.status === 404 && !/Test Visitor|visitor-/.test(body), `data address: enquiry ${id} is not readable by number (${r.status})`);
+  const evil = 'https://x.example/&quot; onfocus=&quot;alert(1)&quot; autofocus=&quot;';
+  const pid = wp(`post create --post_type=post --post_status=publish --post_title="XSS check" --post_content='<!-- wp:buttons --><div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="${evil}">Go</a></div><!-- /wp:button --></div><!-- /wp:buttons --><!-- wp:paragraph --><p>Text long enough.</p><!-- /wp:paragraph -->' --porcelain`);
+  wp(`post meta update ${pid} _apex_key xss-check`);
+  const link = wp(`post list --post_type=post --p=${pid} --field=url`);
+  const html = await (await fetch(link.replace(/^https?:\/\/[^/]+/, BASE))).text();
+  const btn = (html.match(/<a class="btn btn-plum btn-sm" href="[^"]*"[^>]*>/) || [''])[0];
+  ok(btn && !/onfocus/.test(btn.replace(/href="[^"]*"/, '')), `article buttons: a quote in the link stays inside the link (${btn.slice(0, 120)})`);
+  wp(`post delete ${pid} --force`);
+  // a password-protected article: the form first, the text after the password, and no copy for the scripts
+  const sid = wp(`post create --post_type=post --post_status=publish --post_title="Locked article" --post_password=open-sesame --post_content='<!-- wp:paragraph --><p>Secret paragraph for the password test.</p><!-- /wp:paragraph -->' --porcelain`);
+  const surl = wp(`post list --post_type=post --p=${sid} --field=url`).replace(/^https?:\/\/[^/]+/, BASE);
+  const lockedHtml = await (await fetch(surl)).text();
+  ok(/post_password/.test(lockedHtml) && !/Secret paragraph/.test(lockedHtml), 'password: a protected article shows the password form only');
+  const pp = await ctx.newPage();
+  await pp.goto(surl);
+  await pp.fill('input[name=post_password]', 'open-sesame');
+  await Promise.all([pp.waitForNavigation(), pp.click('input[type=submit]')]);
+  const unlocked = await pp.content();
+  ok(/Secret paragraph/.test(await pp.textContent('main')), 'password: the right password opens the article');
+  ok(!/Secret paragraph[^<]*<\/p>[\s\S]*Secret paragraph/.test(unlocked) && !/"Secret paragraph/.test(unlocked), 'password: the text is not repeated in the data for scripts');
+  await pp.close();
+  wp(`post delete ${sid} --force`);
+  const eid = wp('user create apex-editor-test apex-editor-test@example.test --role=editor --porcelain');
+  ok(wp(`eval 'echo current_user_can("edit_apex_leads") ? "yes" : "no";' --user=${eid}`) === 'no', 'roles: an editor cannot open enquiries');
+  ok(wp(`eval 'echo current_user_can("edit_apex_vouchers") ? "yes" : "no";' --user=${eid}`) === 'yes', 'roles: an editor can check vouchers');
+  wp(`user delete ${eid} --yes`);
+}
+
 /* 2. vouchers */
 {
   const code = 'APX-' + Array.from({length:6}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join('');
   const post = body => fetch(BASE + '/wp-json/apex/v1/voucher', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
-  const low = await post({code, game:'factrush', tier:2, score:500, name:'Low', lang:'en'});
+  const low = await post({code, game:'factrush', tier:2, score:500, name:'Low', lang:'en', run:{durationMs:60000, inputs:40}});
+  const fake = await post({code, game:'factrush', tier:0, score:9999, name:'No game', lang:'en'});
+  ok(fake.status === 422, `voucher: a claim with no game run behind it is refused (${fake.status})`);
   ok(low.status === 422, `voucher: a score below the prize is refused (${low.status})`);
   const good = await (await post({code, game:'factrush', tier:0, score:520, name:'Reception Test', lang:'en', run:{durationMs:60000, inputs:40, logLength:40}})).json();
   ok(good.ok && good.code === code, `voucher: recorded ${code}`);

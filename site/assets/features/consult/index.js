@@ -73,7 +73,7 @@ const T = {
   photos: { en: 'Photos', th: 'รูปถ่าย' },
   photosHint: { en: 'Take each photo in daylight with your hair pulled back.', th: 'ถ่ายในที่แสงธรรมชาติและรวบผมให้เห็นใบหน้า' },
   photoNote: { en: 'Photos are sent once the clinic system is connected.', th: 'รูปถ่ายจะถูกส่งเมื่อเชื่อมต่อระบบของคลินิกแล้ว' },
-  photoNoteLive: { en: 'Your photos go to the surgery team with the enquiry. Only staff can open them.', th: 'รูปถ่ายจะส่งถึงทีมศัลยแพทย์พร้อมคำถาม และมีแค่เจ้าหน้าที่ที่เปิดดูได้' },
+  photoNoteLive: { en: 'Your photos go to the surgery team with your enquiry and only staff can open them.', th: 'รูปถ่ายจะส่งถึงทีมศัลยแพทย์พร้อมคำถาม และมีแค่เจ้าหน้าที่ที่เปิดดูได้' },
   sentH: { en: 'Enquiry sent', th: 'ส่งคำถามแล้ว' },
   sentP: { en: 'Reference {ref}. The surgery team will contact you by {m}.', th: 'เลขอ้างอิง {ref} ทีมศัลยแพทย์จะติดต่อกลับทาง {m}' },
   sentMore: { en: 'Want an answer sooner? Message us now.', th: 'อยากได้คำตอบเร็วขึ้น ทักหาเราได้เลย' },
@@ -501,7 +501,8 @@ export function mount(container, opts = {}) {
         : await send(payload);
     } catch (er) { res = { sent: false, failed: true, error: String(er && er.message || er) }; }
     submit.disabled = false; submit.textContent = L(T.submit);
-    emit('consult:submit', { ...payload.fields, consent: true, sent: !!(res && res.sent) });
+    // analytics get the procedures, branch and reply method; the name, contact, dates and questions stay out
+    emit('consult:submit', { procedures: v.procedures, branch: v.branch, method: v.method, photos: payload.photos.length, sent: !!(res && res.sent) });
     showDone(v, res || {});
   });
 

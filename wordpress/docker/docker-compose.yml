@@ -1,4 +1,5 @@
 # A local copy of the new site for testing before it goes live.
+#   node wordpress/tools/build-theme.mjs           (from the repository root: puts the styles and scripts into the theme)
 #   cd wordpress/docker && docker compose up -d
 #   docker compose run --rm cli bash /setup.sh      (first time only: installs WordPress, Polylang, the theme and the content)
 #   open http://localhost:8080 and http://localhost:8080/wp-admin

@@ -9,6 +9,8 @@
  */
 defined( 'ABSPATH' ) || exit;
 
+/** Content anyone may see: no password, or the request that unlocked it. */
+function apex_open( $p ): bool { return $p && ( $p->post_password === '' || ! empty( $GLOBALS['apex_allow_protected'] ) ); }
 function apex_meta_key( string $k ): string { return $k === 'key' ? '_apex_key' : 'apex_' . $k; }
 
 /** A stored value cleaned to its field type: numbers as numbers, lists without blanks, empty groups as null. */
@@ -102,6 +104,11 @@ function apex_posts( string $type, string $lang, array $q = [] ): array {
 /* ---------- the content objects ---------- */
 function apex_data( string $id, ?string $lang = null ) {
 	$lang = $lang ?: apex_lang();
+	// a password-protected item the visitor has unlocked: built for this request only
+	if ( in_array( $id, $GLOBALS['apex_unlocked'] ?? [], true ) ) {
+		$GLOBALS['apex_allow_protected'] = true;
+		try { return apex_with_lang( $lang, fn() => apex_build( $id, $lang ) ); } finally { $GLOBALS['apex_allow_protected'] = false; }
+	}
 	$v = (int) get_option( 'apex_data_v', 1 );
 	$ck = "apex_d_{$v}_{$lang}_" . md5( $id );
 	$hit = wp_cache_get( $ck, 'apex' );
@@ -109,8 +116,10 @@ function apex_data( string $id, ?string $lang = null ) {
 	$t = get_transient( $ck );
 	if ( $t !== false && ! ( defined( 'APEX_NO_CACHE' ) && APEX_NO_CACHE ) ) { wp_cache_set( $ck, $t, 'apex' ); return $t; }
 	$d = apex_with_lang( $lang, fn() => apex_build( $id, $lang ) );
-	wp_cache_set( $ck, $d, 'apex' );
-	set_transient( $ck, $d, DAY_IN_SECONDS );
+	if ( $d !== null ) {   // a key that finds nothing is not stored anywhere
+		wp_cache_set( $ck, $d, 'apex' );
+		set_transient( $ck, $d, DAY_IN_SECONDS );
+	}
 	return $d;
 }
 /** Any save makes every cached object stale at once. */
@@ -247,21 +256,24 @@ function apex_post_list( string $lang ): array {
 	foreach ( $ids as $id ) {
 		if ( apex_post_lang( $id ) !== $lang ) continue;
 		$p = get_post( $id );
-		$out[] = [ 'key' => (string) get_post_meta( $id, '_apex_key', true ) ?: (string) $id, 'cat' => apex_post_cat( $id ), 'date' => substr( $p->post_date, 0, 10 ), 'title' => $p->post_title, 'desc' => $p->post_excerpt, 'img' => apex_norm( [ 't' => 'image' ], get_post_meta( $id, 'apex_img', true ) ) ];
+		if ( get_post_field( 'post_password', $id ) !== '' ) continue;
+		$k = (string) get_post_meta( $id, '_apex_key', true );
+		if ( $k === '' ) continue;   // every article has a key (the editor fills it in, or it is made on save)
+		$out[] = [ 'key' => $k, 'cat' => apex_post_cat( $id ), 'date' => substr( $p->post_date, 0, 10 ), 'title' => $p->post_title, 'desc' => $p->post_excerpt, 'img' => apex_norm( [ 't' => 'image' ], get_post_meta( $id, 'apex_img', true ) ) ];
 	}
 	return $out;
 }
 function apex_post_obj( string $key, string $lang ) {
 	$id = apex_key_id( 'post', $key, $lang );
-	if ( ! $id && ctype_digit( $key ) && apex_post_lang( (int) $key ) === $lang ) $id = (int) $key;
 	if ( ! $id ) return null;
 	$p = get_post( $id );
+	if ( ! $p || $p->post_type !== 'post' || $p->post_status !== 'publish' || ! apex_open( $p ) ) return null;
 	$o = apex_read_post( $id, 'post' );
 	return [ 'key' => $key, 'title' => $p->post_title, 'date' => substr( $p->post_date, 0, 10 ), 'cat' => apex_post_cat( $id ), 'img' => $o['img'], 'author' => $o['author'], 'tag' => $o['tag'] !== '' ? $o['tag'] : null, 'blocks' => apex_markup_to_blocks( $p->post_content ) ];
 }
 function apex_svc_obj( string $key, string $lang ) {
 	$id = apex_key_id( 'apex_service', $key, $lang );
-	if ( ! $id ) return null;
+	if ( ! $id || ! apex_open( get_post( $id ) ) ) return null;
 	$o = apex_read_post( $id, 'apex_service' );
 	unset( $o['menu'] );
 	$o['key'] = $key;
@@ -284,7 +296,7 @@ function apex_episode_id( int $n, string $lang ): int {
 }
 function apex_episode_obj( int $n, string $lang ) {
 	$id = apex_episode_id( $n, $lang );
-	if ( ! $id ) return null;
+	if ( ! $id || ! apex_open( get_post( $id ) ) ) return null;
 	$e = apex_read_post( $id, 'apex_episode' );
 	$o = [ 'n' => $n, 'title' => $e['full'], 'seo' => $e['seo'], 'desc' => $e['desc'], 'yt' => $e['yt'], 'blocks' => apex_markup_to_blocks( (string) $e['blocks'] ) ];
 	$d = get_post_field( 'post_date', $id );

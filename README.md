@@ -1,6 +1,6 @@
 # Apex Surgery International
 
-Redesign of apexsurgeryhospital.com for Apex. English is the main language since the site is for international clients, so English pages sit at the root and Thai pages under `/th/`, each built from the same templates. This folder holds the design stage as plain pages for review on GitHub Pages. The WordPress theme comes next, once Apex's IT gives server access.
+Redesign of apexsurgeryhospital.com for Apex. English is the main language since the site is for international clients, so English pages sit at the root and Thai pages under `/th/`, each built from the same templates. This folder holds the design stage as plain pages for review on GitHub Pages, and the WordPress theme built from it in `wordpress/`. `wordpress/HANDOVER.md` is the install guide for Apex's IT.
 
 ## Decisions
 
@@ -46,6 +46,10 @@ Score targets and prizes in `assets/features/games/config.js` are examples set f
 | `_source/crawl.json` | The content crawled from the live site on 21 Oct 2026 |
 | `BRIEF.md` | Design tokens and writing rules |
 | `REQUIREMENTS.md` | Apex IT's checklist and the status of each item |
+| `wordpress/theme/apex-surgery/` | The WordPress theme. PHP draws every page with the same markup as the design |
+| `wordpress/import/` | Both languages of content for `wp apex import` |
+| `wordpress/HANDOVER.md` | Install steps, addresses, roles, patient data, spam limits and the checks before launch |
+| `tests/wordpress/` | Tests for the theme: server pages against the scripts, every edit screen, the forms, accessibility |
 
 ## Golden proportions
 
@@ -104,6 +108,20 @@ In WordPress this becomes a custom post type, "Surgery Wars", one post per episo
 
 A new episode is one new post. The hub, the home rail, the episode buttons and the next and previous links update from the list.
 
+## WordPress
+
+The theme in `wordpress/theme/apex-surgery/` turns the design into the live site. Each page is drawn in PHP from the same content structure the design used, with the same markup, so the design's styles and scripts run on it unchanged. Editors fill fixed layouts in the admin, in English and Thai.
+
+- **Content:** `wp apex import` loads both languages from the design's data. `wp apex check` compares every content object with the design and all 100 match.
+- **Pages:** `tests/wordpress/ssr.mjs` compares the server's markup with what the scripts draw on all 124 addresses, and all match.
+- **Admin:** every edit screen opens and saves without changing the content (260 screens).
+- **Online consultation:** enquiries and photos are saved privately and the team gets an email with a link. Photos lose their camera data and location on the way in.
+- **Games:** vouchers are recorded on the site and reception checks them under Vouchers › Check a code.
+- **Search:** titles, descriptions, Open Graph, hreflang and medical structured data, and Rank Math fills its own fields first when it is installed.
+- **Tracking:** Google Tag Manager with Consent Mode v2 and a cookie banner for PDPA.
+
+`wordpress/HANDOVER.md` has the install steps and what to check before launch.
+
 ## Current site findings
 
 - Every page on the live site sends `noindex, nofollow` (checked 21 Oct 2026), which keeps the whole site out of Google. IT should fix this now.
@@ -118,7 +136,7 @@ A new episode is one new post. The hub, the home rail, the episode buttons and t
 3. Get Apex's prize list and confirm the score targets with a human playtest.
 4. Confirm WhatsApp +66 85 000 2001 (the Apex group's international line) is the right number for this hospital.
 5. Check the composite before/after images and set their layout.
-6. Ask IT whether they prefer Polylang or WPML. Either one sets English as the default language at the root and Thai under `/th/`. Each current Thai URL needs a 301 redirect to its `/th/` page, the typo URLs included.
+6. The theme uses Polylang (the free plugin), with English at the root and Thai under `/th/`. Every page, service and article of the live site forwards to its `/th/` page with a 301, the typo URLs included.
 7. Review the articles the translators flagged. Several make claims the advertising rules may not allow, and some recovery times in the articles differ from the service pages:
    - "look up to 20 years younger";
    - "leader in facelift";

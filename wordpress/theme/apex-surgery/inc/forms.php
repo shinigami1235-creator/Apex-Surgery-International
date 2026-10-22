@@ -18,11 +18,22 @@ function apex_forms_opt( string $k, $def = '' ) {
 	$o = get_option( 'apex_forms' );
 	return is_array( $o ) && isset( $o[ $k ] ) && $o[ $k ] !== '' ? $o[ $k ] : $def;
 }
+/** The visitor's address. Behind Cloudflare or a load balancer every request comes from the proxy, so
+ *  wp-config.php can name the header that carries the real one: define( 'APEX_IP_HEADER', 'HTTP_CF_CONNECTING_IP' ).
+ *  Only set it when the server cannot be reached except through that proxy, or anyone could send the header. */
+function apex_client_ip(): string {
+	if ( defined( 'APEX_IP_HEADER' ) && ! empty( $_SERVER[ APEX_IP_HEADER ] ) ) {
+		$ip = trim( explode( ',', (string) $_SERVER[ APEX_IP_HEADER ] )[0] );
+		if ( filter_var( $ip, FILTER_VALIDATE_IP ) ) return $ip;
+	}
+	return (string) ( $_SERVER['REMOTE_ADDR'] ?? '' );
+}
 /** A one-way fingerprint of the visitor's address for rate limits and the consent record. */
 function apex_ip_hash(): string {
-	$ip = $_SERVER['REMOTE_ADDR'] ?? '';
-	return substr( hash_hmac( 'sha256', $ip, wp_salt( 'nonce' ) ), 0, 16 );
+	return substr( hash_hmac( 'sha256', apex_client_ip(), wp_salt( 'nonce' ) ), 0, 16 );
 }
+/** A text field from a JSON body: arrays and objects count as empty. */
+function apex_str( $v ): string { return is_scalar( $v ) ? (string) $v : ''; }
 function apex_rate_ok( string $what, int $max, int $window ): bool {
 	$k = 'apex_rl_' . $what . '_' . apex_ip_hash();
 	$n = (int) get_transient( $k );
@@ -34,7 +45,7 @@ function apex_turnstile_ok( string $token ): bool {
 	$secret = apex_forms_opt( 'turnstile_secret' );
 	if ( ! $secret ) return true;                       // not set up: the honeypot and rate limit still apply
 	if ( $token === '' ) return false;
-	$r = wp_remote_post( 'https://challenges.cloudflare.com/turnstile/v0/siteverify', [ 'timeout' => 8, 'body' => [ 'secret' => $secret, 'response' => $token, 'remoteip' => $_SERVER['REMOTE_ADDR'] ?? '' ] ] );
+	$r = wp_remote_post( 'https://challenges.cloudflare.com/turnstile/v0/siteverify', [ 'timeout' => 8, 'body' => [ 'secret' => $secret, 'response' => $token, 'remoteip' => apex_client_ip() ] ] );
 	if ( is_wp_error( $r ) ) return true;               // Cloudflare unreachable: do not lose the enquiry
 	$j = json_decode( wp_remote_retrieve_body( $r ), true );
 	return ! empty( $j['success'] );
@@ -58,8 +69,17 @@ function apex_store_photo( array $file ): ?string {
 	if ( $file['size'] > 12 * MB_IN_BYTES ) return null;
 	$info = @getimagesize( $file['tmp_name'] );
 	if ( ! $info || ! in_array( $info[2], [ IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP, IMAGETYPE_GIF ], true ) ) return null;
+	// GD writes a fresh JPEG with no metadata at all, so the camera's GPS location never reaches the server's disk
+	require_once ABSPATH . WPINC . '/class-wp-image-editor.php';
+	require_once ABSPATH . WPINC . '/class-wp-image-editor-gd.php';
+	$gd = fn() => [ 'WP_Image_Editor_GD' ];
+	// without GD the photo is not kept, since the other editor can leave the location in the file
+	if ( ! WP_Image_Editor_GD::test() ) return null;
+	add_filter( 'wp_image_editors', $gd, 99 );
 	$ed = wp_get_image_editor( $file['tmp_name'] );
-	if ( is_wp_error( $ed ) ) return null;
+	remove_filter( 'wp_image_editors', $gd, 99 );
+	if ( is_wp_error( $ed ) || ! $ed instanceof WP_Image_Editor_GD ) return null;
+	$ed->maybe_exif_rotate();   // phones store many portraits on their side with a tag that GD would drop
 	$ed->resize( 2400, 2400, false );
 	$ed->set_quality( 85 );
 	$rel = gmdate( 'Y/m/' ) . bin2hex( random_bytes( 16 ) ) . '.jpg';
@@ -87,17 +107,17 @@ function apex_consult_submit( WP_REST_Request $req ) {
 	if ( ! apex_rate_ok( 'consult', 6, HOUR_IN_SECONDS ) ) return new WP_Error( 'apex_rate', 'Too many enquiries from this connection. Please try again later or use LINE or WhatsApp.', [ 'status' => 429 ] );
 	if ( ! apex_turnstile_ok( (string) $req->get_param( 'cf-turnstile-response' ) ) ) return new WP_Error( 'apex_bot', 'The spam check did not pass. Please try again.', [ 'status' => 403 ] );
 
-	$s = fn( $k, $n = 200 ) => mb_substr( sanitize_text_field( (string) ( $f[ $k ] ?? '' ) ), 0, $n );
+	$s = fn( $k, $n = 200 ) => mb_substr( sanitize_text_field( apex_str( $f[ $k ] ?? '' ) ), 0, $n );
 	$v = [
-		'procedures' => array_values( array_intersect( (array) ( $f['procedures'] ?? [] ), APEX_PROCS ) ),
+		'procedures' => array_values( array_intersect( array_filter( (array) ( $f['procedures'] ?? [] ), 'is_string' ), APEX_PROCS ) ),
 		'branch' => in_array( $f['branch'] ?? '', [ 'ploenchit', 'phuket' ], true ) ? $f['branch'] : '',
-		'from' => preg_match( '/^\d{4}-\d{2}-\d{2}$/', (string) ( $f['from'] ?? '' ) ) ? $f['from'] : '',
-		'to' => preg_match( '/^\d{4}-\d{2}-\d{2}$/', (string) ( $f['to'] ?? '' ) ) ? $f['to'] : '',
+		'from' => preg_match( '/^\d{4}-\d{2}-\d{2}$/', apex_str( $f['from'] ?? '' ) ) ? $f['from'] : '',
+		'to' => preg_match( '/^\d{4}-\d{2}-\d{2}$/', apex_str( $f['to'] ?? '' ) ) ? $f['to'] : '',
 		'name' => $s( 'name', 100 ),
 		'country' => $s( 'country', 80 ),
 		'method' => in_array( $f['method'] ?? '', [ 'whatsapp', 'line', 'email' ], true ) ? $f['method'] : '',
 		'contact' => $s( 'contact', 120 ),
-		'questions' => mb_substr( sanitize_textarea_field( (string) ( $f['questions'] ?? '' ) ), 0, 3000 ),
+		'questions' => mb_substr( sanitize_textarea_field( apex_str( $f['questions'] ?? '' ) ), 0, 3000 ),
 		'lang' => ( $f['lang'] ?? '' ) === 'th' ? 'th' : 'en',
 	];
 	$missing = [];
@@ -119,18 +139,20 @@ function apex_consult_submit( WP_REST_Request $req ) {
 
 	$id = wp_insert_post( [
 		'post_type' => 'apex_lead', 'post_status' => 'private',
-		'post_title' => wp_slash( $v['name'] . ' · ' . implode( ', ', $v['procedures'] ) ),
+		'post_title' => 'Enquiry',
 	], true );
 	if ( is_wp_error( $id ) ) return new WP_Error( 'apex_save', 'Could not save the enquiry', [ 'status' => 500 ] );
+	wp_update_post( [ 'ID' => $id, 'post_title' => 'Enquiry A' . $id ] );
 	update_post_meta( $id, 'apex_fields', wp_slash( $v ) );
 	update_post_meta( $id, 'apex_photos', $photos );
 	update_post_meta( $id, 'apex_status', 'new' );
-	update_post_meta( $id, 'apex_consent', [ 'at' => gmdate( 'c' ), 'text' => mb_substr( sanitize_text_field( (string) ( $f['consentText'] ?? '' ) ), 0, 400 ) ?: 'consent box ticked', 'ip' => apex_ip_hash(), 'page' => esc_url_raw( (string) $req->get_header( 'referer' ) ) ] );
+	update_post_meta( $id, 'apex_consent', [ 'at' => gmdate( 'c' ), 'text' => mb_substr( sanitize_text_field( apex_str( $f['consentText'] ?? '' ) ), 0, 400 ) ?: 'consent box ticked', 'ip' => apex_ip_hash(), 'page' => esc_url_raw( (string) $req->get_header( 'referer' ) ) ] );
 
 	$to = array_filter( array_map( 'trim', explode( ',', (string) apex_forms_opt( 'recipients', get_option( 'admin_email' ) ) ) ), 'is_email' );
 	if ( $to ) {
-		$lines = [ 'A new online consultation arrived on the website.', '', 'Name: ' . $v['name'], 'Country: ' . $v['country'], 'Contact: ' . $v['method'] . ' ' . $v['contact'], 'Procedures: ' . implode( ', ', $v['procedures'] ), 'Branch: ' . $v['branch'], 'Travel dates: ' . trim( $v['from'] . ' to ' . $v['to'], ' to' ), 'Photos: ' . count( $photos ), '', 'Questions:', $v['questions'] ?: '-', '', 'Open it (staff login needed): ' . admin_url( 'post.php?post=' . $id . '&action=edit' ) ];
-		wp_mail( $to, '[Apex] Online consultation: ' . $v['name'], implode( "\n", $lines ), $v['method'] === 'email' ? [ 'Reply-To: ' . $v['name'] . ' <' . $v['contact'] . '>' ] : [] );
+		// no names, contact details, questions or photos in the email: they stay behind the staff login
+		$lines = [ 'A new online consultation arrived on the website.', '', 'Reference: A' . $id, 'Procedures: ' . implode( ', ', $v['procedures'] ), 'Branch: ' . $v['branch'], 'Reply by: ' . $v['method'], 'Photos: ' . count( $photos ), '', 'Open it (staff login needed): ' . admin_url( 'post.php?post=' . $id . '&action=edit' ) ];
+		wp_mail( $to, '[Apex] New online consultation A' . $id, implode( "\n", $lines ) );
 	}
 	do_action( 'apex_consult_received', $id, $v );
 	return [ 'ok' => true, 'ref' => 'A' . $id ];
@@ -173,10 +195,12 @@ function apex_voucher_register( WP_REST_Request $req ) {
 	if ( ! isset( $cfg['games'][ $game ][ $tier ] ) ) return new WP_Error( 'apex_bad', 'Unknown game or prize', [ 'status' => 400 ] );
 	// the score has to reach the prize it claims, under the thresholds set in the admin today
 	if ( $score < $cfg['games'][ $game ][ $tier ] ) return new WP_Error( 'apex_score', 'Score below the prize', [ 'status' => 422 ] );
+	$run = (array) $req->get_param( 'run' );
+	// a real scored run lasts at least 20 seconds and has input; anything else did not come from the game
+	if ( (int) ( $run['durationMs'] ?? 0 ) < 10000 || (int) ( $run['inputs'] ?? 0 ) < 1 ) return new WP_Error( 'apex_run', 'No game run', [ 'status' => 422 ] );
 	if ( apex_voucher_find( $code ) ) return [ 'ok' => true, 'code' => $code, 'known' => true ];
 	if ( ! apex_rate_ok( 'voucher', (int) $cfg['perDay'], DAY_IN_SECONDS ) ) return new WP_Error( 'apex_rate', 'Daily voucher limit reached', [ 'status' => 429 ] );
-	$run = (array) $req->get_param( 'run' );
-	$name = mb_substr( sanitize_text_field( (string) $req->get_param( 'name' ) ), 0, 60 );
+	$name = mb_substr( sanitize_text_field( apex_str( $req->get_param( 'name' ) ) ), 0, 60 );
 	$lang = $req->get_param( 'lang' ) === 'th' ? 'th' : 'en';
 	$id = wp_insert_post( [ 'post_type' => 'apex_voucher', 'post_status' => 'private', 'post_title' => $code ], true );
 	if ( is_wp_error( $id ) ) return new WP_Error( 'apex_save', 'Could not save', [ 'status' => 500 ] );
@@ -192,9 +216,10 @@ function apex_voucher_register( WP_REST_Request $req ) {
 }
 
 /* ---------- admin: enquiries ---------- */
-add_filter( 'manage_apex_lead_posts_columns', fn() => [ 'cb' => '<input type="checkbox">', 'title' => __( 'Enquiry', 'apex' ), 'apex_contact' => __( 'Contact', 'apex' ), 'apex_branch' => __( 'Branch', 'apex' ), 'apex_status' => __( 'Status', 'apex' ), 'apex_photos' => __( 'Photos', 'apex' ), 'date' => __( 'Received', 'apex' ) ] );
+add_filter( 'manage_apex_lead_posts_columns', fn() => [ 'cb' => '<input type="checkbox">', 'title' => __( 'Enquiry', 'apex' ), 'apex_name' => __( 'Name', 'apex' ), 'apex_contact' => __( 'Contact', 'apex' ), 'apex_branch' => __( 'Branch', 'apex' ), 'apex_status' => __( 'Status', 'apex' ), 'apex_photos' => __( 'Photos', 'apex' ), 'date' => __( 'Received', 'apex' ) ] );
 add_action( 'manage_apex_lead_posts_custom_column', function ( $col, $id ) {
 	$v = (array) get_post_meta( $id, 'apex_fields', true );
+	if ( $col === 'apex_name' ) echo esc_html( ( $v['name'] ?? '' ) . ' · ' . implode( ', ', (array) ( $v['procedures'] ?? [] ) ) );
 	if ( $col === 'apex_contact' ) echo esc_html( ( $v['method'] ?? '' ) . ' ' . ( $v['contact'] ?? '' ) );
 	if ( $col === 'apex_branch' ) echo esc_html( $v['branch'] ?? '' );
 	if ( $col === 'apex_status' ) echo esc_html( apex_lead_statuses()[ get_post_meta( $id, 'apex_status', true ) ?: 'new' ] ?? '' );
@@ -238,6 +263,12 @@ add_action( 'save_post_apex_lead', function ( $id ) {
 	update_post_meta( $id, 'apex_status', array_key_exists( $s, apex_lead_statuses() ) ? $s : 'new' );
 	update_post_meta( $id, 'apex_notes', sanitize_textarea_field( wp_unslash( $_POST['apex_notes'] ?? '' ) ) );
 } );
+/* searching enquiries looks in the name, contact and questions */
+add_action( 'pre_get_posts', function ( $q ) {
+	if ( ! is_admin() || ! $q->is_main_query() || $q->get( 'post_type' ) !== 'apex_lead' || ! $q->get( 's' ) ) return;
+	$q->set( 'meta_query', [ [ 'key' => 'apex_fields', 'value' => $q->get( 's' ), 'compare' => 'LIKE' ] ] );
+	$q->set( 's', '' );
+} );
 /* a lead's photo, for staff only */
 add_action( 'admin_post_apex_photo', function () {
 	$id = absint( $_GET['lead'] ?? 0 );
@@ -258,9 +289,19 @@ add_action( 'before_delete_post', function ( $id ) {
 	if ( get_post_type( $id ) !== 'apex_lead' ) return;
 	foreach ( (array) get_post_meta( $id, 'apex_photos', true ) as $rel ) { $p = apex_photo_path( (string) $rel ); if ( is_file( $p ) ) @unlink( $p ); }
 } );
-/* enquiries skip the bin: trashing one deletes it, photos included */
-add_action( 'wp_trash_post', function ( $id ) {
-	if ( get_post_type( $id ) === 'apex_lead' ) { wp_delete_post( $id, true ); wp_safe_redirect( admin_url( 'edit.php?post_type=apex_lead' ) ); exit; }
+/* enquiries skip the bin: trashing one deletes it, photos included (one or many at a time) */
+add_filter( 'pre_trash_post', function ( $skip, $post ) {
+	if ( $post && $post->post_type === 'apex_lead' ) { wp_delete_post( $post->ID, true ); return true; }
+	return $skip;
+}, 10, 2 );
+/* after a bulk delete the list says so, with no Undo link that could not work */
+add_filter( 'bulk_post_updated_messages', function ( $m, $counts ) {
+	$m['apex_lead']['trashed'] = _n( '%s enquiry deleted, photos included.', '%s enquiries deleted, photos included.', $counts['trashed'], 'apex' );
+	return $m;
+}, 10, 2 );
+add_filter( 'wp_redirect', function ( $to ) {
+	if ( is_admin() && str_contains( (string) $to, 'post_type=apex_lead' ) && str_contains( (string) $to, 'trashed=' ) ) $to = remove_query_arg( 'ids', $to );
+	return $to;
 } );
 /* old enquiries are deleted after the number of days set under Apex settings › Forms (0 keeps them) */
 add_action( 'apex_daily', function () {
@@ -268,6 +309,8 @@ add_action( 'apex_daily', function () {
 	if ( $days <= 0 ) return;
 	$old = get_posts( [ 'post_type' => 'apex_lead', 'post_status' => 'any', 'posts_per_page' => 200, 'fields' => 'ids', 'date_query' => [ [ 'before' => gmdate( 'Y-m-d', time() - $days * DAY_IN_SECONDS ) ] ] ] );
 	foreach ( $old as $id ) wp_delete_post( $id, true );
+	// vouchers carry a name: they go 90 days after they expire
+	foreach ( get_posts( [ 'post_type' => 'apex_voucher', 'post_status' => 'any', 'posts_per_page' => 200, 'fields' => 'ids', 'date_query' => [ [ 'before' => gmdate( 'Y-m-d', time() - ( apex_game_config()['days'] + 90 ) * DAY_IN_SECONDS ) ] ] ] ) as $id ) wp_delete_post( $id, true );
 } );
 add_action( 'init', function () { if ( ! wp_next_scheduled( 'apex_daily' ) ) wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'apex_daily' ); } );
 
@@ -293,11 +336,14 @@ add_filter( 'wp_privacy_personal_data_erasers', function ( $er ) {
 	} ];
 	return $er;
 } );
-function apex_leads_by_email( string $email ): array {
+/** Enquiries whose contact matches: an email address exactly, a phone number by its digits, a LINE ID exactly. */
+function apex_leads_by_email( string $who ): array {
 	$out = [];
+	$digits = preg_replace( '/\D/', '', $who );
 	foreach ( get_posts( [ 'post_type' => 'apex_lead', 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids' ] ) as $id ) {
 		$v = (array) get_post_meta( $id, 'apex_fields', true );
-		if ( strcasecmp( (string) ( $v['contact'] ?? '' ), $email ) === 0 ) $out[] = $id;
+		$c = (string) ( $v['contact'] ?? '' );
+		if ( strcasecmp( $c, $who ) === 0 || ( strlen( $digits ) >= 8 && preg_replace( '/\D/', '', $c ) === $digits ) ) $out[] = $id;
 	}
 	return $out;
 }
@@ -318,12 +364,12 @@ function apex_voucher_state( int $id ): string {
 	return __( 'Valid', 'apex' );
 }
 add_action( 'admin_menu', function () {
-	add_submenu_page( 'edit.php?post_type=apex_voucher', __( 'Check a code', 'apex' ), __( 'Check a code', 'apex' ), 'edit_posts', 'apex-voucher-check', 'apex_voucher_check_page', 0 );
+	add_submenu_page( 'edit.php?post_type=apex_voucher', __( 'Check a code', 'apex' ), __( 'Check a code', 'apex' ), 'edit_apex_vouchers', 'apex-voucher-check', 'apex_voucher_check_page', 0 );
 	add_submenu_page( 'apex-settings', __( 'Forms', 'apex' ), __( 'Forms', 'apex' ), 'manage_options', 'apex-forms', 'apex_forms_page' );
 	add_submenu_page( 'apex-settings', __( 'Games and prizes', 'apex' ), __( 'Games and prizes', 'apex' ), 'manage_options', 'apex-games', 'apex_games_page' );
 } );
 function apex_voucher_check_page(): void {
-	if ( ! current_user_can( 'edit_posts' ) ) return;
+	if ( ! current_user_can( 'edit_apex_vouchers' ) ) return;
 	$code = strtoupper( preg_replace( '/[^A-Za-z0-9-]/', '', (string) wp_unslash( $_REQUEST['code'] ?? '' ) ) );
 	if ( $code !== '' && ! str_starts_with( $code, 'APX-' ) ) $code = 'APX-' . $code;
 	$msg = '';
@@ -346,7 +392,7 @@ function apex_voucher_check_page(): void {
 			$ok = $state === __( 'Valid', 'apex' );
 			echo '<div class="notice ' . ( $ok ? 'notice-success' : 'notice-warning' ) . '" style="padding:12px"><p style="font-size:18px"><b>' . esc_html( $code ) . '</b> · ' . esc_html( $state ) . '</p>';
 			echo '<table class="widefat striped" style="max-width:640px"><tbody>';
-			foreach ( [ __( 'Prize', 'apex' ) => $v['prize'] ?? '', __( 'Name', 'apex' ) => $v['name'] ?? '', __( 'Game and score', 'apex' ) => ( $v['game'] ?? '' ) . ' · ' . ( $v['score'] ?? '' ), __( 'Claimed', 'apex' ) => wp_date( 'j M Y H:i', (int) ( $v['issued'] ?? 0 ) ), __( 'Valid until', 'apex' ) => wp_date( 'j M Y', (int) ( $v['expires'] ?? 0 ) ) ] as $k => $x ) echo '<tr><th style="width:160px">' . esc_html( $k ) . '</th><td>' . esc_html( (string) $x ) . '</td></tr>';
+			foreach ( [ __( 'Prize', 'apex' ) => $v['prize'] ?? '', __( 'Name', 'apex' ) => $v['name'] ?? '', __( 'Game and score (as the phone reported it)', 'apex' ) => ( $v['game'] ?? '' ) . ' · ' . ( $v['score'] ?? '' ), __( 'Claimed', 'apex' ) => wp_date( 'j M Y H:i', (int) ( $v['issued'] ?? 0 ) ), __( 'Valid until', 'apex' ) => wp_date( 'j M Y', (int) ( $v['expires'] ?? 0 ) ) ] as $k => $x ) echo '<tr><th style="width:160px">' . esc_html( $k ) . '</th><td>' . esc_html( (string) $x ) . '</td></tr>';
 			echo '</tbody></table>';
 			if ( $ok ) {
 				echo '<form method="post" style="margin-top:12px">';

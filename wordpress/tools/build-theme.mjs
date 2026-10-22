@@ -59,3 +59,11 @@ fs.writeFileSync(path.join(IMPORT, 'meta.json'), execSync(`python3 -c "import js
 fs.rmSync(path.join(THEME, 'import'), {recursive:true, force:true});
 fs.cpSync(IMPORT, path.join(THEME, 'import'), {recursive:true});
 console.log('copied', copied, 'asset files; wrote i18n.json, icons.json');
+
+// 4. the zip IT uploads under Appearance › Themes
+const DIST = path.join(ROOT, 'wordpress/dist');
+fs.mkdirSync(DIST, {recursive:true});
+fs.rmSync(path.join(DIST, 'apex-surgery-theme.zip'), {force:true});
+execSync('zip -qr ../dist/apex-surgery-theme.zip apex-surgery -x "*/.DS_Store"', {cwd:path.join(ROOT, 'wordpress/theme')});
+console.log('wrote wordpress/dist/apex-surgery-theme.zip');
+

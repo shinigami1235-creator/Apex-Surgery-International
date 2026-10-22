@@ -103,6 +103,7 @@ function apex_img( $s ): string {
 	$s = (string) ( $s ?? '' );
 	if ( $s === '' ) return '';
 	if ( str_starts_with( $s, '~/' ) ) return apex_media_base() . substr( $s, 2 );
+	if ( preg_match( '#^(img|fonts|css|js|features)/#', $s ) ) return apex_asset( $s );   // a file that ships with the theme
 	return $s;
 }
 /** The reverse, for storing: an upload URL on this site becomes "~/..." so content survives a domain move. */
@@ -196,6 +197,14 @@ function apex_post_url( string $k ): string { return apex_link( 'article.html?p=
  *  still link to 'consult.html' and the like). */
 function apex_link_map( ?string $lang = null ): array {
 	$lang = $lang ?: apex_lang();
+	$ck = 'apex_links_' . (int) get_option( 'apex_data_v', 1 ) . '_' . $lang;
+	$hit = get_transient( $ck );
+	if ( is_array( $hit ) ) return $hit;
+	$m = apex_link_map_build( $lang );
+	set_transient( $ck, $m, DAY_IN_SECONDS );
+	return $m;
+}
+function apex_link_map_build( string $lang ): array {
 	$m = [];
 	foreach ( array_keys( APEX_PAGES ) as $f ) $m[ $f ] = apex_link( $f, $lang );
 	foreach ( [ 'apex_service' => 'service', 'post' => 'article', 'apex_episode' => 'ep' ] as $type => $pre ) {

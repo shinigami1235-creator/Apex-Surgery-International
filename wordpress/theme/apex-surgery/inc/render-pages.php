@@ -21,7 +21,7 @@ function apex_L(): string { return apex_lang(); }
 function apex_crumbs( array $items ): string {
 	$n = count( $items );
 	$o = '';
-	foreach ( $items as $i => $it ) $o .= $i < $n - 1 ? '<a href="' . apex_link( $it[1] ) . '">' . apex_e( $it[0] ) . '</a>' . apex_ic( 'chevron-right' ) : '<span aria-current="page">' . apex_e( $it[0] ) . '</span>';
+	foreach ( $items as $i => $it ) $o .= $i < $n - 1 ? '<a href="' . esc_url( apex_link( $it[1] ) ) . '">' . apex_e( $it[0] ) . '</a>' . apex_ic( 'chevron-right' ) : '<span aria-current="page">' . apex_e( $it[0] ) . '</span>';
 	return '<nav class="crumbs" aria-label="Breadcrumb">' . $o . '</nav>';
 }
 function apex_fmt_li( string $x ): string {
@@ -41,32 +41,32 @@ function apex_doctor_card( array $S, bool $full = false ): string {
 	$D = $S['doctor'] ?? [];
 	$li = fn( $xs ) => implode( '', array_map( fn( $x ) => '<li>' . apex_e( $x ) . '</li>', $xs ?? [] ) );
 	return '<div class="doc-card rv">
-      <div class="doc-ph ph-img"><img src="' . apex_img( $D['photo'] ?? '' ) . '" alt="' . apex_e( $D['name'] ?? '' ) . '" loading="lazy" decoding="async" decoding="async"></div>
+      <div class="doc-ph ph-img"><img src="' . esc_url( apex_img( $D['photo'] ?? '' ) ) . '" alt="' . apex_e( $D['name'] ?? '' ) . '" loading="lazy" decoding="async" decoding="async"></div>
       <div class="doc-body"><p class="eyebrow">' . apex_e( apex_t( 'doctorH' ) ) . '</p>
         <h3 class="h-l" data-field="doctor.name">' . apex_e( $D['name'] ?? '' ) . '</h3>
         <p class="doc-meta"><span>' . apex_e( $D['license'] ?? '' ) . '</span><span>' . apex_e( $D['title'] ?? '' ) . '</span></p>
         <p class="muted" data-field="doctor.specialty">' . apex_e( $D['specialty'] ?? '' ) . '</p>
         <div class="doc-cols"><div><h4>' . apex_e( ( $D['eduH'] ?? '' ) ?: apex_t( 'eduH' ) ) . '</h4><ul class="ticks">' . $li( $D['edu'] ?? [] ) . '</ul></div>
         <div><h4>' . apex_e( ( $D['moreH'] ?? '' ) ?: apex_t( 'moreH' ) ) . '</h4><ul class="ticks">' . $li( $D['more'] ?? [] ) . '</ul></div></div>
-        <div class="doc-acts">' . ( $full ? '' : '<a class="btn btn-plum btn-sm" href="' . apex_link( 'doctor.html' ) . '">' . apex_e( apex_t( 'doctorCta' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a>' ) . '<a class="btn btn-ghost on-light btn-sm" href="' . ( ( $S['line']['h'] ?? '' ) ?: '#' ) . '" target="_blank" rel="noopener">' . apex_ic( 'line' ) . apex_e( apex_t( 'book' ) ) . '</a></div></div></div>';
+        <div class="doc-acts">' . ( $full ? '' : '<a class="btn btn-plum btn-sm" href="' . esc_url( apex_link( 'doctor.html' ) ) . '">' . apex_e( apex_t( 'doctorCta' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a>' ) . '<a class="btn btn-ghost on-light btn-sm" href="' . esc_url( ( ( $S['line']['h'] ?? '' ) ?: '#' ) ) . '" target="_blank" rel="noopener">' . apex_ic( 'line' ) . apex_e( apex_t( 'book' ) ) . '</a></div></div></div>';
 }
 function apex_consult_band( array $S ): string {
 	$WA = apex_wa();
 	$b0 = ( $S['branches'] ?? [] )[0] ?? [];
 	return '<div class="consult-band rv">
     <div class="cb-copy"><p class="eyebrow">' . apex_e( apex_t( 'consultShort' ) ) . '</p><h2 class="h-xl">' . apex_e( apex_t( 'consultH' ) ) . '</h2><p class="lead">' . apex_e( apex_t( 'consultP' ) ) . '</p></div>
-    <div class="cb-acts"><a class="cb-big" href="' . apex_link( 'consult.html' ) . '">' . apex_ic( 'message-circle' ) . '<span><b>' . apex_e( apex_t( 'consultBtn' ) ) . '</b><small>' . apex_e( apex_t( 'consultPageH' ) ) . '</small></span>' . apex_ic( 'arrow-right' ) . '</a>
-      <a class="cb-row" href="' . ( ( $S['line']['h'] ?? '' ) ?: '#' ) . '" target="_blank" rel="noopener">' . apex_ic( 'line' ) . '<span><b>' . apex_e( ( $S['cta']['line'] ?? '' ) ?: 'LINE' ) . '</b><small>' . apex_e( ( $S['cta']['lineSub'] ?? '' ) ?: apex_t( 'lineChat' ) ) . '</small></span></a>
-      <a class="cb-row" href="' . $WA['h'] . '" target="_blank" rel="noopener">' . apex_ic( 'whatsapp' ) . '<span><b>WhatsApp</b><small>' . apex_e( apex_t( 'whatsappSub' ) ) . ' · ' . apex_e( $WA['x'] ) . '</small></span></a>
-      <a class="cb-row" href="' . ( ( $b0['tel'] ?? '' ) ?: 'tel:0888700039' ) . '">' . apex_ic( 'phone' ) . '<span><b>' . apex_e( ( $S['cta']['call'] ?? '' ) ?: apex_t( 'callUs' ) ) . '</b><small>' . apex_e( ( $b0['phone'] ?? '' ) ?: '088-870-0039' ) . '</small></span></a></div></div>';
+    <div class="cb-acts"><a class="cb-big" href="' . esc_url( apex_link( 'consult.html' ) ) . '">' . apex_ic( 'message-circle' ) . '<span><b>' . apex_e( apex_t( 'consultBtn' ) ) . '</b><small>' . apex_e( apex_t( 'consultPageH' ) ) . '</small></span>' . apex_ic( 'arrow-right' ) . '</a>
+      <a class="cb-row" href="' . esc_url( ( ( $S['line']['h'] ?? '' ) ?: '#' ) ) . '" target="_blank" rel="noopener">' . apex_ic( 'line' ) . '<span><b>' . apex_e( ( $S['cta']['line'] ?? '' ) ?: 'LINE' ) . '</b><small>' . apex_e( ( $S['cta']['lineSub'] ?? '' ) ?: apex_t( 'lineChat' ) ) . '</small></span></a>
+      <a class="cb-row" href="' . esc_url( $WA['h'] ) . '" target="_blank" rel="noopener">' . apex_ic( 'whatsapp' ) . '<span><b>WhatsApp</b><small>' . apex_e( apex_t( 'whatsappSub' ) ) . ' · ' . apex_e( $WA['x'] ) . '</small></span></a>
+      <a class="cb-row" href="' . esc_url( ( ( $b0['tel'] ?? '' ) ?: 'tel:0888700039' ) ) . '">' . apex_ic( 'phone' ) . '<span><b>' . apex_e( ( $S['cta']['call'] ?? '' ) ?: apex_t( 'callUs' ) ) . '</b><small>' . apex_e( ( $b0['phone'] ?? '' ) ?: '088-870-0039' ) . '</small></span></a></div></div>';
 }
 function apex_svc_cards( array $S, ?array $keys = null ): string {
 	$o = '';
 	$i = 0;
 	foreach ( $S['services'] ?? [] as $s ) {
 		if ( $keys && ! in_array( $s['key'], $keys, true ) ) continue;
-		$o .= '<a class="svc-tile rv" data-d="' . ( $i * 60 ) . '" href="' . apex_svc_url( $s['key'] ) . '">
-      <span class="st-glow" aria-hidden="true"></span><span class="st-ic"><img src="' . apex_img( $s['icon'] ) . '" alt="" loading="lazy" decoding="async" decoding="async"></span>
+		$o .= '<a class="svc-tile rv" data-d="' . ( $i * 60 ) . '" href="' . esc_url( apex_svc_url( $s['key'] ) ) . '">
+      <span class="st-glow" aria-hidden="true"></span><span class="st-ic"><img src="' . esc_url( apex_img( $s['icon'] ) ) . '" alt="" loading="lazy" decoding="async" decoding="async"></span>
       <span class="st-name">' . apex_e( $s['short'] ?: $s['name'] ) . '</span><span class="st-en">' . apex_e( apex_L() === 'en' ? ( $s['name'] !== $s['short'] ? $s['name'] : '' ) : $s['en'] ) . '</span>
       <span class="st-go">' . apex_ic( 'arrow-up-right' ) . '</span></a>';
 		$i++;
@@ -76,10 +76,10 @@ function apex_svc_cards( array $S, ?array $keys = null ): string {
 function apex_fb_handle( array $f ): string { $p = array_values( array_filter( explode( '/', $f['h'] ) ) ); return (string) end( $p ); }
 function apex_fb_link( $f, string $cls = '' ): string {
 	if ( ! $f ) return '';
-	return '<a class="fb-link ' . $cls . '" href="' . $f['h'] . '" target="_blank" rel="noopener"><span class="fb-ic">' . apex_ic( 'facebook' ) . '</span><span class="fb-name"><b>' . apex_e( $f['x'] ) . '</b><small>facebook.com/' . apex_e( apex_fb_handle( $f ) ) . '</small></span>' . apex_ic( 'arrow-up-right' ) . '</a>';
+	return '<a class="fb-link ' . $cls . '" href="' . esc_url( $f['h'] ) . '" target="_blank" rel="noopener"><span class="fb-ic">' . apex_ic( 'facebook' ) . '</span><span class="fb-name"><b>' . apex_e( $f['x'] ) . '</b><small>facebook.com/' . apex_e( apex_fb_handle( $f ) ) . '</small></span>' . apex_ic( 'arrow-up-right' ) . '</a>';
 }
 function apex_fb_frame( array $f, int $h = 640, string $tabs = 'timeline', $also = null ): string {
-	return '<div class="fbframe rv"><div class="fbhead"><span class="fb-ic">' . apex_ic( 'facebook' ) . '</span><span class="fb-name"><b>' . apex_e( $f['x'] ) . '</b><small>facebook.com/' . apex_e( apex_fb_handle( $f ) ) . '</small></span><a class="fb-open" href="' . $f['h'] . '" target="_blank" rel="noopener" aria-label="' . apex_e( apex_t( 'fbOpen' ) ) . ': ' . apex_e( $f['x'] ) . '" title="' . apex_e( apex_t( 'fbOpen' ) ) . '">' . apex_ic( 'arrow-up-right' ) . '</a></div>
+	return '<div class="fbframe rv"><div class="fbhead"><span class="fb-ic">' . apex_ic( 'facebook' ) . '</span><span class="fb-name"><b>' . apex_e( $f['x'] ) . '</b><small>facebook.com/' . apex_e( apex_fb_handle( $f ) ) . '</small></span><a class="fb-open" href="' . esc_url( $f['h'] ) . '" target="_blank" rel="noopener" aria-label="' . apex_e( apex_t( 'fbOpen' ) ) . ': ' . apex_e( $f['x'] ) . '" title="' . apex_e( apex_t( 'fbOpen' ) ) . '">' . apex_ic( 'arrow-up-right' ) . '</a></div>
     <div class="fb-box" style="height:' . $h . 'px"><div class="fb-skel" aria-hidden="true"><i></i><i></i><i></i><i></i></div><iframe data-fb="' . apex_jsuri( $f['h'] ) . '" data-h="' . $h . '" data-tabs="' . $tabs . '" height="' . $h . '" title="' . apex_e( $f['x'] ) . ' · Facebook" allow="encrypted-media"></iframe>
       <div class="fb-fallback" hidden><span class="fb-big">' . apex_ic( 'facebook' ) . '</span><b class="h-s">' . apex_e( apex_t( 'fbH' ) ) . '</b>' . apex_fb_link( $f ) . apex_fb_link( $also ) . '</div></div></div>';
 }
@@ -96,9 +96,9 @@ function apex_branches( array $S, ?string $h = null, ?string $p = null ): string
         <div class="br-addr"><span class="br-pin">' . apex_ic( 'map-pin' ) . '</span><p>' . $E( $b['addr'] ?? '' ) . '</p>
           <button type="button" class="br-copy" data-copy="' . $E( $b['name'] . ', ' . ( $b['addr'] ?? '' ) ) . '" aria-label="' . $E( apex_t( 'copyAddr' ) ) . ': ' . $E( ( $b['short'] ?? '' ) ?: $b['name'] ) . '">' . apex_ic( 'copy' ) . apex_ic( 'check' ) . '<span>' . $E( apex_t( 'copyAddr' ) ) . '</span></button></div>
         <div class="br-acts">
-          <a class="br-act call" href="' . ( $b['tel'] ?? '' ) . '">' . apex_ic( 'phone' ) . '<span><b>' . $E( apex_t( 'callUs' ) ) . '</b><small>' . $E( $b['phone'] ?? '' ) . '</small></span></a>
-          <a class="br-act ln" href="' . $line . '" target="_blank" rel="noopener">' . apex_ic( 'line' ) . '<span><b>LINE</b><small>' . $E( ( $S['line']['x'] ?? '' ) ?: '@apexsurgery' ) . '</small></span></a>
-          <a class="br-act map" href="' . ( $b['map'] ?? '' ) . '" target="_blank" rel="noopener">' . apex_ic( 'navigation' ) . '<span><b>' . $E( apex_t( 'directions' ) ) . '</b><small>Google Maps</small></span></a>
+          <a class="br-act call" href="' . esc_url( ( $b['tel'] ?? '' ) ) . '">' . apex_ic( 'phone' ) . '<span><b>' . $E( apex_t( 'callUs' ) ) . '</b><small>' . $E( $b['phone'] ?? '' ) . '</small></span></a>
+          <a class="br-act ln" href="' . esc_url( $line ) . '" target="_blank" rel="noopener">' . apex_ic( 'line' ) . '<span><b>LINE</b><small>' . $E( ( $S['line']['x'] ?? '' ) ?: '@apexsurgery' ) . '</small></span></a>
+          <a class="br-act map" href="' . esc_url( ( $b['map'] ?? '' ) ) . '" target="_blank" rel="noopener">' . apex_ic( 'navigation' ) . '<span><b>' . $E( apex_t( 'directions' ) ) . '</b><small>Google Maps</small></span></a>
         </div></div>';
 	}
 	$n = count( $B );
@@ -112,8 +112,8 @@ function apex_branches( array $S, ?string $h = null, ?string $p = null ): string
 	$imgs = '';
 	$maps = '';
 	foreach ( $B as $i => $b ) {
-		$imgs .= '<img src="' . apex_img( $b['img'] ?? '' ) . '" alt="' . $E( $b['name'] ) . '" loading="lazy" decoding="async" data-i="' . $i . '" class="' . ( $i ? '' : 'on' ) . '">';
-		$maps .= '<iframe data-src="' . apex_map_src( $b ) . '" data-i="' . $i . '" title="' . $E( apex_t( 'mapTitle' ) ) . ': ' . $E( $b['name'] ) . '" loading="lazy" decoding="async" referrerpolicy="no-referrer-when-downgrade"' . ( $i ? ' hidden' : '' ) . '></iframe>';
+		$imgs .= '<img src="' . esc_url( apex_img( $b['img'] ?? '' ) ) . '" alt="' . $E( $b['name'] ) . '" loading="lazy" decoding="async" data-i="' . $i . '" class="' . ( $i ? '' : 'on' ) . '">';
+		$maps .= '<iframe data-src="' . esc_url( apex_map_src( $b ) ) . '" data-i="' . $i . '" title="' . $E( apex_t( 'mapTitle' ) ) . ': ' . $E( $b['name'] ) . '" loading="lazy" decoding="async" referrerpolicy="no-referrer-when-downgrade"' . ( $i ? ' hidden' : '' ) . '></iframe>';
 	}
 	return '<div class="br" id="' . $id . '" data-branches>
       <div class="shead br-head"><div><h2 class="h-xl rv">' . $E( $hh ) . '</h2>' . ( $pp ? '<p class="lead rv" style="margin-top:18px;max-width:58ch">' . $E( $pp ) . '</p>' : '' ) . '</div>
@@ -254,7 +254,7 @@ function apex_figure( ?array $img, string $cls = '', bool $par = true ): string 
 	$un = ! empty( $img['un'] );
 	$g = apex_gallery();
 	$alt = $img['alt'] ?? '';
-	return '<figure class="xfig ' . $cls . ' ' . ( $un ? 'un' : 'own' ) . ' rv-clip"><span class="xfig-in ph-img"><button type="button" class="xfig-btn" ' . apex_gattr( $g, 0 ) . ' aria-label="' . apex_e( $alt ?: apex_t( 'image' ) ) . '"><img src="' . apex_img( $img['src'] ) . '" alt="' . apex_e( $alt ) . '" loading="lazy"' . ( $par ? ' data-par="28"' : '' ) . '></button></span>' . ( $un ? '<figcaption>' . apex_e( apex_t( 'photoCredit' ) ) . '</figcaption>' : '' ) . '</figure>';
+	return '<figure class="xfig ' . $cls . ' ' . ( $un ? 'un' : 'own' ) . ' rv-clip"><span class="xfig-in ph-img"><button type="button" class="xfig-btn" ' . apex_gattr( $g, 0 ) . ' aria-label="' . apex_e( $alt ?: apex_t( 'image' ) ) . '"><img src="' . esc_url( apex_img( $img['src'] ) ) . '" alt="' . apex_e( $alt ) . '" loading="lazy"' . ( $par ? ' data-par="28"' : '' ) . '></button></span>' . ( $un ? '<figcaption>' . apex_e( apex_t( 'photoCredit' ) ) . '</figcaption>' : '' ) . '</figure>';
 }
 
 /* a service section: rich cards for lists, numbered steps for h3/p sequences, with a side photo */
@@ -317,7 +317,7 @@ function apex_chips( array $items, string $on ): string {
 function apex_review_rail( array $items, string $id ): string {
 	$g = apex_gallery();
 	$o = '';
-	foreach ( $items as $i => $r ) $o .= '<button type="button" class="ba-card ph-img" ' . apex_gattr( $g, $i ) . ' data-cat="' . apex_e( $r['cat'] ?? '' ) . '" aria-label="' . apex_e( apex_t( 'baOpen' ) ) . ' ' . ( $i + 1 ) . '"><img src="' . apex_img( $r['src'] ) . '" alt="' . apex_e( $r['alt'] ?? '' ) . '" loading="lazy" decoding="async" decoding="async"></button>';
+	foreach ( $items as $i => $r ) $o .= '<button type="button" class="ba-card ph-img" ' . apex_gattr( $g, $i ) . ' data-cat="' . apex_e( $r['cat'] ?? '' ) . '" aria-label="' . apex_e( apex_t( 'baOpen' ) ) . ' ' . ( $i + 1 ) . '"><img src="' . esc_url( apex_img( $r['src'] ) ) . '" alt="' . apex_e( $r['alt'] ?? '' ) . '" loading="lazy" decoding="async" decoding="async"></button>';
 	return '<div class="rail rv-rail" id="' . $id . '">' . $o . '</div>';
 }
 function apex_video_rail( ?array $videos ): string {
@@ -331,14 +331,14 @@ function apex_stories_host( ?array $videos, string $id = 'stories', ?string $tit
 function apex_ba_grid( array $imgs, ?string $cap ): string {
 	$g = apex_gallery();
 	$o = '';
-	foreach ( $imgs as $i => $s ) $o .= '<button type="button" class="ba-tile ph-img rv" data-d="' . ( ( $i % 6 ) * 50 ) . '" ' . apex_gattr( $g, $i ) . '><img src="' . apex_img( $s ) . '" alt="' . apex_e( $cap ?: 'Before / After' ) . ' ' . ( $i + 1 ) . '" loading="lazy" decoding="async" decoding="async"></button>';
+	foreach ( $imgs as $i => $s ) $o .= '<button type="button" class="ba-tile ph-img rv" data-d="' . ( ( $i % 6 ) * 50 ) . '" ' . apex_gattr( $g, $i ) . '><img src="' . esc_url( apex_img( $s ) ) . '" alt="' . apex_e( $cap ?: 'Before / After' ) . ' ' . ( $i + 1 ) . '" loading="lazy" decoding="async" decoding="async"></button>';
 	return '<div class="ba-grid">' . $o . '</div>';
 }
 function apex_cat_label( ?string $c ): string { return apex_t( [ 'review' => 'catReview', 'blog' => 'catBlog', 'news' => 'catNews' ][ $c ?? '' ] ?? 'articles' ); }
 function apex_post_card( array $p, int $i = 0, bool $big = false ): string {
 	$ex = ( $p['excerpt'] ?? '' ) ?: ( $p['desc'] ?? '' );
-	return '<a class="post-card rv' . ( $big ? ' big' : '' ) . '" data-d="' . ( ( $i % 3 ) * 70 ) . '" href="' . apex_post_url( $p['key'] ) . '" data-cat="' . apex_e( $p['cat'] ?? '' ) . '">
-    <span class="pc-ph ph-img"><img src="' . apex_img( $p['img'] ?? '' ) . '" alt="" loading="lazy" decoding="async" decoding="async"></span>
+	return '<a class="post-card rv' . ( $big ? ' big' : '' ) . '" data-d="' . ( ( $i % 3 ) * 70 ) . '" href="' . esc_url( apex_post_url( $p['key'] ) ) . '" data-cat="' . apex_e( $p['cat'] ?? '' ) . '">
+    <span class="pc-ph ph-img"><img src="' . esc_url( apex_img( $p['img'] ?? '' ) ) . '" alt="" loading="lazy" decoding="async" decoding="async"></span>
     <span class="pc-meta"><span class="pc-cat">' . apex_e( apex_cat_label( $p['cat'] ?? null ) ) . '</span>' . ( ! empty( $p['date'] ) ? '<time datetime="' . apex_e( $p['date'] ) . '">' . apex_e( apex_fmt_date( $p['date'] ) ) . '</time>' : '' ) . '</span>
     <span class="pc-title">' . apex_e( $p['title'] ?? '' ) . '</span>' . ( $ex !== '' ? '<span class="pc-ex">' . apex_e( $ex ) . '</span>' : '' ) . '</a>';
 }
@@ -371,19 +371,19 @@ function apex_num_attr( $n ): string { $n = (float) $n; return floor( $n ) == $n
 function apex_offer_tags( array $o ): string { return ( $o['allIn'] ? '<span class="o-tag hot">' . apex_e( apex_t( 'allIn' ) ) . '</span>' : '' ) . ( $o['review'] ? '<span class="o-tag">' . apex_e( apex_t( 'reviewCase' ) ) . '</span>' : '' ); }
 function apex_offer_card( array $o, int $i, int $g ): string {
 	return '<article class="offer rv" data-d="' . ( ( $i % 4 ) * 60 ) . '" data-cat="' . apex_e( $o['cat'] ?? '' ) . '">
-      <button type="button" class="offer-img ph-img" ' . apex_gattr( $g, $i ) . ' aria-label="' . apex_e( apex_t( 'image' ) ) . ': ' . apex_e( $o['label'] ) . '"><img src="' . apex_img( $o['src'] ) . '" alt="' . apex_e( $o['alt'] ) . '" loading="lazy" decoding="async" decoding="async"><span class="o-zoom" aria-hidden="true">' . apex_ic( 'arrow-up-right' ) . '</span></button>
+      <button type="button" class="offer-img ph-img" ' . apex_gattr( $g, $i ) . ' aria-label="' . apex_e( apex_t( 'image' ) ) . ': ' . apex_e( $o['label'] ) . '"><img src="' . esc_url( apex_img( $o['src'] ) ) . '" alt="' . apex_e( $o['alt'] ) . '" loading="lazy" decoding="async" decoding="async"><span class="o-zoom" aria-hidden="true">' . apex_ic( 'arrow-up-right' ) . '</span></button>
       <div class="offer-body">
         <div class="o-tags">' . ( $o['cat'] && $o['words'] ? '<span class="o-proc">' . apex_e( $o['name'] ) . '</span>' : '' ) . apex_offer_tags( $o ) . '</div>
         <h3 class="o-title">' . apex_e( $o['cat'] ? ( implode( ' · ', $o['words'] ) ?: $o['name'] ) : $o['label'] ) . '</h3>
         <div class="o-price">' . ( $o['price'] ? '<span class="op-row"><b class="op-n">' . apex_e( apex_fmt_num( $o['price'] ) ) . '</b><span class="op-u">' . apex_e( apex_t( 'baht' ) ) . '</span></span>' . apex_fx_span( $o['price'] ) : '<span class="op-ask">' . apex_ic( 'message-circle' ) . apex_e( apex_t( 'askPrice' ) ) . '</span>' ) . '</div>
         <div class="o-acts"><span class="o-ask">' . apex_e( apex_t( 'askOffer' ) ) . '</span>
-          <a class="o-btn ln" href="' . $o['line'] . '" target="_blank" rel="noopener" aria-label="' . apex_e( apex_t( 'askOffer' ) ) . ': LINE">' . apex_ic( 'line' ) . '<span>LINE</span></a>
-          <a class="o-btn wa" href="' . $o['wa'] . '" target="_blank" rel="noopener" aria-label="' . apex_e( apex_t( 'askOffer' ) ) . ': WhatsApp">' . apex_ic( 'whatsapp' ) . '<span>WhatsApp</span></a>
-          ' . ( $o['cat'] ? '<a class="o-more" href="' . apex_svc_url( $o['cat'] ) . '">' . apex_e( apex_t( 'seeService' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a>' : '' ) . '</div>
+          <a class="o-btn ln" href="' . esc_url( $o['line'] ) . '" target="_blank" rel="noopener" aria-label="' . apex_e( apex_t( 'askOffer' ) ) . ': LINE">' . apex_ic( 'line' ) . '<span>LINE</span></a>
+          <a class="o-btn wa" href="' . esc_url( $o['wa'] ) . '" target="_blank" rel="noopener" aria-label="' . apex_e( apex_t( 'askOffer' ) ) . ': WhatsApp">' . apex_ic( 'whatsapp' ) . '<span>WhatsApp</span></a>
+          ' . ( $o['cat'] ? '<a class="o-more" href="' . esc_url( apex_svc_url( $o['cat'] ) ) . '">' . apex_e( apex_t( 'seeService' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a>' : '' ) . '</div>
       </div></article>';
 }
 function apex_game_card(): string {
-	return '<a class="offer offer-game rv" href="' . apex_link( 'play.html' ) . '"><span class="og-art" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="og-ic">' . apex_ic( 'sparkles' ) . '</span><b class="h-s">' . apex_e( apex_t( 'gameTie' ) ) . '</b><span class="og-p">' . apex_e( apex_t( 'gamesP' ) ) . '</span><span class="btn btn-light btn-sm">' . apex_e( apex_t( 'gamesCta' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</span></a>';
+	return '<a class="offer offer-game rv" href="' . esc_url( apex_link( 'play.html' ) ) . '"><span class="og-art" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="og-ic">' . apex_ic( 'sparkles' ) . '</span><b class="h-s">' . apex_e( apex_t( 'gameTie' ) ) . '</b><span class="og-p">' . apex_e( apex_t( 'gamesP' ) ) . '</span><span class="btn btn-light btn-sm">' . apex_e( apex_t( 'gamesCta' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</span></a>';
 }
 function apex_promo_grid( array $items, array $S, array $opts = [] ): string {
 	$offers = array_map( fn( $p ) => apex_offer_of( $p, $S, $opts['cat'] ?? null ), $items );
@@ -397,7 +397,7 @@ function apex_offer_spot( array $p, array $S ): string {
 	$o = apex_offer_of( $p, $S );
 	$g = apex_gallery();
 	return '<div class="offer-spot rv">
-      <div class="os-media"><button type="button" class="os-card ph-img" ' . apex_gattr( $g, 0 ) . ' aria-label="' . apex_e( apex_t( 'image' ) ) . ': ' . apex_e( $o['label'] ) . '"><img src="' . apex_img( $o['src'] ) . '" alt="' . apex_e( $o['alt'] ) . '" loading="lazy" decoding="async" decoding="async"><span class="os-glare" aria-hidden="true"></span></button></div>
+      <div class="os-media"><button type="button" class="os-card ph-img" ' . apex_gattr( $g, 0 ) . ' aria-label="' . apex_e( apex_t( 'image' ) ) . ': ' . apex_e( $o['label'] ) . '"><img src="' . esc_url( apex_img( $o['src'] ) ) . '" alt="' . apex_e( $o['alt'] ) . '" loading="lazy" decoding="async" decoding="async"><span class="os-glare" aria-hidden="true"></span></button></div>
       <div class="os-body">
         <p class="os-kick">' . apex_e( apex_t( 'featuredOffer' ) ) . '</p>
         <h3 class="os-title">' . apex_e( $o['name'] ) . '</h3>
@@ -405,7 +405,7 @@ function apex_offer_spot( array $p, array $S ): string {
         ' . ( $o['price'] ? '<div class="os-price"><span class="op-row"><b class="os-n" data-count="' . apex_num_attr( $o['price'] ) . '">' . apex_e( apex_fmt_num( $o['price'] ) ) . '</b><span class="op-u">' . apex_e( apex_t( 'baht' ) ) . '</span></span>' . apex_fx_span( $o['price'] ) . '</div>' : '<p class="os-ask">' . apex_ic( 'message-circle' ) . apex_e( apex_t( 'askPrice' ) ) . '</p>' ) . '
         <div class="os-pick" data-cur-picker></div>
         <p class="os-ask-l">' . apex_e( apex_t( 'askOffer' ) ) . '</p>
-        <div class="os-acts"><a class="o-btn ln lg" href="' . $o['line'] . '" target="_blank" rel="noopener">' . apex_ic( 'line' ) . '<span>LINE</span></a><a class="o-btn wa lg" href="' . $o['wa'] . '" target="_blank" rel="noopener">' . apex_ic( 'whatsapp' ) . '<span>WhatsApp</span></a>' . ( $o['cat'] ? '<a class="btn btn-ghost btn-sm os-more" href="' . apex_svc_url( $o['cat'] ) . '">' . apex_e( apex_t( 'seeService' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a>' : '' ) . '</div>
+        <div class="os-acts"><a class="o-btn ln lg" href="' . esc_url( $o['line'] ) . '" target="_blank" rel="noopener">' . apex_ic( 'line' ) . '<span>LINE</span></a><a class="o-btn wa lg" href="' . esc_url( $o['wa'] ) . '" target="_blank" rel="noopener">' . apex_ic( 'whatsapp' ) . '<span>WhatsApp</span></a>' . ( $o['cat'] ? '<a class="btn btn-ghost btn-sm os-more" href="' . esc_url( apex_svc_url( $o['cat'] ) ) . '">' . apex_e( apex_t( 'seeService' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a>' : '' ) . '</div>
         <p class="note">' . apex_e( apex_t( 'promosSub' ) ) . '</p>
       </div></div>';
 }
@@ -418,12 +418,17 @@ function apex_recovery_card( string $key ): string {
 	$R = APEX_RECOVERY[ apex_L() ][ $key ] ?? null;
 	if ( ! $R ) return '';
 	return '<aside class="recov rv"><p class="eyebrow">' . apex_e( apex_t( 'recoveryH' ) ) . '</p><ol class="recov-line">' . implode( '', array_map( fn( $r ) => '<li><b>' . apex_e( $r[0] ) . '</b><span>' . apex_e( $r[1] ) . '</span></li>', $R ) ) . '</ol>
-      <p class="note">' . apex_e( apex_t( 'resultsVary' ) ) . '</p><a class="link-arrow" href="' . apex_link( 'trip.html?p=' . $key ) . '">' . apex_e( apex_t( 'tripTry' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a></aside>';
+      <p class="note">' . apex_e( apex_t( 'resultsVary' ) ) . '</p><a class="link-arrow" href="' . esc_url( apex_link( 'trip.html?p=' . $key ) ) . '">' . apex_e( apex_t( 'tripTry' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a></aside>';
 }
 function apex_plan_btn( string $key ): string { return '<button type="button" class="btn btn-ghost btn-sm plan-add" data-plan="' . apex_e( $key ) . '">' . apex_ic( 'plus' ) . '<span>' . apex_e( apex_t( 'planAdd' ) ) . '</span></button>'; }
 
 /* =================== pages =================== */
 function apex_render_page( array $r ): string {
+	// password-protected service, article or episode: the form, or once unlocked, the page for this visitor only
+	if ( $r['id'] && in_array( $r['page'], [ 'service', 'article', 'war', 'page' ], true ) && get_post_field( 'post_password', $r['id'] ) !== '' ) {
+		if ( post_password_required( $r['id'] ) ) return apex_password_page( $r['id'] );
+		$GLOBALS['apex_unlocked'] = array_filter( [ $r['page'] === 'service' ? 'svc:' . ( $r['params']['p'] ?? '' ) : '', $r['page'] === 'article' ? 'post:' . ( $r['params']['p'] ?? '' ) : '', $r['page'] === 'war' && ! empty( $r['params']['ep'] ) ? 'war:' . $r['params']['ep'] : '' ] );
+	}
 	$fn = 'apex_page_' . strtolower( preg_replace( '/[^a-zA-Z]/', '', $r['page'] ) );
 	if ( in_array( $r['page'], [ 'nose', 'analysis', 'proportions', 'implBreast', 'implChin', 'implForehead', 'implNose', 'play', 'plan', 'trip', 'consult' ], true ) ) return apex_page_feature( $r['page'] );
 	return function_exists( $fn ) ? $fn( $r ) : apex_page_notfound( $r );
@@ -436,10 +441,10 @@ function apex_page_home( array $r ): string {
 	$promos = $H['promos']['items'] ?? [];
 	$news = $H['news']['items'] ?? [];
 	$E = 'apex_e'; $T = 'apex_t'; $I = 'apex_ic';
-	$svcs = implode( '', array_map( fn( $s ) => '<li><a href="' . apex_svc_url( $s['key'] ) . '">' . $E( $s['short'] ?: $s['name'] ) . '</a></li>', $S['services'] ?? [] ) );
-	$fd = $Fd ? '<a class="intro-fd rv-clip" href="' . apex_link( 'about.html#founder' ) . '">
-            <span class="ifd-ph"><img src="' . apex_img( ( $Fd['portrait'] ?? '' ) ?: ( $Fd['photo'] ?? '' ) ) . '" alt="' . $E( $Fd['name'] ) . '" loading="lazy" decoding="async" data-par="14"></span>
-            ' . ( ! empty( $Fd['aaci'] ) ? '<span class="ifd-badge"><img src="' . apex_img( $Fd['aaci']['src'] ) . '" alt="' . $E( ( $Fd['aaci']['alt'] ?? '' ) ?: 'AACI' ) . '" loading="lazy" decoding="async" decoding="async"></span>' : '' ) . '
+	$svcs = implode( '', array_map( fn( $s ) => '<li><a href="' . esc_url( apex_svc_url( $s['key'] ) ) . '">' . $E( $s['short'] ?: $s['name'] ) . '</a></li>', $S['services'] ?? [] ) );
+	$fd = $Fd ? '<a class="intro-fd rv-clip" href="' . esc_url( apex_link( 'about.html#founder' ) ) . '">
+            <span class="ifd-ph"><img src="' . esc_url( apex_img( ( $Fd['portrait'] ?? '' ) ?: ( $Fd['photo'] ?? '' ) ) ) . '" alt="' . $E( $Fd['name'] ) . '" loading="lazy" decoding="async" data-par="14"></span>
+            ' . ( ! empty( $Fd['aaci'] ) ? '<span class="ifd-badge"><img src="' . esc_url( apex_img( $Fd['aaci']['src'] ) ) . '" alt="' . $E( ( $Fd['aaci']['alt'] ?? '' ) ?: 'AACI' ) . '" loading="lazy" decoding="async" decoding="async"></span>' : '' ) . '
             <span class="ifd-cap"><small>' . $E( $T( 'foundedBy' ) ) . '</small><b>' . $E( $Fd['name'] ) . '</b><span>' . $E( ( $Fd['specialty'] ?? '' ) ?: ( $Fd['role'] ?? '' ) ) . '</span></span>
           </a>' : '';
 	$pillars = '';
@@ -459,7 +464,7 @@ function apex_page_home( array $r ): string {
           <h1 class="hb-h1 rv" data-d="60" data-field="home.h1">' . $E( ( $H['h1'] ?? '' ) ?: 'Apex Surgery Hospital' ) . '</h1>
           <p class="hb-h2 rv" data-d="120" data-field="home.h2">' . $E( apex_L() === 'en' ? ( ( $S['brandTh'] ?? '' ) ?: ( ( $H['h2'] ?? '' ) ?: '' ) ) : ( ( $H['h2'] ?? '' ) ?: ( ( $S['brandTh'] ?? '' ) ?: '' ) ) ) . '</p>
           <p class="hb-lead rv" data-d="180">' . $E( $T( 'heroLead' ) ) . '</p>
-          <div class="hb-acts rv" data-d="240"><a class="btn btn-light" href="' . apex_link( 'consult.html' ) . '">' . $I( 'message-circle' ) . $E( $T( 'consult' ) ) . '</a><a class="btn btn-ghost" href="' . apex_link( 'nose.html' ) . '">' . $I( 'scan-face' ) . $E( $T( 'heroCta2' ) ) . '</a></div>
+          <div class="hb-acts rv" data-d="240"><a class="btn btn-light" href="' . esc_url( apex_link( 'consult.html' ) ) . '">' . $I( 'message-circle' ) . $E( $T( 'consult' ) ) . '</a><a class="btn btn-ghost" href="' . esc_url( apex_link( 'nose.html' ) ) . '">' . $I( 'scan-face' ) . $E( $T( 'heroCta2' ) ) . '</a></div>
           <ul class="hb-svcs rv" data-d="300">' . $svcs . '</ul>
         </div>
         <div class="hb-stage"><div id="bodymap" class="bodymap-host" aria-label="' . $E( $T( 'bodyHint' ) ) . '"></div></div>
@@ -470,7 +475,7 @@ function apex_page_home( array $r ): string {
       <div class="wrap intro2">
         <div><p class="eyebrow rv">' . $E( $T( 'introH' ) ) . '</p>
           <p class="intro-big rv" data-d="60" data-field="home.intro">' . $E( $H['intro']['x'] ?? '' ) . '</p>
-          <a class="link-arrow rv" href="' . apex_link( 'about.html' ) . '">' . $E( $T( 'aboutMore' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div>
+          <a class="link-arrow rv" href="' . esc_url( apex_link( 'about.html' ) ) . '">' . $E( $T( 'aboutMore' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div>
         <div class="intro-side">
           ' . $fd . '
           <ul class="pillars">' . $pillars . '</ul>
@@ -479,34 +484,34 @@ function apex_page_home( array $r ): string {
     </section>
 
     <section class="section washed">
-      <div class="wrap"><div class="shead"><div><p class="eyebrow rv">' . $E( $T( 'servicesH' ) ) . '</p><h2 class="h-xl rv" data-field="home.servicesH">' . $E( ( $H['servicesH'] ?? '' ) ?: $T( 'services' ) ) . '</h2></div><a class="link-arrow rv" href="' . apex_link( 'services.html' ) . '">' . $E( $T( 'allServices' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div>
+      <div class="wrap"><div class="shead"><div><p class="eyebrow rv">' . $E( $T( 'servicesH' ) ) . '</p><h2 class="h-xl rv" data-field="home.servicesH">' . $E( ( $H['servicesH'] ?? '' ) ?: $T( 'services' ) ) . '</h2></div><a class="link-arrow rv" href="' . esc_url( apex_link( 'services.html' ) ) . '">' . $E( $T( 'allServices' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div>
       ' . apex_svc_cards( $S ) . '</div>
     </section>
 
     <section class="section night tools-s">
       <div class="wrap">
         <div class="tools-grid">
-          <a class="tool-card tool-nose rv" href="' . apex_link( 'nose.html' ) . '">
+          <a class="tool-card tool-nose rv" href="' . esc_url( apex_link( 'nose.html' ) ) . '">
             <span class="tc-art" aria-hidden="true"><svg viewBox="0 0 200 200"><path class="tc-prof" d="M120 20 C 112 50, 104 70, 108 92 C 112 110, 140 118, 138 128 C 136 138, 118 136, 112 140 C 108 146, 116 152, 112 160 C 108 172, 96 176, 92 190"/><path class="tc-prof2" d="M120 20 C 114 48, 110 66, 116 88 C 120 104, 146 116, 144 126 C 142 136, 120 136, 112 140"/></svg></span>
             <span class="tc-body"><span class="eyebrow on-night">' . $E( $T( 'nose' ) ) . '</span><b class="h-l">' . $E( $T( 'noseH' ) ) . '</b><span class="tc-p">' . $E( $T( 'noseP' ) ) . '</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">' . $E( $T( 'noseCta' ) ) . ' ' . $I( 'arrow-right' ) . '</span><small>' . $I( 'shield-check' ) . $E( $T( 'noseNote' ) ) . '</small></span></span></a>
-          <a class="tool-card tool-games rv" data-d="90" href="' . apex_link( 'play.html' ) . '">
+          <a class="tool-card tool-games rv" data-d="90" href="' . esc_url( apex_link( 'play.html' ) ) . '">
             <span class="tc-art dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
             <span class="tc-body"><span class="eyebrow on-night">' . $E( $T( 'gamesEb' ) ) . '</span><b class="h-m">' . $E( $T( 'gamesH' ) ) . '</b><span class="tc-p">' . $E( $T( 'gamesP' ) ) . '</span><span class="tc-list">' . $E( $T( 'gamesList' ) ) . '</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">' . $E( $T( 'gamesCta' ) ) . ' ' . $I( 'arrow-right' ) . '</span></span></span></a>
-          <a class="tool-card tool-trip rv" data-d="180" href="' . apex_link( 'trip.html' ) . '">
+          <a class="tool-card tool-trip rv" data-d="180" href="' . esc_url( apex_link( 'trip.html' ) ) . '">
             <span class="tc-art cal" aria-hidden="true">' . $cal . '</span>
             <span class="tc-body"><span class="eyebrow on-night">' . $E( $T( 'trip' ) ) . '</span><b class="h-m">' . $E( $T( 'tripH' ) ) . '</b><span class="tc-p">' . $E( $T( 'tripP' ) ) . '</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">' . $E( $T( 'tripCta' ) ) . ' ' . $I( 'arrow-right' ) . '</span></span></span></a>
-          <a class="tool-card tool-gold rv" data-d="240" href="' . apex_link( 'proportions.html' ) . '">
+          <a class="tool-card tool-gold rv" data-d="240" href="' . esc_url( apex_link( 'proportions.html' ) ) . '">
             <span class="tc-art gold" aria-hidden="true"><svg viewBox="0 0 120 150"><ellipse class="tg-face" cx="60" cy="74" rx="40" ry="54"/><path class="tg-l" d="M14 46h92M14 84h92M14 124h92M24 46v78"/><path class="tg-g" d="M50 46v38M70 46v38M38 104h44"/><circle class="tg-d" cx="60" cy="46" r="2.6"/><circle class="tg-d" cx="60" cy="84" r="2.6"/><circle class="tg-d" cx="60" cy="124" r="2.6"/></svg></span>
             <span class="tc-body"><span class="eyebrow on-night">' . $E( $T( 'prop' ) ) . '</span><b class="h-m">' . $E( $T( 'propH' ) ) . '</b><span class="tc-p">' . $E( $T( 'propPageP' ) ) . '</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">' . $E( $T( 'propCta' ) ) . ' ' . $I( 'arrow-right' ) . '</span></span></span></a>
-          <a class="tool-card tool-ana rv" data-d="300" href="' . apex_link( 'analysis.html' ) . '">
+          <a class="tool-card tool-ana rv" data-d="300" href="' . esc_url( apex_link( 'analysis.html' ) ) . '">
             <span class="tc-art ana" aria-hidden="true"><svg viewBox="0 0 120 150"><ellipse class="ta-face" cx="60" cy="74" rx="40" ry="54"/><path class="ta-l" d="M34 44q8-4 16 0M70 44q8-4 16 0M36 92q-4 10 4 20M84 92q4 10-4 20"/><circle class="ta-s" cx="44" cy="70" r="3"/><circle class="ta-s" cx="80" cy="62" r="2.2"/><circle class="ta-s" cx="72" cy="96" r="2.6"/><path class="ta-scan" d="M10 80h100"/></svg></span>
             <span class="tc-body"><span class="eyebrow on-night">' . $E( $T( 'ana' ) ) . '</span><b class="h-m">' . $E( $T( 'anaH' ) ) . '</b><span class="tc-p">' . $E( $T( 'anaPageP' ) ) . '</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">' . $E( $T( 'anaCta' ) ) . ' ' . $I( 'arrow-right' ) . '</span></span></span></a>
-          <a class="tool-card tool-impl rv" data-d="360" href="' . apex_link( 'breast-implants.html' ) . '">
+          <a class="tool-card tool-impl rv" data-d="360" href="' . esc_url( apex_link( 'breast-implants.html' ) ) . '">
             <span class="tc-art impl" aria-hidden="true"><svg viewBox="0 0 220 110"><path class="ti-lens" d="M20 92 C 40 30, 120 18, 150 92 Z"/><path class="ti-in" d="M34 92 C 54 46, 116 38, 138 92"/><path class="ti-dim" d="M20 102h130M20 98v8M150 98v8M164 92V40M160 92h8M160 40h8"/><text class="ti-t" x="174" y="70">cc</text></svg></span>
             <span class="tc-body"><span class="eyebrow on-night">' . $E( $T( 'impl' ) ) . '</span><b class="h-m">' . $E( $T( 'implH' ) ) . '</b><span class="tc-p">' . $E( $T( 'implP' ) ) . '</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">' . $E( $T( 'implCta' ) ) . ' ' . $I( 'arrow-right' ) . '</span></span></span></a>
@@ -530,7 +535,7 @@ function apex_page_home( array $r ): string {
       <div class="wrap">
         <div class="shead"><div><p class="eyebrow on-night rv">' . $E( $T( 'reelsEb' ) ) . '</p><h2 class="h-xl rv" data-field="home.reviewsRealH">' . $E( ( $H['reviewsRealH'] ?? '' ) ?: $T( 'storiesH' ) ) . '</h2><p class="reels-sub rv">' . $E( $T( 'reelsSub' ) ) . '</p></div></div>
         ' . apex_stories_host( array_key_exists( 'videos', $H ) ? $H['videos'] : ( $tt['videos'] ?? null ), 'stories', $H['reviewsRealH'] ?? null ) . '
-        ' . ( $tt && ! empty( $tt['link'] ) ? '<a class="tiktok-link" href="' . $E( $tt['link']['h'] ?? '' ) . '" target="_blank" rel="noopener">' . $I( 'tiktok' ) . '<span><b>' . $E( $tt['h'] ?? '' ) . '</b><small>@' . $E( ( $tt['link']['handle'] ?? '' ) ?: 'apex_surgery' ) . '</small></span>' . $I( 'arrow-up-right' ) . '</a>' : '' ) . '
+        ' . ( $tt && ! empty( $tt['link'] ) ? '<a class="tiktok-link" href="' . esc_url( $tt['link']['h'] ?? '' ) . '" target="_blank" rel="noopener">' . $I( 'tiktok' ) . '<span><b>' . $E( $tt['h'] ?? '' ) . '</b><small>@' . $E( ( $tt['link']['handle'] ?? '' ) ?: 'apex_surgery' ) . '</small></span>' . $I( 'arrow-up-right' ) . '</a>' : '' ) . '
       </div>
     </section>
 
@@ -541,7 +546,7 @@ function apex_page_home( array $r ): string {
       <div class="wrap"><div class="shead"><div><p class="eyebrow rv">Workpoint 23</p><h2 class="h-xl rv">' . $E( $T( 'warH' ) ) . '</h2><p class="reels-sub rv">' . $E( $T( 'warLead' ) ) . '</p></div>
         <div class="rail-ctrl rv"><button type="button" id="war-prev" aria-label="' . $E( $T( 'prev' ) ) . '">' . $I( 'chevron-left' ) . '</button><button type="button" id="war-next" aria-label="' . $E( $T( 'next' ) ) . '">' . $I( 'chevron-right' ) . '</button></div></div>
       <div class="rail war-rail" id="war-rail">' . implode( '', array_map( 'apex_war_card', $eps, array_keys( $eps ) ) ) . '</div>
-      <a class="link-arrow rv" href="' . apex_link( 'surgery-wars.html' ) . '">' . $E( $T( 'warAll' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div></section>' : '';
+      <a class="link-arrow rv" href="' . esc_url( apex_link( 'surgery-wars.html' ) ) . '">' . $E( $T( 'warAll' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div></section>' : '';
 	$spot = '';
 	if ( $promos ) {
 		$si = 0;
@@ -553,14 +558,14 @@ function apex_page_home( array $r ): string {
 	$o .= '
 
     <section class="section promos-s">
-      <div class="wrap"><div class="shead"><div><p class="eyebrow rv">' . $E( $T( 'promotions' ) ) . '</p><h2 class="h-xl rv" data-field="home.promos.h">' . $E( ( $H['promos']['h'] ?? '' ) ?: $T( 'promosH' ) ) . '</h2></div><a class="link-arrow rv" href="' . apex_link( 'promotions.html' ) . '">' . $E( $T( 'viewAll' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div>
+      <div class="wrap"><div class="shead"><div><p class="eyebrow rv">' . $E( $T( 'promotions' ) ) . '</p><h2 class="h-xl rv" data-field="home.promos.h">' . $E( ( $H['promos']['h'] ?? '' ) ?: $T( 'promosH' ) ) . '</h2></div><a class="link-arrow rv" href="' . esc_url( apex_link( 'promotions.html' ) ) . '">' . $E( $T( 'viewAll' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div>
       ' . $spot . '</div>
     </section>
 
     <section class="section washed"><div class="wrap">' . apex_branches( $S, $H['branches']['h'] ?? null, $H['branches']['p'] ?? null ) . '</div></section>
 
     <section class="section updates-s">
-      <div class="wrap"><div class="shead"><h2 class="h-xl rv" data-field="home.news.h">' . $E( ( $H['news']['h'] ?? '' ) ?: $T( 'newsH' ) ) . '</h2><a class="link-arrow rv" href="' . apex_link( 'blog.html' ) . '">' . $E( $T( 'viewAll' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div>
+      <div class="wrap"><div class="shead"><h2 class="h-xl rv" data-field="home.news.h">' . $E( ( $H['news']['h'] ?? '' ) ?: $T( 'newsH' ) ) . '</h2><a class="link-arrow rv" href="' . esc_url( apex_link( 'blog.html' ) ) . '">' . $E( $T( 'viewAll' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div>
       <div class="updates2">' . ( ! empty( $S['facebook'] ) ? '<div class="fb-col">' . apex_fb_link( $S['facebookSurgery'] ?? null, 'big' ) . apex_fb_frame( $S['facebook'], 600, 'timeline', $S['facebookSurgery'] ?? null ) . '</div>' : '' ) . '<div class="upd-list">' . implode( '', array_map( 'apex_post_card', array_slice( $news, 0, 4 ), array_keys( array_slice( $news, 0, 4 ) ) ) ) . '</div></div></div>
     </section>
 
@@ -576,13 +581,13 @@ function apex_page_services( array $r ): string {
       <section class="section"><div class="wrap">' . apex_svc_cards( $S ) . '</div></section>
       <section class="section washed"><div class="wrap"><div class="shead"><h2 class="h-xl rv">' . $E( $T( 'tools' ) ) . '</h2></div>
         <div class="mini-tools">
-          <a class="mini-tool rv" href="' . apex_link( 'nose.html' ) . '">' . $I( 'scan-face' ) . '<b>' . $E( $T( 'nose' ) ) . '</b><span>' . $E( $T( 'nosePageP' ) ) . '</span></a>
-          <a class="mini-tool rv" data-d="20" href="' . apex_link( 'analysis.html' ) . '">' . $I( 'scan-line' ) . '<b>' . $E( $T( 'ana' ) ) . '</b><span>' . $E( $T( 'anaPageP' ) ) . '</span></a>
-          <a class="mini-tool rv" data-d="35" href="' . apex_link( 'proportions.html' ) . '">' . $I( 'gem' ) . '<b>' . $E( $T( 'prop' ) ) . '</b><span>' . $E( $T( 'propPageP' ) ) . '</span></a>
-          <a class="mini-tool rv" data-d="50" href="' . apex_link( 'breast-implants.html' ) . '">' . $I( 'ruler' ) . '<b>' . $E( $T( 'impl' ) ) . '</b><span>' . $E( $T( 'implP' ) ) . '</span></a>
-          <a class="mini-tool rv" data-d="70" href="' . apex_link( 'trip.html' ) . '">' . $I( 'calendar' ) . '<b>' . $E( $T( 'trip' ) ) . '</b><span>' . $E( $T( 'tripP' ) ) . '</span></a>
-          <a class="mini-tool rv" data-d="140" href="' . apex_link( 'play.html' ) . '">' . $I( 'sparkles' ) . '<b>' . $E( $T( 'games' ) ) . '</b><span>' . $E( $T( 'gamesP' ) ) . '</span></a>
-          <a class="mini-tool rv" data-d="210" href="' . apex_link( 'doctor.html' ) . '">' . $I( 'stethoscope' ) . '<b>' . $E( $T( 'doctor' ) ) . '</b><span>' . $E( $S['doctor']['name'] ?? '' ) . '</span></a>
+          <a class="mini-tool rv" href="' . esc_url( apex_link( 'nose.html' ) ) . '">' . $I( 'scan-face' ) . '<b>' . $E( $T( 'nose' ) ) . '</b><span>' . $E( $T( 'nosePageP' ) ) . '</span></a>
+          <a class="mini-tool rv" data-d="20" href="' . esc_url( apex_link( 'analysis.html' ) ) . '">' . $I( 'scan-line' ) . '<b>' . $E( $T( 'ana' ) ) . '</b><span>' . $E( $T( 'anaPageP' ) ) . '</span></a>
+          <a class="mini-tool rv" data-d="35" href="' . esc_url( apex_link( 'proportions.html' ) ) . '">' . $I( 'gem' ) . '<b>' . $E( $T( 'prop' ) ) . '</b><span>' . $E( $T( 'propPageP' ) ) . '</span></a>
+          <a class="mini-tool rv" data-d="50" href="' . esc_url( apex_link( 'breast-implants.html' ) ) . '">' . $I( 'ruler' ) . '<b>' . $E( $T( 'impl' ) ) . '</b><span>' . $E( $T( 'implP' ) ) . '</span></a>
+          <a class="mini-tool rv" data-d="70" href="' . esc_url( apex_link( 'trip.html' ) ) . '">' . $I( 'calendar' ) . '<b>' . $E( $T( 'trip' ) ) . '</b><span>' . $E( $T( 'tripP' ) ) . '</span></a>
+          <a class="mini-tool rv" data-d="140" href="' . esc_url( apex_link( 'play.html' ) ) . '">' . $I( 'sparkles' ) . '<b>' . $E( $T( 'games' ) ) . '</b><span>' . $E( $T( 'gamesP' ) ) . '</span></a>
+          <a class="mini-tool rv" data-d="210" href="' . esc_url( apex_link( 'doctor.html' ) ) . '">' . $I( 'stethoscope' ) . '<b>' . $E( $T( 'doctor' ) ) . '</b><span>' . $E( $S['doctor']['name'] ?? '' ) . '</span></a>
         </div></div></section>
       <section class="section night"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>';
 }
@@ -614,12 +619,12 @@ function apex_page_service( array $r ): string {
             <p class="eyebrow on-night rv">' . $E( $D['en'] ?? '' ) . '</p>
             <h1 class="display-s rv" data-d="60" data-field="svc.name">' . $E( $D['name'] ?? '' ) . '</h1>
             ' . ( ! empty( $D['byline'] ) ? '<p class="sh-by rv" data-d="120" data-field="svc.byline">' . $I( 'badge-check' ) . $E( $D['byline'] ) . '</p>' : '' ) . '
-            <div class="sh-acts rv" data-d="180"><a class="btn btn-light" href="' . apex_link( 'consult.html?p=' . $key ) . '">' . $I( 'message-circle' ) . $E( $T( 'consult' ) ) . '</a>' . apex_plan_btn( $key ) . ( $key === 'rhinoplasty' ? '<a class="btn btn-ghost btn-sm" href="' . apex_link( 'nose.html' ) . '">' . $I( 'scan-face' ) . $E( $T( 'noseTry' ) ) . '</a>' : '' ) . '</div>
+            <div class="sh-acts rv" data-d="180"><a class="btn btn-light" href="' . esc_url( apex_link( 'consult.html?p=' . $key ) ) . '">' . $I( 'message-circle' ) . $E( $T( 'consult' ) ) . '</a>' . apex_plan_btn( $key ) . ( $key === 'rhinoplasty' ? '<a class="btn btn-ghost btn-sm" href="' . esc_url( apex_link( 'nose.html' ) ) . '">' . $I( 'scan-face' ) . $E( $T( 'noseTry' ) ) . '</a>' : '' ) . '</div>
           </div>
           ' . apex_recovery_card( $key ) . '
         </div>
       </div>
-      ' . ( ! empty( $D['hero'] ) ? '<figure class="sh-banner rv-clip ph-img wrap-wide"><img src="' . apex_img( $D['hero'] ) . '" alt="' . $E( ( $D['heroAlt'] ?? '' ) ?: ( $D['name'] ?? '' ) ) . '" data-field="svc.hero" data-par="24"></figure>' : '' ) . '
+      ' . ( ! empty( $D['hero'] ) ? '<figure class="sh-banner rv-clip ph-img wrap-wide"><img src="' . esc_url( apex_img( $D['hero'] ) ) . '" alt="' . $E( ( $D['heroAlt'] ?? '' ) ?: ( $D['name'] ?? '' ) ) . '" data-field="svc.hero" data-par="24"></figure>' : '' ) . '
     </section>
 ';
 	$ip = '';
@@ -627,7 +632,7 @@ function apex_page_service( array $r ): string {
 	$tk = '';
 	foreach ( $ticks as $i => $x ) $tk .= '<li class="rv" data-d="' . ( $i * 60 ) . '">' . $I( 'check' ) . '<span>' . $E( $x ) . '</span></li>';
 	$badges = '';
-	foreach ( $D['badges'] ?? [] as $i => $b ) $badges .= '<figure class="badge ph-img rv" data-d="' . ( $i * 80 ) . '"><img src="' . apex_img( $b['src'] ?? '' ) . '" alt="' . $E( $b['alt'] ?? '' ) . '" loading="lazy" decoding="async" decoding="async"></figure>';
+	foreach ( $D['badges'] ?? [] as $i => $b ) $badges .= '<figure class="badge ph-img rv" data-d="' . ( $i * 80 ) . '"><img src="' . esc_url( apex_img( $b['src'] ?? '' ) ) . '" alt="' . $E( $b['alt'] ?? '' ) . '" loading="lazy" decoding="async" decoding="async"></figure>';
 	$o .= '
     <section class="section svc-intro">
       <div class="wrap si2">
@@ -659,21 +664,21 @@ function apex_page_service( array $r ): string {
 	$yt = $D['yt'] ?? [];
 	$tt = $D['tiktok'] ?? null;
 	if ( $yt || $tt ) {
-		$o .= '<div class="yt-row">' . implode( '', array_map( fn( $id ) => '<div class="ytbox rv"><button type="button" data-yt="' . $E( $id ) . '" aria-label="' . $E( $T( 'playVideo' ) ) . '"><img loading="lazy" decoding="async" src="' . apex_yt( $id ) . '" alt=""><span class="pl">' . $I( 'play' ) . '</span></button></div>', $yt ) ) . '
-        ' . ( $tt ? '<a class="tiktok-link rv" href="' . $E( $tt['h'] ?? '' ) . '" target="_blank" rel="noopener">' . $I( 'tiktok' ) . '<span><b>' . $E( $tt['x'] ?? '' ) . '</b><small>@apex_surgery</small></span>' . $I( 'arrow-up-right' ) . '</a>' : '' ) . '</div>';
+		$o .= '<div class="yt-row">' . implode( '', array_map( fn( $id ) => '<div class="ytbox rv"><button type="button" data-yt="' . $E( $id ) . '" aria-label="' . $E( $T( 'playVideo' ) ) . '"><img loading="lazy" decoding="async" src="' . esc_url( apex_yt( $id ) ) . '" alt=""><span class="pl">' . $I( 'play' ) . '</span></button></div>', $yt ) ) . '
+        ' . ( $tt ? '<a class="tiktok-link rv" href="' . esc_url( $tt['h'] ?? '' ) . '" target="_blank" rel="noopener">' . $I( 'tiktok' ) . '<span><b>' . $E( $tt['x'] ?? '' ) . '</b><small>@apex_surgery</small></span>' . $I( 'arrow-up-right' ) . '</a>' : '' ) . '</div>';
 	}
 	$o .= '
       </div>
     </section>
 
-    ' . ( $promos ? '<section class="section washed"><div class="wrap"><div class="shead"><div><p class="eyebrow rv">' . $E( implode( ' · ', $D['promoTag'] ?? [] ) ) . '</p><h2 class="h-xl rv">' . $E( ( $D['promoH'] ?? '' ) ?: $T( 'promosH' ) ) . '</h2></div><a class="link-arrow rv" href="' . apex_link( 'promotions.html?c=' . $key ) . '">' . $E( $T( 'viewAll' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div>' . apex_promo_grid( $promos, $S, [ 'cat' => $key ] ) . '</div></section>' : '' ) . '
+    ' . ( $promos ? '<section class="section washed"><div class="wrap"><div class="shead"><div><p class="eyebrow rv">' . $E( implode( ' · ', $D['promoTag'] ?? [] ) ) . '</p><h2 class="h-xl rv">' . $E( ( $D['promoH'] ?? '' ) ?: $T( 'promosH' ) ) . '</h2></div><a class="link-arrow rv" href="' . esc_url( apex_link( 'promotions.html?c=' . $key ) ) . '">' . $E( $T( 'viewAll' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div>' . apex_promo_grid( $promos, $S, [ 'cat' => $key ] ) . '</div></section>' : '' ) . '
 
     ' . ( ! empty( $D['faqs'] ) ? '<section class="section faq-s"><div class="wrap">
       <h2 class="h-l faq-h rv" data-field="svc.faqH">' . $E( ( $D['faqH'] ?? '' ) ?: $T( 'faqH' ) ) . '</h2>
       <div class="faq-grid2"><div data-field="svc.faqs">' . apex_faq_html( $D['faqs'] ) . '</div>
         <aside class="faq-cta rv"><span class="fc-ic">' . $I( 'line' ) . '</span><b class="h-s">' . $E( ( $S['cta']['consult'] ?? '' ) ?: $T( 'consult' ) ) . '</b><p>' . $E( $T( 'consultP' ) ) . '</p>
-          <a class="btn btn-plum" href="' . ( ( $S['line']['h'] ?? '' ) ?: '#' ) . '" target="_blank" rel="noopener">' . $I( 'line' ) . $E( ( $S['cta']['free'] ?? '' ) ?: $T( 'consult' ) ) . '</a>
-          <a class="link-arrow" href="' . apex_link( 'consult.html?p=' . $key ) . '">' . $E( $T( 'consultBtn' ) ) . ' ' . $I( 'arrow-right' ) . '</a></aside></div></div></section>' : '' ) . '
+          <a class="btn btn-plum" href="' . esc_url( ( ( $S['line']['h'] ?? '' ) ?: '#' ) ) . '" target="_blank" rel="noopener">' . $I( 'line' ) . $E( ( $S['cta']['free'] ?? '' ) ?: $T( 'consult' ) ) . '</a>
+          <a class="link-arrow" href="' . esc_url( apex_link( 'consult.html?p=' . $key ) ) . '">' . $E( $T( 'consultBtn' ) ) . ' ' . $I( 'arrow-right' ) . '</a></aside></div></div></section>' : '' ) . '
 
     <section class="section washed"><div class="wrap">' . apex_doctor_card( $S ) . '</div></section>
     <section class="section"><div class="wrap">' . apex_branches( $S ) . '</div></section>
@@ -693,7 +698,7 @@ function apex_founder_block( $F, bool $full ): string {
 	$alt = apex_L() === 'en' ? ( $F['nameTh'] ?? '' ) : ( $F['nameEn'] ?? '' );
 	return '<div class="founder2" id="founder">
       <div class="f2-media rv">
-        <figure class="f2-ph ph-img"><img src="' . apex_img( $full ? ( ( $F['portrait'] ?? '' ) ?: ( $F['photo'] ?? '' ) ) : ( $F['photo'] ?? '' ) ) . '" alt="' . $E( $F['name'] ) . '" loading="lazy" decoding="async" decoding="async"></figure>
+        <figure class="f2-ph ph-img"><img src="' . esc_url( apex_img( $full ? ( ( $F['portrait'] ?? '' ) ?: ( $F['photo'] ?? '' ) ) : ( $F['photo'] ?? '' ) ) ) . '" alt="' . $E( $F['name'] ) . '" loading="lazy" decoding="async" decoding="async"></figure>
         <div class="f2-card"><span class="f2-ic">' . $I( 'award' ) . '</span><span><b>' . $E( $F['license'] ?? '' ) . '</b><small>' . $E( $F['role'] ?? '' ) . '</small></span></div>
       </div>
       <div class="f2-body">
@@ -706,11 +711,11 @@ function apex_founder_block( $F, bool $full ): string {
         ' . ( $full ? '<ul class="who-grid role-grid">' . $roles . '</ul>
           <div class="f2-edu rv"><h3 class="h-s">' . $E( $F['eduH'] ?? '' ) . '</h3><ul class="ticks">' . implode( '', array_map( fn( $x ) => '<li>' . $E( $x ) . '</li>', $F['edu'] ?? [] ) ) . '</ul></div>' : '' ) . '
         <details class="f2-more rv"><summary><span>' . $E( $T( 'readMore' ) ) . '</span>' . $I( 'chevron-down' ) . '</summary><div class="f2-rest">' . implode( '', array_map( fn( $x ) => '<p>' . $E( $x ) . '</p>', $rest ) ) . '</div></details>
-        <div class="doc-acts rv">' . ( $full ? '<a class="btn btn-ghost on-light btn-sm" href="' . ( $F['check']['h'] ?? '' ) . '" target="_blank" rel="noopener">' . $I( 'shield-check' ) . $E( $F['checkX'] ?? '' ) . '</a>' : '<a class="btn btn-plum btn-sm" href="' . apex_link( 'doctor.html#founder' ) . '">' . $E( $T( 'founderCta' ) ) . ' ' . $I( 'arrow-right' ) . '</a>' ) . '</div>
+        <div class="doc-acts rv">' . ( $full ? '<a class="btn btn-ghost on-light btn-sm" href="' . esc_url( ( $F['check']['h'] ?? '' ) ) . '" target="_blank" rel="noopener">' . $I( 'shield-check' ) . $E( $F['checkX'] ?? '' ) . '</a>' : '<a class="btn btn-plum btn-sm" href="' . esc_url( apex_link( 'doctor.html#founder' ) ) . '">' . $E( $T( 'founderCta' ) ) . ' ' . $I( 'arrow-right' ) . '</a>' ) . '</div>
       </div></div>';
 }
 function apex_aaci_card( array $S ): string {
-	return ! empty( $S['aaci'] ) ? '<a class="aaci-card rv" href="' . $S['aaci']['h'] . '" target="_blank" rel="noopener"><img src="' . apex_img( $S['aaci']['src'] ) . '" alt="' . apex_e( $S['aaci']['alt'] ) . '" loading="lazy" decoding="async" width="96" height="96"><span><b>' . apex_e( apex_t( 'aaciH' ) ) . '</b><small>' . apex_e( apex_t( 'aaciP' ) ) . '</small></span>' . apex_ic( 'arrow-up-right' ) . '</a>' : '';
+	return ! empty( $S['aaci'] ) ? '<a class="aaci-card rv" href="' . esc_url( $S['aaci']['h'] ) . '" target="_blank" rel="noopener"><img src="' . esc_url( apex_img( $S['aaci']['src'] ) ) . '" alt="' . apex_e( $S['aaci']['alt'] ) . '" loading="lazy" decoding="async" width="96" height="96"><span><b>' . apex_e( apex_t( 'aaciH' ) ) . '</b><small>' . apex_e( apex_t( 'aaciP' ) ) . '</small></span>' . apex_ic( 'arrow-up-right' ) . '</a>' : '';
 }
 
 /* ABOUT */
@@ -723,11 +728,11 @@ function apex_page_about( array $r ): string {
 	$pillars = '';
 	foreach ( $D['pillars'] ?? [] as $i => $p ) $pillars .= '<li class="rv" data-d="' . ( $i * 90 ) . '"><span class="pl-ic">' . $I( [ 'stethoscope', 'cpu', 'shield-check' ][ $i % 3 ] ) . '</span><b>' . $E( $p['h'] ?? '' ) . '</b><span>' . $E( $p['x'] ?? '' ) . '</span></li>';
 	return apex_phead( ( $D['h1'] ?? '' ) ?: $T( 'about' ), null, [ apex_home_crumb(), [ $T( 'about' ) ] ] ) . '
-      ' . ( ! empty( $D['hero']['src'] ) ? '<figure class="about-banner ph-img rv-clip wrap-wide"><img src="' . apex_img( $D['hero']['src'] ) . '" alt="' . $E( ( $D['hero']['alt'] ?? '' ) ?: ( $D['h1'] ?? '' ) ) . '" data-par="22"></figure>' : '' ) . '
+      ' . ( ! empty( $D['hero']['src'] ) ? '<figure class="about-banner ph-img rv-clip wrap-wide"><img src="' . esc_url( apex_img( $D['hero']['src'] ) ) . '" alt="' . $E( ( $D['hero']['alt'] ?? '' ) ?: ( $D['h1'] ?? '' ) ) . '" data-par="22"></figure>' : '' ) . '
       <section class="section"><div class="wrap about-grid">
         <div class="prose big" data-field="about.intro">' . $ip . '</div>
         <aside class="about-aside">
-          ' . ( $F ? '<a class="f-mini rv" href="#founder"><span class="f-mini-ph ph-img"><img src="' . apex_img( $F['photo'] ?? '' ) . '" alt="" loading="lazy" decoding="async" decoding="async"></span><span><small>' . $E( $T( 'foundedBy' ) ) . '</small><b>' . $E( $F['name'] ) . '</b><span>' . $E( $F['role'] ?? '' ) . '</span></span>' . $I( 'arrow-right' ) . '</a>' : '<div class="about-side rv"><p class="eyebrow">' . $E( $T( 'foundedBy' ) ) . '</p><p>' . $E( $S['founder'] ?? '' ) . '</p></div>' ) . '
+          ' . ( $F ? '<a class="f-mini rv" href="#founder"><span class="f-mini-ph ph-img"><img src="' . esc_url( apex_img( $F['photo'] ?? '' ) ) . '" alt="" loading="lazy" decoding="async" decoding="async"></span><span><small>' . $E( $T( 'foundedBy' ) ) . '</small><b>' . $E( $F['name'] ) . '</b><span>' . $E( $F['role'] ?? '' ) . '</span></span>' . $I( 'arrow-right' ) . '</a>' : '<div class="about-side rv"><p class="eyebrow">' . $E( $T( 'foundedBy' ) ) . '</p><p>' . $E( $S['founder'] ?? '' ) . '</p></div>' ) . '
           ' . apex_aaci_card( $S ) . '
         </aside></div></section>
       <section class="section night vision-s"><div class="wrap"><p class="eyebrow on-night rv">' . $E( ( $D['visionH'] ?? '' ) ?: $T( 'visionH' ) ) . '</p><p class="vision rv" data-field="about.vision">' . $E( $D['vision'] ?? '' ) . '</p>
@@ -790,18 +795,18 @@ function apex_story_card( array $x, int $i, array $S ): string {
 	$q = apex_spoken( $paras )[0] ?? '';
 	$proc = apex_proc_of( ( $d['tag'] ?? '' ) . ' ' . $p['title'] . ' ' . $p['key'] );
 	$stack = '';
-	foreach ( array_slice( $imgs, 1, 3 ) as $j => $src ) $stack .= '<span class="st-th ph-img" style="--k:' . $j . '"><img src="' . apex_img( $src ) . '" alt="" loading="lazy" decoding="async" decoding="async"></span>';
+	foreach ( array_slice( $imgs, 1, 3 ) as $j => $src ) $stack .= '<span class="st-th ph-img" style="--k:' . $j . '"><img src="' . esc_url( apex_img( $src ) ) . '" alt="" loading="lazy" decoding="async" decoding="async"></span>';
 	$url = apex_post_url( $p['key'] );
 	return '<article class="story' . ( $i === 0 ? ' big' : '' ) . ' rv" data-d="' . ( ( $i % 2 ) * 80 ) . '" data-cat="' . $E( $proc ?? '' ) . '">
-      <a class="st-media" href="' . $url . '" aria-label="' . $E( $p['title'] ) . '" tabindex="-1">
-        <span class="st-main ph-img"><img src="' . apex_img( $imgs[0] ?? '' ) . '" alt="" loading="lazy" decoding="async" decoding="async"></span>
+      <a class="st-media" href="' . esc_url( $url ) . '" aria-label="' . $E( $p['title'] ) . '" tabindex="-1">
+        <span class="st-main ph-img"><img src="' . esc_url( apex_img( $imgs[0] ?? '' ) ) . '" alt="" loading="lazy" decoding="async" decoding="async"></span>
         ' . ( count( $imgs ) > 1 ? '<span class="st-stack" aria-hidden="true">' . $stack . '</span>' : '' ) . '
       </a>
       <div class="st-body">
         <p class="st-meta">' . ( $proc ? '<span class="pc-cat">' . $E( apex_svc_name( $S, $proc ) ) . '</span>' : '' ) . ( ! empty( $p['date'] ) ? '<time datetime="' . $E( $p['date'] ) . '">' . $E( apex_fmt_date( $p['date'] ) ) . '</time>' : '' ) . '</p>
-        <h3><a href="' . $url . '">' . $E( $p['title'] ) . '</a></h3>
+        <h3><a href="' . esc_url( $url ) . '">' . $E( $p['title'] ) . '</a></h3>
         ' . ( $q !== '' ? '<blockquote class="st-q">' . $I( 'quote' ) . '<p>' . $E( $q ) . '</p></blockquote>' : ( ! empty( $p['desc'] ) ? '<p class="st-ex">' . $E( $p['desc'] ) . '</p>' : '' ) ) . '
-        <a class="link-arrow" href="' . $url . '">' . $E( $T( 'readStory' ) ) . ' ' . $I( 'arrow-right' ) . '</a>
+        <a class="link-arrow" href="' . esc_url( $url ) . '">' . $E( $T( 'readStory' ) ) . ' ' . $I( 'arrow-right' ) . '</a>
       </div></article>';
 }
 function apex_page_reviews( array $r ): string {
@@ -832,7 +837,7 @@ function apex_page_reviews( array $r ): string {
         <div class="shead"><h2 class="h-xl rv">' . $E( $T( 'baH' ) ) . '</h2><p class="note on-night rv">' . $E( $T( 'resultsVary' ) ) . '</p></div>
         <div id="ba" class="ba-host">' . apex_ba_grid( array_column( $items, 'src' ), $T( 'baH' ) ) . '</div></div></section>
       <section class="section night"><div class="wrap"><div class="shead"><h2 class="h-xl rv">' . $E( ( $H['reviewsRealH'] ?? '' ) ?: $T( 'storiesH' ) ) . '</h2></div>' . apex_stories_host( $H['videos'] ?? null, 'stories', $H['reviewsRealH'] ?? null ) . '</div></section>
-      <section class="section"><div class="wrap"><div class="shead"><h2 class="h-xl rv">' . $E( $T( 'updatesH' ) ) . '</h2><a class="link-arrow rv" href="' . apex_link( 'blog.html?c=review' ) . '">' . $E( $T( 'viewAll' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div>
+      <section class="section"><div class="wrap"><div class="shead"><h2 class="h-xl rv">' . $E( $T( 'updatesH' ) ) . '</h2><a class="link-arrow rv" href="' . esc_url( apex_link( 'blog.html?c=review' ) ) . '">' . $E( $T( 'viewAll' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div>
         <div class="updates2">' . ( ! empty( $S['facebook'] ) ? '<div class="fb-col">' . apex_fb_link( $S['facebookSurgery'] ?? null, 'big' ) . apex_fb_frame( $S['facebook'], 600, 'timeline', $S['facebookSurgery'] ?? null ) . '</div>' : '' ) . '<div class="upd-list">' . implode( '', array_map( 'apex_post_card', $others4, array_keys( $others4 ) ) ) . '</div></div></div></section>
       <section class="section washed"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>';
 }
@@ -864,9 +869,9 @@ function apex_facts_box( string $proc, array $S ): string {
 	if ( ! $R ) return '';
 	$E = 'apex_e'; $T = 'apex_t'; $I = 'apex_ic';
 	return '<aside class="facts rv"><p class="facts-h">' . $I( 'clipboard-check' ) . '<span>' . $E( $T( 'keyFacts' ) ) . '</span></p>
-      <dl><div class="f-proc"><dt>' . $E( $T( 'procedure' ) ) . '</dt><dd><a href="' . apex_svc_url( $proc ) . '">' . $E( apex_svc_name( $S, $proc ) ) . '</a></dd></div>
+      <dl><div class="f-proc"><dt>' . $E( $T( 'procedure' ) ) . '</dt><dd><a href="' . esc_url( apex_svc_url( $proc ) ) . '">' . $E( apex_svc_name( $S, $proc ) ) . '</a></dd></div>
       ' . implode( '', array_map( fn( $r ) => '<div><dt>' . $E( $r[1] ) . '</dt><dd>' . $E( $r[0] ) . '</dd></div>', $R ) ) . '</dl>
-      <p class="note">' . $E( $T( 'resultsVary' ) ) . '</p><a class="link-arrow" href="' . apex_svc_url( $proc ) . '">' . $E( $T( 'seeService' ) ) . ' ' . $I( 'arrow-right' ) . '</a></aside>';
+      <p class="note">' . $E( $T( 'resultsVary' ) ) . '</p><a class="link-arrow" href="' . esc_url( apex_svc_url( $proc ) ) . '">' . $E( $T( 'seeService' ) ) . ' ' . $I( 'arrow-right' ) . '</a></aside>';
 }
 function apex_block_text( array $b ): string {
 	return ( $b['x'] ?? '' ) . ' ' . implode( ' ', array_map( fn( $i ) => is_array( $i ) ? ( $i['x'] ?? '' ) : $i, $b['items'] ?? [] ) );
@@ -943,13 +948,13 @@ function apex_article_body( array $D, string $key, array $S ): array {
 				if ( count( $run ) === 1 ) $html .= apex_figure( [ 'src' => $run[0]['src'], 'alt' => ( $run[0]['alt'] ?? '' ) ?: $D['title'] ], 'wide', false );
 				elseif ( count( $run ) > 1 ) {
 					$g = apex_gallery();
-					$html .= '<div class="art-gal n' . min( count( $run ), 3 ) . ' rv">' . implode( '', array_map( fn( $rr, $j ) => '<button type="button" class="ag-i ph-img" ' . apex_gattr( $g, $j ) . ' aria-label="' . apex_e( apex_t( 'image' ) ) . ' ' . ( $j + 1 ) . '"><img src="' . apex_img( $rr['src'] ) . '" alt="' . apex_e( ( $rr['alt'] ?? '' ) ?: $D['title'] ) . '" loading="lazy" decoding="async" decoding="async"></button>', $run, array_keys( $run ) ) ) . '</div>';
+					$html .= '<div class="art-gal n' . min( count( $run ), 3 ) . ' rv">' . implode( '', array_map( fn( $rr, $j ) => '<button type="button" class="ag-i ph-img" ' . apex_gattr( $g, $j ) . ' aria-label="' . apex_e( apex_t( 'image' ) ) . ' ' . ( $j + 1 ) . '"><img src="' . esc_url( apex_img( $rr['src'] ) ) . '" alt="' . apex_e( ( $rr['alt'] ?? '' ) ?: $D['title'] ) . '" loading="lazy" decoding="async" decoding="async"></button>', $run, array_keys( $run ) ) ) . '</div>';
 				}
 				break;
-			case 'yt': $html .= '<div class="ytbox"><button type="button" data-yt="' . $b['id'] . '" aria-label="' . $E( $T( 'playVideo' ) ) . '"><img loading="lazy" decoding="async" src="' . apex_yt( $b['id'] ) . '" alt=""><span class="pl">' . $I( 'play' ) . '</span></button></div>'; break;
+			case 'yt': $html .= '<div class="ytbox"><button type="button" data-yt="' . apex_e( $b['id'] ) . '" aria-label="' . $E( $T( 'playVideo' ) ) . '"><img loading="lazy" decoding="async" src="' . esc_url( apex_yt( $b['id'] ) ) . '" alt=""><span class="pl">' . $I( 'play' ) . '</span></button></div>'; break;
 			case 'faqs': $html .= apex_faq_html( $b['items'] ?? [] ); break;
 			case 'table': $html .= '<div class="tbl"><table>' . implode( '', array_map( fn( $row, $j ) => '<tr>' . implode( '', array_map( fn( $c ) => $j === 0 ? '<th>' . apex_e( $c ) . '</th>' : '<td>' . apex_e( $c ) . '</td>', $row ) ) . '</tr>', $b['rows'] ?? [], array_keys( $b['rows'] ?? [] ) ) ) . '</table></div>'; break;
-			case 'btn': if ( ! empty( $b['h'] ) ) $html .= '<p><a class="btn btn-plum btn-sm" href="' . $b['h'] . '" target="_blank" rel="noopener">' . $E( $b['x'] ?? '' ) . '</a></p>'; break;
+			case 'btn': if ( ! empty( $b['h'] ) ) $html .= '<p><a class="btn btn-plum btn-sm" href="' . esc_url( $b['h'] ) . '" target="_blank" rel="noopener">' . $E( $b['x'] ?? '' ) . '</a></p>'; break;
 		}
 	}
 	foreach ( $ins[ $n ] ?? [] as $x ) $html .= $x;
@@ -972,9 +977,9 @@ function apex_page_article( array $r ): string {
         <p class="art-meta rv"><span class="pc-cat">' . $E( $catName ) . '</span>' . ( ! empty( $D['date'] ) ? '<time datetime="' . $E( $D['date'] ) . '">' . $E( apex_fmt_date( $D['date'] ) ) . '</time>' : '' ) . '<span class="art-read">' . $I( 'clock' ) . $E( str_replace( '{n}', (string) $body['mins'], $T( 'readMin' ) ) ) . '</span></p>
         <h1 class="h-xl rv" data-d="60" data-field="post.title">' . $E( $D['title'] ) . '</h1>
 </div></section>
-      ' . ( ! empty( $D['img'] ) ? '<figure class="art-banner ph-img rv-clip wrap-mid"><img src="' . apex_img( $D['img'] ) . '" alt="' . $E( $D['title'] ) . '" data-par="22"></figure>' : '' ) . '
+      ' . ( ! empty( $D['img'] ) ? '<figure class="art-banner ph-img rv-clip wrap-mid"><img src="' . esc_url( apex_img( $D['img'] ) ) . '" alt="' . $E( $D['title'] ) . '" data-par="22"></figure>' : '' ) . '
       <section class="section art-s"><div class="wrap art-grid' . ( $hasToc ? '' : ' notoc' ) . '">' . $tocH . '<article class="prose art-prose" id="body" data-field="post.blocks">' . $body['html'] . '</article></div></section>
-      ' . ( $related ? '<section class="section washed"><div class="wrap"><div class="shead"><h2 class="h-l rv">' . $E( $catName ) . '</h2><a class="link-arrow rv" href="' . apex_link( 'blog.html' ) . '">' . $E( $T( 'backToArticles' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div><div class="post-grid">' . implode( '', array_map( 'apex_post_card', $related, array_keys( $related ) ) ) . '</div></div></section>' : '' ) . '
+      ' . ( $related ? '<section class="section washed"><div class="wrap"><div class="shead"><h2 class="h-l rv">' . $E( $catName ) . '</h2><a class="link-arrow rv" href="' . esc_url( apex_link( 'blog.html' ) ) . '">' . $E( $T( 'backToArticles' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div><div class="post-grid">' . implode( '', array_map( 'apex_post_card', $related, array_keys( $related ) ) ) . '</div></div></section>' : '' ) . '
       <section class="section night"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>';
 }
 
@@ -986,8 +991,8 @@ function apex_nb( $t ): string {
 }
 function apex_war_src( $s ): string { $s = (string) $s; return $s !== '' && ! preg_match( '#^(https?:|~/)#', $s ) ? apex_asset( $s ) : $s; }
 function apex_war_card( array $e, int $i = 0 ): string {
-	return '<a class="war-card rv" data-d="' . ( ( $i % 4 ) * 60 ) . '" href="' . apex_war_url( $e['n'] ) . '">
-      <span class="wc-ph ph-img"><img src="' . apex_img( apex_war_src( $e['cover'] ?? '' ) ) . '" alt="" loading="lazy" decoding="async" width="640" height="336"><span class="wc-ep">EP.' . $e['n'] . '</span><span class="wc-pl" aria-hidden="true">' . apex_ic( 'play' ) . '</span></span>
+	return '<a class="war-card rv" data-d="' . ( ( $i % 4 ) * 60 ) . '" href="' . esc_url( apex_war_url( $e['n'] ) ) . '">
+      <span class="wc-ph ph-img"><img src="' . esc_url( apex_img( apex_war_src( $e['cover'] ?? '' ) ) ) . '" alt="" loading="lazy" decoding="async" width="640" height="336"><span class="wc-ep">EP.' . $e['n'] . '</span><span class="wc-pl" aria-hidden="true">' . apex_ic( 'play' ) . '</span></span>
       <span class="wc-t">' . apex_nb( $e['title'] ?? '' ) . '</span></a>';
 }
 const APEX_WAR_PROC = [ [ 'facelift', '/ดึงหน้า|ดึงคอ|face ?lift|neck lift/iu' ], [ 'browlift', '/ยกคิ้ว|ยกหน้าผาก|brow lift|forehead lift/iu' ], [ 'rhinoplasty', '/เสริมจมูก|แก้จมูก|rhinoplasty/iu' ],
@@ -995,7 +1000,7 @@ const APEX_WAR_PROC = [ [ 'facelift', '/ดึงหน้า|ดึงคอ|fa
 function apex_war_stage( array $e, array $D ): string {
 	$w = str_replace( '{n}', (string) $e['n'], apex_t( 'warWatch' ) );
 	return '<div class="war-stage rv-clip"><button type="button" class="ws-poster" data-ytw="' . apex_e( ( $D['yt'] ?? '' ) ?: ( $e['yt'] ?? '' ) ) . '" aria-label="' . apex_e( $w ) . '">
-      <img src="' . apex_img( apex_war_src( $e['img'] ?? '' ) ) . '" alt="' . apex_e( $D['title'] ) . '" width="1200" height="630"><span class="ws-play">' . apex_ic( 'play' ) . '<span>' . apex_e( $w ) . '</span></span></button></div>';
+      <img src="' . esc_url( apex_img( apex_war_src( $e['img'] ?? '' ) ) ) . '" alt="' . apex_e( $D['title'] ) . '" width="1200" height="630"><span class="ws-play">' . apex_ic( 'play' ) . '<span>' . apex_e( $w ) . '</span></span></button></div>';
 }
 function apex_page_war( array $r ): string {
 	$S = apex_data( 'shared' ) ?: []; $W = apex_data( 'war' ) ?: []; $eps = $W['episodes'] ?? [];
@@ -1005,14 +1010,14 @@ function apex_page_war( array $r ): string {
 	foreach ( $eps as $i => $x ) if ( $x['n'] === $n ) { $e = $x; $i0 = $i; break; }
 	if ( ! $e ) {
 		$stack = '';
-		foreach ( array_values( array_filter( [ $eps[7] ?? null, $eps[3] ?? null, $eps[0] ?? null ] ) ) as $i => $x ) $stack .= '<img class="whs-' . $i . '" src="' . apex_img( apex_war_src( $x['cover'] ?? '' ) ) . '" alt="" width="640" height="336">';
+		foreach ( array_values( array_filter( [ $eps[7] ?? null, $eps[3] ?? null, $eps[0] ?? null ] ) ) as $i => $x ) $stack .= '<img class="whs-' . $i . '" src="' . esc_url( apex_img( apex_war_src( $x['cover'] ?? '' ) ) ) . '" alt="" width="640" height="336">';
 		return '
       <section class="war-head night"><div class="hb-glow" aria-hidden="true"></div><div class="wrap wh-grid"><div class="wh-copy">
         ' . apex_crumbs( [ apex_home_crumb(), [ $T( 'war' ) ] ] ) . '
         <p class="eyebrow on-night rv">Workpoint 23</p>
         <h1 class="display-s rv" data-d="60">' . apex_nb( $T( 'warH' ) ) . '</h1>
         <p class="lead rv" data-d="120">' . $E( $T( 'warLead' ) ) . '</p>
-        ' . ( $eps ? '<a class="btn btn-light rv" data-d="180" href="' . apex_war_url( $eps[0]['n'] ) . '">' . $I( 'play' ) . $E( $T( 'warStart' ) ) . '</a>' : '' ) . '</div>
+        ' . ( $eps ? '<a class="btn btn-light rv" data-d="180" href="' . esc_url( apex_war_url( $eps[0]['n'] ) ) . '">' . $I( 'play' ) . $E( $T( 'warStart' ) ) . '</a>' : '' ) . '</div>
         <div class="wh-stack" aria-hidden="true">' . $stack . '</div>
       </div></section>
       <section class="section war-list"><div class="wrap"><div class="war-grid">' . implode( '', array_map( 'apex_war_card', $eps, array_keys( $eps ) ) ) . '</div></div></section>
@@ -1031,8 +1036,8 @@ function apex_page_war( array $r ): string {
 	$prev = $eps[ $i0 - 1 ] ?? null; $next = $eps[ $i0 + 1 ] ?? null;
 	$crumbs = [ apex_home_crumb(), [ $T( 'war' ), 'surgery-wars.html' ], [ 'EP.' . $n ] ];
 	$hasToc = count( $body['toc'] ) > 2;
-	$epsNav = implode( '', array_map( fn( $x ) => '<a href="' . apex_war_url( $x['n'] ) . '"' . ( $x['n'] === $n ? ' aria-current="page"' : '' ) . '>EP.' . $x['n'] . '</a>', $eps ) );
-	$ph = implode( '', array_map( fn( $p, $j ) => '<button type="button" class="wp-th ph-img" ' . apex_gattr( $g, $j ) . ' aria-label="' . apex_e( apex_t( 'image' ) ) . ' ' . ( $j + 1 ) . '"><img src="' . apex_img( $p['src'] ) . '" alt="' . apex_e( $p['alt'] ?? '' ) . '" loading="lazy" decoding="async" width="1200" height="630"></button>', $photos, array_keys( $photos ) ) );
+	$epsNav = implode( '', array_map( fn( $x ) => '<a href="' . esc_url( apex_war_url( $x['n'] ) ) . '"' . ( $x['n'] === $n ? ' aria-current="page"' : '' ) . '>EP.' . $x['n'] . '</a>', $eps ) );
+	$ph = implode( '', array_map( fn( $p, $j ) => '<button type="button" class="wp-th ph-img" ' . apex_gattr( $g, $j ) . ' aria-label="' . apex_e( apex_t( 'image' ) ) . ' ' . ( $j + 1 ) . '"><img src="' . esc_url( apex_img( $p['src'] ) ) . '" alt="' . apex_e( $p['alt'] ?? '' ) . '" loading="lazy" decoding="async" width="1200" height="630"></button>', $photos, array_keys( $photos ) ) );
 	$others = array_values( array_filter( $eps, fn( $x ) => $x['n'] !== $n ) );
 	return '
       <section class="art-head war-ep-head"><div class="phead-lines" aria-hidden="true"></div><div class="sh-glow" aria-hidden="true"></div><div class="wrap">' . apex_crumbs( $crumbs ) . '
@@ -1044,10 +1049,10 @@ function apex_page_war( array $r ): string {
         ' . ( $photos ? '<div class="war-photos"><p class="wp-h">' . $I( 'image' ) . '<span>' . $E( $T( 'warPhotos' ) ) . '</span><i>' . count( $photos ) . '</i></p><div class="wp-rail">' . $ph . '</div></div>' : '' ) . '
       </div>
       <section class="section art-s war-art"><div class="wrap art-grid' . ( $hasToc ? '' : ' notoc' ) . '">' . ( $hasToc ? '<nav class="toc art-toc" id="toc" aria-label="' . $E( $T( 'inArticle' ) ) . '"><p class="toc-h">' . $E( $T( 'inArticle' ) ) . '</p>' . implode( '', array_map( fn( $x ) => '<a href="#' . $x['id'] . '">' . $E( $x['x'] ) . '</a>', $body['toc'] ) ) . '</nav>' : '' ) . '<article class="prose art-prose" id="body">' . $body['html'] . '
-        ' . ( $procs ? '<aside class="war-procs rv"><p class="facts-h">' . $I( 'stethoscope' ) . '<span>' . $E( $T( 'warProcs' ) ) . '</span></p><div class="wpr-l">' . implode( '', array_map( fn( $k ) => '<a class="chip" href="' . apex_svc_url( $k ) . '">' . apex_e( apex_svc_name( $S, $k ) ) . apex_ic( 'arrow-right' ) . '</a>', $procs ) ) . '</div><p class="note">' . $E( $T( 'resultsVary' ) ) . '</p></aside>' : '' ) . '</article></div></section>
+        ' . ( $procs ? '<aside class="war-procs rv"><p class="facts-h">' . $I( 'stethoscope' ) . '<span>' . $E( $T( 'warProcs' ) ) . '</span></p><div class="wpr-l">' . implode( '', array_map( fn( $k ) => '<a class="chip" href="' . esc_url( apex_svc_url( $k ) ) . '">' . apex_e( apex_svc_name( $S, $k ) ) . apex_ic( 'arrow-right' ) . '</a>', $procs ) ) . '</div><p class="note">' . $E( $T( 'resultsVary' ) ) . '</p></aside>' : '' ) . '</article></div></section>
       <section class="section washed war-more"><div class="wrap">
-        <div class="war-pn">' . ( $prev ? '<a class="wpn prev" href="' . apex_war_url( $prev['n'] ) . '"><small>' . $I( 'arrow-left' ) . $E( $T( 'warPrev' ) ) . '</small><b>EP.' . $prev['n'] . ' ' . $E( $prev['title'] ) . '</b></a>' : '<span></span>' ) . ( $next ? '<a class="wpn next" href="' . apex_war_url( $next['n'] ) . '"><small>' . $E( $T( 'warNext' ) ) . $I( 'arrow-right' ) . '</small><b>EP.' . $next['n'] . ' ' . $E( $next['title'] ) . '</b></a>' : '' ) . '</div>
-        <div class="shead"><h2 class="h-l rv">' . $E( $T( 'warAll' ) ) . '</h2><a class="link-arrow rv" href="' . apex_link( 'surgery-wars.html' ) . '">' . $E( $T( 'warH' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div>
+        <div class="war-pn">' . ( $prev ? '<a class="wpn prev" href="' . esc_url( apex_war_url( $prev['n'] ) ) . '"><small>' . $I( 'arrow-left' ) . $E( $T( 'warPrev' ) ) . '</small><b>EP.' . $prev['n'] . ' ' . $E( $prev['title'] ) . '</b></a>' : '<span></span>' ) . ( $next ? '<a class="wpn next" href="' . esc_url( apex_war_url( $next['n'] ) ) . '"><small>' . $E( $T( 'warNext' ) ) . $I( 'arrow-right' ) . '</small><b>EP.' . $next['n'] . ' ' . $E( $next['title'] ) . '</b></a>' : '' ) . '</div>
+        <div class="shead"><h2 class="h-l rv">' . $E( $T( 'warAll' ) ) . '</h2><a class="link-arrow rv" href="' . esc_url( apex_link( 'surgery-wars.html' ) ) . '">' . $E( $T( 'warH' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div>
         <div class="war-grid sm">' . implode( '', array_map( 'apex_war_card', $others, array_keys( $others ) ) ) . '</div></div></section>
       <section class="section night"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>';
 }
@@ -1058,18 +1063,18 @@ function apex_page_contact( array $r ): string {
 	$E = 'apex_e'; $T = 'apex_t'; $I = 'apex_ic';
 	$WA = apex_wa();
 	$ch = '';
-	foreach ( $S['branches'] ?? [] as $i => $b ) $ch .= '<a class="chan rv" data-d="' . ( 120 + $i * 60 ) . '" href="' . ( $b['tel'] ?? '' ) . '"><span class="chan-ic">' . $I( 'phone' ) . '</span><span><b>' . $E( $b['phone'] ?? '' ) . '</b><small>' . $E( ( $b['short'] ?? '' ) ?: $b['name'] ) . '</small></span>' . $I( 'arrow-up-right' ) . '</a>';
+	foreach ( $S['branches'] ?? [] as $i => $b ) $ch .= '<a class="chan rv" data-d="' . ( 120 + $i * 60 ) . '" href="' . esc_url( ( $b['tel'] ?? '' ) ) . '"><span class="chan-ic">' . $I( 'phone' ) . '</span><span><b>' . $E( $b['phone'] ?? '' ) . '</b><small>' . $E( ( $b['short'] ?? '' ) ?: $b['name'] ) . '</small></span>' . $I( 'arrow-up-right' ) . '</a>';
 	$soc = '';
-	foreach ( array_filter( $S['socials'] ?? [], fn( $s ) => $s['k'] !== 'line' ) as $s ) $soc .= '<a class="chan sm rv" href="' . $s['h'] . '" target="_blank" rel="noopener"><span class="chan-ic">' . apex_soc_icon( $s['k'] ) . '</span><span><b>' . $E( $s['x'] ?? '' ) . '</b></span>' . $I( 'arrow-up-right' ) . '</a>';
+	foreach ( array_filter( $S['socials'] ?? [], fn( $s ) => $s['k'] !== 'line' ) as $s ) $soc .= '<a class="chan sm rv" href="' . esc_url( $s['h'] ) . '" target="_blank" rel="noopener"><span class="chan-ic">' . apex_soc_icon( $s['k'] ) . '</span><span><b>' . $E( $s['x'] ?? '' ) . '</b></span>' . $I( 'arrow-up-right' ) . '</a>';
 	return apex_phead( ( $D['h1'] ?? '' ) ?: $T( 'contact' ), null, [ apex_home_crumb(), [ $T( 'contact' ) ] ] ) . '
       <section class="section" style="padding-top:50px"><div class="wrap contact2">
         <div class="channels">
-          <a class="chan rv" href="' . ( ( $S['line']['h'] ?? '' ) ?: '#' ) . '" target="_blank" rel="noopener"><span class="chan-ic ln">' . $I( 'line' ) . '</span><span><b>LINE</b><small>' . $E( $S['line']['x'] ?? '' ) . '</small></span><img class="chan-qr" src="' . apex_img( $S['line']['qr'] ?? '' ) . '" alt="LINE QR" loading="lazy" decoding="async" decoding="async"></a>
-          <a class="chan rv" data-d="60" href="' . $WA['h'] . '" target="_blank" rel="noopener"><span class="chan-ic wa">' . $I( 'whatsapp' ) . '</span><span><b>WhatsApp</b><small>' . $E( $T( 'whatsappSub' ) ) . ' · ' . $E( $WA['x'] ) . '</small></span>' . $I( 'arrow-up-right' ) . '</a>
+          <a class="chan rv" href="' . esc_url( ( ( $S['line']['h'] ?? '' ) ?: '#' ) ) . '" target="_blank" rel="noopener"><span class="chan-ic ln">' . $I( 'line' ) . '</span><span><b>LINE</b><small>' . $E( $S['line']['x'] ?? '' ) . '</small></span><img class="chan-qr" src="' . esc_url( apex_img( $S['line']['qr'] ?? '' ) ) . '" alt="LINE QR" loading="lazy" decoding="async" decoding="async"></a>
+          <a class="chan rv" data-d="60" href="' . esc_url( $WA['h'] ) . '" target="_blank" rel="noopener"><span class="chan-ic wa">' . $I( 'whatsapp' ) . '</span><span><b>WhatsApp</b><small>' . $E( $T( 'whatsappSub' ) ) . ' · ' . $E( $WA['x'] ) . '</small></span>' . $I( 'arrow-up-right' ) . '</a>
           ' . $ch . '
           ' . $soc . '
         </div>
-        <div class="consult-col"><div id="consult" class="consult-host"><h2 class="h-l">' . $E( ( $D['formH'] ?? '' ) ?: $T( 'consultPageH' ) ) . '</h2><p class="muted">' . $E( $T( 'consultPageP' ) ) . '</p><a class="btn btn-plum" href="' . apex_link( 'consult.html' ) . '">' . $I( 'message-circle' ) . $E( $T( 'consultBtn' ) ) . '</a></div></div>
+        <div class="consult-col"><div id="consult" class="consult-host"><h2 class="h-l">' . $E( ( $D['formH'] ?? '' ) ?: $T( 'consultPageH' ) ) . '</h2><p class="muted">' . $E( $T( 'consultPageP' ) ) . '</p><a class="btn btn-plum" href="' . esc_url( apex_link( 'consult.html' ) ) . '">' . $I( 'message-circle' ) . $E( $T( 'consultBtn' ) ) . '</a></div></div>
       </div></section>
       <section class="section washed"><div class="wrap">' . apex_branches( $S, $D['branches']['h'] ?? null, $D['branches']['p'] ?? null ) . '</div></section>';
 }
@@ -1096,9 +1101,13 @@ function apex_page_feature( string $page ): string {
 }
 
 /* any other WordPress page (privacy policy and the like): a heading and its text */
+function apex_password_page( int $id ): string {
+	return apex_phead( get_the_title( $id ), null, [ apex_home_crumb(), [ get_the_title( $id ) ] ] ) . '<section class="section"><div class="wrap prose">' . get_the_password_form( $id ) . '</div></section>';
+}
 function apex_page_page( array $r ): string {
 	$p = get_post( $r['id'] );
 	if ( ! $p ) return apex_page_notfound( $r );
+	if ( post_password_required( $p ) ) return apex_password_page( $p->ID );
 	$blocks = apex_markup_to_blocks( $p->post_content );
 	$html = '';
 	foreach ( $blocks as $b ) {
@@ -1107,7 +1116,7 @@ function apex_page_page( array $r ): string {
 			case 'h4': case 'h5': case 'h6': $html .= '<h4>' . apex_e( $b['x'] ) . '</h4>'; break;
 			case 'p': $html .= '<p' . ( ! empty( $b['b'] ) ? ' class="b"' : '' ) . '>' . apex_e( $b['x'] ) . '</p>'; break;
 			case 'list': $tag = ! empty( $b['o'] ) ? 'ol' : 'ul'; $html .= "<$tag>" . implode( '', array_map( fn( $x ) => '<li>' . apex_fmt_li( $x ) . '</li>', $b['items'] ?? [] ) ) . "</$tag>"; break;
-			case 'img': if ( ! empty( $b['src'] ) ) $html .= '<figure class="ph-img"><img loading="lazy" decoding="async" src="' . apex_img( $b['src'] ) . '" alt="' . apex_e( $b['alt'] ?? '' ) . '"></figure>'; break;
+			case 'img': if ( ! empty( $b['src'] ) ) $html .= '<figure class="ph-img"><img loading="lazy" decoding="async" src="' . esc_url( apex_img( $b['src'] ) ) . '" alt="' . apex_e( $b['alt'] ?? '' ) . '"></figure>'; break;
 			case 'faqs': $html .= apex_faq_html( $b['items'] ?? [] ); break;
 			case 'table': $html .= '<div class="tbl"><table>' . implode( '', array_map( fn( $row, $j ) => '<tr>' . implode( '', array_map( fn( $c ) => $j === 0 ? '<th>' . apex_e( $c ) . '</th>' : '<td>' . apex_e( $c ) . '</td>', $row ) ) . '</tr>', $b['rows'] ?? [], array_keys( $b['rows'] ?? [] ) ) ) . '</table></div>'; break;
 		}
@@ -1119,5 +1128,5 @@ function apex_page_page( array $r ): string {
 function apex_page_notfound( array $r ): string {
 	$E = 'apex_e'; $T = 'apex_t';
 	return '<section class="phead nf"><div class="phead-lines" aria-hidden="true"></div><div class="wrap"><p class="nf-code rv">404</p><h1 class="display-s rv">' . $E( $T( 'notFoundH' ) ) . '</h1><p class="lead rv" style="margin-top:18px">' . $E( $T( 'notFoundP' ) ) . '</p>
-      <div class="nf-links rv"><a class="btn btn-light" href="' . apex_link( 'index.html' ) . '">' . $E( $T( 'goHome' ) ) . '</a><a class="btn btn-ghost" href="' . apex_link( 'services.html' ) . '">' . $E( $T( 'services' ) ) . '</a><a class="btn btn-ghost" href="' . apex_link( 'blog.html' ) . '">' . $E( $T( 'articles' ) ) . '</a><a class="btn btn-ghost" href="' . apex_link( 'contact.html' ) . '">' . $E( $T( 'contact' ) ) . '</a></div></div></section>';
+      <div class="nf-links rv"><a class="btn btn-light" href="' . esc_url( apex_link( 'index.html' ) ) . '">' . $E( $T( 'goHome' ) ) . '</a><a class="btn btn-ghost" href="' . esc_url( apex_link( 'services.html' ) ) . '">' . $E( $T( 'services' ) ) . '</a><a class="btn btn-ghost" href="' . esc_url( apex_link( 'blog.html' ) ) . '">' . $E( $T( 'articles' ) ) . '</a><a class="btn btn-ghost" href="' . esc_url( apex_link( 'contact.html' ) ) . '">' . $E( $T( 'contact' ) ) . '</a></div></div></section>';
 }

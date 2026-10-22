@@ -33,7 +33,8 @@ function apex_route(): array {
 		$r = [ 'page' => 'service', 'params' => [ 'p' => (string) get_post_meta( $o->ID, '_apex_key', true ) ], 'status' => 200, 'id' => $o->ID ];
 	} elseif ( is_singular( 'post' ) && $o ) {
 		$k = (string) get_post_meta( $o->ID, '_apex_key', true );
-		$r = [ 'page' => 'article', 'params' => [ 'p' => $k !== '' ? $k : (string) $o->ID ], 'status' => 200, 'id' => $o->ID ];
+		if ( $k === '' ) $k = apex_ensure_key( $o->ID );
+		$r = [ 'page' => 'article', 'params' => [ 'p' => $k ], 'status' => 200, 'id' => $o->ID ];
 	} elseif ( is_singular( 'apex_episode' ) && $o ) {
 		$r = [ 'page' => 'war', 'params' => [ 'ep' => (string) (int) get_post_meta( $o->ID, 'apex_n', true ) ], 'status' => 200, 'id' => $o->ID ];
 	} elseif ( is_category() && $o ) {
@@ -102,7 +103,7 @@ function apex_wa(): array {
 function apex_langs_html(): string {
 	$L = apex_lang();
 	$o = '';
-	foreach ( [ [ 'en', 'EN' ], [ 'th', 'TH' ] ] as [ $c, $t ] ) $o .= '<a href="' . apex_e( apex_lang_href( $c ) ) . '" hreflang="' . $c . '" lang="' . $c . '" class="' . ( $c === $L ? 'on' : '' ) . '"' . ( $c === $L ? ' aria-current="true"' : '' ) . '>' . $t . '</a>';
+	foreach ( [ [ 'en', 'EN' ], [ 'th', 'TH' ] ] as [ $c, $t ] ) $o .= '<a href="' . esc_url( apex_lang_href( $c ) ) . '" hreflang="' . $c . '" lang="' . $c . '" class="' . ( $c === $L ? 'on' : '' ) . '"' . ( $c === $L ? ' aria-current="true"' : '' ) . '>' . $t . '</a>';
 	return $o;
 }
 function apex_header_html( string $page ): string {
@@ -114,47 +115,47 @@ function apex_header_html( string $page ): string {
 		$cur = $k === $page || ( $k === 'services' && $page === 'service' ) || ( $k === 'articles' && $page === 'article' ) ? ' aria-current="page"' : '';
 		if ( $k === 'services' ) {
 			$items = '';
-			foreach ( $svcs as $s ) $items .= '<a class="mega-svc" href="' . apex_svc_url( $s['key'] ) . '"><span class="ms-ic"><img src="' . apex_img( $s['icon'] ) . '" alt="" loading="lazy" decoding="async" decoding="async"></span><span><b>' . apex_e( $s['short'] ?: $s['name'] ) . '</b><small>' . apex_e( $L === 'en' ? ( $s['name'] !== $s['en'] ? $s['en'] : '' ) : $s['en'] ) . '</small></span></a>';
+			foreach ( $svcs as $s ) $items .= '<a class="mega-svc" href="' . esc_url( apex_svc_url( $s['key'] ) ) . '"><span class="ms-ic"><img src="' . esc_url( apex_img( $s['icon'] ) ) . '" alt="" loading="lazy" decoding="async" decoding="async"></span><span><b>' . apex_e( $s['short'] ?: $s['name'] ) . '</b><small>' . apex_e( $L === 'en' ? ( $s['name'] !== $s['en'] ? $s['en'] : '' ) : $s['en'] ) . '</small></span></a>';
 			$nav .= '<div class="has-mega"><button type="button" aria-expanded="false"' . $cur . '>' . apex_e( apex_t( 'services' ) ) . apex_ic( 'chevron-down' ) . '</button>
           <div class="mega surg" role="menu"><div class="mega-svcs">' . $items . '</div>
           <div class="mega-tools"><h4>' . apex_e( apex_t( 'tools' ) ) . '</h4>
-            <a href="' . apex_link( 'nose.html' ) . '">' . apex_ic( 'scan-face' ) . apex_e( apex_t( 'nose' ) ) . '</a>
-            <a href="' . apex_link( 'analysis.html' ) . '">' . apex_ic( 'scan-line' ) . apex_e( apex_t( 'ana' ) ) . '</a>
-            <a href="' . apex_link( 'proportions.html' ) . '">' . apex_ic( 'gem' ) . apex_e( apex_t( 'prop' ) ) . '</a>
-            <a href="' . apex_link( 'breast-implants.html' ) . '">' . apex_ic( 'ruler' ) . apex_e( apex_t( 'impl' ) ) . '</a>
-            <a href="' . apex_link( 'play.html' ) . '">' . apex_ic( 'sparkles' ) . apex_e( apex_t( 'games' ) ) . '</a>
-            <a href="' . apex_link( 'trip.html' ) . '">' . apex_ic( 'calendar' ) . apex_e( apex_t( 'trip' ) ) . '</a>
-            <a href="' . apex_link( 'doctor.html' ) . '">' . apex_ic( 'stethoscope' ) . apex_e( apex_t( 'doctor' ) ) . '</a></div>
-          <div class="mega-foot"><a class="link-arrow" href="' . apex_link( 'services.html' ) . '">' . apex_e( apex_t( 'allServices' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a></div></div></div>';
+            <a href="' . esc_url( apex_link( 'nose.html' ) ) . '">' . apex_ic( 'scan-face' ) . apex_e( apex_t( 'nose' ) ) . '</a>
+            <a href="' . esc_url( apex_link( 'analysis.html' ) ) . '">' . apex_ic( 'scan-line' ) . apex_e( apex_t( 'ana' ) ) . '</a>
+            <a href="' . esc_url( apex_link( 'proportions.html' ) ) . '">' . apex_ic( 'gem' ) . apex_e( apex_t( 'prop' ) ) . '</a>
+            <a href="' . esc_url( apex_link( 'breast-implants.html' ) ) . '">' . apex_ic( 'ruler' ) . apex_e( apex_t( 'impl' ) ) . '</a>
+            <a href="' . esc_url( apex_link( 'play.html' ) ) . '">' . apex_ic( 'sparkles' ) . apex_e( apex_t( 'games' ) ) . '</a>
+            <a href="' . esc_url( apex_link( 'trip.html' ) ) . '">' . apex_ic( 'calendar' ) . apex_e( apex_t( 'trip' ) ) . '</a>
+            <a href="' . esc_url( apex_link( 'doctor.html' ) ) . '">' . apex_ic( 'stethoscope' ) . apex_e( apex_t( 'doctor' ) ) . '</a></div>
+          <div class="mega-foot"><a class="link-arrow" href="' . esc_url( apex_link( 'services.html' ) ) . '">' . apex_e( apex_t( 'allServices' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a></div></div></div>';
 		} else {
-			$nav .= '<a href="' . apex_link( $h ) . '"' . $cur . '>' . apex_e( apex_t( $k ) ) . '</a>';
+			$nav .= '<a href="' . esc_url( apex_link( $h ) ) . '"' . $cur . '>' . apex_e( apex_t( $k ) ) . '</a>';
 		}
 	}
 	$langs = apex_langs_html();
 	return '<header class="hdr' . ( empty( $S['logo'] ) ? ' no-logo' : '' ) . '"><a class="skip" href="#main">' . apex_e( apex_t( 'skip' ) ) . '</a><div class="hdr-in">
-      <a class="hdr-logo" href="' . apex_link( 'index.html' ) . '" aria-label="Apex Surgery Hospital"><img src="' . apex_img( $S['logo'] ?? '' ) . '" alt="Apex Surgery Hospital" width="150" height="38"><span class="logo-txt" aria-hidden="true">APEX<small>Surgery Hospital</small></span></a>
+      <a class="hdr-logo" href="' . esc_url( apex_link( 'index.html' ) ) . '" aria-label="Apex Surgery Hospital"><img src="' . esc_url( apex_img( $S['logo'] ?? '' ) ) . '" alt="Apex Surgery Hospital" width="150" height="38"><span class="logo-txt" aria-hidden="true">APEX<small>Surgery Hospital</small></span></a>
       <nav class="hdr-nav" aria-label="Main">' . $nav . '</nav>
       <div class="hdr-right"><div class="lang">' . $langs . '</div>
-        <a class="plan-link" href="' . apex_link( 'plan.html' ) . '" aria-label="' . apex_e( apex_t( 'plan' ) ) . '" title="' . apex_e( apex_t( 'plan' ) ) . '">' . apex_ic( 'list' ) . '<span class="plan-n" hidden>0</span></a>
-        <a class="btn btn-plum btn-sm hdr-cta" href="' . apex_link( 'consult.html' ) . '">' . apex_ic( 'message-circle' ) . apex_e( apex_t( 'consult' ) ) . '</a>
+        <a class="plan-link" href="' . esc_url( apex_link( 'plan.html' ) ) . '" aria-label="' . apex_e( apex_t( 'plan' ) ) . '" title="' . apex_e( apex_t( 'plan' ) ) . '">' . apex_ic( 'list' ) . '<span class="plan-n" hidden>0</span></a>
+        <a class="btn btn-plum btn-sm hdr-cta" href="' . esc_url( apex_link( 'consult.html' ) ) . '">' . apex_ic( 'message-circle' ) . apex_e( apex_t( 'consult' ) ) . '</a>
         <button class="burger" type="button" aria-label="' . apex_e( apex_t( 'menu' ) ) . '">' . apex_ic( 'menu' ) . '</button></div></div></header>';
 }
 function apex_sheet_html(): string {
 	$S = apex_data( 'shared' );
 	$subs = '';
-	foreach ( $S['services'] ?? [] as $s ) $subs .= '<a href="' . apex_svc_url( $s['key'] ) . '">' . apex_e( $s['short'] ?: $s['name'] ) . '</a>';
+	foreach ( $S['services'] ?? [] as $s ) $subs .= '<a href="' . esc_url( apex_svc_url( $s['key'] ) ) . '">' . apex_e( $s['short'] ?: $s['name'] ) . '</a>';
 	$nav = '';
 	foreach ( APEX_NAV as [ $h, $k ] ) {
 		$nav .= $k === 'services'
-			? '<details><summary>' . apex_e( apex_t( 'services' ) ) . apex_ic( 'chevron-down' ) . '</summary><div class="sub"><a href="' . apex_link( 'services.html' ) . '">' . apex_e( apex_t( 'allServices' ) ) . '</a>' . $subs . '</div></details>'
-			: '<a href="' . apex_link( $h ) . '">' . apex_e( apex_t( $k ) ) . apex_ic( 'arrow-up-right' ) . '</a>';
+			? '<details><summary>' . apex_e( apex_t( 'services' ) ) . apex_ic( 'chevron-down' ) . '</summary><div class="sub"><a href="' . esc_url( apex_link( 'services.html' ) ) . '">' . apex_e( apex_t( 'allServices' ) ) . '</a>' . $subs . '</div></details>'
+			: '<a href="' . esc_url( apex_link( $h ) ) . '">' . apex_e( apex_t( $k ) ) . apex_ic( 'arrow-up-right' ) . '</a>';
 	}
 	$tools = '';
-	foreach ( [ [ 'nose.html', 'nose' ], [ 'analysis.html', 'ana' ], [ 'proportions.html', 'prop' ], [ 'breast-implants.html', 'impl' ], [ 'play.html', 'games' ], [ 'trip.html', 'trip' ], [ 'plan.html', 'plan' ], [ 'doctor.html', 'doctor' ] ] as [ $h, $k ] ) $tools .= '<a href="' . apex_link( $h ) . '">' . apex_e( apex_t( $k ) ) . '</a>';
+	foreach ( [ [ 'nose.html', 'nose' ], [ 'analysis.html', 'ana' ], [ 'proportions.html', 'prop' ], [ 'breast-implants.html', 'impl' ], [ 'play.html', 'games' ], [ 'trip.html', 'trip' ], [ 'plan.html', 'plan' ], [ 'doctor.html', 'doctor' ] ] as [ $h, $k ] ) $tools .= '<a href="' . esc_url( apex_link( $h ) ) . '">' . apex_e( apex_t( $k ) ) . '</a>';
 	return '<div class="sheet" role="dialog" aria-modal="true" aria-label="' . apex_e( apex_t( 'menu' ) ) . '"><div class="sheet-top"><span class="logo-txt light">APEX<small>Surgery Hospital</small></span><button class="close" aria-label="' . apex_e( apex_t( 'close' ) ) . '">' . apex_ic( 'close' ) . '</button></div>
       <nav>' . $nav . '
       <details><summary>' . apex_e( apex_t( 'tools' ) ) . apex_ic( 'chevron-down' ) . '</summary><div class="sub">' . $tools . '</div></details></nav>
-      <div class="sheet-cta"><a class="btn btn-light" href="' . apex_link( 'consult.html' ) . '">' . apex_ic( 'message-circle' ) . apex_e( apex_t( 'consult' ) ) . '</a>
+      <div class="sheet-cta"><a class="btn btn-light" href="' . esc_url( apex_link( 'consult.html' ) ) . '">' . apex_ic( 'message-circle' ) . apex_e( apex_t( 'consult' ) ) . '</a>
       <div class="lang" style="display:flex;justify-content:center;border-color:rgba(201,179,221,.3)">' . apex_langs_html() . '</div></div></div>';
 }
 function apex_footer_html(): string {
@@ -165,25 +166,25 @@ function apex_footer_html(): string {
 	foreach ( $S['branches'] ?? [] as $b ) {
 		$br .= '<div class="ftr-br"><h2 class="ftr-h">' . apex_e( ( $b['short'] ?? '' ) ?: $b['name'] ) . '</h2><p>' . apex_e( $b['addr'] ?? '' ) . '</p>
       <button type="button" class="ftr-copy" data-copy="' . apex_e( $b['name'] . ', ' . ( $b['addr'] ?? '' ) ) . '">' . apex_ic( 'copy' ) . apex_ic( 'check' ) . '<span>' . apex_e( apex_t( 'copyAddr' ) ) . '</span></button>
-      <a href="' . ( $b['tel'] ?? '' ) . '">' . apex_ic( 'phone' ) . apex_e( $b['phone'] ?? '' ) . '</a><a href="' . ( $b['map'] ?? '' ) . '"' . $ext . '>' . apex_ic( 'navigation' ) . apex_e( apex_t( 'directions' ) ) . '</a></div>';
+      <a href="' . esc_url( ( $b['tel'] ?? '' ) ) . '">' . apex_ic( 'phone' ) . apex_e( $b['phone'] ?? '' ) . '</a><a href="' . esc_url( ( $b['map'] ?? '' ) ) . '"' . $ext . '>' . apex_ic( 'navigation' ) . apex_e( apex_t( 'directions' ) ) . '</a></div>';
 	}
-	$aaci = ! empty( $S['aaci'] ) ? '<a class="ftr-aaci" href="' . $S['aaci']['h'] . '"' . $ext . ' aria-label="' . apex_e( apex_t( 'aaciH' ) ) . '"><img src="' . apex_img( $S['aaci']['src'] ) . '" alt="' . apex_e( $S['aaci']['alt'] ) . '" loading="lazy" decoding="async" width="84" height="84"><span><b>' . apex_e( apex_t( 'aaciH' ) ) . '</b><small>APEX Surgery Hospital Ploenchit</small></span></a>' : '';
+	$aaci = ! empty( $S['aaci'] ) ? '<a class="ftr-aaci" href="' . esc_url( $S['aaci']['h'] ) . '"' . $ext . ' aria-label="' . apex_e( apex_t( 'aaciH' ) ) . '"><img src="' . esc_url( apex_img( $S['aaci']['src'] ) ) . '" alt="' . apex_e( $S['aaci']['alt'] ) . '" loading="lazy" decoding="async" width="84" height="84"><span><b>' . apex_e( apex_t( 'aaciH' ) ) . '</b><small>APEX Surgery Hospital Ploenchit</small></span></a>' : '';
 	$svcs = '';
-	foreach ( $S['services'] ?? [] as $s ) $svcs .= '<a href="' . apex_svc_url( $s['key'] ) . '">' . apex_e( $s['short'] ?: $s['name'] ) . '</a>';
+	foreach ( $S['services'] ?? [] as $s ) $svcs .= '<a href="' . esc_url( apex_svc_url( $s['key'] ) ) . '">' . apex_e( $s['short'] ?: $s['name'] ) . '</a>';
 	$soc = '';
-	foreach ( $S['socials'] ?? [] as $s ) $soc .= '<a href="' . $s['h'] . '"' . $ext . ' aria-label="' . apex_e( ( $s['x'] ?? '' ) ?: $s['k'] ) . '">' . apex_soc_icon( $s['k'] ) . '</a>';
+	foreach ( $S['socials'] ?? [] as $s ) $soc .= '<a href="' . esc_url( $s['h'] ) . '"' . $ext . ' aria-label="' . apex_e( ( $s['x'] ?? '' ) ?: $s['k'] ) . '">' . apex_soc_icon( $s['k'] ) . '</a>';
 	$line = $S['line'] ?? [];
 	$brand = apex_lang() === 'th' ? ( $S['brandTh'] ?? '' ) : ( $S['brand'] ?? '' );
-	$foot_langs = implode( '·', array_map( fn( $x ) => '<a href="' . apex_e( apex_lang_href( $x[0] ) ) . '" hreflang="' . $x[0] . '" style="display:inline;padding:0 6px">' . $x[1] . '</a>', [ [ 'en', 'EN' ], [ 'th', 'TH' ] ] ) );
+	$foot_langs = implode( '·', array_map( fn( $x ) => '<a href="' . esc_url( apex_lang_href( $x[0] ) ) . '" hreflang="' . $x[0] . '" style="display:inline;padding:0 6px">' . $x[1] . '</a>', [ [ 'en', 'EN' ], [ 'th', 'TH' ] ] ) );
 	return '<footer class="ftr"><div class="wrap"><div class="ftr-top surg">
       <div class="brand"><span class="logo-txt light">APEX<small>Surgery Hospital</small></span>
         <p>' . apex_e( $brand ) . '</p>
         <p class="ftr-lic">' . apex_e( $S['license'] ?? '' ) . '</p>' . $aaci . '
-        <div class="ftr-socials">' . $soc . '<a href="' . $WA['h'] . '"' . $ext . ' aria-label="WhatsApp">' . apex_ic( 'whatsapp' ) . '</a></div></div>
-      <div><h2 class="ftr-h">' . apex_e( apex_t( 'ourServices' ) ) . '</h2>' . $svcs . '<a href="' . apex_link( 'nose.html' ) . '">' . apex_e( apex_t( 'nose' ) ) . '</a><a href="' . apex_link( 'analysis.html' ) . '">' . apex_e( apex_t( 'ana' ) ) . '</a><a href="' . apex_link( 'proportions.html' ) . '">' . apex_e( apex_t( 'prop' ) ) . '</a><a href="' . apex_link( 'breast-implants.html' ) . '">' . apex_e( apex_t( 'impl' ) ) . '</a><a href="' . apex_link( 'play.html' ) . '">' . apex_e( apex_t( 'games' ) ) . '</a></div>
+        <div class="ftr-socials">' . $soc . '<a href="' . esc_url( $WA['h'] ) . '"' . $ext . ' aria-label="WhatsApp">' . apex_ic( 'whatsapp' ) . '</a></div></div>
+      <div><h2 class="ftr-h">' . apex_e( apex_t( 'ourServices' ) ) . '</h2>' . $svcs . '<a href="' . esc_url( apex_link( 'nose.html' ) ) . '">' . apex_e( apex_t( 'nose' ) ) . '</a><a href="' . esc_url( apex_link( 'analysis.html' ) ) . '">' . apex_e( apex_t( 'ana' ) ) . '</a><a href="' . esc_url( apex_link( 'proportions.html' ) ) . '">' . apex_e( apex_t( 'prop' ) ) . '</a><a href="' . esc_url( apex_link( 'breast-implants.html' ) ) . '">' . apex_e( apex_t( 'impl' ) ) . '</a><a href="' . esc_url( apex_link( 'play.html' ) ) . '">' . apex_e( apex_t( 'games' ) ) . '</a></div>
       ' . $br . '
-      <div><h2 class="ftr-h">' . apex_e( apex_t( 'contactLine' ) ) . '</h2><a href="' . ( $line['h'] ?? '' ) . '"' . $ext . ' style="padding:0"><img class="qr" src="' . apex_img( $line['qr'] ?? '' ) . '" alt="LINE ' . apex_e( $line['x'] ?? '' ) . '" loading="lazy" decoding="async" decoding="async"></a><p style="margin-top:10px">' . apex_e( $line['x'] ?? '' ) . '</p>
-        <a href="' . $WA['h'] . '"' . $ext . '>' . apex_ic( 'whatsapp' ) . apex_e( $WA['x'] ) . '</a></div>
+      <div><h2 class="ftr-h">' . apex_e( apex_t( 'contactLine' ) ) . '</h2><a href="' . esc_url( ( $line['h'] ?? '' ) ) . '"' . $ext . ' style="padding:0"><img class="qr" src="' . esc_url( apex_img( $line['qr'] ?? '' ) ) . '" alt="LINE ' . apex_e( $line['x'] ?? '' ) . '" loading="lazy" decoding="async" decoding="async"></a><p style="margin-top:10px">' . apex_e( $line['x'] ?? '' ) . '</p>
+        <a href="' . esc_url( $WA['h'] ) . '"' . $ext . '>' . apex_ic( 'whatsapp' ) . apex_e( $WA['x'] ) . '</a></div>
     </div>
     <div class="ftr-word" data-w="APEX" aria-hidden="true"></div>
     ' . ( ! empty( $S['footerNote'] ) ? '<p class="ftr-note">' . apex_e( $S['footerNote'] ) . '</p>' : '' ) . '
@@ -195,9 +196,9 @@ function apex_fab_html(): string {
 	$ph = ( $S['branches'] ?? [] )[0] ?? [ 'phone' => '088-870-0039', 'tel' => 'tel:0888700039' ];
 	$line = $S['line'] ?? [];
 	return '<div class="fab"><div class="fab-list">
-      <a class="wa" href="' . $WA['h'] . '" target="_blank" rel="noopener">' . apex_ic( 'whatsapp' ) . '<span>WhatsApp<small>' . apex_e( apex_t( 'whatsappSub' ) ) . '</small></span></a>
-      <a class="ln" href="' . ( ( $line['h'] ?? '' ) ?: 'https://lin.ee/D2Ir4vJ' ) . '" target="_blank" rel="noopener">' . apex_ic( 'line' ) . '<span>LINE<small>' . apex_e( ( $line['x'] ?? '' ) ?: '@apexsurgery' ) . '</small></span></a>
-      <a class="ph" href="' . $ph['tel'] . '">' . apex_ic( 'phone' ) . '<span>' . apex_e( $ph['phone'] ) . '<small>' . apex_e( $ph['short'] ?? '' ) . '</small></span></a></div>
+      <a class="wa" href="' . esc_url( $WA['h'] ) . '" target="_blank" rel="noopener">' . apex_ic( 'whatsapp' ) . '<span>WhatsApp<small>' . apex_e( apex_t( 'whatsappSub' ) ) . '</small></span></a>
+      <a class="ln" href="' . esc_url( ( ( $line['h'] ?? '' ) ?: 'https://lin.ee/D2Ir4vJ' ) ) . '" target="_blank" rel="noopener">' . apex_ic( 'line' ) . '<span>LINE<small>' . apex_e( ( $line['x'] ?? '' ) ?: '@apexsurgery' ) . '</small></span></a>
+      <a class="ph" href="' . esc_url( $ph['tel'] ) . '">' . apex_ic( 'phone' ) . '<span>' . apex_e( $ph['phone'] ) . '<small>' . apex_e( $ph['short'] ?? '' ) . '</small></span></a></div>
       <button class="fab-btn" type="button" aria-label="' . apex_e( apex_t( 'consult' ) ) . '" aria-expanded="false">' . apex_ic( 'message-circle' ) . '</button></div>';
 }
 
@@ -227,7 +228,11 @@ remove_action( 'wp_body_open', 'wp_global_styles_render_svg_filters' );
 /** What the scripts read before they run: the content objects, links, this page's addresses and settings. */
 function apex_boot_script( array $r ): string {
 	$d = [];
-	foreach ( apex_page_data_ids( $r ) as $id ) { $x = apex_data( $id ); if ( $x !== null ) $d[ $id ] = $x; }
+	foreach ( apex_page_data_ids( $r ) as $id ) {
+		if ( in_array( $id, $GLOBALS['apex_unlocked'] ?? [], true ) ) continue;
+		$x = apex_data( $id );
+		if ( $x !== null ) $d[ $id ] = $x;
+	}
 	$over = [];
 	foreach ( APEX_LANGS as $l ) { $o = get_option( 'apex_wording_' . $l ); if ( is_array( $o ) && ( $o = array_filter( $o, fn( $x ) => $x !== '' ) ) ) $over[ $l ] = $o; }
 	$cfg = [

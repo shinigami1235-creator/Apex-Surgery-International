@@ -20,9 +20,11 @@ add_action( 'init', function () {
 	$cpt( 'apex_branch', 'Branch', 'Branches', $hidden + [ 'menu_icon' => 'dashicons-location', 'supports' => [ 'title', 'page-attributes' ] ] );
 	$cpt( 'apex_doctor', 'Doctor', 'Doctors', $hidden + [ 'menu_icon' => 'dashicons-businessperson', 'supports' => [ 'title', 'page-attributes', 'revisions' ] ] );
 	// enquiries and vouchers hold personal details: no REST, no search, editors and admins only
-	$private = [ 'public' => false, 'show_ui' => true, 'show_in_menu' => true, 'show_in_rest' => false, 'exclude_from_search' => true, 'publicly_queryable' => false, 'rewrite' => false, 'capability_type' => 'post', 'map_meta_cap' => true, 'capabilities' => [ 'create_posts' => 'do_not_allow' ] ];
-	$cpt( 'apex_lead', 'Enquiry', 'Enquiries', $private + [ 'menu_icon' => 'dashicons-email-alt', 'supports' => [ 'title' ], 'menu_position' => 3 ] );
-	$cpt( 'apex_voucher', 'Voucher', 'Vouchers', $private + [ 'menu_icon' => 'dashicons-tickets-alt', 'supports' => [ 'title' ], 'menu_position' => 4 ] );
+	// their own capabilities: administrators and the "Apex staff" role see enquiries and patient photos;
+	// editors (an agency, say) do not. Editors and Apex staff can check vouchers at reception.
+	$private = [ 'public' => false, 'show_ui' => true, 'show_in_menu' => true, 'show_in_rest' => false, 'exclude_from_search' => true, 'publicly_queryable' => false, 'rewrite' => false, 'map_meta_cap' => true, 'capabilities' => [ 'create_posts' => 'do_not_allow' ] ];
+	$cpt( 'apex_lead', 'Enquiry', 'Enquiries', $private + [ 'capability_type' => [ 'apex_lead', 'apex_leads' ], 'menu_icon' => 'dashicons-email-alt', 'supports' => [ 'title' ], 'menu_position' => 3 ] );
+	$cpt( 'apex_voucher', 'Voucher', 'Vouchers', $private + [ 'capability_type' => [ 'apex_voucher', 'apex_vouchers' ], 'menu_icon' => 'dashicons-tickets-alt', 'supports' => [ 'title' ], 'menu_position' => 4 ] );
 
 	// the site has no comments or trackbacks anywhere
 	foreach ( [ 'post', 'page', 'attachment' ] as $t ) { remove_post_type_support( $t, 'comments' ); remove_post_type_support( $t, 'trackbacks' ); }
@@ -30,6 +32,35 @@ add_action( 'init', function () {
 	register_post_meta( '', '_apex_key', [ 'type' => 'string', 'single' => true, 'show_in_rest' => false ] );
 	register_post_meta( 'page', '_apex_page', [ 'type' => 'string', 'single' => true, 'show_in_rest' => false ] );
 } );
+
+/* who may see enquiries and vouchers; set once, again when this list changes */
+function apex_private_caps( string $one, string $many ): array {
+	return [ "edit_$many", "edit_others_$many", "edit_private_$many", "edit_published_$many", "read_private_$many", "delete_$many", "delete_others_$many", "delete_private_$many", "delete_published_$many", "publish_$many" ];
+}
+add_action( 'init', function () {
+	if ( (int) get_option( 'apex_caps_v' ) === 1 ) return;
+	$lead = apex_private_caps( 'apex_lead', 'apex_leads' );
+	$vouch = apex_private_caps( 'apex_voucher', 'apex_vouchers' );
+	if ( $r = get_role( 'administrator' ) ) foreach ( array_merge( $lead, $vouch ) as $c ) $r->add_cap( $c );
+	if ( $r = get_role( 'editor' ) ) foreach ( $vouch as $c ) $r->add_cap( $c );
+	remove_role( 'apex_staff' );
+	add_role( 'apex_staff', 'Apex staff (enquiries and vouchers)', array_fill_keys( array_merge( [ 'read' ], $lead, $vouch ), true ) );
+	update_option( 'apex_caps_v', 1, true );
+}, 20 );
+
+/** An article's key: its slug when that is plain Latin letters, otherwise article-<id>. Made once, kept after. */
+function apex_ensure_key( int $id ): string {
+	$k = (string) get_post_meta( $id, '_apex_key', true );
+	if ( $k !== '' ) return $k;
+	$slug = (string) get_post_field( 'post_name', $id );
+	$k = preg_match( '/^[a-z0-9-]{1,80}$/', $slug ) ? $slug : 'article-' . $id;
+	update_post_meta( $id, '_apex_key', $k );
+	return $k;
+}
+add_action( 'save_post_post', function ( $id, $p ) {
+	if ( wp_is_post_revision( $id ) || wp_is_post_autosave( $id ) || $p->post_status === 'auto-draft' ) return;
+	if ( (string) get_post_meta( $id, '_apex_key', true ) === '' && $p->post_name !== '' ) apex_ensure_key( $id );
+}, 30, 2 );
 
 /* Polylang translates these; enquiries and vouchers stay single-language records */
 add_filter( 'pll_get_post_types', function ( $types, $is_settings ) {

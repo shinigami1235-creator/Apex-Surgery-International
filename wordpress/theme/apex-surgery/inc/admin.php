@@ -52,9 +52,14 @@ add_action( 'wp_dashboard_setup', function () {
 	remove_meta_box( 'dashboard_site_health', 'dashboard', 'normal' );
 } );
 function apex_dashboard(): void {
-	$new = get_posts( [ 'post_type' => 'apex_lead', 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids', 'meta_key' => 'apex_status', 'meta_value' => 'new' ] );
 	$page = fn( $k, $l ) => ( $id = apex_page_id( $k, $l ) ) ? get_edit_post_link( $id ) : '';
-	echo '<p style="font-size:15px"><a href="' . esc_url( admin_url( 'edit.php?post_type=apex_lead' ) ) . '"><b>' . sprintf( esc_html( _n( '%d new enquiry', '%d new enquiries', count( $new ), 'apex' ) ), count( $new ) ) . '</b></a> · <a href="' . esc_url( admin_url( 'edit.php?post_type=apex_voucher&page=apex-voucher-check' ) ) . '">' . esc_html__( 'Check a voucher', 'apex' ) . '</a></p>';
+	$top = [];
+	if ( current_user_can( 'edit_apex_leads' ) ) {
+		$new = get_posts( [ 'post_type' => 'apex_lead', 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids', 'meta_key' => 'apex_status', 'meta_value' => 'new' ] );
+		$top[] = '<a href="' . esc_url( admin_url( 'edit.php?post_type=apex_lead' ) ) . '"><b>' . sprintf( esc_html( _n( '%d new enquiry', '%d new enquiries', count( $new ), 'apex' ) ), count( $new ) ) . '</b></a>';
+	}
+	if ( current_user_can( 'edit_apex_vouchers' ) ) $top[] = '<a href="' . esc_url( admin_url( 'edit.php?post_type=apex_voucher&page=apex-voucher-check' ) ) . '">' . esc_html__( 'Check a voucher', 'apex' ) . '</a>';
+	if ( $top ) echo '<p style="font-size:15px">' . implode( ' · ', $top ) . '</p>';
 	echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'To change', 'apex' ) . '</th><th>English</th><th>ไทย</th></tr></thead><tbody>';
 	$rows = [
 		[ __( 'Home page', 'apex' ), $page( 'home', 'en' ), $page( 'home', 'th' ) ],

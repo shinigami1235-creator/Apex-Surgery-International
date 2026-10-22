@@ -42,15 +42,20 @@ add_filter( 'oembed_response_data', function ( $d ) { unset( $d['author_name'], 
 /* the same message for a wrong name and a wrong password */
 add_filter( 'login_errors', fn() => __( 'The username or password is not right.', 'apex' ) );
 
-/* password guessing: after 8 failures from one connection in 15 minutes, that connection waits */
+/* password guessing: after 8 failures for one username from one connection in 15 minutes, that pair waits.
+   Counting the pair keeps one person behind a shared address from locking out
+   the whole office, and keeps a stranger from locking a staff member out from elsewhere. */
+function apex_login_key( string $username ): string {
+	$ip = function_exists( 'apex_client_ip' ) ? apex_client_ip() : ( $_SERVER['REMOTE_ADDR'] ?? '' );
+	return 'apex_login_' . substr( hash_hmac( 'sha256', $ip . '|' . strtolower( $username ), wp_salt( 'auth' ) ), 0, 20 );
+}
 add_filter( 'authenticate', function ( $user, $username ) {
 	if ( ! $username ) return $user;
-	$k = 'apex_login_' . substr( hash_hmac( 'sha256', $_SERVER['REMOTE_ADDR'] ?? '', wp_salt( 'auth' ) ), 0, 16 );
-	if ( (int) get_transient( $k ) >= 8 ) return new WP_Error( 'apex_locked', __( 'Too many tries. Wait 15 minutes and try again.', 'apex' ) );
+	if ( (int) get_transient( apex_login_key( (string) $username ) ) >= 8 ) return new WP_Error( 'apex_locked', __( 'Too many tries. Wait 15 minutes and try again.', 'apex' ) );
 	return $user;
 }, 30, 2 );
-add_action( 'wp_login_failed', function () {
-	$k = 'apex_login_' . substr( hash_hmac( 'sha256', $_SERVER['REMOTE_ADDR'] ?? '', wp_salt( 'auth' ) ), 0, 16 );
+add_action( 'wp_login_failed', function ( $username ) {
+	$k = apex_login_key( (string) $username );
 	set_transient( $k, (int) get_transient( $k ) + 1, 15 * MINUTE_IN_SECONDS );
 } );
 
