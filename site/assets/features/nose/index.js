@@ -51,7 +51,7 @@ const SAMPLES = {
   front:{src:'https://images.unsplash.com/photo-1589525231707-f2de2428f59c?w=1200&h=1500&fit=crop&crop=faces&q=85',
     crop:[.14, .14, .86, .78],
     h:{N:[.500, .398], D:[.4995, .455], T:[.4985, .507], C:[.4985, .522], AL:[.4335, .511], AR:[.5635, .511]}},
-  '45':{src:'https://images.unsplash.com/photo-1641351841616-faa0d3760980?w=1200&q=85',
+  '45':{src:'https://images.unsplash.com/photo-1641351841616-faa0d3760980?w=1200&q=85', side:-1,
     crop:[.12, .30, .82, .86],
     h:{N:[.462, .517], D:[.466, .553], T:[.472, .592], C:[.477, .611], AL:[.426, .602], AR:[.518, .597]}},
   '90':{src:'https://images.unsplash.com/photo-1736439538470-88b66bd307ce?w=1400&q=85', side:-1,
@@ -79,7 +79,7 @@ const VIEWS = [
 const STR = {
   en:{
     photo:'Photo', take:'Take photo', choose:'Choose photo', sample:'Sample face', privacy:'No photo uploaded.',
-    adjust:'Adjust points', done:'Done', flip:'Flip', manual:'Place points by hand',
+    adjust:'Adjust points', done:'Done', flip:'Flip', faceL:'Facing left', faceR:'Facing right', faceGroup:'Direction', manual:'Place points by hand',
     dragHint:'Drag a point to correct it.', placeHint:'Place the points on your nose.',
     busy:'Finding the nose', credit:'Sample photo: Unsplash', style:'Nose style', amount:'Amount',
     before:'Before', after:'After', sim:'Simulation only', compare:'Before and after',
@@ -95,7 +95,7 @@ const STR = {
   },
   th:{
     photo:'รูปภาพ', take:'ถ่ายรูป', choose:'เลือกรูป', sample:'ใบหน้าตัวอย่าง', privacy:'ไม่มีการอัปโหลดรูปภาพ',
-    adjust:'ปรับจุด', done:'เสร็จ', flip:'กลับด้าน', manual:'วางจุดเอง',
+    adjust:'ปรับจุด', done:'เสร็จ', flip:'กลับด้าน', faceL:'หันซ้าย', faceR:'หันขวา', faceGroup:'ทิศทาง', manual:'วางจุดเอง',
     dragHint:'ลากจุดเพื่อปรับตำแหน่ง', placeHint:'วางจุดให้ตรงกับจมูก',
     busy:'กำลังหาตำแหน่งจมูก', credit:'ภาพตัวอย่าง: Unsplash', style:'ทรงจมูก', amount:'ระดับ',
     before:'ก่อน', after:'หลัง', sim:'ภาพจำลองเท่านั้น', compare:'ก่อนและหลัง',
@@ -125,6 +125,8 @@ const ICON = {
   shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
   move:'<path d="m18 8 4 4-4 4"/><path d="M2 12h20"/><path d="m6 8-4 4 4 4"/>',
   flip:'<path d="m3 7 5-4v8z"/><path d="M8 7h8a5 5 0 0 1 0 10h-3"/>',
+  faceL:'<path d="M15 4c-4 0-6 3-6 6l-3 4h3v3a2 2 0 0 0 2 2h2v2"/><path d="M15 4c3 0 5 2.5 5 6 0 2.5-1 4-2 5v6"/>',
+  faceR:'<path d="M9 4c4 0 6 3 6 6l3 4h-3v3a2 2 0 0 1-2 2h-2v2"/><path d="M9 4c-3 0-5 2.5-5 6 0 2.5 1 4 2 5v6"/>',
   points:'<circle cx="6" cy="6" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="8" cy="18" r="2"/><path d="M7.5 7.5 16.4 11"/><path d="m16.5 13.3-7 3.6"/>',
   alert:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
 };
@@ -290,6 +292,12 @@ const CSS = `
 .np-sec h3 i{font-style:normal;width:22px;height:22px;border-radius:50%;background:var(--np-lilac-1);display:grid;place-items:center;font-size:12px;letter-spacing:0}
 .np-sec>p{margin:0;font-size:15px;color:var(--np-ink-2)}
 .np-src{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.np-face{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin:0 0 10px;border-radius:999px;background:var(--np-lilac-1,#F1EAF7)}
+.np-face[hidden]{display:none}
+.np-fb{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:var(--np-plum,#6A388C);font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;transition:background .2s,color .2s}
+.np-fb .np-i{width:20px;height:20px}
+.np-fb[aria-pressed=true]{background:var(--np-plum,#6A388C);color:#fff;box-shadow:0 8px 18px -10px rgba(106,56,140,.8)}
+.np-fb:focus-visible{outline:3px solid var(--np-lilac,#A886CD);outline-offset:2px}
 .np-src .np-btn{padding:0 10px}
 .np-src .full{grid-column:1/-1}
 .np-priv{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--np-ink-2);margin:0}
@@ -600,10 +608,23 @@ function outlineD(view, h){
   return `M${M(h.N)} L${M(h.D)} L${M(h.T)} M${M(h.AL)} Q${M(V.lerp(h.T, h.C, .6))} ${M(h.AR)} M${M(h.T)} L${M(h.C)}`;
 }
 
-/* placement guide: the sample photo cropped close around the nose, with its hand-placed points */
-function drawGuide(cv, im, sm, view){
+/* mirror a photo and its points left to right. AL and AR swap so each keeps its side of the picture */
+function mirrorCanvas(c){
+  const o = document.createElement('canvas'); o.width = c.width; o.height = c.height;
+  const g = o.getContext('2d'); g.translate(c.width, 0); g.scale(-1, 1); g.drawImage(c, 0, 0); return o;
+}
+function mirrorPoints(h, axis2){
+  const o = {};
+  for (const k in h) o[k === 'AL' ? 'AR' : k === 'AR' ? 'AL' : k] = {x:axis2 - h[k].x, y:h[k].y};
+  return o;
+}
+
+/* placement guide: the sample photo cropped close around the nose, with its hand-placed points.
+   flip draws it facing the other way, the same way the sample face is mirrored */
+function drawGuide(cv, im, sm, view, flip){
   const W = im.naturalWidth || im.width, H = im.naturalHeight || im.height, S = cv.width;
-  const h = {}; for (const k in sm.h) h[k] = {x:sm.h[k][0] * W, y:sm.h[k][1] * H};
+  let h = {}; for (const k in sm.h) h[k] = {x:sm.h[k][0] * W, y:sm.h[k][1] * H};
+  if (flip) { const m = document.createElement('canvas'); m.width = W; m.height = H; const mg = m.getContext('2d'); mg.translate(W, 0); mg.scale(-1, 1); mg.drawImage(im, 0, 0); im = m; h = mirrorPoints(h, W); }
   const xs = Object.values(h).map(p => p.x), ys = Object.values(h).map(p => p.y);
   const size = Math.min(W, H, Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) * 1.8);
   const x0 = clamp((Math.min(...xs) + Math.max(...xs) - size) / 2, 0, W - size), y0 = clamp((Math.min(...ys) + Math.max(...ys) - size) / 2, 0, H - size);
@@ -781,7 +802,9 @@ export function mount(container, opts = {}){
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
   if (!styleRefs++) { styleEl = document.createElement('style'); styleEl.dataset.feature = 'nose'; styleEl.textContent = CSS; document.head.append(styleEl); }
 
+  /* which way the nose points in the picture for the turned views: -1 left, 1 right. Starts at the sample faces' direction */
   const state = {view:'front', preset:PRESETS[0].id, amt:.7, mode:'compare', stream:null, pending:null, planned:false, glow:false,
+    face:{'45':SAMPLES['45'].side || -1, '90':SAMPLES['90'].side || -1},
     views:{front:{}, '45':{}, '90':{}}};
   let pref = null;
   try { pref = JSON.parse(localStorage.getItem('apex.nose') || 'null'); } catch (e) {}
@@ -865,6 +888,10 @@ export function mount(container, opts = {}){
       <div class="np-sec">
         <h3><i>1</i>${esc(S.photo)}</h3>
         <p data-r="hint"></p>
+        <div class="np-face" role="group" aria-label="${esc(S.faceGroup)}" hidden>
+          <button class="np-fb" data-act="face" data-f="-1" aria-pressed="true">${ic('faceL')}${esc(S.faceL)}</button>
+          <button class="np-fb" data-act="face" data-f="1" aria-pressed="false">${ic('faceR')}${esc(S.faceR)}</button>
+        </div>
         <div class="np-src">
           <button class="np-btn pri" data-act="take">${ic('camera')}${esc(S.take)}</button>
           <button class="np-btn ol" data-act="choose">${ic('upload')}${esc(S.choose)}</button>
@@ -1114,7 +1141,11 @@ export function mount(container, opts = {}){
     bar.hidden = !pts;
     cbar.hidden = !(has && !camOn && !v.err && state.mode === 'compare');
     R('bartext').textContent = v.auto === false ? S.placeHint : S.dragHint;
-    $('[data-act="flip"]').hidden = state.view !== '90';
+    $('[data-act="flip"]').hidden = true;
+    const turned = state.view !== 'front';
+    $('.np-face').hidden = !turned;
+    if (turned) $$('.np-fb').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.f === state.face[state.view])));
+    const gsv = cam.querySelector('.np-guide'); if (gsv) gsv.style.transform = turned && state.face[state.view] < 0 ? 'translate(-50%,-50%) scaleX(-1)' : '';
     $('[data-act="adjust"]').hidden = !has;
     R('cap').innerHTML = `<b>${esc(info.name[lang])}</b> · ${esc(preset()[lang])}`;
     const em = v.err && S.err[v.err];
@@ -1135,15 +1166,16 @@ export function mount(container, opts = {}){
   let gdView = null;
   function syncGuide(show){
     gd.hidden = !show; view.classList.toggle('gd', show);
-    if (!show || gdView === state.view) return;
-    const vid = gdView = state.view, sm = SAMPLES[vid];
+    const gk = state.view + (state.view !== 'front' ? state.face[state.view] : '');
+    if (!show || gdView === gk) return;
+    gdView = gk; const vid = state.view, sm = SAMPLES[vid];
     legend.innerHTML = KEYS[vid].map(k => `<li data-k="${k}" style="--c:${PT_COLOR[k]}">${esc(S.pt[k])}</li>`).join('');
     gdCv.hidden = true; gdBody.classList.add('solo');
     if (!sm) return;
     // reuses the sample photo when it is already loaded; without it the legend stands alone
     sampleImage(sm.src).then(im => {
-      if (gdView !== vid) return;
-      drawGuide(gdCv, im, sm, vid);
+      if (gdView !== gk) return;
+      drawGuide(gdCv, im, sm, vid, vid !== 'front' && state.face[vid] !== (sm.side || -1));
       gdCv.hidden = false; gdBody.classList.remove('solo');
     }).catch(() => {});
   }
@@ -1166,12 +1198,14 @@ export function mount(container, opts = {}){
     if (!res || !res.h) {
       if (res && vid === '90') base = canvas; // keep the full frame when the mesh is unreliable
       const data = base.getContext('2d').getImageData(0, 0, base.width, base.height);
-      res = {h:defaultHandles(vid, base.width, base.height, data, res ? res.side : (sample && sample.side) || 1), auto:false};
+      res = {h:defaultHandles(vid, base.width, base.height, data, res && res.side ? res.side : (state.face[vid] || 1)), auto:false};
     }
     setPhoto(v, base, res.h, res.auto, isSample);
   }
   function setPhoto(v, base, h, auto, sample){
     Object.assign(v, {base, h, auto, sample:!!sample, err:null, data:base.getContext('2d').getImageData(0, 0, base.width, base.height)});
+    // on a profile the tip sits ahead of the bridge, which tells which way the photo faces
+    if (state.view === '90' && !sample && h && h.T && h.N && Math.abs(h.T.x - h.N.x) > 1) state.face['90'] = h.T.x < h.N.x ? -1 : 1;
     showPhoto(); setX(50);
     emit('nose:photo', {view:state.view, auto});
     setMode('points');
@@ -1193,7 +1227,12 @@ export function mount(container, opts = {}){
       let im = null;
       try { im = await sampleImage(sm.src); } catch (e) { /* named below */ }
       if (!im) { setBusy(false); Object.assign(v, {base:null, h:null, sample:false, err:'sample'}); emit('nose:error', {view:vid, error:'sample'}); sync(); return; }
-      if (sm.h) { setBusy(false); stopCam(); const c = sampleCrop(toCanvas(im, 2400), sm); setPhoto(v, c.base, c.h, true, true); }
+      if (sm.h) {
+        setBusy(false); stopCam();
+        let c = sampleCrop(toCanvas(im, 2400), sm);
+        if (vid !== 'front' && state.face[vid] !== (sm.side || -1)) c = {base:mirrorCanvas(c.base), h:mirrorPoints(c.h, c.base.width)};
+        setPhoto(v, c.base, c.h, true, true);
+      }
       else await usePhoto(toCanvas(im), sm);
       emit('nose:sample', {view:vid});
     } catch (e) { setBusy(false); Object.assign(v, {base:null, h:null, sample:false, err:'read'}); sync(); }
@@ -1294,6 +1333,19 @@ export function mount(container, opts = {}){
     else if (a === 'done') setMode('compare');
     else if (a === 'adjust') setMode(state.mode === 'points' ? 'compare' : 'points');
     else if (a === 'manual') { const v = cur(), c = state.pending; if (c) { v.err = null; setPhoto(v, c, defaultHandles(state.view, c.width, c.height, c.getContext('2d').getImageData(0, 0, c.width, c.height)), false, state.pendingSample); } else file.click(); }
+    else if (a === 'face') {
+      const vid = state.view, f = +b.dataset.f; if (vid === 'front' || state.face[vid] === f) return;
+      state.face[vid] = f;
+      const v = cur();
+      emit('nose:face', {view:vid, face:f < 0 ? 'left' : 'right'});
+      if (ready(v) && v.sample) { useSample(); return; }
+      if (ready(v)) {
+        const xs = Object.values(v.h).map(p => p.x);
+        v.h = mirrorPoints(v.h, Math.min(...xs) + Math.max(...xs));
+        placePoints(); setMode('points');
+      }
+      sync();
+    }
     else if (a === 'flip') {
       const v = cur(); if (!ready(v)) return;
       const xs = Object.values(v.h).map(p => p.x), mid = (Math.min(...xs) + Math.max(...xs)) / 2;
