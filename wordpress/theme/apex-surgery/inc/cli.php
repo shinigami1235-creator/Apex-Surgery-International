@@ -69,7 +69,8 @@ class Apex_CLI {
 		}
 		// English at the root, Thai under /th/, the language set by the address alone, and the Thai front page at /th/
 		$types = array_values( array_unique( array_merge( (array) PLL()->options->get( 'post_types' ), [ 'apex_service', 'apex_episode', 'apex_offer', 'apex_case', 'apex_branch', 'apex_doctor' ] ) ) );
-		$err = PLL()->options->merge( [ 'default_lang' => 'en', 'force_lang' => 1, 'hide_default' => true, 'rewrite' => true, 'redirect_lang' => true, 'browser' => false, 'media_support' => false, 'post_types' => $types ] );
+		// browser: a first visit to the bare home page goes to /th/ when the browser asks for Thai (the old site was Thai only)
+		$err = PLL()->options->merge( [ 'default_lang' => 'en', 'force_lang' => 1, 'hide_default' => true, 'rewrite' => true, 'redirect_lang' => true, 'browser' => true, 'media_support' => false, 'post_types' => $types ] );
 		if ( $err->has_errors() ) WP_CLI::warning( 'Polylang settings: ' . implode( '; ', $err->get_error_messages() ) );
 		PLL()->options->save();
 		PLL()->model->clean_languages_cache();
@@ -160,7 +161,8 @@ class Apex_CLI {
 			$vals['menu'] = [ 'name' => $m['name'], 'short' => $m['short'], 'en' => $m['en'], 'icon' => $m['icon'], 'nav' => $m['nav'] ];
 			$vals['sections'] = apex_sections_to_markup( $s['sections'] ?? [] );
 			$slug = $l === 'th' ? $this->slug_of( $m['path'] ?? $m['key'] ) : $m['key'];
-			$this->upsert( 'apex_service', $m['key'], $l, [ 'menu_order' => $i ], 'apex_service', $vals, $slug );
+			$id = $this->upsert( 'apex_service', $m['key'], $l, [ 'menu_order' => $i ], 'apex_service', $vals, $slug );
+			if ( $l === 'th' && ! empty( $m['path'] ) ) update_post_meta( $id, '_apex_old', apex_norm_path( $m['path'] ) );   // the live site's address
 		}
 		WP_CLI::log( 'Services: ' . count( $this->made['apex_service'] ?? [] ) );
 	}
@@ -201,6 +203,7 @@ class Apex_CLI {
 				$slug = $l === 'th' ? $this->slug_of( $p['path'] ) : $p['key'];
 				$id = $this->upsert( 'post', $p['key'], $l, [ 'post_date' => $date, 'post_date_gmt' => get_gmt_from_date( $date ), 'post_category' => [ $cat ] ], 'post', $vals, $slug );
 				wp_set_post_categories( $id, [ $cat ] );
+				if ( $l === 'th' && ! empty( $p['path'] ) ) update_post_meta( $id, '_apex_old', apex_norm_path( $p['path'] ) );
 			}
 		}
 		$this->link_terms();
@@ -269,7 +272,9 @@ class Apex_CLI {
 				if ( $m ) { $vals['title'] = $vals['title'] ?? $m[0]; $vals['desc'] = $vals['desc'] ?? $m[1]; }
 				$title = $key === 'home' ? 'Apex Surgery Hospital' : apex_with_lang( $l, fn() => apex_t( $i18n_title[ $key ] ?? $key ) );
 				$slug = $key === 'home' ? 'home' : ( $l === 'th' ? $th_slug : $en_slug );
-				$this->upsert( 'page', $key, $l, [ 'post_title' => $title, 'menu_order' => $order ], 'page:' . $key, $vals, $slug );
+				$id = $this->upsert( 'page', $key, $l, [ 'post_title' => $title, 'menu_order' => $order ], 'page:' . $key, $vals, $slug );
+				// the live Thai site had these pages at the root
+				if ( $l === 'th' && in_array( $th_slug, [ 'about-us', 'surgery', 'reviews', 'blogs', 'promotions', 'contact-us' ], true ) ) update_post_meta( $id, '_apex_old', $th_slug );
 			}
 		}
 		$home = $this->made['page']['home']['en'] ?? 0;

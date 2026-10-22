@@ -1,0 +1,49 @@
+# A local copy of the new site for testing before it goes live.
+#   cd wordpress/docker && docker compose up -d
+#   docker compose run --rm cli bash /setup.sh      (first time only: installs WordPress, Polylang, the theme and the content)
+#   open http://localhost:8080 and http://localhost:8080/wp-admin
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: apex
+      MARIADB_USER: apex
+      MARIADB_PASSWORD: ${DB_PASSWORD:-change-me-local-only}
+      MARIADB_RANDOM_ROOT_PASSWORD: "1"
+    volumes:
+      - db:/var/lib/mysql
+  wordpress:
+    image: wordpress:6.8-php8.3-apache
+    restart: unless-stopped
+    depends_on: [db]
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: apex
+      WORDPRESS_DB_USER: apex
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD:-change-me-local-only}
+      WORDPRESS_CONFIG_EXTRA: |
+        define( 'DISALLOW_FILE_EDIT', true );
+        define( 'APEX_MEDIA_BASE', 'https://www.apexsurgeryhospital.com/' );
+    volumes:
+      - wp:/var/www/html
+      - ../theme/apex-surgery:/var/www/html/wp-content/themes/apex-surgery
+  cli:
+    image: wordpress:cli-php8.3
+    profiles: [tools]
+    depends_on: [db, wordpress]
+    user: "33:33"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: apex
+      WORDPRESS_DB_USER: apex
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD:-change-me-local-only}
+    volumes:
+      - wp:/var/www/html
+      - ../theme/apex-surgery:/var/www/html/wp-content/themes/apex-surgery
+      - ./setup.sh:/setup.sh:ro
+volumes:
+  db:
+  wp:

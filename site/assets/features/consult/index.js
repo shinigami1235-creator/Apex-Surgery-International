@@ -1,7 +1,8 @@
 /* Online consultation form.
-   mount(container, {lang, base, serviceUrl, onEvent}) -> {destroy()}
-   With no backend yet, a valid form shows a summary with WhatsApp and LINE buttons and emits consult:submit.
-   Photos are previewed in the page and kept out of the payload until send() posts to a real endpoint. */
+   mount(container, {lang, base, serviceUrl, onEvent, endpoint, turnstile}) -> {destroy()}
+   With an endpoint (the WordPress theme passes /wp-json/apex/v1/consult) the enquiry and photos are posted
+   there and the client sees a reference number. Without one (the design preview) a valid form shows a
+   summary with WhatsApp and LINE buttons. Either way it emits consult:submit. */
 
 import * as store from '../plan/store.js';
 import { PROC_KEYS, BRANCHES, BRANCH_KEYS, t, procName } from '../plan/procedures.js';
@@ -25,6 +26,20 @@ const LINE_OA = '@apexsurgery';
    ------------------------------------------------------------------------------------------ */
 export async function send(payload) {
   return { sent: false, preview: true, fields: payload.fields };
+}
+
+/* Posts the enquiry to the clinic's endpoint as multipart form data: the fields as JSON in "enquiry",
+   each photo as photo_<view>, the hidden trap field and, when the site uses it, the Turnstile token. */
+export async function post(endpoint, payload, extra = {}) {
+  const fd = new FormData();
+  fd.append('enquiry', JSON.stringify(payload.fields));
+  payload.photos.forEach(p => fd.append('photo_' + p.view, p.file, p.file.name || p.view + '.jpg'));
+  Object.entries(extra).forEach(([k, v]) => { if (v != null) fd.append(k, v); });
+  const r = await fetch(endpoint, { method: 'POST', body: fd, credentials: 'same-origin' });
+  let j = {};
+  try { j = await r.json(); } catch (e) { /* not JSON */ }
+  if (!r.ok || !j.ok) throw new Error((j && j.message) || 'HTTP ' + r.status);
+  return { sent: true, ref: j.ref };
 }
 
 const T = {
@@ -58,6 +73,11 @@ const T = {
   photos: { en: 'Photos', th: 'รูปถ่าย' },
   photosHint: { en: 'Take each photo in daylight with your hair pulled back.', th: 'ถ่ายในที่แสงธรรมชาติและรวบผมให้เห็นใบหน้า' },
   photoNote: { en: 'Photos are sent once the clinic system is connected.', th: 'รูปถ่ายจะถูกส่งเมื่อเชื่อมต่อระบบของคลินิกแล้ว' },
+  photoNoteLive: { en: 'Your photos go to the surgery team with the enquiry. Only staff can open them.', th: 'รูปถ่ายจะส่งถึงทีมศัลยแพทย์พร้อมคำถาม และมีแค่เจ้าหน้าที่ที่เปิดดูได้' },
+  sentH: { en: 'Enquiry sent', th: 'ส่งคำถามแล้ว' },
+  sentP: { en: 'Reference {ref}. The surgery team will contact you by {m}.', th: 'เลขอ้างอิง {ref} ทีมศัลยแพทย์จะติดต่อกลับทาง {m}' },
+  sentMore: { en: 'Want an answer sooner? Message us now.', th: 'อยากได้คำตอบเร็วขึ้น ทักหาเราได้เลย' },
+  sendFail: { en: 'The enquiry could not be sent. Send this summary on WhatsApp or LINE instead.', th: 'ส่งคำถามไม่สำเร็จ ส่งสรุปนี้ทาง WhatsApp หรือ LINE แทนได้' },
   front: { en: 'Front', th: 'ด้านหน้า' },
   angle: { en: '45 degrees', th: 'มุม 45 องศา' },
   profile: { en: 'Profile', th: 'ด้านข้าง' },
@@ -105,6 +125,10 @@ const CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 const UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4"/><path d="m7 9 5-5 5 5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>';
 
 const CSS = `
+.apxc .c-trap{position:absolute!important;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}
+.apxc .c-ts{margin:6px 0 14px;min-height:65px}
+.apxc .c-fail{color:var(--c-err);font-weight:700}
+.apxc .c-more{margin:18px 0 0;font-weight:700}
 .apxc{--c-plum:var(--plum,#6A388C);--c-plum7:var(--plum-700,#55286F);--c-night:var(--night,#1F0A30);--c-night2:var(--night-2,#2A0F40);
   --c-lilac:var(--lilac,#A886CD);--c-l3:var(--lilac-300,#C9B3DD);--c-l2:var(--lilac-200,#E4D8EE);--c-l1:var(--lilac-100,#F1EAF7);--c-wash:var(--wash,#FBF3FB);
   --c-ink:var(--ink,#2A1F33);--c-ink2:var(--ink-2,#5A4A66);--c-on:var(--on-night,#F6EEFB);--c-on2:var(--on-night-2,#CDB9DD);--c-rose:#CC3366;--c-err:#9E2050;
@@ -381,15 +405,29 @@ export function mount(container, opts = {}) {
     h('legend', null, L(T.photos)),
     h('span', { class: 'c-hint', id: id('h-ph') }, L(T.photosHint)),
     h('div', { class: 'c-photos' }, slots),
-    h('p', { class: 'c-note', id: id('n-ph') }, L(T.photoNote)));
+    h('p', { class: 'c-note', id: id('n-ph') }, L(opts.endpoint ? T.photoNoteLive : T.photoNote)));
 
   const consent = h('input', { type: 'checkbox', id: id('consent'), name: 'consent', 'aria-describedby': id('e-consent') });
   const fConsent = h('div', { class: 'c-f' }, h('label', { class: 'c-consent', for: id('consent') }, consent, h('span', null, L(T.consent), req())), err('consent'));
 
   const summary = h('div', { class: 'c-sum', hidden: true, tabindex: '-1', role: 'alert' });
   const submit = h('button', { type: 'submit', class: 'c-btn rose c-submit' }, L(T.submit));
-  const form = h('form', { novalidate: true }, fProc, fBranch, fDates, fWho, fMethod, fQ, fPhotos, fConsent, summary, submit);
+  // a field people never see: bots fill it in, and the server drops what they send
+  const trap = h('input', { type: 'text', name: 'website', tabindex: '-1', autocomplete: 'off' });
+  const trapBox = h('div', { class: 'c-trap', 'aria-hidden': 'true' }, h('label', null, 'Website', trap));
+  // Cloudflare Turnstile, only when the site has a key; its script loads when the visitor starts the form
+  const tsBox = opts.endpoint && opts.turnstile ? h('div', { class: 'c-ts' }) : null;
+  let tsId = null;
+  const form = h('form', { novalidate: true }, fProc, fBranch, fDates, fWho, fMethod, fQ, fPhotos, fConsent, trapBox, tsBox, summary, submit);
   wrap.append(form);
+  if (tsBox) form.addEventListener('focusin', () => {
+    const cb = 'apxTs' + uid;
+    window[cb] = () => { try { tsId = window.turnstile.render(tsBox, { sitekey: opts.turnstile, size: 'flexible', language: lang }); } catch (e) { /* the server decides */ } };
+    const sc = document.createElement('script');
+    sc.src = `https://challenges.cloudflare.com/turnstile/v0/api.js?onload=${cb}&render=explicit`;
+    sc.async = true;
+    document.head.append(sc);
+  }, { once: true });
 
   /* ----- validation ----- */
   const ERRKEYS = {};
@@ -456,10 +494,15 @@ export function mount(container, opts = {}) {
     };
     submit.disabled = true; submit.textContent = L(T.sending);
     let res;
-    try { res = await send(payload); } catch (er) { res = { sent: false, error: String(er && er.message || er) }; }
+    try {
+      res = opts.endpoint
+        ? await post(opts.endpoint, { fields: { ...payload.fields, consentText: L(T.consent) }, photos: payload.photos },
+          { website: trap.value, 'cf-turnstile-response': tsId != null && window.turnstile ? window.turnstile.getResponse(tsId) : null })
+        : await send(payload);
+    } catch (er) { res = { sent: false, failed: true, error: String(er && er.message || er) }; }
     submit.disabled = false; submit.textContent = L(T.submit);
     emit('consult:submit', { ...payload.fields, consent: true, sent: !!(res && res.sent) });
-    showDone(v);
+    showDone(v, res || {});
   });
 
   function summaryText(v) {
@@ -475,7 +518,7 @@ export function mount(container, opts = {}) {
   }
 
   let done = null;
-  function showDone(v) {
+  function showDone(v, res = {}) {
     const txt = summaryText(v);
     const pv = VIEWS.filter(x => photos[x]);
     const rows = [
@@ -488,13 +531,16 @@ export function mount(container, opts = {}) {
       [L(T.photoCount), pv.length ? pv.map(x => L(T[x])).join(', ') : L(T.none)]
     ].filter(Boolean);
     done = h('section', { class: 'c-done', tabindex: '-1', 'aria-labelledby': id('dh') },
-      h('div', { class: 'c-done-h' }, h('h3', { id: id('dh') }, L(T.doneH)), h('p', null, L(T.doneP))),
+      res.sent
+        ? h('div', { class: 'c-done-h' }, h('h3', { id: id('dh') }, L(T.sentH)), h('p', null, L(T.sentP).replace('{ref}', res.ref || '').replace('{m}', L(METHOD[v.method].short))))
+        : h('div', { class: 'c-done-h' }, h('h3', { id: id('dh') }, L(T.doneH)), h('p', { class: res.failed ? 'c-fail' : null }, L(res.failed ? T.sendFail : T.doneP))),
       h('dl', null, rows.map(r => [h('dt', null, r[0]), h('dd', null, r[1])])),
       pv.length ? h('div', { class: 'c-thumbs' }, pv.map(x => h('img', { src: photos[x].url, alt: L(T[x]) }))) : null,
+      res.sent ? h('p', { class: 'c-more' }, L(T.sentMore)) : null,
       h('div', { class: 'c-acts' },
         h('a', { class: 'c-btn wa', 'data-act': 'wa', target: '_blank', rel: 'noopener', href: `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(txt)}`, html: ICON.wa + `<span>${L(T.sendWa)}</span>` }),
         h('a', { class: 'c-btn line', 'data-act': 'line', target: '_blank', rel: 'noopener', href: `https://line.me/R/oaMessage/${LINE_OA}/?${encodeURIComponent(txt)}`, html: ICON.line + `<span>${L(T.sendLine)}</span>` }),
-        h('button', { type: 'button', class: 'c-btn ghost', 'data-act': 'edit', onclick: () => { done.remove(); done = null; form.hidden = false; iName.focus(); } }, L(T.edit))));
+        res.sent ? null : h('button', { type: 'button', class: 'c-btn ghost', 'data-act': 'edit', onclick: () => { done.remove(); done = null; form.hidden = false; iName.focus(); } }, L(T.edit))));
     done.querySelectorAll('a[data-act]').forEach(a => a.addEventListener('click', () => emit('consult:send', { channel: a.dataset.act })));
     form.hidden = true;
     wrap.append(done);

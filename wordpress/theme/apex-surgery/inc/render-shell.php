@@ -241,6 +241,10 @@ function apex_boot_script( array $r ): string {
 		'rest' => esc_url_raw( rest_url( 'apex/v1/' ) ),
 		'turnstile' => (string) get_option( 'apex_turnstile_site', '' ),
 	];
+	if ( $r['page'] === 'play' ) {
+		$cfg['games'] = apex_game_config();
+		$cfg['voucherCheck'] = admin_url( 'edit.php?post_type=apex_voucher&page=apex-voucher-check&code=' );
+	}
 	$j = fn( $x ) => wp_json_encode( $x, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP );
 	return 'window.APEX=window.APEX||{};APEX._d=Object.assign(APEX._d||{},' . $j( (object) $d ) . ');Object.assign(APEX,' . $j( $cfg ) . ');'
 		. ( $over ? 'APEX.I18N_OVER=' . $j( $over ) . ';' : '' ) . 'window.APEX_V=' . $j( apex_ver() ) . ';';
@@ -285,6 +289,9 @@ function apex_render(): void {
 <?php if ( defined( 'APEX_THREE_URL' ) ) : ?><script type="importmap"><?php echo wp_json_encode( [ 'imports' => [ 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js' => APEX_THREE_URL ] ], JSON_UNESCAPED_SLASHES ); ?></script>
 <?php endif; ?>
 <?php wp_head(); ?>
+<?php if ( is_admin_bar_showing() ) : ?><style>/* the WordPress toolbar for logged-in editors sits above the floating header */
+.hdr{top:46px}.sheet{top:32px}@media (max-width:782px){.hdr{top:56px}.sheet{top:46px}}@media (max-width:600px){#wpadminbar{position:fixed}}</style>
+<?php endif; ?>
 </head>
 <body data-page="<?php echo esc_attr( $r['page'] ); ?>" data-ssr>
 <?php wp_body_open(); ?>

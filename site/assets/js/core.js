@@ -96,7 +96,7 @@
     try {
       const m = await import(A.vurl(A.assets + 'features/' + name + '/index.js'));
       el.innerHTML = ''; el.classList.add('feat-on');
-      return m.mount(el, A.featureOpts(extra));
+      return m.mount(el, A.featureOpts(Object.assign(A.liveOpts(name), extra)));
     } catch (e) {
       console.warn('[apex] feature', name, e);
       el.classList.add('feat-off');
@@ -104,6 +104,9 @@
       return null;
     }
   };
+  /* WordPress: the consultation posts to the site, and game vouchers are recorded for reception */
+  A.liveOpts = name => !A.rest ? {} : name === 'consult' ? {endpoint:A.rest + 'consult', turnstile:A.turnstile || ''}
+    : name === 'games' ? {voucherEndpoint:A.rest + 'voucher', checkUrl:A.voucherCheck || '', config:A.games || null} : {};
   /* mount only once the host is near the viewport */
   A.mountLazy = (el, name, extra={}) => {
     if (typeof el === 'string') el = A.qs(el);

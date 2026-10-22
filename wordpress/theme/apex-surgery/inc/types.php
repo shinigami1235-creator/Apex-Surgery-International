@@ -24,6 +24,9 @@ add_action( 'init', function () {
 	$cpt( 'apex_lead', 'Enquiry', 'Enquiries', $private + [ 'menu_icon' => 'dashicons-email-alt', 'supports' => [ 'title' ], 'menu_position' => 3 ] );
 	$cpt( 'apex_voucher', 'Voucher', 'Vouchers', $private + [ 'menu_icon' => 'dashicons-tickets-alt', 'supports' => [ 'title' ], 'menu_position' => 4 ] );
 
+	// the site has no comments or trackbacks anywhere
+	foreach ( [ 'post', 'page', 'attachment' ] as $t ) { remove_post_type_support( $t, 'comments' ); remove_post_type_support( $t, 'trackbacks' ); }
+
 	register_post_meta( '', '_apex_key', [ 'type' => 'string', 'single' => true, 'show_in_rest' => false ] );
 	register_post_meta( 'page', '_apex_page', [ 'type' => 'string', 'single' => true, 'show_in_rest' => false ] );
 } );
@@ -82,6 +85,15 @@ add_filter( 'request', function ( $qv ) {
 		$type = $qv['post_type'] ?? 'post';
 		if ( is_array( $type ) || ! in_array( $type, APEX_SHARED_SLUG_TYPES, true ) ) return $qv;
 		$ids = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_name = %s AND post_type = %s AND post_status = 'publish'", sanitize_title( rawurldecode( $qv['name'] ) ), $type ) );
+		// an article address names its category too: only posts filed under it count, so /review/smas/
+		// (the old Thai address) does not open the English article that shares the slug
+		if ( count( $ids ) > 1 && ! empty( $qv['category_name'] ) ) {
+			$cat = basename( (string) $qv['category_name'] );
+			$in = array_values( array_filter( $ids, fn( $id ) => has_term( $cat, 'category', (int) $id ) ) );
+			if ( ! $in ) return [ 'error' => '404' ];                  // the slug exists, but not under this category
+			if ( count( $in ) === 1 ) { $qv['p'] = (int) $in[0]; $qv['post_type'] = $type; unset( $qv['name'], $qv['category_name'] ); return $qv; }
+			$ids = $in;
+		}
 		if ( count( $ids ) > 1 && ( $id = $pick( $ids ) ) ) { $qv['p'] = $id; $qv['post_type'] = $type; unset( $qv['name'], $qv['category_name'] ); }
 	}
 	return $qv;

@@ -1,5 +1,8 @@
 /* Apex games hub: games grid, daily tries, play flow, results, prize claim and vouchers.
-   mount(container, {lang, base, serviceUrl, onEvent}) -> {destroy()} */
+   mount(container, {lang, base, serviceUrl, onEvent, config, voucherEndpoint, checkUrl}) -> {destroy()}
+   config: prize scores and names set by the clinic ({days, games:{id:[s1,s2,s3]}, prizes:[{en,th}x3]}).
+   voucherEndpoint: where a claimed voucher is recorded, so reception can check it is real.
+   checkUrl: the QR code opens this address with the code on the end (the reception check page). */
 import { css, h, tx, fmt, store, bkkDay, bkkMonth, msToBkkMidnight, makeRng, newSeed, sfx, music, reduced, pop, GRAIN, LATTICE, SILK } from './framework.js';
 import { GAMES, GAME_IDS, DAILY_TRIES, LEARN_BONUS_TRIES, LEARN_SET_SIZE, VOUCHER_DAYS, CODE_PREFIX, tierFor, nextTier } from './config.js';
 import { mountLearn } from './learn.js';
@@ -520,7 +523,23 @@ const RING = '<svg viewBox="0 0 150 150" aria-hidden="true"><defs><linearGradien
 /* =====================================================================
    mount
    ===================================================================== */
+/* the clinic's own scores and prizes replace the shipped ones */
+function applyConfig(c) {
+  if (!c || typeof c !== 'object') return;
+  const prizes = Array.isArray(c.prizes) ? c.prizes : [];
+  Object.keys(GAMES).forEach(id => {
+    const s = c.games && c.games[id];
+    GAMES[id].tiers = GAMES[id].tiers.map((t, i) => ({
+      score: s && +s[i] > 0 ? +s[i] : t.score,
+      prize: prizes[i] && (prizes[i].en || prizes[i].th) ? { en: prizes[i].en || prizes[i].th, th: prizes[i].th || prizes[i].en } : t.prize
+    }));
+  });
+  if (+c.days > 0) voucherDays = +c.days;
+}
+let voucherDays = VOUCHER_DAYS;
+
 export function mount(container, opts = {}) {
+  applyConfig(opts.config);
   const lang = opts.lang === 'th' ? 'th' : 'en';
   const onEvent = typeof opts.onEvent === 'function' ? opts.onEvent : () => {};
   const L = o => tx(o, lang);
@@ -947,7 +966,7 @@ export function mount(container, opts = {}) {
     const acts = h('div', { class: 'g-acts' });
     if (tier && scored) {
       if (claimedV) acts.append(btn('plum block', L(T.showVoucher), () => showVoucherStep(o, claimedV, run), { 'data-act': 'show-voucher' }));
-      else acts.append(btn('rose block', L(T.claim), () => claimSignIn(o, run, tier), { 'data-act': 'claim' }));
+      else acts.append(btn('rose block', L(T.claim), () => (opts.voucherEndpoint ? claimDetails(o, run, tier) : claimSignIn(o, run, tier)), { 'data-act': 'claim' }));
     }
     const left = triesLeft();
     const againMode = scored && left > 0 ? 'scored' : 'practice';
@@ -1018,11 +1037,18 @@ export function mount(container, opts = {}) {
       const now = Date.now();
       const v = {
         code: makeCode(taken), game: run.id, prize: tier.prize, tier: tier.index, score: run.score, level: run.level,
-        name: nameIn.value.trim().slice(0, 60), issued: now, expires: now + VOUCHER_DAYS * 86400e3, seed: run.seed,
+        name: nameIn.value.trim().slice(0, 60), issued: now, expires: now + voucherDays * 86400e3, seed: run.seed,
         run: { durationMs: run.durationMs, inputs: run.inputs, logLength: run.log.length },
-        consent: true, remind: remind.checked ? { channel: 'line', when: f ? f.value : 'reset' } : null, preview: true
+        consent: true, remind: remind.checked ? { channel: 'line', when: f ? f.value : 'reset' } : null, preview: !opts.voucherEndpoint
       };
       const all = vouchers(); all.push(v); store.set(K.vouchers, all);
+      if (opts.voucherEndpoint) {
+        // recorded on the clinic's site so reception can see it is real; the voucher works on the phone either way
+        fetch(opts.voucherEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
+          body: JSON.stringify({ code: v.code, game: v.game, tier: v.tier, score: v.score, name: v.name, lang, run: v.run }) })
+          .then(r => r.ok ? r.json() : null).then(j => { if (j && j.ok) { const a = vouchers(); const x = a.find(y => y.code === v.code); if (x) { x.registered = true; delete x.preview; store.set(K.vouchers, a); } } })
+          .catch(() => { /* offline: reception checks the screen */ });
+      }
       onEvent('games:voucher', { code: v.code, game: v.game, score: v.score, prize: v.prize, remind: v.remind });
       sfx.play('prize');
       showVoucherStep(o, v, run);
@@ -1034,7 +1060,7 @@ export function mount(container, opts = {}) {
       h('label', { class: 'g-check' }, consent, h('span', null, L(T.consent))),
       h('label', { class: 'g-check opt' }, remind, h('span', null, L(T.remind))),
       freq,
-      h('div', { class: 'g-acts' }, create, btn('ghost block', L(T.cancel), () => claimSignIn(o, run, tier))));
+      h('div', { class: 'g-acts' }, create, btn('ghost block', L(T.cancel), () => (opts.voucherEndpoint ? showResult(o, run, { newBest: false }) : claimSignIn(o, run, tier)))));
     p.append(sheet);
     nameIn.focus({ preventScroll: true });
   }
@@ -1042,9 +1068,9 @@ export function mount(container, opts = {}) {
   function voucherCard(v) {
     const qr = h('div', { class: 'g-vc-qr', 'aria-hidden': 'true' });
     const err = h('p', { class: 'g-err', hidden: true }, L(T.qrFail));
-    loadQR().then(() => { qr.innerHTML = qrSVG(qrMatrix(v.code)); }).catch(() => { qr.hidden = true; err.hidden = false; });
+    loadQR().then(() => { qr.innerHTML = qrSVG(qrMatrix(opts.checkUrl ? opts.checkUrl + encodeURIComponent(v.code) : v.code)); }).catch(() => { qr.hidden = true; err.hidden = false; });
     const card = h('div', { class: 'g-vc', 'data-code': v.code },
-      h('span', { class: 'g-vc-tag' }, L(T.previewTag)),
+      v.preview ? h('span', { class: 'g-vc-tag' }, L(T.previewTag)) : null,
       h('div', { class: 'g-vc-top' },
         h('small', null, L(T.hospital)),
         h('div', { class: 'g-vc-label' }, L(T.voucher)),
@@ -1104,7 +1130,7 @@ export function mount(container, opts = {}) {
   async function voucherPNG(v) {
     try { await document.fonts.ready; } catch (e) {}
     let m = null;
-    try { await loadQR(); m = qrMatrix(v.code); } catch (e) {}
+    try { await loadQR(); m = qrMatrix(opts.checkUrl ? opts.checkUrl + encodeURIComponent(v.code) : v.code); } catch (e) {}
     const W = 1080, H = 1500, c = document.createElement('canvas');
     c.width = W; c.height = H;
     const x = c.getContext('2d');
@@ -1138,9 +1164,11 @@ export function mount(container, opts = {}) {
     x.restore();
     x.save(); rr(M, M, CW, CH, 56); x.lineWidth = 3; x.strokeStyle = '#E4D8EE'; x.stroke(); x.restore();
     x.font = F(800, 30);
-    const tag = L(T.previewTag), tw = x.measureText(tag).width + 44;
-    x.fillStyle = '#CC3366'; rr(M + CW - tw - 40, M + 40, tw, 52, 26); x.fill();
-    x.fillStyle = '#fff'; x.textBaseline = 'middle'; x.fillText(tag, M + CW - tw - 18, M + 67);
+    if (v.preview) {
+      const tag = L(T.previewTag), tw = x.measureText(tag).width + 44;
+      x.fillStyle = '#CC3366'; rr(M + CW - tw - 40, M + 40, tw, 52, 26); x.fill();
+      x.fillStyle = '#fff'; x.textBaseline = 'middle'; x.fillText(tag, M + CW - tw - 18, M + 67);
+    }
     x.textBaseline = 'alphabetic';
     const P = M + 64;
     x.fillStyle = '#CDB9DD'; x.font = F(700, 32); x.fillText(L(T.hospital), P, M + 140);
