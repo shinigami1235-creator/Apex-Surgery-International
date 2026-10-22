@@ -659,6 +659,15 @@ export function mount(container, opts = {}){
     const renderer = new THREE.WebGLRenderer({ antialias: dpr < 1.5 && !coarse, alpha: true, powerPreference: 'high-performance' });
     renderer.setClearColor(0x000000, 0);
     renderer.setPixelRatio(pix);
+    /* "still" mode: on a computer with no graphics chip (software drawing, as in Google's PageSpeed test) or a
+       device too slow to animate, the model is drawn only while something moves or is touched, and it does not spin */
+    let still = false;
+    try {
+      const g = renderer.getContext(), ext = g.getExtension('WEBGL_debug_renderer_info');
+      const name = ext ? String(g.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : '';
+      still = /swiftshader|llvmpipe|softpipe|software|basic render/i.test(name);
+    } catch (e) { /* renderer name unavailable */ }
+    if (still) { pix = 1; renderer.setPixelRatio(1); }
     stage.prepend(renderer.domElement);
     loadEl.classList.add('done');
 
@@ -1085,7 +1094,7 @@ export function mount(container, opts = {}){
     function kick(){ if (!raf && visible && !document.hidden && !destroyed) { last = performance.now(); raf = requestAnimationFrame(frame); } }
 
     const v3 = new THREE.Vector3();
-    let slowN = 0, slowT = 0, odd = false;
+    let slowN = 0, slowT = 0, odd = false, drawnOnce = false;
     function frame(now){
       raf = 0;
       if (destroyed || !visible || document.hidden) return;
@@ -1094,7 +1103,14 @@ export function mount(container, opts = {}){
       if (gap < 200) { slowT += gap; slowN++; }
       if (slowN >= 45) {
         if (slowT / slowN > 28 && pix > 1) { pix = Math.max(1, pix - .25); renderer.setPixelRatio(pix); renderer.setSize(W, H, false); U.uPix.value = pix; }
+        else if (slowT / slowN > 45 && pix <= 1) still = true;   // already at the lowest density and still slow
         slowN = 0; slowT = 0;
+      }
+      if (still) {
+        autoSpin = false; introT = 1; U.uIntro.value = 1; gU.uIntro.value = 1;
+        let fading = false; for (const n in fades) { const o = fades[n]; if (now - o.t0 < (o.dur || 900) + 50) fading = true; }
+        const moving = drag || now - tw0 < twDur + 80 || fading || now - lastUser < 700 || Math.abs(dragAz - dragAzS) > .002 || Math.abs(dragEl - dragElS) > .002;
+        if (!moving && drawnOnce) { last = now; raf = requestAnimationFrame(frame); return; }
       }
       /* while nothing is being touched or moved, every second frame is skipped */
       const idle = !drag && now - lastUser > 1500 && now - tw0 > twDur && introT >= 1;
@@ -1141,7 +1157,7 @@ export function mount(container, opts = {}){
       const lb = land();
       ground.position.y = lb.bottom - .02; dust.position.y = lb.bottom;
 
-      renderer.render(scene, camera);
+      renderer.render(scene, camera); drawnOnce = true;
       updateMarkers(ang);
       raf = requestAnimationFrame(frame);
     }
