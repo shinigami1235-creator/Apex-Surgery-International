@@ -205,13 +205,19 @@ export function read(work){
   const base = wide(Lc, W, H, 14 * PX_MM / 3.8);
   const flat = new Float32Array(n); for (let i = 0; i < n; i++) flat[i] = Lc[i] - base[i];
 
+  // a soft photo (phone smoothing, slight blur) flattens every fine line and pore; the detail energy on the
+  // cheeks says how soft it is, and the thresholds come down to match, up to a limit
+  let sh = 0, shn = 0;
+  for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) { const o = y * W + x; if (!R.cheeks[o]) continue; shn++; sh += Math.abs(4 * Lc[o] - Lc[o - 1] - Lc[o + 1] - Lc[o - W] - Lc[o + W]); }
+  const sharp = shn ? sh / shn : 0, soft = clamp(Math.sqrt(SHARP_REF / Math.max(.3, sharp)), 1, 1.7);
+
   /* ---- lines ---- */
   const fine = valleys(Lc, W, H, 1.3), mid = valleys(Lc, W, H, 2.6);
   const lineStr = new Float32Array(n), lineAng = new Float32Array(n);
   for (let i = 0; i < n; i++) { if (fine.str[i] >= mid.str[i]) { lineStr[i] = fine.str[i]; lineAng[i] = fine.ang[i]; } else { lineStr[i] = mid.str[i]; lineAng[i] = mid.ang[i]; } }
   const upAng = Math.atan2(up.y, up.x);
   // share of the area where a line runs, optionally only lines running one way (want: angle across the line vs face up)
-  const LINE_T = 2.2;
+  const LINE_T = 1.6 / soft;
   const lineShare = (m, across) => {
     let hit = 0, tot = 0, sum = 0;
     for (let i = 0; i < n; i++) if (m[i]) {
@@ -229,16 +235,23 @@ export function read(work){
   };
 
   /* ---- texture: pores and fine grain on the cheeks, nose and forehead ---- */
-  const tex = fine;
+  // pores are a pixel or two across at this scale, so they get their own fine pass, only where texture is read
+  const gp = gauss(Lc, W, H, .9);
   const texM = R.cheeks.map((v, i) => v | R.nose[i] | R.forehead[i]);
   let pores = 0, tn = 0, rough = 0;
   const g3 = mid.g;
   const grain = new Uint8Array(n);
   for (let i = 0; i < n; i++) if (texM[i]) {
-    tn++; if (tex.blob[i] > 1.4) pores++;
-    if (lineStr[i] < LINE_T) { const d = Lc[i] - g3[i]; rough += d * d; if (d < -2.4) grain[i] = 1; }
+    tn++;
+    const x = i % W, y = (i - x) / W;
+    if (x > 0 && y > 0 && x < W - 1 && y < H - 1) {
+      const c = gp[i], xx = gp[i - 1] - 2 * c + gp[i + 1], yy = gp[i - W] - 2 * c + gp[i + W], xy = (gp[i - W - 1] + gp[i + W + 1] - gp[i - W + 1] - gp[i + W - 1]) / 4;
+      const l2 = (xx + yy) / 2 - Math.sqrt((xx - yy) * (xx - yy) / 4 + xy * xy);
+      if (l2 * .81 > PORE_T / soft) pores++;
+    }
+    if (lineStr[i] < LINE_T) { const d = Lc[i] - g3[i]; rough += d * d; if (d < -2 / soft) grain[i] = 1; }
   }
-  const texture = {pores:tn ? pores / tn : 0, rough:tn ? Math.sqrt(rough / tn) : 0};
+  const texture = {pores:tn ? pores / tn : 0, rough:tn ? Math.sqrt(rough / tn) * soft : 0};
 
   /* ---- spots and evenness ---- */
   const d1 = fine.g, d2 = wide(Lc, W, H, 6 * PX_MM / 3.8), bS = gauss(B, W, H, 2), aS = gauss(A, W, H, 2);
@@ -249,7 +262,7 @@ export function read(work){
   for (let y = rad; y < H - rad; y++) for (let x = rad; x < W - rad; x++) {
     const o = y * W + x; if (!spotM[o]) continue; sn++;
     const dog = d1[o] - d2[o];
-    if (dog > -3) continue;
+    if (dog > -2.4 / soft) continue;
     if (bS[o] - bW[o] < -1.5) continue;                 // a pigment spot is darker and browner, not bluer like a shadow
     if (lineStr[o] > LINE_T * 1.5) continue;            // a line, not a dot
     let isMin = true;
@@ -364,12 +377,9 @@ export function read(work){
   const asym = PAIRS.reduce((s, [a, b]) => s + V.dist(refl(P(a)), P(b)), 0) / PAIRS.length / iod;
 
   // photo quality: fine detail on the cheeks, light on each side, how far the head is turned
-  let sh = 0, shn = 0;
-  for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) { const o = y * W + x; if (!R.cheeks[o]) continue; shn++; sh += Math.abs(4 * Lc[o] - Lc[o - 1] - Lc[o + 1] - Lc[o - W] - Lc[o + W]); }
-  const sharp = shn ? sh / shn : 0;
   const light = chL[0].n && chL[1].n ? Math.abs(chL[0].med - chL[1].med) / Math.max(20, (chL[0].med + chL[1].med) / 2) : 0;
   const ta = Math.abs(V.dot(V.sub(P(1), P(234)), side)), tb = Math.abs(V.dot(V.sub(P(1), P(454)), side)), turn = Math.abs(ta - tb) / (ta + tb);
-  return {sharp, light, turn, near:ta >= tb ? 0 : 1, grain, axis:{c:mc, d:ax}, W, H, iod, skinShare:count(skin) / Math.max(1, count(face)), lines, texture, even, spots, redness, redMap, under, shine:{share:shN ? shine / shN : 0}, shineMap,
+  return {sharp, soft, light, turn, near:ta >= tb ? 0 : 1, grain, axis:{c:mc, d:ax}, W, H, iod, skinShare:count(skin) / Math.max(1, count(face)), lines, texture, even, spots, redness, redMap, under, shine:{share:shN ? shine / shN : 0}, shineMap,
     sag, lid, asym, lineStr, lineAng, masks:R, face, skin, refL:sL.med, flatSd:stats(flat, R.cheeks).mad};
 }
 
@@ -386,6 +396,7 @@ export function quality(work, raw){
   return out;
 }
 export const SHARP_MIN = .9;
+const SHARP_REF = 2.8, PORE_T = globalThis.__PORE_T || .6;
 
 /* a 45 degree photo: only the side nearer the camera is read, for the fold beside the nose and the jawline */
 export function readSide(work){

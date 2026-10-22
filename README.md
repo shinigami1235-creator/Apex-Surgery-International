@@ -67,7 +67,7 @@ The golden spiral is decoration and has no score, since a spiral can be scaled a
 | Upper lids | Whether a fold line shows above the lashes |
 | Balance | Left and right mesh points mirrored across the middle of the face. Shown only when the face looks straight at the camera |
 
-The ranges in `factors.js` were set on 28 photos of people from their twenties to their eighties, in `tests/analysis/faces/` and `tests/proportions/faces/`. They should be checked against Apex's own patient photos before launch.
+The ranges in `factors.js` were first set on 28 stock photos of people from their twenties to their eighties (`tests/analysis/faces/`, `tests/proportions/faces/`), then tightened on 22 October 2026 against 25 captures from Gid's Trica skin scanner, which scores each face itself, and against phone selfies. On the scanner set the skin score ranks faces in close agreement with the scanner's wrinkle score (Spearman 0.82), and the age read from the skin alone is within 5 years of the scanner's skin age on average. The scanner photos are patient photos, so they were used in the working session only and are not in this repository. A soft phone photo has its thresholds lowered to match, since phone smoothing flattens lines and pores. Apex's doctors should still check the levels against their own patients before launch.
 
 The skin age comes from the age model in face-api (MIT licence, loaded from jsDelivr), weighed 60/40 with an age read from the skin readings and kept at 18 or over. The model reads young Asian women several years young, which is why it is not shown alone. The photo checks warn when the face is small, smoothed by a beauty mode, blurred, dimly or unevenly lit, or turned.
 
