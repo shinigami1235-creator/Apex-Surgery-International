@@ -6,6 +6,7 @@ whose fields map one to one onto the WordPress custom fields the theme will use 
 Run: python3 build.py
 """
 PREVIEW = True
+PREVIEW_URL = 'https://shinigami1235-creator.github.io/Apex-Surgery-International/'
 import json, os, re, html
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -135,7 +136,16 @@ def page_html(lang, fname, key, extras, prod_path, meta_id):
 
     th_url = PROD + prod_path
     en_url = PROD + 'en/' + prod_path
+    if PREVIEW:
+        # the review copy points at itself: a link shared on Facebook or Messenger opens the og:url,
+        # and the live domain has none of these new pages yet, so it would show its not-found page
+        pf = '' if fname == 'index.html' else fname
+        th_url = PREVIEW_URL + pf
+        en_url = PREVIEW_URL + 'en/' + pf
     canon = en_url if lang == 'en' else th_url
+    # in the review copy, service and article pages depend on ?p=, so shares must open the exact link that was sent
+    canon_tag = '' if PREVIEW else f'<link rel="canonical" href="{canon}">'
+    ogurl_tag = '' if PREVIEW else f'<meta property="og:url" content="{canon}">'
     og_img = img((read_data('th', 'home') or {}).get('hero', {}).get('src', '')) if key == 'home' else img('~/wp-content/uploads/2025/11/Apex-Surgery.webp')
 
     ld = []
@@ -166,7 +176,7 @@ def page_html(lang, fname, key, extras, prod_path, meta_id):
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
 {robots}
-<link rel="canonical" href="{canon}">
+{canon_tag}
 <link rel="alternate" hreflang="th" href="{th_url}">
 <link rel="alternate" hreflang="en" href="{en_url}">
 <link rel="alternate" hreflang="x-default" href="{en_url}">
@@ -174,7 +184,7 @@ def page_html(lang, fname, key, extras, prod_path, meta_id):
 <meta property="og:site_name" content="Apex Surgery Hospital">
 <meta property="og:title" content="{esc(title)}">
 <meta property="og:description" content="{esc(desc)}">
-<meta property="og:url" content="{canon}">
+{ogurl_tag}
 <meta property="og:image" content="{esc(og_img)}">
 <meta property="og:locale" content="{'en_US' if lang == 'en' else 'th_TH'}">
 <meta property="og:locale:alternate" content="{'th_TH' if lang == 'en' else 'en_US'}">
