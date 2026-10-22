@@ -172,6 +172,7 @@ const CSS = `
 .np-frame{--x:50%;position:absolute;inset:0;border-radius:20px;overflow:hidden;
   background:#12051d;touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .np-frame.zm{touch-action:none;cursor:grab}
+.np-knob{touch-action:none}
 .np-frame.zm.pan{cursor:grabbing}
 .np-zl{position:absolute;inset:0;transform-origin:0 0}
 .np-frame canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
@@ -201,6 +202,9 @@ const CSS = `
   .np-gd-b,.np-legend{grid-template-columns:minmax(0,1fr)}
 }
 .np-line{position:absolute;top:0;bottom:0;left:var(--x);width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 0 1px rgba(31,10,48,.18)}
+/* a 56px strip around the line where a touch drags the slider and never scrolls the page */
+.np-line::before{content:"";position:absolute;top:0;bottom:0;left:-27px;width:56px;touch-action:none}
+.np-frame.pts .np-line::before{display:none}
 .np-knob{position:absolute;top:50%;left:var(--x);width:42px;height:42px;margin:-21px 0 0 -21px;border-radius:50%;background:#fff;color:var(--np-plum);
   display:grid;place-items:center;box-shadow:0 10px 24px -8px rgba(20,6,31,.6);font-size:20px;cursor:ew-resize}
 .np-frame:focus-visible{outline:2px solid var(--np-lilac);outline-offset:3px}
@@ -508,7 +512,9 @@ function warpInto(srcData, out, ctrl){
     const fx = rx * mr - ry * mi + qx, fy = rx * mi + ry * mr + qy;
     gx[j * gw + i] = (fx - vx) * mk; gy[j * gw + i] = (fy - vy) * mk;
   }
-  const S = srcData.data, img = out.getContext('2d').getImageData(x0, y0, w, h), D = img.data;
+  // the patch starts as the untouched photo, copied from the cached pixels rather than read back from the canvas
+  const S = srcData.data, img = new ImageData(w, h), D = img.data;
+  for (let y = 0; y < h; y++) D.set(S.subarray(((y0 + y) * W + x0) * 4, ((y0 + y) * W + x0 + w) * 4), y * w * 4);
   for (let y = 0; y < h; y++) {
     const fy = y / G, j = fy | 0, ty = fy - j;
     for (let x = 0; x < w; x++) {
@@ -558,16 +564,26 @@ function shadeFront(ctx, F, P, k){
 
 /* soft light for the after picture: slight warmth, a gentle bloom and a spotlight on the face
    that falls off toward the edges. It changes colour only, so nothing moves or changes shape. */
-function glowInto(out, view, h){
-  const W = out.width, H = out.height, ctx = out.getContext('2d');
+/* the soft bloom copy is made once per photo, since only the nose moves between renders */
+const bloomCache = new WeakMap();
+function bloomOf(base){
+  let blur = bloomCache.get(base);
+  if (blur) return blur;
+  const W = base.width, H = base.height;
   // blur by shrinking and enlarging, which every browser supports
   const resize = (src, w, hh) => {
     const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w)); c.height = Math.max(1, Math.round(hh));
     const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(src, 0, 0, c.width, c.height); return c;
   };
-  const blur = resize(resize(resize(out, W / 4, H / 4), W / 14, H / 14), W / 4, H / 4);
+  blur = resize(resize(resize(base, W / 4, H / 4), W / 14, H / 14), W / 4, H / 4);
   // squaring the soft copy keeps the bloom on the bright skin and away from eyes and hair
   const bg = blur.getContext('2d'); bg.globalCompositeOperation = 'multiply'; bg.drawImage(blur, 0, 0);
+  bloomCache.set(base, blur);
+  return blur;
+}
+function glowInto(out, view, h, base){
+  const W = out.width, H = out.height, ctx = out.getContext('2d');
+  const blur = bloomOf(base || out);
   const pts = Object.values(h), xs = pts.map(p => p.x), ys = pts.map(p => p.y);
   const L = Math.max(V.dist(h.N, h.C), .06 * Math.min(W, H));
   let c = {x:(Math.min(...xs) + Math.max(...xs)) / 2, y:(Math.min(...ys) + Math.max(...ys)) / 2 - .25 * L};
@@ -588,16 +604,19 @@ function glowInto(out, view, h){
 }
 
 /* one finished "after" picture for a view */
-function render(view, base, data, h, P, amt, glow){
-  const out = document.createElement('canvas'); out.width = base.width; out.height = base.height;
-  const ctx = out.getContext('2d', {willReadFrequently:true}); ctx.drawImage(base, 0, 0);
+function render(view, base, data, h, P, amt, glow, target){
+  /* draws straight into the target canvas when one is given, so the shown picture needs no extra copy */
+  const out = target || document.createElement('canvas');
+  if (out.width !== base.width || out.height !== base.height) { out.width = base.width; out.height = base.height; }
+  const ctx = out.getContext('2d');
+  ctx.save(); ctx.globalCompositeOperation = 'copy'; ctx.globalAlpha = 1; ctx.drawImage(base, 0, 0); ctx.restore();
   if (amt > 0) {
     const Q = {}; for (const k in P) Q[k] = P[k] * amt;
     const ctrl = buildControls(view, h, Q);
     warpInto(data, out, ctrl);
     if (ctrl.F) shadeFront(ctx, ctrl.F, Q, view === 'front' ? 1 : .7);
   }
-  if (glow) glowInto(out, view, h);
+  if (glow) glowInto(out, view, h, base);
   return out;
 }
 
@@ -946,8 +965,7 @@ export function mount(container, opts = {}){
     rq = requestAnimationFrame(() => {
       const v = cur();
       if (!ready(v)) return;
-      const out = render(state.view, v.base, v.data, v.h, preset().p, state.amt, state.glow);
-      cvA.getContext('2d').drawImage(out, 0, 0);
+      render(state.view, v.base, v.data, v.h, preset().p, state.amt, state.glow, cvA);
     });
   }
   function showPhoto(){
@@ -1054,9 +1072,10 @@ export function mount(container, opts = {}){
     if (ptrs.size === 2) { const p = pinchFrame(); frame.classList.remove('pan'); gest = {type:'pinch', d0:p.d, z0:Z.z, f:toImg(p.x, p.y)}; return; }
     if (ptrs.size > 2) return;
     const zoomed = Z.z > 1.001, l = local(e);
-    if (state.mode === 'compare' && (!zoomed || Math.abs(l.x * 100 - sx) * l.w / 100 < 28 || e.target.closest('.np-knob'))) {
-      // touch at 1x waits for a sideways move so the page can still scroll
-      gest = {type:'slide', id:e.pointerId, x:e.clientX, y:e.clientY, on:e.pointerType === 'mouse' || zoomed};
+    const nearLine = Math.abs(l.x * 100 - sx) * l.w / 100 < 44 || !!e.target.closest('.np-knob');
+    if (state.mode === 'compare' && (!zoomed || nearLine)) {
+      // a touch on or near the line takes hold straight away; elsewhere at 1x it waits for a sideways move so the page can still scroll
+      gest = {type:'slide', id:e.pointerId, x:e.clientX, y:e.clientY, on:e.pointerType === 'mouse' || zoomed || nearLine};
       if (gest.on) { capture(e.pointerId); slideTo(e); }
     } else if (zoomed) {
       gest = {type:'pan', id:e.pointerId, x:e.clientX, y:e.clientY, ox:Z.ox, oy:Z.oy};
@@ -1078,7 +1097,7 @@ export function mount(container, opts = {}){
     }
     if (!gest.on) {
       const dx = Math.abs(e.clientX - gest.x), dy = Math.abs(e.clientY - gest.y);
-      if (dx > 6 && dx > dy) { gest.on = true; capture(e.pointerId); } else if (dy > 8) { gest = null; return; } else return;
+      if (dx > 4 && dx >= dy * .75) { gest.on = true; capture(e.pointerId); } else if (dy > 12 && dy > dx * 1.5) { gest = null; return; } else return;
     }
     slideTo(e);
   });

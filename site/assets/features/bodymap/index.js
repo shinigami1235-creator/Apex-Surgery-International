@@ -116,8 +116,7 @@ font-family:var(--font,"LINE Seed","Sarabun","Noto Sans Thai",system-ui,sans-ser
 .bm-stage{position:absolute;inset:0;touch-action:pan-y;cursor:grab}
 .bm-stage.drag{cursor:grabbing}
 .bm-stage canvas{position:absolute;inset:0;width:100%!important;height:100%!important;display:block;
--webkit-mask-image:linear-gradient(90deg,transparent 0,#000 9%,#000 91%,transparent 100%),linear-gradient(180deg,transparent 0,#000 8%,#000 84%,transparent 100%);
--webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent 0,#000 9%,#000 91%,transparent 100%),linear-gradient(180deg,transparent 0,#000 8%,#000 84%,transparent 100%);mask-composite:intersect}
+-webkit-mask-image:radial-gradient(130% 105% at 50% 44%,#000 58%,transparent 72%);mask-image:radial-gradient(130% 105% at 50% 44%,#000 58%,transparent 72%)}
 .bm-glow{position:absolute;left:50%;top:46%;width:min(120%,1100px);aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none;
 background:radial-gradient(closest-side,rgba(122,64,160,.30),rgba(106,56,140,.13) 45%,rgba(204,51,102,.04) 70%,transparent)}
 .bm-mks{position:absolute;inset:0;pointer-events:none;z-index:2}
@@ -166,7 +165,7 @@ background:radial-gradient(closest-side,rgba(122,64,160,.30),rgba(106,56,140,.13
 .bm-eye{margin:0 0 2px;font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--bm-plum)}
 .bm-ph h3{margin:0;font-size:26px;line-height:1.15;font-weight:500;letter-spacing:-.02em;color:var(--bm-ink);outline:none}
 .bm .bm-ph h3:focus,.bm .bm-ph h3:focus-visible{outline:none}
-.bm-x{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--bm-l1);color:var(--bm-plum);transition:background-color .2s}
+.bm-x{flex:none;width:44px;height:44px;touch-action:manipulation;border-radius:50%;display:grid;place-items:center;background:var(--bm-l1);color:var(--bm-plum);transition:background-color .2s}
 .bm-x:hover{background:#E4D8EE}
 .bm-pb{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:4px 20px 22px}
 .bm-pb h4{margin:14px 0 8px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--bm-ink2)}
@@ -568,6 +567,12 @@ export function mount(container, opts = {}){
     hint.classList.remove('hide');
     if (!silent) emit('bodymap:area', { area: 'face', procedure: null });
   }
+  function goHome(){
+    if (flat || (level === 'body' && !sel)) return;
+    level = 'body'; sel = null; concern = null;
+    renderRail(); renderPanel(); renderHint(); renderBack();
+    gl && gl.focusBody();
+  }
   function goBack(){
     if (flat) { sel = null; concern = null; renderRail(); renderPanel(); return; }
     if (level === 'face' && sel) { sel = null; concern = null; renderRail(); renderPanel(); renderBack(); gl && gl.focusFace(); return; }
@@ -646,9 +651,13 @@ export function mount(container, opts = {}){
 
   /* ---------------- scene ---------------- */
   function createScene(THREE, bodies, firstGender){
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+    /* tablets and phones draw at a lower density with no antialias, since a full-size canvas at 2x keeps the
+       graphics chip so busy that taps on the panel arrive late. A slow device steps down further while it runs. */
+    const dpr = window.devicePixelRatio || 1;
+    const coarse = (() => { try { return matchMedia('(pointer:coarse)').matches; } catch (e) { return false; } })();
+    let pix = Math.min(dpr, coarse ? 1.25 : 1.5);
+    const renderer = new THREE.WebGLRenderer({ antialias: dpr < 1.5 && !coarse, alpha: true, powerPreference: 'high-performance' });
     renderer.setClearColor(0x000000, 0);
-    const pix = Math.min(window.devicePixelRatio || 1, 2);
     renderer.setPixelRatio(pix);
     stage.prepend(renderer.domElement);
     loadEl.classList.add('done');
@@ -1029,7 +1038,11 @@ export function mount(container, opts = {}){
       const wasTap = !drag.moved && e.type === 'pointerup';
       stage.classList.remove('drag');
       drag = null;
-      if (wasTap) { const k = pick(e.clientX, e.clientY); if (k) select(k); }
+      if (wasTap) {
+        const k = pick(e.clientX, e.clientY);
+        if (k) select(k);
+        else if (mode !== 'body') goHome();   // a tap on empty space returns to the full body
+      }
     };
     on(window, 'pointerup', end);
     on(window, 'pointercancel', end);
@@ -1072,9 +1085,21 @@ export function mount(container, opts = {}){
     function kick(){ if (!raf && visible && !document.hidden && !destroyed) { last = performance.now(); raf = requestAnimationFrame(frame); } }
 
     const v3 = new THREE.Vector3();
+    let slowN = 0, slowT = 0, odd = false;
     function frame(now){
       raf = 0;
       if (destroyed || !visible || document.hidden) return;
+      const gap = now - last;
+      /* frames that keep taking over 28ms step the drawing density down, to 1x at the lowest */
+      if (gap < 200) { slowT += gap; slowN++; }
+      if (slowN >= 45) {
+        if (slowT / slowN > 28 && pix > 1) { pix = Math.max(1, pix - .25); renderer.setPixelRatio(pix); renderer.setSize(W, H, false); U.uPix.value = pix; }
+        slowN = 0; slowT = 0;
+      }
+      /* while nothing is being touched or moved, every second frame is skipped */
+      const idle = !drag && now - lastUser > 1500 && now - tw0 > twDur && introT >= 1;
+      odd = !odd;
+      if (idle && odd) { raf = requestAnimationFrame(frame); return; }
       const dt = Math.min(.05, (now - last) / 1000); last = now;
       const t = (now - t0) / 1000;
       U.uTime.value = t;
