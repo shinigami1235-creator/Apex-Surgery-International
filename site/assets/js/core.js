@@ -4,24 +4,48 @@
   const SITE = 'https://www.apexsurgeryhospital.com/';
   document.documentElement.classList.remove('no-js');
 
-  /* ---------- basics ---------- */
+  /* ---------- basics ----------
+     On WordPress the page arrives drawn by the server (body[data-ssr]) and the theme has already set
+     APEX.assets, APEX.media, APEX.links (design page names to addresses), APEX.alt (this page in each
+     language), APEX.params and the content in APEX._d. The scripts then attach behaviour without drawing again. */
   A.SITE = SITE;
   A.lang = (document.documentElement.lang || 'en').slice(0, 2) === 'th' ? 'th' : 'en';
+  A.ssr = !!(document.body && document.body.hasAttribute('data-ssr'));
+  A.csr = A.ssr && !!window.APEX_CSR;   // tests only: draw on top of the server's page to compare the two
   A.root = A.lang === 'th' ? '../' : '';
-  A.assets = A.root + 'assets/';
+  A.assets = A.assets || A.root + 'assets/';
   A.dataBase = A.assets + 'data/' + A.lang + '/';
-  A.img = s => !s ? '' : (s.startsWith('~/') ? SITE + s.slice(2) : s);
+  A.media = A.media || SITE;
+  A.img = s => !s ? '' : (s.startsWith('~/') ? A.media + s.slice(2) : s);
   A.esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   A.qs = (s, r=document) => r.querySelector(s);
   A.qsa = (s, r=document) => [...r.querySelectorAll(s)];
-  A.param = k => new URLSearchParams(location.search).get(k);
+  A.param = k => { const v = new URLSearchParams(location.search).get(k); return v != null ? v : ((A.params || {})[k] != null ? String(A.params[k]) : null); };
   A.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   A.t = k => ((A.I18N || {})[A.lang] || {})[k] || ((A.I18N || {}).en || {})[k] || k;
   A.d = id => (A._d || {})[id];
   A.fmtNum = n => Number(n).toLocaleString(A.lang === 'th' ? 'th-TH' : 'en-US');
   A.fmtDate = s => { try { return new Date(s + 'T00:00:00').toLocaleDateString(A.lang === 'th' ? 'th-TH' : 'en-GB', {day:'numeric', month:'long', year:'numeric'}); } catch (e) { return s; } };
-  A.svcUrl = k => 'service.html?p=' + encodeURIComponent(k);
-  A.postUrl = k => 'article.html?p=' + encodeURIComponent(k);
+  /* design page names ('consult.html', 'service.html?p=facelift') to WordPress addresses; unchanged in the design */
+  A.href = h => {
+    const L = A.links;
+    if (!L || !h || /^([a-z][a-z0-9+.-]*:|#|\/)/i.test(h)) return h;
+    const m = String(h).match(/^([^?#]*)(\?[^#]*)?(#.*)?$/);
+    if (!m) return h;
+    let file = (m[1] || '').replace(/^(\.\.?\/)+/, '') || 'index.html', hash = m[3] || '';
+    if (!/\.html$/.test(file)) return h;
+    const p = new URLSearchParams((m[2] || '').slice(1));
+    if (file === 'service.html' && p.get('p')) return (L['service:' + p.get('p')] || L['services.html']) + hash;
+    if (file === 'article.html' && p.get('p')) return (L['article:' + p.get('p')] || L['blog.html']) + hash;
+    if (file === 'surgery-wars.html' && p.get('ep')) { const u = L['ep:' + p.get('ep')]; if (u) return u + hash; p.delete('ep'); }
+    if (file === 'bodymap.html' && !hash) hash = '#hero';
+    if (!L[file]) return h;
+    const q = p.toString();
+    return L[file] + (q ? '?' + q : '') + hash;
+  };
+  A.relink = root => { if (!A.links || !root) return; (root.matches && root.matches('a[href]') ? [root] : []).concat(A.qsa('a[href]', root)).forEach(a => { const h = a.getAttribute('href'), n = A.href(h); if (n !== h) a.setAttribute('href', n); }); };
+  A.svcUrl = k => A.href('service.html?p=' + encodeURIComponent(k));
+  A.postUrl = k => A.href('article.html?p=' + encodeURIComponent(k));
   A.yt = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
   A.WA = {x:'+66 85 000 2001', h:'https://wa.me/66850002001'};
 
@@ -36,10 +60,11 @@
 
   /* ---------- data loading ---------- */
   A.load = src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.append(s); });
-  A.data = (file, id) => { id = id || file.replace(/\//g, ':').replace(/\.js$/, ''); if (A.d(id)) return Promise.resolve(A.d(id)); return A.load(A.dataBase + file + (file.endsWith('.js') ? '' : '.js')).then(() => A.d(id)); };
+  A.data = (file, id) => { id = id || file.replace(/\//g, ':').replace(/\.js$/, ''); if (A.d(id)) return Promise.resolve(A.d(id)); file = file.replace(/\.js$/, ''); return A.load(A.dataUrl ? A.dataUrl + A.lang + '/' + file : A.dataBase + file + '.js').then(() => A.d(id)); };
 
   /* ---------- language ---------- */
   A.langHref = code => {
+    if (A.alt && A.alt[code]) return A.alt[code];
     const file = (location.pathname.split('/').pop() || 'index.html');
     const tail = file + location.search + location.hash;
     if (code === A.lang) return tail;
@@ -53,12 +78,16 @@
   };
   /* feature modules carry the build version so a new deploy is fetched fresh */
   A.vurl = path => { const u = new URL(path, location.href); if (window.APEX_V) u.searchParams.set('v', window.APEX_V); return u.href; };
-  A.featureOpts = (extra={}) => Object.assign({
-    lang: A.lang,
-    base: new URL(A.assets, location.href).href,
-    serviceUrl: k => A.svcUrl(k),
-    onEvent: (n, d) => A.emit(n, d)
-  }, extra);
+  A.featureOpts = (extra={}) => {
+    const o = Object.assign({
+      lang: A.lang,
+      base: new URL(A.assets, location.href).href,
+      serviceUrl: k => A.svcUrl(k),
+      onEvent: (n, d) => A.emit(n, d)
+    }, extra);
+    if (A.links && o.links) o.links = Object.fromEntries(Object.entries(o.links).map(([k, v]) => [k, typeof v === 'string' ? A.href(v) : v]));
+    return o;
+  };
   /* mount a feature module into a container; the page renders even if the module is missing */
   A.mount = async (el, name, extra={}) => {
     if (typeof el === 'string') el = A.qs(el);
@@ -84,8 +113,9 @@
     io.observe(el);
   };
 
-  A.jsonld = obj => { const s = document.createElement('script'); s.type = 'application/ld+json'; s.textContent = JSON.stringify(obj); document.head.append(s); };
+  A.jsonld = obj => { if (A.ssr) return; const s = document.createElement('script'); s.type = 'application/ld+json'; s.textContent = JSON.stringify(obj); document.head.append(s); };
   A.setMeta = (title, desc) => {
+    if (A.ssr) return;   // WordPress (or its SEO plugin) wrote the title and description
     if (title) document.title = title;
     if (desc) { const m = A.qs('meta[name=description]'); if (m) m.content = desc; const o = A.qs('meta[property="og:description"]'); if (o) o.content = desc; }
     if (title) { const o = A.qs('meta[property="og:title"]'); if (o) o.content = title; }
@@ -95,7 +125,10 @@
   const NAV = [['index.html','home'],['about.html','about'],['services.html','services'],['promotions.html','promotions'],['reviews.html','reviews'],['surgery-wars.html','war'],['blog.html','articles'],['contact.html','contact']];
   function header(){
     const S = A.d('shared') || {}, page = document.body.dataset.page || '';
+    let el = A.qs('header.hdr'), sh = A.qs('.sheet');
     const svcs = S.services || [];
+    const langs = [['en','EN'],['th','TH']].map(([c,t]) => `<a href="${A.langHref(c)}" hreflang="${c}" lang="${c}" class="${c===A.lang?'on':''}"${c===A.lang?' aria-current="true"':''}>${t}</a>`).join('');
+    if (!el) {
     const nav = NAV.map(([h, k]) => {
       const cur = k === page || (k === 'services' && page === 'service') || (k === 'articles' && page === 'article') ? ' aria-current="page"' : '';
       if (k === 'services') {
@@ -114,8 +147,7 @@
       }
       return `<a href="${h}"${cur}>${A.esc(A.t(k))}</a>`;
     }).join('');
-    const langs = [['en','EN'],['th','TH']].map(([c,t]) => `<a href="${A.langHref(c)}" hreflang="${c}" lang="${c}" class="${c===A.lang?'on':''}"${c===A.lang?' aria-current="true"':''}>${t}</a>`).join('');
-    const el = document.createElement('header');
+    el = document.createElement('header');
     el.className = 'hdr';
     el.innerHTML = `<a class="skip" href="#main">${A.esc(A.t('skip'))}</a><div class="hdr-in">
       <a class="hdr-logo" href="index.html" aria-label="Apex Surgery Hospital"><img src="${A.img(S.logo)}" alt="Apex Surgery Hospital" width="150" height="38"><span class="logo-txt" aria-hidden="true">APEX<small>Surgery Hospital</small></span></a>
@@ -125,6 +157,7 @@
         <a class="btn btn-plum btn-sm hdr-cta" href="consult.html">${A.ic('message-circle')}${A.esc(A.t('consult'))}</a>
         <button class="burger" type="button" aria-label="${A.esc(A.t('menu'))}">${A.ic('menu')}</button></div></div>`;
     document.body.prepend(el);
+    }
     const logo = A.qs('.hdr-logo img', el);
     logo.addEventListener('error', () => el.classList.add('no-logo'));
     if (!S.logo) el.classList.add('no-logo');
@@ -146,7 +179,8 @@
       last = y;
     }, {passive:true});
 
-    const sh = document.createElement('div');
+    if (!sh) {
+    sh = document.createElement('div');
     sh.className = 'sheet'; sh.setAttribute('role','dialog'); sh.setAttribute('aria-modal','true'); sh.setAttribute('aria-label', A.t('menu'));
     const subs = svcs.map(s => `<a href="${A.svcUrl(s.key)}">${A.esc(s.short || s.name)}</a>`).join('');
     sh.innerHTML = `<div class="sheet-top"><span class="logo-txt light">APEX<small>Surgery Hospital</small></span><button class="close" aria-label="${A.esc(A.t('close'))}">${A.ic('close')}</button></div>
@@ -155,6 +189,7 @@
       <div class="sheet-cta"><a class="btn btn-light" href="consult.html">${A.ic('message-circle')}${A.esc(A.t('consult'))}</a>
       <div class="lang" style="display:flex;justify-content:center;border-color:rgba(201,179,221,.3)">${langs}</div></div>`;
     document.body.append(sh);
+    }
     const toggle = v => { sh.classList.toggle('open', v); document.documentElement.style.overflow = v ? 'hidden' : ''; };
     A.qs('.burger', el).addEventListener('click', () => toggle(true));
     A.qs('.close', sh).addEventListener('click', () => toggle(false));
@@ -179,6 +214,7 @@
 
   /* ---------- footer ---------- */
   function footer(){
+    if (A.qs('footer.ftr')) return;
     const S = A.d('shared') || {};
     const f = document.createElement('footer');
     f.className = 'ftr';
@@ -208,7 +244,9 @@
   function fab(){
     const S = A.d('shared') || {};
     const ph = (S.branches || [])[0] || {phone:'088-870-0039', tel:'tel:0888700039'};
-    const d = document.createElement('div');
+    let d = A.qs('div.fab');
+    if (!d) {
+    d = document.createElement('div');
     d.className = 'fab';
     d.innerHTML = `<div class="fab-list">
       <a class="wa" href="${A.WA.h}" target="_blank" rel="noopener">${A.ic('whatsapp')}<span>WhatsApp<small>${A.esc(A.t('whatsappSub'))}</small></span></a>
@@ -216,6 +254,7 @@
       <a class="ph" href="${ph.tel}">${A.ic('phone')}<span>${A.esc(ph.phone)}<small>${A.esc(ph.short || '')}</small></span></a></div>
       <button class="fab-btn" type="button" aria-label="${A.esc(A.t('consult'))}" aria-expanded="false">${A.ic('message-circle')}</button>`;
     document.body.append(d);
+    }
     const b = A.qs('.fab-btn', d);
     b.addEventListener('click', () => { const o = d.classList.toggle('open'); b.setAttribute('aria-expanded', o); b.innerHTML = o ? A.ic('close') : A.ic('message-circle'); });
     A.qsa('a', d).forEach(a => a.addEventListener('click', () => A.emit('contact:click', {channel:a.className})));
@@ -546,10 +585,35 @@
   // static labels written in the HTML templates are filled from i18n by key
   function fillStatic(){ A.qsa('[data-t]').forEach(e => { e.textContent = A.t(e.dataset.t); }); }
 
+  /* WordPress: the server drew the page, so the page function's first drawing of #main is skipped (its
+     builders still run, which numbers the galleries the same way); links the scripts add later are mapped
+     to WordPress addresses as they appear */
+  function wpMode(){
+    if (A.I18N_OVER && A.I18N) Object.keys(A.I18N_OVER).forEach(l => Object.assign(A.I18N[l] = A.I18N[l] || {}, A.I18N_OVER[l]));
+    const S = A.d('shared') || {};
+    if (S.whatsapp && S.whatsapp.h) A.WA = {x:S.whatsapp.x || S.whatsapp.h, h:S.whatsapp.h};
+    if (!A.ssr) return;
+    if (A.csr) { ['header.hdr', '.sheet', 'footer.ftr', 'div.fab'].forEach(s => { const e = A.qs(s); if (e) e.remove(); }); A.qs('#main').innerHTML = ''; }
+    const m = A.qs('#main');
+    if (m && m.childElementCount) {
+      const proto = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+      Object.defineProperty(m, 'innerHTML', {configurable:true, get(){ return proto.get.call(this); }, set(){ delete m.innerHTML; }});
+      A._unskip = () => { delete m.innerHTML; };
+    }
+    if (A.links && 'MutationObserver' in window) {
+      new MutationObserver(ms => ms.forEach(r => { if (r.type === 'attributes') A.relink(r.target); else r.addedNodes.forEach(n => n.nodeType === 1 && A.relink(n)); }))
+        .observe(document.body, {childList:true, subtree:true, attributes:true, attributeFilter:['href']});
+      document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('a[href]'); if (a) A.relink(a); }, true);
+    }
+  }
+
   A.boot = (fn) => {
     const go = async () => {
+      wpMode();
       fillStatic(); header(); planBadge();
       try { await (fn && fn()); } catch (e) { console.error('[apex] page', e); }
+      if (A._unskip) A._unskip();
+      if (A.csr) A.relink(document.body);
       footer(); fab(); A.flow(); A.bindBranches(); A.sheen(); A.parallax(); A.imgFallback(); A.reveal();
       document.dispatchEvent(new Event('apex:ready'));
     };

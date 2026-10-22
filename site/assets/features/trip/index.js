@@ -208,9 +208,11 @@ export function loadData(base, lang, id) {
   const ck = lang + '|' + id;
   if (dataCache[ck]) return dataCache[ck];
   const file = id.includes(':') ? id.replace(':', '/') : id;
+  const P = window.APEX || {};
+  if (P._d && P._d[id] && (P.lang || lang) === lang) return Promise.resolve(JSON.parse(JSON.stringify(P._d[id])));
   const one = l => new Promise((res, rej) => {
     const s = document.createElement('script');
-    s.src = `${base}data/${l}/${file}.js`;
+    s.src = P.dataUrl ? `${P.dataUrl}${l}/${file}` : `${base}data/${l}/${file}.js`;
     s.onload = () => { s.remove(); const d = window.APEX && APEX._d && APEX._d[id]; d ? res(JSON.parse(JSON.stringify(d))) : rej(new Error('empty ' + id)); };
     s.onerror = () => { s.remove(); rej(new Error('missing ' + s.src)); };
     document.head.append(s);

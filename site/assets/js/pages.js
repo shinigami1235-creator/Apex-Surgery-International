@@ -923,6 +923,7 @@
       <div class="nf-links rv"><a class="btn btn-light" href="index.html">${E(T('goHome'))}</a><a class="btn btn-ghost" href="services.html">${E(T('services'))}</a><a class="btn btn-ghost" href="blog.html">${E(T('articles'))}</a><a class="btn btn-ghost" href="contact.html">${E(T('contact'))}</a></div></div></section>`;
   }
 
-  const PAGES = {home, services, service, about, doctor, promotions, reviews, blog, article, war, contact, nose, analysis, proportions, implBreast, implChin, implForehead, implNose, play, plan, trip, consult, notfound};
+  const page = async () => {};   // any other WordPress page (privacy policy and the like): the server's text as it is
+  const PAGES = {home, services, service, about, doctor, promotions, reviews, blog, article, war, contact, nose, analysis, proportions, implBreast, implChin, implForehead, implNose, play, plan, trip, consult, notfound, page};
   A.boot(() => (PAGES[document.body.dataset.page] || home)());
 })();

@@ -5,3 +5,6 @@ tests/**/*.log
 node_modules/
 __pycache__/
 undefined/
+wordpress/theme/apex-surgery/assets/
+wordpress/theme/apex-surgery/data/
+wordpress/theme/apex-surgery/import/
