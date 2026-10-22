@@ -92,7 +92,7 @@
   };
 
   /* ---------- header ---------- */
-  const NAV = [['index.html','home'],['about.html','about'],['services.html','services'],['promotions.html','promotions'],['reviews.html','reviews'],['blog.html','articles'],['contact.html','contact']];
+  const NAV = [['index.html','home'],['about.html','about'],['services.html','services'],['promotions.html','promotions'],['reviews.html','reviews'],['surgery-wars.html','war'],['blog.html','articles'],['contact.html','contact']];
   function header(){
     const S = A.d('shared') || {}, page = document.body.dataset.page || '';
     const svcs = S.services || [];

@@ -403,6 +403,12 @@
       </div>
     </section>
 
+    ${(() => { const W = A.d('war'); const eps = (W && W.episodes) || []; return eps.length ? `<section class="section war-home">
+      <div class="wrap"><div class="shead"><div><p class="eyebrow rv">Workpoint 23</p><h2 class="h-xl rv">${E(T('warH'))}</h2><p class="reels-sub rv">${E(T('warLead'))}</p></div>
+        <div class="rail-ctrl rv"><button type="button" id="war-prev" aria-label="${E(T('prev'))}">${I('chevron-left')}</button><button type="button" id="war-next" aria-label="${E(T('next'))}">${I('chevron-right')}</button></div></div>
+      <div class="rail war-rail" id="war-rail">${eps.map((x, i) => warCard(x, i)).join('')}</div>
+      <a class="link-arrow rv" href="surgery-wars.html">${E(T('warAll'))} ${I('arrow-right')}</a></div></section>` : ''; })()}
+
     <section class="section promos-s">
       <div class="wrap"><div class="shead"><div><p class="eyebrow rv">${E(T('promotions'))}</p><h2 class="h-xl rv" data-field="home.promos.h">${E((H.promos && H.promos.h) || T('promosH'))}</h2></div><a class="link-arrow rv" href="promotions.html">${E(T('viewAll'))} ${I('arrow-right')}</a></div>
       ${(() => { const si = Math.max(0, promos.findIndex(p => p.price)); return promos.length ? offerSpot(promos[si], S) + promoGrid(promos.filter((p, i) => i !== si).slice(0, 7), S, {game:true}) : ''; })()}</div>
@@ -425,6 +431,7 @@
     mountStories(A.qs('#stories'));
     A.fbMount(main());
     bindOffers(A.qs('.promos-s'));
+    A.railCtrl(A.qs('#war-rail'), A.qs('#war-prev'), A.qs('#war-next'));
   }
 
   /* =================== SERVICES =================== */
@@ -689,7 +696,7 @@
     const paras = bl.filter(b => b.t === 'p').map(b => b.x);
     const total = bl.map(b => (b.x || '') + ' ' + (b.items || []).map(i => i.x || i).join(' ')).join(' ');
     const long = total.length > (A.lang === 'th' ? 2600 : 3200);
-    const proc = D.cat === 'news' ? null : procOf((D.tag || '') + ' ' + D.title + ' ' + key);
+    const proc = D.cat === 'news' || D.noFacts ? null : procOf((D.tag || '') + ' ' + D.title + ' ' + key);
     const imgN = bl.filter(b => b.t === 'img').length;
     const extra = (imgN === 0 && long ? (POST_PHOTOS[key] || []) : imgN <= 1 && total.length > 9000 ? (POST_PHOTOS[key] || []).slice(0, 2) : []).map(k => ph(k)).filter(Boolean);
     let quotes = D.cat === 'review' ? spoken(paras.slice(1)) : [];
@@ -777,6 +784,85 @@
     A.breadcrumbLd([...crumbs, [D.title]].map(c => [c[0], c[1] || location.href]));
   }
 
+  /* =================== SURGERY WARS =================== */
+  /* hub (surgery-wars.html) and one episode (surgery-wars.html?ep=N); data/<lang>/war.js lists the episodes, war/<n>.js holds each article */
+  const warUrl = n => 'surgery-wars.html?ep=' + n;
+  /* Thai has no spaces between words, and the browser's word list splits some loan words badly ("แมส|ก์"), so Thai headings only break at the spaces the writer put in */
+  const nb = t => A.lang === 'th' ? String(t || '').split(/\s+/).filter(Boolean).map(w => `<span class="nw">${E(w)}</span>`).join(' ') : E(t);
+  const warSrc = s => s && !/^(https?:|~\/)/.test(s) ? A.assets + s : s;
+  const warCard = (e, i=0) => `<a class="war-card rv" data-d="${(i % 4) * 60}" href="${warUrl(e.n)}">
+      <span class="wc-ph ph-img"><img src="${IMG(warSrc(e.cover))}" alt="" loading="lazy" decoding="async" width="640" height="336"><span class="wc-ep">EP.${e.n}</span><span class="wc-pl" aria-hidden="true">${I('play')}</span></span>
+      <span class="wc-t">${nb(e.title)}</span></a>`;
+  const WAR_PROC = [['facelift', /ดึงหน้า|ดึงคอ|face ?lift|neck lift/i], ['browlift', /ยกคิ้ว|ยกหน้าผาก|brow lift|forehead lift/i], ['rhinoplasty', /เสริมจมูก|แก้จมูก|rhinoplasty/i],
+    ['eyelid', /ตาสองชั้น|ทำตา|ตาบน|หนังตา|eyelid/i], ['breast', /เสริมหน้าอก|ยกกระชับหน้าอก|breast (augmentation|lift)/i], ['lipo', /ดูดไขมัน|liposuction/i]];
+  const warStage = (e, D) => `<div class="war-stage rv-clip"><button type="button" class="ws-poster" data-ytw="${E(D.yt || e.yt)}" aria-label="${E(T('warWatch').replace('{n}', e.n))}">
+      <img src="${IMG(warSrc(e.img))}" alt="${E(D.title)}" width="1200" height="630"><span class="ws-play">${I('play')}<span>${E(T('warWatch').replace('{n}', e.n))}</span></span></button></div>`;
+  async function war(){
+    const S = A.d('shared') || {}, W = A.d('war') || {}, eps = W.episodes || [];
+    const n = +A.param('ep');
+    const e = eps.find(x => x.n === n);
+    if (!e) {
+      main().innerHTML = `
+      <section class="war-head night"><div class="hb-glow" aria-hidden="true"></div><div class="wrap wh-grid"><div class="wh-copy">
+        ${A.crumbs([homeCrumb(), [T('war')]])}
+        <p class="eyebrow on-night rv">Workpoint 23</p>
+        <h1 class="display-s rv" data-d="60">${nb(T('warH'))}</h1>
+        <p class="lead rv" data-d="120">${E(T('warLead'))}</p>
+        ${eps.length ? `<a class="btn btn-light rv" data-d="180" href="${warUrl(eps[0].n)}">${I('play')}${E(T('warStart'))}</a>` : ''}</div>
+        <div class="wh-stack" aria-hidden="true">${[eps[7], eps[3], eps[0]].filter(Boolean).map((x, i) => `<img class="whs-${i}" src="${IMG(warSrc(x.cover))}" alt="" width="640" height="336">`).join('')}</div>
+      </div></section>
+      <section class="section war-list"><div class="wrap"><div class="war-grid">${eps.map((x, i) => warCard(x, i)).join('')}</div></div></section>
+      <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
+      A.jsonld({'@context':'https://schema.org', '@type':'ItemList', itemListElement:eps.map((x, i) => ({'@type':'ListItem', position:i + 1, url:new URL(warUrl(x.n), location.href).href, name:x.full || x.title}))});
+      return;
+    }
+    let D;
+    try { D = await A.data('war/' + n, 'war:' + n); } catch (err) { D = null; }
+    if (!D) { main().innerHTML = phead(T('notFoundH'), T('loadError'), [homeCrumb(), [T('war'), 'surgery-wars.html']]); return; }
+    A.setMeta(`${D.title} | Apex Surgery Hospital`, D.desc);
+    const blocks = (D.blocks || []).map(b => b.t === 'img' ? Object.assign({}, b, {src:warSrc(b.src)}) : b);
+    const photos = blocks.filter(b => b.t === 'img');
+    // the first photo is the episode's cover, which the video poster already shows
+    const bodyBlocks = blocks[0] && blocks[0].t === 'img' ? blocks.slice(1) : blocks;
+    const body = articleBody({title:D.title, cat:'review', noFacts:true, blocks:bodyBlocks}, 'war-' + n, S);
+    const text = JSON.stringify(D.blocks || []);
+    const procs = WAR_PROC.filter(([, r]) => r.test(text)).map(([k]) => k);
+    const g = A.gallery(photos.map(p => ({src:p.src, alt:p.alt})));
+    const i0 = eps.indexOf(e), prev = eps[i0 - 1], next = eps[i0 + 1];
+    const crumbs = [homeCrumb(), [T('war'), 'surgery-wars.html'], ['EP.' + n]];
+    const hasToc = body.toc.length > 2;
+    main().innerHTML = `
+      <section class="art-head war-ep-head"><div class="phead-lines" aria-hidden="true"></div><div class="sh-glow" aria-hidden="true"></div><div class="wrap">${A.crumbs(crumbs)}
+        <p class="art-meta rv"><span class="pc-cat">Surgery Wars · EP.${n}</span><span>Workpoint 23</span><span class="art-read">${I('clock')}${E(T('readMin').replace('{n}', body.mins))}</span></p>
+        <h1 class="h-l rv" data-d="60">${nb(D.title)}</h1></div></section>
+      <div class="wrap-mid war-top">
+        ${warStage(e, D)}
+        <nav class="war-eps" aria-label="${E(T('warAll'))}">${eps.map(x => `<a href="${warUrl(x.n)}"${x.n === n ? ' aria-current="page"' : ''}>EP.${x.n}</a>`).join('')}</nav>
+        ${photos.length ? `<div class="war-photos"><p class="wp-h">${I('image')}<span>${E(T('warPhotos'))}</span><i>${photos.length}</i></p><div class="wp-rail">${photos.map((p, j) => `<button type="button" class="wp-th ph-img" ${g.attr(j)} aria-label="${E(T('image'))} ${j + 1}"><img src="${IMG(p.src)}" alt="${E(p.alt || '')}" loading="lazy" decoding="async" width="1200" height="630"></button>`).join('')}</div></div>` : ''}
+      </div>
+      <section class="section art-s war-art"><div class="wrap art-grid${hasToc ? '' : ' notoc'}">${hasToc ? `<nav class="toc art-toc" id="toc" aria-label="${E(T('inArticle'))}"><p class="toc-h">${E(T('inArticle'))}</p>${body.toc.map(x => `<a href="#${x.id}">${E(x.x)}</a>`).join('')}</nav>` : ''}<article class="prose art-prose" id="body">${body.html}
+        ${procs.length ? `<aside class="war-procs rv"><p class="facts-h">${I('stethoscope')}<span>${E(T('warProcs'))}</span></p><div class="wpr-l">${procs.map(k => `<a class="chip" href="${A.svcUrl(k)}">${E(svcName(S, k))}${I('arrow-right')}</a>`).join('')}</div><p class="note">${E(T('resultsVary'))}</p></aside>` : ''}</article></div></section>
+      <section class="section washed war-more"><div class="wrap">
+        <div class="war-pn">${prev ? `<a class="wpn prev" href="${warUrl(prev.n)}"><small>${I('arrow-left')}${E(T('warPrev'))}</small><b>EP.${prev.n} ${E(prev.title)}</b></a>` : '<span></span>'}${next ? `<a class="wpn next" href="${warUrl(next.n)}"><small>${E(T('warNext'))}${I('arrow-right')}</small><b>EP.${next.n} ${E(next.title)}</b></a>` : ''}</div>
+        <div class="shead"><h2 class="h-l rv">${E(T('warAll'))}</h2><a class="link-arrow rv" href="surgery-wars.html">${E(T('warH'))} ${I('arrow-right')}</a></div>
+        <div class="war-grid sm">${eps.filter(x => x.n !== n).map((x, i) => warCard(x, i)).join('')}</div></div></section>
+      <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
+    A.bindMedia(main());
+    main().addEventListener('click', ev => {
+      const b = ev.target.closest('[data-ytw]');
+      if (!b) return;
+      const box = b.parentElement;
+      box.classList.add('playing');
+      box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(b.dataset.ytw)}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="${E(D.title)}"></iframe>`;
+      A.emit('war:play', {ep:n});
+    });
+    if (hasToc) A.tocSpy(A.qs('#toc'), body.toc.map(x => x.id));
+    A.readBar();
+    A.jsonld({'@context':'https://schema.org', '@type':'VideoObject', name:D.title, description:D.desc, thumbnailUrl:[new URL(IMG(warSrc(e.img)), location.href).href, A.yt(D.yt || e.yt)],
+      embedUrl:'https://www.youtube.com/embed/' + (D.yt || e.yt), contentUrl:'https://www.youtube.com/watch?v=' + (D.yt || e.yt), uploadDate:D.date || undefined, inLanguage:'th'});
+    A.breadcrumbLd(crumbs.map(c => [c[0], c[1] || location.href]));
+  }
+
   /* =================== CONTACT =================== */
   async function contact(){
     const S = A.d('shared') || {}, D = A.d('contact') || {};
@@ -816,6 +902,6 @@
       <div class="nf-links rv"><a class="btn btn-light" href="index.html">${E(T('goHome'))}</a><a class="btn btn-ghost" href="services.html">${E(T('services'))}</a><a class="btn btn-ghost" href="blog.html">${E(T('articles'))}</a><a class="btn btn-ghost" href="contact.html">${E(T('contact'))}</a></div></div></section>`;
   }
 
-  const PAGES = {home, services, service, about, doctor, promotions, reviews, blog, article, contact, nose, play, plan, trip, consult, notfound};
+  const PAGES = {home, services, service, about, doctor, promotions, reviews, blog, article, war, contact, nose, play, plan, trip, consult, notfound};
   A.boot(() => (PAGES[document.body.dataset.page] || home)());
 })();

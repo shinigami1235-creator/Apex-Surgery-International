@@ -26,7 +26,7 @@ def _asset_version():
 ASSET_V = _asset_version()  # added to asset URLs so browsers fetch new files after each change
 
 PAGES = [
-    ('index.html',      'home',       ['home', 'about', 'founder'],        '',               'home'),
+    ('index.html',      'home',       ['home', 'about', 'founder', 'war'],        '',               'home'),
     ('about.html',      'about',      ['about', 'founder'],                'about-us/',      'about'),
     ('services.html',   'services',   ['services'],             'surgery/',       'services'),
     ('service.html',    'service',    ['posts'],                       'surgery/',       None),
@@ -35,6 +35,7 @@ PAGES = [
     ('reviews.html',    'reviews',    ['reviews', 'posts', 'home'], 'reviews/',   'reviews'),
     ('blog.html',       'blog',       ['blogs', 'posts'],       'blogs/',         'blogs'),
     ('article.html',    'article',    ['posts'],                'blogs/',         None),
+    ('surgery-wars.html', 'war',      ['war'],                  'surgery-wars/',  None),
     ('contact.html',    'contact',    ['contact'],              'contact-us/',    'contact'),
     ('nose.html',       'nose',       [],                       'nose-preview/',  None),
     ('play.html',       'play',       [],                       'play/',          None),
@@ -50,6 +51,7 @@ META = {
         'service': ('Procedures | Apex Surgery Hospital', 'Facelift, brow lift, rhinoplasty, double eyelid surgery, breast augmentation and liposuction at Apex Surgery Hospital in Bangkok and Phuket.'),
         'doctor': ('Our doctors: Dr. Somboon Waiphrip and Dr. Nantapat Supapannachart | Apex Surgery Hospital', 'Dr. Somboon Waiphrip, plastic and reconstructive surgeon, trained at Ramathibodi, Siriraj and Boston University. Founder Dr. Nantapat Supapannachart, American Board-certified dermatologist.'),
         'article': ('Articles | Apex Surgery Hospital', 'Articles, reviews and news from Apex Surgery Hospital.'),
+        'war': ('APEX on Surgery Wars | Apex Surgery Hospital', 'All 8 episodes of Surgery Wars on Workpoint 23 with the APEX Surgery Hospital team: videos, photos and what each person had done.'),
         'nose': ('Nose preview | Apex Surgery Hospital', 'Try preset nose shapes on a front, 45 degree or side photo. Simulation only.'),
         'play': ('Play and win | Apex Surgery Hospital', 'Five short skill games. Reach a target score and claim a voucher to show at reception.'),
         'plan': ('My Plan | Apex Surgery Hospital', 'The procedures, nose previews, vouchers and trip dates you saved.'),
@@ -61,6 +63,7 @@ META = {
         'service': ('บริการศัลยกรรม | Apex Surgery Hospital', 'ดึงหน้า ยกคิ้ว เสริมจมูก ทำตาสองชั้น เสริมหน้าอก และดูดไขมัน ที่ Apex Surgery Hospital เพลินจิตและภูเก็ต'),
         'doctor': ('แพทย์ของเรา: นพ.สมบูรณ์ ไหวพริบ และ พญ.นันทภัทร์ สุภาพรรณชาติ | Apex Surgery Hospital', 'นพ.สมบูรณ์ ไหวพริบ ศัลยแพทย์ตกแต่งเฉพาะทาง และผู้ก่อตั้ง พญ.นันทภัทร์ สุภาพรรณชาติ แพทย์ผู้เชี่ยวชาญด้านผิวหนัง วุฒิบัตร American Board'),
         'article': ('บทความศัลยกรรม | Apex Surgery Hospital', 'บทความ รีวิว และข่าวสารจาก Apex Surgery Hospital'),
+        'war': ('APEX ในรายการ Surgery Wars | Apex Surgery Hospital', 'Surgery Wars ช่อง Workpoint 23 ครบ 8 ตอน กับทีมแพทย์ APEX Surgery Hospital ทั้งวิดีโอ ภาพ และหัตถการของแต่ละคน'),
         'nose': ('ลองทรงจมูก | Apex Surgery Hospital', 'ลองทรงจมูกสำเร็จรูปบนรูปหน้าตรง หน้าเฉียง 45 องศา หรือด้านข้าง ภาพจำลองเท่านั้น'),
         'play': ('เล่นเกมรับรางวัล | Apex Surgery Hospital', 'เกมสั้นห้าเกม ทำคะแนนถึงเป้าแล้วรับบัตรกำนัลไปแสดงที่เคาน์เตอร์'),
         'plan': ('แผนของฉัน | Apex Surgery Hospital', 'หัตถการ ผลลองทรงจมูก บัตรกำนัล และวันเดินทางที่คุณบันทึกไว้'),

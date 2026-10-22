@@ -1,0 +1,30 @@
+import {createRequire} from 'module';
+const require = createRequire('/opt/npm-tools/node_modules/');
+const {chromium} = require('playwright');
+const OUT = process.argv[2];
+const b = await chromium.launch();
+const errs = [];
+async function shot(url, w, h, name, fn) {
+  const ctx = await b.newContext({viewport:{width:w, height:h}, deviceScaleFactor:1});
+  const p = await ctx.newPage();
+  p.on('console', m => { if (m.type() === 'error') errs.push(name + ': ' + m.text()); });
+  p.on('pageerror', e => errs.push(name + ' PAGEERR: ' + e.message));
+  await p.route(/^https?:\/\/(?!localhost)/, r => r.abort());
+  await p.goto('http://localhost:8765/' + url, {waitUntil:'load'});
+  await p.waitForTimeout(900);
+  await p.evaluate(() => document.querySelectorAll('.rv,.rv-clip,.rv-rail').forEach(e => e.classList.add('in','on','shown')));
+  if (fn) await fn(p);
+  await p.waitForTimeout(300);
+  await p.screenshot({path:`${OUT}/${name}.png`, fullPage:true});
+  const ov = await p.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+  console.log(name, 'overflowX', ov);
+  await ctx.close();
+}
+await shot('surgery-wars.html', 1400, 900, 'hub-d');
+await shot('surgery-wars.html', 390, 800, 'hub-m');
+await shot('surgery-wars.html?ep=4', 1400, 900, 'ep4-d');
+await shot('surgery-wars.html?ep=4', 390, 800, 'ep4-m');
+await shot('en/surgery-wars.html?ep=7', 820, 1100, 'ep7-en-t', async p => { await p.click('.ws-poster'); });
+await shot('index.html', 1400, 900, 'home-d', async p => { await p.evaluate(() => document.querySelector('.war-home').scrollIntoView()); });
+console.log(errs.join('\n') || 'no errors');
+await b.close();

@@ -44,6 +44,26 @@ Score targets and prizes in `assets/features/games/config.js` are examples set f
 | `BRIEF.md` | Design tokens and writing rules |
 | `REQUIREMENTS.md` | Apex IT's checklist and the status of each item |
 
+## Surgery Wars
+
+`surgery-wars.html` lists the eight episodes and `surgery-wars.html?ep=N` shows one: the YouTube video behind the episode cover, a photo strip that opens full screen, the article, the procedures it mentions and links to the other episodes. The home page has a rail of the episodes and the main menu links to the hub.
+
+The articles and photos come from the writers' Google Docs and the "รูปไฟนอล" Drive folders (October 2026). `build/war_import.py` turns the docs into `data/<lang>/war.js` and `data/<lang>/war/<n>.js`. The English text is a translation of the Thai.
+
+In WordPress this becomes a custom post type, "Surgery Wars", one post per episode:
+
+| Field | Type |
+|---|---|
+| Episode number | Number, sets the order and the `EP.N` label |
+| Title, card title | Text. The card title is the short line under the cover |
+| YouTube link | URL. The ID is taken from it |
+| Cover | Image, also the video poster and the Open Graph image |
+| Article | Block editor, with images placed in the text |
+| Photos | Gallery. Defaults to the images in the article |
+| SEO title, meta description | Rank Math |
+
+A new episode is one new post. The hub, the home rail, the episode buttons and the next and previous links update from the list.
+
 ## Current site findings
 
 - Every page on the live site sends `noindex, nofollow` (checked 21 Oct 2026), which keeps the whole site out of Google. IT should fix this now.
@@ -63,3 +83,4 @@ Score targets and prizes in `assets/features/games/config.js` are examples set f
    - "look up to 20 years younger";
    - "leader in facelift";
    - generic rhinoplasty market prices.
+8. The Surgery Wars docs say the hospital and the channel still had to check the text and photos. Confirm the final wording with Apex before launch. The writer's notes also say the raw footage may not be published yet; only the YouTube episodes are used.
