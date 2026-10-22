@@ -94,6 +94,15 @@ const CSS = `
 .s-vary{margin-top:14px;font-size:13px;color:var(--s-on2)}
 .s-step{display:flex;gap:8px;margin-top:18px}
 .s-step .s-btn{min-height:42px}
+/* spacing in the details panel: these beat the margin reset on dl and p above */
+:is(.apxw,.apxw-v) .s-panel .s-facts{gap:10px;margin:0 0 12px}
+:is(.apxw,.apxw-v) .s-panel .s-facts div{padding:14px 16px;min-width:0}
+:is(.apxw,.apxw-v) .s-panel .s-facts dd{overflow-wrap:anywhere}
+:is(.apxw,.apxw-v) .s-panel .s-story{margin:0 0 22px;padding:14px 16px 14px 14px}
+:is(.apxw,.apxw-v) .s-panel .s-ask{margin:0 0 10px}
+:is(.apxw,.apxw-v) .s-panel .s-links{margin-top:12px}
+:is(.apxw,.apxw-v) .s-panel .s-vary{margin-top:12px}
+:is(.apxw,.apxw-v) .s-panel .s-step{margin-top:20px}
 /* chips */
 .apxw .s-chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
 .apxw .s-chip{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 8px 0 16px;border-radius:999px;border:0;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(201,179,221,.28);color:var(--s-on);font-size:15px;font-weight:700;transition:background-color .2s,color .2s,transform .16s var(--s-ease)}
