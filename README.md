@@ -22,6 +22,7 @@ Redesign of apexsurgeryhospital.com for Apex. English is the main language since
 | Body map | Home | Male and female particle bodies from the MakeHuman base mesh (CC0). Tap an area to zoom in and see its procedures, concerns and recovery |
 | Nose preview | `nose.html` | Front, 45 degree and profile photos, preset noses, drag handles, save to phone. Runs in the browser |
 | Golden proportions | `proportions.html` | A front photo is measured on five ratios and warped toward them: chin length (middle and lower face equal), nose width (equal to the gap between the eyes), lip balance (lower lip 1.6 times the upper), jawline (against the cheekbones, with a women and men ideal) and the golden ratio of mouth to nose. Only what treatment can change moves. Each change can be switched off, an amount slider sets the strength, and the saved image lists the ratios before and after. A golden spiral can be shown on the face and the saved image. Runs in the browser |
+| Face analysis | `analysis.html` | A front photo, with two optional side photos at 45°, is read for fine lines, texture and pores, spots and evenness, redness, under the eyes, sagging and folds, shine, the upper lid fold and balance. Each gets a level and the area where it shows most, and the photo marks where it was found. A skin score, a skin age and the golden match sit above. Runs in the browser |
 | Games | `play.html` | Steady Hand, Proportion, Fact Rush, Recovery Sort, Memory Match, Learn mode, daily tries, prize tiers, voucher with QR, LINE reminder opt-in |
 | My Plan | `plan.html` | Procedures, vouchers, trip and notes. Sends to WhatsApp or LINE, or saves to phone |
 | Trip planner | `trip.html` | Day-by-day stay with a calendar file |
@@ -50,6 +51,25 @@ Score targets and prizes in `assets/features/games/config.js` are examples set f
 The ratios and their limits are in `site/assets/features/proportions/geometry.js`. The ideals are standard clinical proportions and the caps keep every change inside what surgery or filler can do: the chin moves at most 12% of the lower face, the nose narrows at most 18%, a lip fills by at most 35% and the jaw narrows by at most 10%. Apex's surgeons should check the ideals and caps, the women and men jaw ideals in particular, before launch. `tests/proportions/` runs it on eleven test photos.
 
 The golden spiral is decoration and has no score, since a spiral can be scaled and turned to fit almost any face. It curls into the pupil of the eye nearer the camera, and its first arc passes through the bottom of the chin, so it sits the same way on every face and moves with the chin in the after picture.
+
+## Face analysis
+
+`site/assets/features/analysis/` has three parts. `skin.js` does the reading: it crops the face so the pupils sit 240 pixels apart, marks out the areas from the face mesh and keeps only pixels close to the skin colour, so hair, glasses and beards drop out. `factors.js` turns the readings into levels, the skin score and the skin age. `index.js` is the page. The reading runs in a background worker so the page keeps moving on slower phones, and takes about 3 to 4 seconds on a phone-speed CPU.
+
+| Factor | How it is read |
+|---|---|
+| Fine lines | Thin dark lines on the forehead (side to side), between the brows (up and down), at the eye corners and under the eyes |
+| Texture | Fine grain and pores on the cheeks, nose and forehead |
+| Spots | Small patches darker and browner than the skin around them, and how evenly colour spreads |
+| Redness | Skin that is redder in hue, so shade and darker skin do not count as red |
+| Under the eyes | Darkness against the cheek below, and the hollow under the lid |
+| Sagging | The folds beside the nose and below the mouth corners, mouth corners and brow height. Side photos add the jawline and the fold seen from the side |
+| Upper lids | Whether a fold line shows above the lashes |
+| Balance | Left and right mesh points mirrored across the middle of the face. Shown only when the face looks straight at the camera |
+
+The ranges in `factors.js` were set on 28 photos of people from their twenties to their eighties, in `tests/analysis/faces/` and `tests/proportions/faces/`. They should be checked against Apex's own patient photos before launch.
+
+The skin age comes from the age model in face-api (MIT licence, loaded from jsDelivr), weighed 60/40 with an age read from the skin readings and kept at 18 or over. The model reads young Asian women several years young, which is why it is not shown alone. The photo checks warn when the face is small, smoothed by a beauty mode, blurred, dimly or unevenly lit, or turned.
 
 ## Surgery Wars
 
@@ -80,7 +100,7 @@ A new episode is one new post. The hub, the home rail, the episode buttons and t
 
 ## Before launch
 
-1. Ask Apex whether the English pages, the nose preview and the game prizes need สบส. approval. The footer carries permit number ฆสพ.สบส.866/2569, which was issued for the Thai content.
+1. Ask Apex whether the English pages, the nose preview, the face analysis (its skin score and skin age in particular) and the game prizes need สบส. approval. The footer carries permit number ฆสพ.สบส.866/2569, which was issued for the Thai content.
 2. Get Apex's own nose shapes and names to replace the placeholder presets.
 3. Get Apex's prize list and confirm the score targets with a human playtest.
 4. Confirm WhatsApp +66 85 000 2001 (the Apex group's international line) is the right number for this hospital.

@@ -33,7 +33,7 @@
   import {mount} from '../assets/features/proportions/index.js';
   // ?lang=en, and for offline testing ?mp=<face_mesh folder URL>
   const q = new URLSearchParams(location.search);
-  let lang = q.get('lang') === 'en' ? 'en' : 'th';
+  let lang = q.get('lang') === 'th' ? 'th' : 'en';
   const log = document.getElementById('log');
   const extra = {};
   if (q.get('mp')) extra.mpBase = q.get('mp').replace(/\/?$/, '/');
@@ -47,7 +47,7 @@
     app = mount(document.getElementById('mount'), {
       lang,
       base: new URL('../assets/', location.href).href,
-      serviceUrl: k => (lang === 'en' ? '../en/' : '../') + 'service.html?p=' + k,
+      serviceUrl: k => (lang === 'th' ? '../th/' : '../') + 'service.html?p=' + k,
       onEvent: (name, data) => { log.textContent = `${name} ${JSON.stringify(data)}\n` + log.textContent; },
       ...extra,
     });

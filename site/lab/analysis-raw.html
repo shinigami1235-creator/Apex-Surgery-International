@@ -1,0 +1,27 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Face analysis raw readings</title></head><body>
+<input type="file" id="f"><pre id="o"></pre>
+<script type="module">
+import {MP_CDN, find, frameFace, toCanvas, loadImage} from '../assets/features/face/mesh.js';
+import {workImage, read, quality} from '../assets/features/analysis/skin.js';
+const q = new URLSearchParams(location.search), mp = q.get('mp') || MP_CDN;
+const FA = q.get('fa') || 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/';
+let fa = null;
+window.age = async (pad = 1) => {
+  if (!fa) { fa = await import(FA + 'dist/face-api.esm.js'); try { await fa.tf.setBackend('webgl'); } catch (e) { await fa.tf.setBackend('cpu'); } await fa.tf.ready(); await fa.nets.ageGenderNet.loadFromUri(FA + 'model/'); }
+  const w = window.__w, L = w.L, ov = [10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109];
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; for (const i of ov){const p=L[i];x0=Math.min(x0,p.x);y0=Math.min(y0,p.y);x1=Math.max(x1,p.x);y1=Math.max(y1,p.y);}
+  const s = Math.max(x1-x0, y1-y0) * pad, cx = (x0+x1)/2, cy = (y0+y1)/2;
+  const c = document.createElement('canvas'); c.width = c.height = 112; c.getContext('2d').drawImage(w.canvas, cx-s/2, cy-s/2, s, s, 0, 0, 112, 112);
+  const r = await fa.nets.ageGenderNet.predictAgeAndGender(c);
+  return {age:Math.round(r.age), g:r.gender[0], gp:+r.genderProbability.toFixed(2), backend:fa.tf.getBackend()};
+};
+window.run = async url => {
+  const im = await loadImage(url), c = toCanvas(im, 2000), hit = await find(mp, c);
+  if (!hit) return null;
+  const f = frameFace(hit.canvas, hit.lm, 2.1, 900, 2000), w = workImage(f.base, f.L);
+  const t0 = performance.now(), r = read(w), ms = performance.now() - t0;
+  const pick = ({lines, texture, even, redness, under, shine, sag, lid, asym, sharp, light, turn, refL, flatSd, skinShare, W, H}) => ({lines, texture, even, redness, under, shine, sag, lid, asym, sharp, light, turn, refL, flatSd, skinShare, W, H});
+  window.__w = w; window.__r = r;
+  return {ms:Math.round(ms), q:quality(w, r), ...pick(r)};
+};
+</script></body></html>

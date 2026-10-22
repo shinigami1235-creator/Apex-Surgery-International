@@ -4,7 +4,7 @@ import {createRequire} from 'module';
 const require = createRequire('/opt/npm-tools/node_modules/');
 const {chromium} = require('playwright');
 const B = 'http://localhost:8765/';
-const PAGES = ['index.html','about.html','services.html','service.html?p=rhinoplasty','doctor.html','promotions.html','reviews.html','blog.html','surgery-wars.html','surgery-wars.html?ep=3','contact.html','nose.html','proportions.html','play.html','plan.html','trip.html','consult.html'];
+const PAGES = ['index.html','about.html','services.html','service.html?p=rhinoplasty','doctor.html','promotions.html','reviews.html','blog.html','surgery-wars.html','surgery-wars.html?ep=3','contact.html','nose.html','analysis.html','proportions.html','play.html','plan.html','trip.html','consult.html'];
 const b = await chromium.launch(), fails = [];
 const p = await (await b.newContext({viewport:{width:1280, height:900}})).newPage();
 p.on('pageerror', e => fails.push(`${p.url()} pageerror ${e.message}`));
