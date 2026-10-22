@@ -475,7 +475,7 @@ function buildControls(view, h, P){
 /* ===================================================================== */
 /* the warp: backward rigid moving least squares on a coarse grid, feathered to zero
    at the ellipse edge, then bilinear resampling of the original pixels */
-function warpInto(srcData, out, ctrl){
+function warpInto(srcData, out, ctrl, grid){
   const W = srcData.width, H = srcData.height, {pts, ell} = ctrl;
   const live = pts.filter(q => Math.abs(q.d.x) + Math.abs(q.d.y) > .05);
   if (!live.length) return;
@@ -486,7 +486,7 @@ function warpInto(srcData, out, ctrl){
   const x0 = Math.max(0, Math.floor(ell.c.x - ex)), x1 = Math.min(W - 1, Math.ceil(ell.c.x + ex));
   const y0 = Math.max(0, Math.floor(ell.c.y - ey)), y1 = Math.min(H - 1, Math.ceil(ell.c.y + ey));
   if (x1 <= x0 || y1 <= y0) return;
-  const w = x1 - x0 + 1, h = y1 - y0 + 1, G = 4, gw = Math.ceil(w / G) + 2, gh = Math.ceil(h / G) + 2;
+  const w = x1 - x0 + 1, h = y1 - y0 + 1, G = grid || 4, gw = Math.ceil(w / G) + 2, gh = Math.ceil(h / G) + 2;
   const gx = new Float32Array(gw * gh), gy = new Float32Array(gw * gh), wt = new Float64Array(n);
   const mask = (x, y) => {
     const dx = x - ell.c.x, dy = y - ell.c.y;
@@ -603,20 +603,56 @@ function glowInto(out, view, h, base){
   ctx.restore();
 }
 
-/* one finished "after" picture for a view */
-function render(view, base, data, h, P, amt, glow, target){
-  /* draws straight into the target canvas when one is given, so the shown picture needs no extra copy */
+/* the soft-light version of a photo is made once and reused, so the slider redraws only the nose */
+const glowCache = new WeakMap();
+function glowSource(base, view, h){
+  const key = view + ':' + KEYS[view].map(k => h[k] ? Math.round(h[k].x / 8) + ',' + Math.round(h[k].y / 8) : '').join(';');
+  const hit = glowCache.get(base);
+  if (hit && hit.key === key) return hit;
+  const c = document.createElement('canvas'); c.width = base.width; c.height = base.height;
+  c.getContext('2d').drawImage(base, 0, 0);
+  glowInto(c, view, h, base);
+  const src = {key, canvas:c, data:c.getContext('2d', {willReadFrequently:true}).getImageData(0, 0, c.width, c.height)};
+  glowCache.set(base, src);
+  return src;
+}
+
+/* the part of the picture a warp and its shading can touch: the warp ellipse with room for the soft shading */
+function warpRegion(ctrl, W, H){
+  const ell = ctrl.ell;
+  const ex = Math.hypot(ell.a.x * ell.ra, ell.b.x * ell.rb), ey = Math.hypot(ell.a.y * ell.ra, ell.b.y * ell.rb);
+  const m = Math.max(40, .3 * Math.max(ex, ey));
+  const x0 = Math.max(0, Math.floor(ell.c.x - ex - m)), y0 = Math.max(0, Math.floor(ell.c.y - ey - m));
+  return {x0, y0, x1:Math.min(W, Math.ceil(ell.c.x + ex + m)), y1:Math.min(H, Math.ceil(ell.c.y + ey + m))};
+}
+
+/* one finished "after" picture for a view.
+   Given a target canvas that already shows this photo, only the region the last warp touched and the region
+   this warp touches are redrawn, which keeps the amount slider quick on tablets. */
+function render(view, base, data, h, P, amt, glow, target, fast){
   const out = target || document.createElement('canvas');
-  if (out.width !== base.width || out.height !== base.height) { out.width = base.width; out.height = base.height; }
-  const ctx = out.getContext('2d');
-  ctx.save(); ctx.globalCompositeOperation = 'copy'; ctx.globalAlpha = 1; ctx.drawImage(base, 0, 0); ctx.restore();
-  if (amt > 0) {
-    const Q = {}; for (const k in P) Q[k] = P[k] * amt;
-    const ctrl = buildControls(view, h, Q);
-    warpInto(data, out, ctrl);
-    if (ctrl.F) shadeFront(ctx, ctrl.F, Q, view === 'front' ? 1 : .7);
+  if (out.width !== base.width || out.height !== base.height) { out.width = base.width; out.height = base.height; out._src = null; }
+  const W = out.width, H = out.height, ctx = out.getContext('2d');
+  const src = glow ? glowSource(base, view, h) : {canvas:base, data};
+  let ctrl = null, Q = null;
+  if (amt > 0) { Q = {}; for (const k in P) Q[k] = P[k] * amt; ctrl = buildControls(view, h, Q); }
+  const reg = ctrl ? warpRegion(ctrl, W, H) : null;
+  const prev = out._src === src.canvas ? out._dirty : undefined;
+  const put = r => { if (r && r.x1 > r.x0 && r.y1 > r.y0) ctx.drawImage(src.canvas, r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0, r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0); };
+  // photos are opaque, so plain drawing replaces the pixels; 'copy' would clear everything outside the region
+  ctx.save(); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.filter = 'none'; ctx.shadowColor = 'transparent';
+  if (prev === undefined) ctx.drawImage(src.canvas, 0, 0);   // first draw of this photo, or the light changed
+  else { put(prev); put(reg); }
+  ctx.restore();
+  if (ctrl) {
+    warpInto(src.data, out, ctrl, fast ? 8 : 4);   // a coarser warp grid while the slider moves, full detail when it stops
+    if (ctrl.F) {
+      ctx.save(); ctx.beginPath(); ctx.rect(reg.x0, reg.y0, reg.x1 - reg.x0, reg.y1 - reg.y0); ctx.clip();
+      shadeFront(ctx, ctrl.F, Q, view === 'front' ? 1 : .7);
+      ctx.restore();
+    }
   }
-  if (glow) glowInto(out, view, h, base);
+  out._src = src.canvas; out._dirty = reg;
   return out;
 }
 
@@ -959,20 +995,29 @@ export function mount(container, opts = {}){
   const ready = v => v.base && v.h;
 
   /* ---------- drawing ---------- */
-  let rq = 0;
-  function draw(){
-    cancelAnimationFrame(rq);
-    rq = requestAnimationFrame(() => {
+  /* One redraw per frame at most. Asking again while one is waiting only updates what it will draw, so a fast
+     slider never keeps pushing the redraw back. While the slider moves the redraw uses the quick warp, and on a
+     slow device it waits a frame between redraws so the slider itself keeps up with the finger. */
+  let rq = 0, rqFast = false, lastCost = 0, lastAt = 0;
+  function draw(fast){
+    rqFast = rq ? rqFast && !!fast : !!fast;
+    if (rq) return;
+    const go = now => {
+      if (rqFast && lastCost > 20 && now - lastAt < lastCost * 1.5) { rq = requestAnimationFrame(go); return; }
+      rq = 0;
       const v = cur();
       if (!ready(v)) return;
-      render(state.view, v.base, v.data, v.h, preset().p, state.amt, state.glow, cvA);
-    });
+      const t0 = performance.now();
+      render(state.view, v.base, v.data, v.h, preset().p, state.amt, state.glow, cvA, rqFast);
+      lastAt = performance.now(); lastCost = lastAt - t0;
+    };
+    rq = requestAnimationFrame(go);
   }
   function showPhoto(){
     const v = cur();
     cvB.width = cvA.width = v.base.width; cvB.height = cvA.height = v.base.height;
     cvB.getContext('2d').drawImage(v.base, 0, 0);
-    cvA.getContext('2d').drawImage(v.base, 0, 0);
+    cvA.getContext('2d').drawImage(v.base, 0, 0); cvA._src = null;
     view.style.setProperty('--ar', (v.base.width / v.base.height).toFixed(4));
     Z.z = 1; Z.ox = Z.oy = 0; // a new view or photo starts unzoomed
     buildPoints();
@@ -1385,8 +1430,8 @@ export function mount(container, opts = {}){
     const t = $$('.np-tab')[(i + d + VIEWS.length) % VIEWS.length]; t.click(); t.focus();
   });
   file.addEventListener('change', () => { const f = file.files[0]; file.value = ''; useFile(f); });
-  amt.addEventListener('input', () => { state.amt = amt.value / 100; amt.style.setProperty('--v', amt.value + '%'); R('amtv').textContent = amt.value + '%'; if (state.mode === 'compare') draw(); });
-  amt.addEventListener('change', remember);
+  amt.addEventListener('input', () => { state.amt = amt.value / 100; amt.style.setProperty('--v', amt.value + '%'); R('amtv').textContent = amt.value + '%'; if (state.mode === 'compare') draw(true); });
+  amt.addEventListener('change', () => { remember(); if (state.mode === 'compare') draw(false); });
   view.addEventListener('dragover', e => e.preventDefault());
   view.addEventListener('drop', e => { e.preventDefault(); const f = e.dataTransfer && e.dataTransfer.files[0]; if (f) useFile(f); });
 

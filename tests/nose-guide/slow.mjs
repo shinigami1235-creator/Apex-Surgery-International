@@ -1,0 +1,30 @@
+// Amount slider on a slow device (CPU slowed 6x): how long the page is blocked during a 1.5s drag, and redraws.
+import {createRequire} from 'module';
+const require = createRequire('/opt/npm-tools/node_modules/');
+const {chromium} = require('playwright');
+import fs from 'fs';
+const DIR = '/home/claude/apex-surgery/tests/nose-guide';
+const FACES = {'photo-1589525231707': 'front.jpg', 'photo-1641351841616': '45.jpg', 'photo-1736439538470': 'side.jpg'};
+const b = await chromium.launch();
+const ctx = await b.newContext({viewport:{width:1000, height:700}});
+const p = await ctx.newPage();
+await p.route(/images\.unsplash\.com/, r => { const k = Object.keys(FACES).find(k => r.request().url().includes(k)); return r.fulfill({status:200, contentType:'image/jpeg', headers:{'access-control-allow-origin':'*'}, body:fs.readFileSync(`${DIR}/${FACES[k]}`)}); });
+await p.route(/cdn\.jsdelivr\.net/, r => r.abort());
+await p.goto('http://localhost:8765/lab/nose.html?lang=en&x=' + Date.now()); await p.waitForSelector('.np');
+await p.click('.np-panel [data-act="sample"]'); await p.waitForSelector('.np-frame.pts .np-pt'); await p.click('.np-bar [data-act="done"]'); await p.waitForTimeout(400);
+await p.click('.np-chip[data-preset="hump-reduction"]'); await p.waitForTimeout(300);
+const cdp = await ctx.newCDPSession(p); await cdp.send('Emulation.setCPUThrottlingRate', {rate:6});
+const r = await p.evaluate(async () => {
+  const cv = document.querySelector('.np-after'), g = cv.getContext('2d'), orig = g.drawImage.bind(g); let c = 0;
+  g.drawImage = (...a) => { if (a[0] !== cv) c++; return orig(...a); };
+  let blocked = 0, longest = 0;
+  const po = new PerformanceObserver(l => l.getEntries().forEach(e => { blocked += Math.max(0, e.duration - 50); longest = Math.max(longest, e.duration); })); po.observe({entryTypes:['longtask']});
+  const amt = document.querySelector('.np input[type=range]'); const t0 = performance.now(); let v = 0, lags = [], prev = performance.now();
+  await new Promise(done => { const id = setInterval(() => { const now = performance.now(); lags.push(now - prev); prev = now; v = (v + 2) % 100; amt.value = v; amt.dispatchEvent(new Event('input', {bubbles:true})); if (now - t0 > 1500) { clearInterval(id); done(); } }, 8); });
+  amt.dispatchEvent(new Event('change', {bubbles:true}));
+  await new Promise(r => setTimeout(r, 300)); po.disconnect();
+  lags.sort((a, b) => a - b);
+  return {redraws:c, longestTask:Math.round(longest), events:lags.length, p95gapBetweenEvents:Math.round(lags[Math.floor(lags.length * .95)])};
+});
+console.log(JSON.stringify(r));
+await b.close();
