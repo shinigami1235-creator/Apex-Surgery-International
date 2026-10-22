@@ -21,6 +21,7 @@ Redesign of apexsurgeryhospital.com for Apex. Thai pages sit at the root and Eng
 |---|---|---|
 | Body map | Home | Male and female particle bodies from the MakeHuman base mesh (CC0). Tap an area to zoom in and see its procedures, concerns and recovery |
 | Nose preview | `nose.html` | Front, 45 degree and profile photos, preset noses, drag handles, save to phone. Runs in the browser |
+| Golden proportions | `proportions.html` | A front photo is measured on five ratios and warped toward them: chin length (middle and lower face equal), nose width (equal to the gap between the eyes), lip balance (lower lip 1.6 times the upper), jawline (against the cheekbones, with a women and men ideal) and the golden ratio of mouth to nose. Only what treatment can change moves. Each change can be switched off, an amount slider sets the strength, and the saved image lists the ratios before and after. Runs in the browser |
 | Games | `play.html` | Steady Hand, Proportion, Fact Rush, Recovery Sort, Memory Match, Learn mode, daily tries, prize tiers, voucher with QR, LINE reminder opt-in |
 | My Plan | `plan.html` | Procedures, vouchers, trip and notes. Sends to WhatsApp or LINE, or saves to phone |
 | Trip planner | `trip.html` | Day-by-day stay with a calendar file |
@@ -43,6 +44,10 @@ Score targets and prizes in `assets/features/games/config.js` are examples set f
 | `_source/crawl.json` | The content crawled from the live site on 21 Oct 2026 |
 | `BRIEF.md` | Design tokens and writing rules |
 | `REQUIREMENTS.md` | Apex IT's checklist and the status of each item |
+
+## Golden proportions
+
+The ratios and their limits are in `site/assets/features/proportions/geometry.js`. The ideals are standard clinical proportions and the caps keep every change inside what surgery or filler can do: the chin moves at most 12% of the lower face, the nose narrows at most 18%, a lip fills by at most 35% and the jaw narrows by at most 10%. Apex's surgeons should check the ideals and caps, the women and men jaw ideals in particular, before launch. `tests/proportions/` runs it on eleven test photos.
 
 ## Surgery Wars
 

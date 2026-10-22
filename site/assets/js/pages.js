@@ -379,6 +379,10 @@
             <span class="tc-art cal" aria-hidden="true">${Array.from({length:21}, (_, i) => `<i class="${[3,4,5,6,7,8,9,10,11,12,13].includes(i) ? 'on' : ''}${i === 17 ? ' fly' : ''}"></i>`).join('')}</span>
             <span class="tc-body"><span class="eyebrow on-night">${E(T('trip'))}</span><b class="h-m">${E(T('tripH'))}</b><span class="tc-p">${E(T('tripP'))}</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">${E(T('tripCta'))} ${I('arrow-right')}</span></span></span></a>
+          <a class="tool-card tool-gold rv" data-d="240" href="proportions.html">
+            <span class="tc-art gold" aria-hidden="true"><svg viewBox="0 0 120 150"><ellipse class="tg-face" cx="60" cy="74" rx="40" ry="54"/><path class="tg-l" d="M14 46h92M14 84h92M14 124h92M24 46v78"/><path class="tg-g" d="M50 46v38M70 46v38M38 104h44"/><circle class="tg-d" cx="60" cy="46" r="2.6"/><circle class="tg-d" cx="60" cy="84" r="2.6"/><circle class="tg-d" cx="60" cy="124" r="2.6"/></svg></span>
+            <span class="tc-body"><span class="eyebrow on-night">${E(T('prop'))}</span><b class="h-m">${E(T('propH'))}</b><span class="tc-p">${E(T('propPageP'))}</span>
+            <span class="tc-foot"><span class="btn btn-light btn-sm">${E(T('propCta'))} ${I('arrow-right')}</span></span></span></a>
         </div>
       </div>
     </section>
@@ -443,6 +447,7 @@
       <section class="section washed"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(T('tools'))}</h2></div>
         <div class="mini-tools">
           <a class="mini-tool rv" href="nose.html">${I('scan-face')}<b>${E(T('nose'))}</b><span>${E(T('nosePageP'))}</span></a>
+          <a class="mini-tool rv" data-d="35" href="proportions.html">${I('gem')}<b>${E(T('prop'))}</b><span>${E(T('propPageP'))}</span></a>
           <a class="mini-tool rv" data-d="70" href="trip.html">${I('calendar')}<b>${E(T('trip'))}</b><span>${E(T('tripP'))}</span></a>
           <a class="mini-tool rv" data-d="140" href="play.html">${I('sparkles')}<b>${E(T('games'))}</b><span>${E(T('gamesP'))}</span></a>
           <a class="mini-tool rv" data-d="210" href="doctor.html">${I('stethoscope')}<b>${E(T('doctor'))}</b><span>${E((S.doctor && S.doctor.name) || '')}</span></a>
@@ -891,8 +896,9 @@
     await A.mount('#' + hostId, name, ex);
   };
   const nose = featurePage('nose', 'nosePageH', 'nosePageP', 'nose', () => A.mpBase ? {mpBase:A.mpBase} : {}, 'night-s');
+  const proportions = featurePage('proportions', 'propPageH', 'propPageP', 'proportions', () => A.mpBase ? {mpBase:A.mpBase} : {}, 'prop-s');
   const play = featurePage('games', 'playPageH', 'playPageP', 'games', {}, 'play-s');
-  const LINKS = {bodymap:'index.html#hero', nose:'nose.html', games:'play.html', trip:'trip.html', plan:'plan.html', consult:'consult.html'};
+  const LINKS = {bodymap:'index.html#hero', nose:'nose.html', proportions:'proportions.html', games:'play.html', trip:'trip.html', plan:'plan.html', consult:'consult.html'};
   const plan = featurePage('plan', 'planPageH', 'planPageP', 'plan', {links:LINKS});
   const trip = featurePage('trip', 'tripPageH', 'tripP', 'trip', () => Object.assign({links:LINKS}, A.param('p') ? {procedures:[A.param('p')]} : {}));
   const consult = featurePage('consult', 'consultPageH', 'consultPageP', 'consult', () => ({procedure:A.param('p') || undefined}));
@@ -902,6 +908,6 @@
       <div class="nf-links rv"><a class="btn btn-light" href="index.html">${E(T('goHome'))}</a><a class="btn btn-ghost" href="services.html">${E(T('services'))}</a><a class="btn btn-ghost" href="blog.html">${E(T('articles'))}</a><a class="btn btn-ghost" href="contact.html">${E(T('contact'))}</a></div></div></section>`;
   }
 
-  const PAGES = {home, services, service, about, doctor, promotions, reviews, blog, article, war, contact, nose, play, plan, trip, consult, notfound};
+  const PAGES = {home, services, service, about, doctor, promotions, reviews, blog, article, war, contact, nose, proportions, play, plan, trip, consult, notfound};
   A.boot(() => (PAGES[document.body.dataset.page] || home)());
 })();

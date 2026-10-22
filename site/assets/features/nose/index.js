@@ -728,6 +728,8 @@ function detect(base, canvas){
     return new Promise((res, rej) => {
       const t = setTimeout(() => rej(new Error('timeout')), 25000);
       fm.onResults(r => { clearTimeout(t); res(r.multiFaceLandmarks && r.multiFaceLandmarks[0] || null); });
+      // the model keeps tracking state from the last photo even in still-image mode, which makes it miss the next face
+      try { fm.reset && fm.reset(); } catch (e) {}
       fm.send({image:canvas}).catch(e => { clearTimeout(t); rej(e); });
     });
   };
