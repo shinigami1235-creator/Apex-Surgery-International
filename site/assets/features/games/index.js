@@ -405,7 +405,7 @@ const CSS = `
 .apxg .g-sheet .g-pill{margin-top:16px}
 .apxg .g-signs{display:grid;gap:10px;margin:18px 0 6px}
 .apxg .g-signs .g-btn{justify-content:flex-start;padding-left:18px}
-.apxg .g-signs .g-btn.line{background:#06C755;color:#fff}
+.apxg .g-signs .g-btn.line{background:#00843A;color:#fff}
 .apxg .g-note{font-size:13px;color:var(--g-ink2);margin:10px 0 0;line-height:1.5}
 .apxg .g-note .g-tagi{display:inline-flex;align-items:center;height:22px;padding:0 9px;margin-right:8px;border-radius:999px;background:var(--g-rose);color:#fff;font-size:12px;font-weight:800;vertical-align:1px}
 .apxg .g-field{display:grid;gap:6px;margin-top:18px}

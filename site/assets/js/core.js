@@ -180,7 +180,7 @@
     const f = document.createElement('footer');
     f.className = 'ftr';
     const ext = ' target="_blank" rel="noopener"';
-    const br = (S.branches || []).map(b => `<div class="ftr-br"><h5>${A.esc(b.short || b.name)}</h5><p>${A.esc(b.addr)}</p>
+    const br = (S.branches || []).map(b => `<div class="ftr-br"><h2 class="ftr-h">${A.esc(b.short || b.name)}</h2><p>${A.esc(b.addr)}</p>
       <button type="button" class="ftr-copy" data-copy="${A.esc(b.name + ', ' + b.addr)}">${A.ic('copy')}${A.ic('check')}<span>${A.esc(A.t('copyAddr'))}</span></button>
       <a href="${b.tel}">${A.ic('phone')}${A.esc(b.phone)}</a><a href="${b.map}"${ext}>${A.ic('navigation')}${A.esc(A.t('directions'))}</a></div>`).join('');
     const aaci = S.aaci ? `<a class="ftr-aaci" href="${S.aaci.h}"${ext} aria-label="${A.esc(A.t('aaciH'))}"><img src="${A.img(S.aaci.src)}" alt="${A.esc(S.aaci.alt)}" loading="lazy" decoding="async" width="84" height="84"><span><b>${A.esc(A.t('aaciH'))}</b><small>APEX Surgery Hospital Ploenchit</small></span></a>` : '';
@@ -190,12 +190,12 @@
         <p>${A.esc(A.lang === 'th' ? S.brandTh : (S.brandTh && S.brand ? S.brand : S.brand))}</p>
         <p class="ftr-lic">${A.esc(S.license || '')}</p>${aaci}
         <div class="ftr-socials">${(S.socials || []).map(s => `<a href="${s.h}"${ext} aria-label="${A.esc(s.x || s.k)}">${A.socIcon(s.k)}</a>`).join('')}<a href="${A.WA.h}"${ext} aria-label="WhatsApp">${A.ic('whatsapp')}</a></div></div>
-      <div><h5>${A.esc(A.t('ourServices'))}</h5>${svcs}<a href="nose.html">${A.esc(A.t('nose'))}</a><a href="play.html">${A.esc(A.t('games'))}</a></div>
+      <div><h2 class="ftr-h">${A.esc(A.t('ourServices'))}</h2>${svcs}<a href="nose.html">${A.esc(A.t('nose'))}</a><a href="play.html">${A.esc(A.t('games'))}</a></div>
       ${br}
-      <div><h5>${A.esc(A.t('contactLine'))}</h5><a href="${S.line && S.line.h}"${ext} style="padding:0"><img class="qr" src="${A.img(S.line && S.line.qr)}" alt="LINE ${A.esc(S.line && S.line.x)}" loading="lazy" decoding="async" decoding="async"></a><p style="margin-top:10px">${A.esc(S.line && S.line.x)}</p>
+      <div><h2 class="ftr-h">${A.esc(A.t('contactLine'))}</h2><a href="${S.line && S.line.h}"${ext} style="padding:0"><img class="qr" src="${A.img(S.line && S.line.qr)}" alt="LINE ${A.esc(S.line && S.line.x)}" loading="lazy" decoding="async" decoding="async"></a><p style="margin-top:10px">${A.esc(S.line && S.line.x)}</p>
         <a href="${A.WA.h}"${ext}>${A.ic('whatsapp')}${A.esc(A.WA.x)}</a></div>
     </div>
-    <div class="ftr-word" aria-hidden="true">APEX</div>
+    <div class="ftr-word" data-w="APEX" aria-hidden="true"></div>
     ${S.footerNote ? `<p class="ftr-note">${A.esc(S.footerNote)}</p>` : ''}
     <div class="ftr-bot"><span>${A.esc(S.copyright || '')}</span><span>${[['th','TH'],['en','EN']].map(([c,t]) => `<a href="${A.langHref(c)}" hreflang="${c}" style="display:inline;padding:0 6px">${t}</a>`).join('·')}</span></div></div>`;
     document.body.append(f);

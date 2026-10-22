@@ -949,7 +949,7 @@ html[lang=en] .art-prose p.lede::first-letter{float:left;font-size:4.1em;line-he
 .o-btn:hover{filter:brightness(1.06)}
 .o-btn:active{transform:scale(.96)}
 .o-btn .i{width:20px;height:20px}
-.o-btn.ln{background:#06C755}.o-btn.wa{background:#1F8F4E}
+.o-btn.ln{background:#00843A}.o-btn.wa{background:#167A43}
 .o-btn.lg{height:50px;padding:0 22px 0 16px;font-size:16px}
 .o-btn.lg .i{width:24px;height:24px}
 .o-more{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--plum)}
@@ -1075,3 +1075,15 @@ html[lang=en] .art-prose p.lede::first-letter{float:left;font-size:4.1em;line-he
   .hdr-right{gap:6px}
 }
 @media (max-width:360px){.hdr-right .lang a{padding:3px 5px}}
+
+/* Revision 1g: footer headings are h2 for a correct heading order; the big footer word is drawn by CSS */
+.ftr .ftr-h{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--lilac);margin:0 0 16px;font-weight:700;line-height:1.4}
+.ftr-word::before{content:attr(data-w)}
+.night .tiktok-link small{color:var(--on-night-2)}
+
+/* Revision 1g: readable text on the dark recovery card, the dark consult band and the menu's language switch */
+.recov .eyebrow{color:var(--lilac-300)}
+.recov .note{color:var(--on-night-2)}
+.section:not(.night) .consult-band .cb-big small{color:var(--lilac-200)}
+.cb-big small{color:var(--ink-2)}
+.sheet .lang a:not(.on){color:var(--on-night-2)}

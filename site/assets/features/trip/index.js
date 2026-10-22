@@ -165,8 +165,8 @@ const CSS = `
 .apxt .t-btn.plum:hover{background:var(--t-plum7)}
 .apxt .t-btn.ghost{background:#fff;color:var(--t-plum);border-color:var(--t-l3)}
 .apxt .t-btn.ghost:hover{border-color:var(--t-plum)}
-.apxt .t-btn.wa{background:#25D366;color:#fff}.apxt .t-btn.wa:hover{background:#1ebe5a}
-.apxt .t-btn.line{background:#06C755;color:#fff}.apxt .t-btn.line:hover{background:#05b04b}
+.apxt .t-btn.wa{background:#167A43;color:#fff}.apxt .t-btn.wa:hover{background:#116636}
+.apxt .t-btn.line{background:#00843A;color:#fff}.apxt .t-btn.line:hover{background:#006F31}
 .apxt .t-send{margin-top:22px;padding:18px;border-radius:18px;background:var(--t-l1);box-shadow:inset 0 0 0 1px var(--t-l2)}
 .apxt .t-send h4{margin:0 0 4px;font-size:17px}
 .apxt .t-send p{margin:0;color:var(--t-ink2,#5A4A66);font-size:15px}

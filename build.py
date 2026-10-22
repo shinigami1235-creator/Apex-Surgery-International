@@ -165,7 +165,7 @@ def page_html(lang, fname, key, extras, prod_path, meta_id):
             {'@type': 'ListItem', 'position': 2, 'name': title.split('|')[0].strip(), 'item': canon}]})
     ld_html = '\n'.join(f'<script type="application/ld+json">{json.dumps(x, ensure_ascii=False)}</script>' for x in ld)
 
-    data_scripts = ''.join(f'<script src="{up}assets/data/{lang}/{n}.js?v={ASSET_V}"></script>\n' for n in ['shared'] + extras)
+    data_scripts = ''.join(f'<script defer src="{up}assets/data/{lang}/{n}.js?v={ASSET_V}"></script>\n' for n in ['shared'] + extras)
     # PREVIEW is True for the GitHub Pages review copy so search engines skip it. Set it to False for the live site.
     robots = '<meta name="robots" content="noindex">' if (PREVIEW or key in ('notfound', 'plan')) else ''
     return f'''<!doctype html>
@@ -209,10 +209,10 @@ if (/^(localhost|127\\.0\\.0\\.1)$/.test(location.hostname)) {{
 <main id="main" tabindex="-1"></main>
 <noscript><p style="padding:120px 20px;text-align:center">Apex Surgery Hospital · 088-870-0039 · LINE @apexsurgery</p></noscript>
 <script>window.APEX_V="{ASSET_V}"</script>
-<script src="{up}assets/js/icons.js?v={ASSET_V}"></script>
-<script src="{up}assets/js/i18n.js?v={ASSET_V}"></script>
-{data_scripts}<script src="{up}assets/js/core.js?v={ASSET_V}"></script>
-<script src="{up}assets/js/pages.js?v={ASSET_V}"></script>
+<script defer src="{up}assets/js/icons.js?v={ASSET_V}"></script>
+<script defer src="{up}assets/js/i18n.js?v={ASSET_V}"></script>
+{data_scripts}<script defer src="{up}assets/js/core.js?v={ASSET_V}"></script>
+<script defer src="{up}assets/js/pages.js?v={ASSET_V}"></script>
 </body>
 </html>
 '''

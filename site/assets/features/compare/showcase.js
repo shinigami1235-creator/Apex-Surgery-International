@@ -86,8 +86,8 @@ const CSS = `
 .s-btn{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 18px;border-radius:999px;font-weight:800;font-size:15px;text-decoration:none;transition:transform .16s var(--s-ease),background-color .2s,box-shadow .2s}
 .s-btn:active{transform:scale(.97)}
 .s-btn svg{width:20px;height:20px;flex:none}
-.s-btn.ln{background:#06C755;color:#fff}
-.s-btn.wa{background:#1F8F4E;color:#fff}
+.s-btn.ln{background:#00843A;color:#fff}
+.s-btn.wa{background:#167A43;color:#fff}
 .s-btn.gh{background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px rgba(201,179,221,.45)}
 .s-btn.gh:hover{background:rgba(255,255,255,.08)}
 .s-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}

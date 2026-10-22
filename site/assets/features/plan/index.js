@@ -126,10 +126,10 @@ const CSS = `
 .apxp .p-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 20px;border-radius:999px;border:2px solid transparent;font-weight:700;font-size:16px;cursor:pointer;text-decoration:none;transition:transform .16s var(--p-ease),background-color .2s,border-color .2s;width:100%}
 .apxp .p-btn:active{transform:scale(.97)}
 .apxp .p-btn svg{width:22px;height:22px;flex:none}
-.apxp .p-btn.wa{background:#1F8F4E;color:#fff}
+.apxp .p-btn.wa{background:#167A43;color:#fff}
 .apxp .p-btn.wa:hover{background:#18763F}
-.apxp .p-btn.line{background:#06A33C;color:#fff}
-.apxp .p-btn.line:hover{background:#058A33}
+.apxp .p-btn.line{background:#00843A;color:#fff}
+.apxp .p-btn.line:hover{background:#006F31}
 .apxp .p-btn.plum{background:var(--p-plum);color:#fff}
 .apxp .p-btn.plum:hover{background:var(--p-plum7)}
 .apxp .p-btn.ghost{background:#fff;color:var(--p-plum);border-color:var(--p-l3)}

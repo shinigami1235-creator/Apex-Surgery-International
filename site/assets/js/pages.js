@@ -144,13 +144,18 @@
   const bindChips = (root, fn) => root.addEventListener('click', e => { const c = e.target.closest('.chip[data-k]'); if (!c) return; A.qsa('.chip[data-k]', c.parentElement).forEach(b => b.setAttribute('aria-pressed', b === c)); fn(c.dataset.k); });
   const reviewRail = (items, id) => {
     const g = A.gallery(items.map(i => ({src:i.src, alt:i.alt || ''})));
-    return `<div class="rail rv-rail" id="${id}">${items.map((r, i) => `<button type="button" class="ba-card ph-img" ${g.attr(i)} data-cat="${E(r.cat || '')}"><img src="${IMG(r.src)}" alt="${E(r.alt || '')}" loading="lazy" decoding="async" decoding="async"></button>`).join('')}</div>`;
+    return `<div class="rail rv-rail" id="${id}">${items.map((r, i) => `<button type="button" class="ba-card ph-img" ${g.attr(i)} data-cat="${E(r.cat || '')}" aria-label="${E(T('baOpen'))} ${i + 1}"><img src="${IMG(r.src)}" alt="${E(r.alt || '')}" loading="lazy" decoding="async" decoding="async"></button>`).join('')}</div>`;
   };
   /* review videos: the stories module renders them as a swipe viewer; until it exists, a plain rail */
   const storiesHost = (videos, id='stories', title) => `<div class="stories-host" id="${id}" data-videos='${E(JSON.stringify(videos || []))}' data-title="${E(title || '')}">${videoRail(videos)}</div>`;
-  const videoRail = videos => `<div class="rail vid-rail">${(videos || []).map((v, i) => `<button type="button" class="vid-card" data-vid="${E(v)}" aria-label="${E(T('playVideo'))} ${i+1}"><video src="${IMG(v)}#t=0.5" preload="metadata" muted playsinline tabindex="-1"></video><span class="pl">${I('play')}</span></button>`).join('')}</div>`;
-  const mountStories = async (el, extra={}) => {
+  const videoRail = videos => `<div class="rail vid-rail">${(videos || []).map((v, i) => `<button type="button" class="vid-card" data-vid="${E(v)}" aria-label="${E(T('playVideo'))} ${i+1}"><span class="pl">${I('play')}</span></button>`).join('')}</div>`;
+  const mountStories = async (el, extra={}, now) => {
     if (!el) return;
+    // the review videos are the heaviest part of a page, so nothing loads until the section is close to the screen
+    if (!now && 'IntersectionObserver' in window) {
+      const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); mountStories(el, extra, true); } }, {rootMargin:'500px 0px'});
+      io.observe(el); return;
+    }
     const videos = JSON.parse(el.dataset.videos || '[]').map(v => IMG(v));
     try {
       const m = await import(A.vurl(A.assets + 'features/stories/index.js'));
@@ -342,7 +347,7 @@
       <div class="wrap intro2">
         <div><p class="eyebrow rv">${E(T('introH'))}</p>
           <p class="intro-big rv" data-d="60" data-field="home.intro">${E((H.intro && H.intro.x) || '')}</p>
-          <a class="link-arrow rv" href="about.html">${E((H.intro && H.intro.btn && H.intro.btn.x) || T('readMore'))} ${I('arrow-right')}</a></div>
+          <a class="link-arrow rv" href="about.html">${E(T('aboutMore'))} ${I('arrow-right')}</a></div>
         <div class="intro-side">
           ${Fd ? `<a class="intro-fd rv-clip" href="about.html#founder">
             <span class="ifd-ph"><img src="${IMG(Fd.portrait || Fd.photo)}" alt="${E(Fd.name)}" loading="lazy" decoding="async" data-par="14"></span>

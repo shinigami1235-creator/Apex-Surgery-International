@@ -307,7 +307,7 @@ export function mount(container, opts = {}) {
     chips.append(mk(null, L(T.all), all.length), ...counts.map(([k, n]) => mk(k, pname(k), n)));
     const prev = h('button', { type: 'button', class: 'r-arrow', 'aria-label': L(T.left), html: ICON.left });
     const next = h('button', { type: 'button', class: 'r-arrow', 'aria-label': L(T.right), html: ICON.right });
-    track = h('div', { class: 's-track r-track', role: 'list' });
+    track = h('div', { class: 's-track r-track' });
     const step = dir => track.scrollBy({ left: dir * Math.max(200, track.clientWidth * .8), behavior: reduced() ? 'auto' : 'smooth' });
     prev.addEventListener('click', () => step(-1));
     next.addEventListener('click', () => step(1));
@@ -335,13 +335,13 @@ export function mount(container, opts = {}) {
     io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => {
       if (!e.isIntersecting) return;
       const v = e.target; io.unobserve(v); v.src = v.dataset.src;
-    }), { root: track, rootMargin: '0px 300px' }) : null;
+    }), { rootMargin: '100px 0px' }) : null;   // measured against the screen, so cards load only once they are actually in view
     groups.forEach(g => g.items.forEach((x, j) => {
       const vid = h('video', { muted: true, playsinline: true, loop: true, preload: 'metadata', 'aria-hidden': 'true', tabindex: '-1', 'data-src': x.src + '#t=1.5', poster: x.poster });
       vid.muted = true;
       vid.addEventListener('loadeddata', () => vid.classList.add('ok'));
       if (io) io.observe(vid); else vid.src = vid.dataset.src;
-      const b = h('button', { type: 'button', class: 'r-card' + (seenSrc.has(x.src) ? ' seen' : ''), role: 'listitem', 'data-i': x.i, 'aria-label': fill(L(T.open), { p: pname(g.key), n: j + 1, m: g.items.length }) },
+      const b = h('button', { type: 'button', class: 'r-card' + (seenSrc.has(x.src) ? ' seen' : ''), 'data-i': x.i, 'aria-label': fill(L(T.open), { p: pname(g.key), n: j + 1, m: g.items.length }) },
         vid,
         h('span', { class: 'r-tag', 'aria-hidden': 'true' }, h('i', null, pname(g.key)), h('span', { class: 'r-seen', title: L(T.watched), html: ICON.check })),
         h('span', { class: 'r-play', 'aria-hidden': 'true', html: ICON.play }),

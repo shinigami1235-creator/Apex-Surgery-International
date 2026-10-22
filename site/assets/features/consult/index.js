@@ -212,8 +212,8 @@ const CSS = `
 .apxc .c-btn.plum{background:var(--c-plum);color:#fff}
 .apxc .c-btn.plum:hover{background:var(--c-plum7)}
 .apxc .c-btn.rose{background:var(--c-rose);color:#fff}
-.apxc .c-btn.wa{background:#1F8F4E;color:#fff}
-.apxc .c-btn.line{background:#06A33C;color:#fff}
+.apxc .c-btn.wa{background:#167A43;color:#fff}
+.apxc .c-btn.line{background:#00843A;color:#fff}
 .apxc .c-btn.ghost{background:#fff;color:var(--c-plum);border-color:var(--c-l3)}
 .apxc .c-btn[disabled]{opacity:.5;cursor:progress}
 .apxc .c-submit{margin-top:24px;width:100%}
