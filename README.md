@@ -13,7 +13,7 @@ Redesign of apexsurgeryhospital.com for Apex. English is the main language since
 | Translation | Done by us, priced as a small extra |
 | Content | All of Apex's pages, 25 articles and reviews, and promotions are in the design |
 | LINE reminders | The opt-in tick and frequency choice are in the design. Sending waits until Gid has discussed it with Apex |
-| Pricing | ฿735,000 in total (updated 22 Oct 2026). Design stage ฿505,000: the original ฿340,000, plus face analysis ฿75,000, golden proportions ฿40,000, Surgery Wars ฿25,000 and the breast implant viewer ฿25,000. WordPress stage ฿230,000: the original ฿210,000 plus ฿20,000 for the episode post type and the new tool blocks. Moving English to the root is included at no charge. The chin, forehead and nose implant viewers are not priced yet, at about ฿10,000 to ฿15,000 each |
+| Pricing | ฿765,000 in total (updated 22 Oct 2026). Design stage ฿535,000: the original ฿340,000, plus face analysis ฿75,000, golden proportions ฿40,000, Surgery Wars ฿25,000, the breast implant viewer ฿25,000 and the chin, forehead and nose implant viewers as a bundle at ฿30,000. The games are listed at ฿70,000 and given free. WordPress stage ฿230,000: the original ฿210,000 plus ฿20,000 for the episode post type and the new tool blocks. Moving English to the root is included at no charge |
 
 ## Features in the design
 
