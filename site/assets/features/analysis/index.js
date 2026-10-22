@@ -513,7 +513,8 @@ export function mount(container, opts = {}){
     });
   }
   const setBusy = on => { busy.hidden = !on; state.busy = on; };
-  const tick = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
+  // let the busy screen paint first; hidden tabs never paint, so a timer moves on regardless
+  const tick = () => new Promise(r => { let done = false; const go = () => { if (!done) { done = true; r(); } }; requestAnimationFrame(() => setTimeout(go, 0)); setTimeout(go, 120); });
 
   /* ---------- photos ---------- */
   async function prepare(canvas){
