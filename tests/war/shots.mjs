@@ -24,7 +24,7 @@ await shot('surgery-wars.html', 1400, 900, 'hub-d');
 await shot('surgery-wars.html', 390, 800, 'hub-m');
 await shot('surgery-wars.html?ep=4', 1400, 900, 'ep4-d');
 await shot('surgery-wars.html?ep=4', 390, 800, 'ep4-m');
-await shot('en/surgery-wars.html?ep=7', 820, 1100, 'ep7-en-t', async p => { await p.click('.ws-poster'); });
+await shot('surgery-wars.html?ep=7', 820, 1100, 'ep7-en-t', async p => { await p.click('.ws-poster'); });
 await shot('index.html', 1400, 900, 'home-d', async p => { await p.evaluate(() => document.querySelector('.war-home').scrollIntoView()); });
 console.log(errs.join('\n') || 'no errors');
 await b.close();

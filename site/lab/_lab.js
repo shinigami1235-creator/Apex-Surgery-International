@@ -13,7 +13,7 @@ export function lab({ title, mountFn, el, extra }) {
   const opts = () => ({
     lang,
     base: new URL('../assets/', location.href).href,
-    serviceUrl: k => (lang === 'en' ? '../en/' : '../') + 'service.html?p=' + k,
+    serviceUrl: k => (lang === 'th' ? '../th/' : '../') + 'service.html?p=' + k,
     onEvent,
     links: { bodymap: 'bodymap.html', nose: 'nose.html', games: 'games.html', trip: 'trip.html', plan: 'plan.html', consult: 'consult.html' },
     ...(extra ? extra(lang) : {})

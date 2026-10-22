@@ -7,7 +7,7 @@ A redesign of https://www.apexsurgeryhospital.com, a plastic surgery hospital in
 The current build is a static preview for GitHub Pages. It will later become a WordPress theme, so keep data separate from markup and keep every feature self-contained.
 
 - Site root: `/home/claude/apex-surgery/site/`
-  - Thai pages at the root, English pages under `/en/`.
+  - English pages at the root, Thai pages under `/th/`.
   - Shared assets in `/assets/`.
 - Crawled source content (Thai, verbatim): `/home/claude/apex-surgery/_source/crawl.json`.
   - `pages` is keyed by URL path.

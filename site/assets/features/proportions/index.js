@@ -4,9 +4,9 @@
    Everything runs in the browser. No photo leaves the device.
 
    mount(container, opts) -> {destroy()}
-   opts: lang 'th' | 'en', base (assets/ URL), serviceUrl(key), onEvent(name, data)
+   opts: lang 'en' | 'th', base (assets/ URL), serviceUrl(key), onEvent(name, data)
    Testing only: mpBase (folder of @mediapipe/face_mesh), sample (photo URL) */
-import {ROWS, I, V, clamp, measure, score, near, overall, checks, plan, moved, frame} from './geometry.js';
+import {ROWS, I, V, clamp, measure, score, near, overall, checks, plan, moved, frame, spiral} from './geometry.js';
 import {warpInto} from './warp.js';
 
 const MP_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/';
@@ -18,7 +18,7 @@ const STR = {
     change:'New photo', photo:'Photo', take:'Take photo', choose:'Choose photo', sample:'Sample face', privacy:'No photo uploaded.',
     hint:'Face the camera straight on with your lips closed.', emptyH:'Take or choose a front photo.',
     busy:'Measuring your face', credit:'Sample photo: Unsplash', rows:'Proportions', settings:'Settings',
-    ideal:'Ideal for', women:'Women', men:'Men', amount:'Amount', guides:'Guides',
+    ideal:'Ideal for', women:'Women', men:'Men', amount:'Amount', guides:'Guides', spiral:'Spiral',
     before:'Before', after:'After', sim:'Simulation only', compare:'Before and after',
     now:'Now', then:'After', fine:'Already in proportion', apply:'Apply',
     save:'Save', saveBtn:'Save to phone', plan:'Add to My Plan', planned:'Added to My Plan', consult:'Ask a surgeon',
@@ -37,7 +37,7 @@ const STR = {
     change:'เปลี่ยนรูป', photo:'รูปภาพ', take:'ถ่ายรูป', choose:'เลือกรูป', sample:'ใบหน้าตัวอย่าง', privacy:'ไม่มีการอัปโหลดรูปภาพ',
     hint:'หันหน้าตรงเข้าหากล้องและปิดปาก', emptyH:'ถ่ายหรือเลือกรูปหน้าตรง',
     busy:'กำลังวัดสัดส่วนใบหน้า', credit:'ภาพตัวอย่าง: Unsplash', rows:'สัดส่วน', settings:'การตั้งค่า',
-    ideal:'สัดส่วนสำหรับ', women:'ผู้หญิง', men:'ผู้ชาย', amount:'ระดับ', guides:'เส้นสัดส่วน',
+    ideal:'สัดส่วนสำหรับ', women:'ผู้หญิง', men:'ผู้ชาย', amount:'ระดับ', guides:'เส้นสัดส่วน', spiral:'เกลียวทอง',
     before:'ก่อน', after:'หลัง', sim:'ภาพจำลองเท่านั้น', compare:'ก่อนและหลัง',
     now:'ตอนนี้', then:'หลังปรับ', fine:'ได้สัดส่วนแล้ว', apply:'ปรับ',
     save:'บันทึก', saveBtn:'บันทึกลงโทรศัพท์', plan:'เพิ่มในแผนของฉัน', planned:'เพิ่มในแผนแล้ว', consult:'ปรึกษาศัลยแพทย์',
@@ -101,8 +101,12 @@ const CSS = `
 .fp-frame canvas,.fp-frame svg.fp-g{position:absolute;inset:0;width:100%;height:100%;display:block}
 .fp-frame .fp-after,.fp-frame .fp-ga{clip-path:inset(0 0 0 var(--x))}
 .fp-frame .fp-gb{clip-path:inset(0 calc(100% - var(--x)) 0 0)}
-.fp-g{pointer-events:none;overflow:visible;transition:opacity .25s}
-.fp.noguides .fp-g{opacity:0}
+.fp-g{pointer-events:none;overflow:hidden}
+.fp.noguides .fp-g .gd,.fp.nospiral .fp-g .sp{opacity:0}
+.fp-g g{transition:opacity .25s}
+.fp-g .sq{fill:none;stroke:var(--fp-gold);stroke-width:.9;opacity:.45;vector-effect:non-scaling-stroke}
+.fp-g .spl{fill:none;stroke:var(--fp-gold);stroke-width:2.2;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
+.fp-g .sps{fill:none;stroke:rgba(20,6,31,.5);stroke-width:4.4;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
 .fp-g .sh{fill:none;stroke:rgba(20,6,31,.55);stroke-width:3.2;vector-effect:non-scaling-stroke;stroke-linecap:round}
 .fp-g .ln{fill:none;stroke:var(--fp-gold);stroke-width:1.3;opacity:.92;vector-effect:non-scaling-stroke;stroke-linecap:round}
 .fp-g .dsh{stroke-dasharray:4 4}
@@ -149,7 +153,7 @@ const CSS = `
 @media (max-width:420px){.fp-hide-s{display:none}}
 .fp-hint{margin:0;font-size:14.5px;color:var(--fp-ink-2)}
 .fp-credit{margin:0;padding:0 8px 4px;font-size:12px;line-height:1.4;color:var(--fp-on-2)}
-.fp .fp-sw-b{display:inline-flex;align-items:center;gap:10px;height:38px;padding:0 10px 0 14px;border-radius:999px;border:1px solid rgba(201,179,221,.5);color:#fff;font-size:14px;font-weight:700}
+.fp .fp-sw-b{white-space:nowrap;display:inline-flex;align-items:center;gap:10px;height:38px;padding:0 10px 0 14px;border-radius:999px;border:1px solid rgba(201,179,221,.5);color:#fff;font-size:14px;font-weight:700}
 .fp-sw{position:relative;flex:none;width:30px;height:18px;border-radius:999px;background:rgba(255,255,255,.2);transition:background-color .2s}
 .fp-sw::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s var(--fp-ease)}
 [aria-checked=true]>.fp-sw{background:var(--fp-gold-d)}
@@ -312,31 +316,48 @@ function guidesD(L){
   const dots = [I.gl, I.sn, I.me, I.alA, I.alB, I.icdA, I.icdB, I.jawA, I.jawB, I.mA, I.mB, I.ulTop, I.llBot].map(i => L[i]);
   return {solid:lines + br, dash:nose + jaw, dots};
 }
+const poly = (pts, close) => pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join('') + (close ? 'Z' : '');
+function spiralD(L){
+  const S = spiral(L);
+  return {sq:S.boxes.map((b, i) => poly(b, !i)).join(''), arc:poly(S.arc)};
+}
 function drawGuides(svg, L, W, H){
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  const g = guidesD(L), r = Math.max(W, H) * .0045;
-  svg.innerHTML = `<path class="sh" d="${g.solid}"/><path class="ln" d="${g.solid}"/><path class="sh" d="${g.dash}"/><path class="ln dsh" d="${g.dash}"/>`
-    + g.dots.map(p => `<circle class="dot" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r.toFixed(1)}"/>`).join('');
+  const g = guidesD(L), sp = spiralD(L), r = Math.max(W, H) * .0045;
+  svg.innerHTML = `<g class="sp"><path class="sq" d="${sp.sq}"/><path class="sps" d="${sp.arc}"/><path class="spl" d="${sp.arc}"/></g>`
+    + `<g class="gd"><path class="sh" d="${g.solid}"/><path class="ln" d="${g.solid}"/><path class="sh" d="${g.dash}"/><path class="ln dsh" d="${g.dash}"/>`
+    + g.dots.map(p => `<circle class="dot" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r.toFixed(1)}"/>`).join('') + '</g>';
+}
+/* the spiral painted onto a canvas for the saved image; k scales photo pixels to the canvas */
+function paintSpiral(g, L, ox, oy, k, lw){
+  const sp = spiral(L), P = p => [ox + p.x * k, oy + p.y * k];
+  const path = (pts, close) => { g.beginPath(); pts.forEach((p, i) => g[i ? 'lineTo' : 'moveTo'](...P(p))); if (close) g.closePath(); };
+  g.save(); g.lineCap = g.lineJoin = 'round';
+  g.strokeStyle = 'rgba(227,184,92,.45)'; g.lineWidth = lw * .45;
+  sp.boxes.forEach((b, i) => { path(b, !i); g.stroke(); });
+  path(sp.arc); g.strokeStyle = 'rgba(20,6,31,.5)'; g.lineWidth = lw * 2; g.stroke();
+  g.strokeStyle = GOLD; g.lineWidth = lw; g.stroke();
+  g.restore();
 }
 
 /* ===================================================================== */
 let styleRefs = 0, styleEl = null;
 
 export function mount(container, opts = {}){
-  const lang = opts.lang === 'en' ? 'en' : 'th', S = STR[lang];
+  const lang = opts.lang === 'th' ? 'th' : 'en', S = STR[lang];
   const mpBase = opts.mpBase || MP_CDN, sampleSrc = opts.sample || SAMPLE;
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) {} };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
   const svcHref = k => { try { return opts.serviceUrl ? opts.serviceUrl(k) : 'service.html?p=' + k; } catch (e) { return 'service.html?p=' + k; } };
   if (!styleRefs++) { styleEl = document.createElement('style'); styleEl.dataset.feature = 'proportions'; styleEl.textContent = CSS; document.head.append(styleEl); }
 
-  const state = {base:null, data:null, L:null, sample:false, err:null, stream:null, amt:.7, sex:'women', guides:true, planned:false,
+  const state = {base:null, data:null, L:null, sample:false, err:null, stream:null, amt:.7, sex:'women', guides:false, spiral:true, planned:false,
     on:{thirds:true, nose:true, lips:true, jaw:true}};
   try {
     const p = JSON.parse(localStorage.getItem('apex.proportions') || 'null');
-    if (p) { if (typeof p.amt === 'number') state.amt = clamp(p.amt, 0, 1); if (p.sex === 'men') state.sex = 'men'; if (p.guides === false) state.guides = false; }
+    if (p) { if (typeof p.amt === 'number') state.amt = clamp(p.amt, 0, 1); if (p.sex === 'men') state.sex = 'men'; if (typeof p.guides === 'boolean') state.guides = p.guides; if (p.spiral === false) state.spiral = false; }
   } catch (e) {}
-  const remember = () => { try { localStorage.setItem('apex.proportions', JSON.stringify({amt:state.amt, sex:state.sex, guides:state.guides})); } catch (e) {} };
+  const remember = () => { try { localStorage.setItem('apex.proportions', JSON.stringify({amt:state.amt, sex:state.sex, guides:state.guides, spiral:state.spiral})); } catch (e) {} };
 
   const root = document.createElement('div');
   root.className = 'fp'; root.lang = lang;
@@ -384,7 +405,8 @@ export function mount(container, opts = {}){
       <div class="fp-bar" hidden>
         <label class="fp-amt"><div><span>${esc(S.amount)}</span><output data-r="amtv"></output></div><input type="range" min="0" max="100" step="1" data-r="amt"></label>
         <div class="fp-bar-r">
-          <button class="fp-sw-b" data-act="guides" role="switch" aria-checked="true">${esc(S.guides)}<span class="fp-sw" aria-hidden="true"></span></button>
+          <button class="fp-sw-b" data-act="spiral" role="switch" aria-checked="true">${esc(S.spiral)}<span class="fp-sw" aria-hidden="true"></span></button>
+          <button class="fp-sw-b" data-act="guides" role="switch" aria-checked="false">${esc(S.guides)}<span class="fp-sw" aria-hidden="true"></span></button>
           <button class="fp-btn gh sm" data-act="choose" aria-label="${esc(S.choose)}">${ic('upload')}<span class="fp-hide-s">${esc(S.change)}</span></button>
         </div>
       </div>
@@ -511,6 +533,8 @@ export function mount(container, opts = {}){
     R('emsg').textContent = state.err ? S.err[state.err] || '' : '';
     $('[data-act="guides"]').setAttribute('aria-checked', String(state.guides));
     root.classList.toggle('noguides', !state.guides);
+    $('[data-act="spiral"]').setAttribute('aria-checked', String(state.spiral));
+    root.classList.toggle('nospiral', !state.spiral);
     $$('.fp-seg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.sex === state.sex)));
     amt.value = Math.round(state.amt * 100); amt.style.setProperty('--v', amt.value + '%'); R('amtv').textContent = amt.value + '%';
     $('[data-act="save"]').disabled = !ready;
@@ -608,6 +632,13 @@ export function mount(container, opts = {}){
       g.fillStyle = '#1F0A30'; g.fillRect(0, 0, W, H);
       const clip = (x, img) => { g.save(); g.beginPath(); g.roundRect ? g.roundRect(x, pad, w, rowH, 20) : g.rect(x, pad, w, rowH); g.clip(); g.drawImage(img, x, pad, w, rowH); g.restore(); };
       clip(pad, state.base); clip(pad + w + gap, after);
+      if (state.spiral) {
+        const k = rowH / state.base.height;
+        g.save(); g.beginPath(); g.rect(pad, pad, w * 2 + gap, rowH); g.clip();
+        g.save(); g.beginPath(); g.rect(pad, pad, w, rowH); g.clip(); paintSpiral(g, state.L, pad, pad, k, 3); g.restore();
+        g.save(); g.beginPath(); g.rect(pad + w + gap, pad, w, rowH); g.clip(); paintSpiral(g, cur.L2, pad + w + gap, pad, k, 3); g.restore();
+        g.restore();
+      }
       const pill = (t, x, y, bg, fg) => { g.font = `700 20px ${font}`; const tw = g.measureText(t).width + 24; g.fillStyle = bg; g.beginPath(); g.roundRect ? g.roundRect(x, y, tw, 34, 17) : g.rect(x, y, tw, 34); g.fill(); g.fillStyle = fg; g.textBaseline = 'middle'; g.fillText(t, x + 12, y + 18); };
       pill(S.before, pad + 12, pad + 12, 'rgba(31,10,48,.7)', '#fff');
       pill(S.after, pad + w + gap + 12, pad + 12, 'rgba(31,10,48,.7)', '#fff');
@@ -659,6 +690,7 @@ export function mount(container, opts = {}){
     else if (a === 'camcancel') { stopCam(); sync(); }
     else if (a === 'shutter') shoot();
     else if (a === 'guides') { state.guides = !state.guides; remember(); sync(); }
+    else if (a === 'spiral') { state.spiral = !state.spiral; remember(); sync(); emit('proportions:spiral', {on:state.spiral}); }
     else if (a === 'save') save();
     else if (a === 'plan') {
       state.planned = true;

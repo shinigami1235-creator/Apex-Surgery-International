@@ -6,8 +6,8 @@
 
   /* ---------- basics ---------- */
   A.SITE = SITE;
-  A.lang = (document.documentElement.lang || 'th').slice(0, 2) === 'en' ? 'en' : 'th';
-  A.root = A.lang === 'en' ? '../' : '';
+  A.lang = (document.documentElement.lang || 'en').slice(0, 2) === 'th' ? 'th' : 'en';
+  A.root = A.lang === 'th' ? '../' : '';
   A.assets = A.root + 'assets/';
   A.dataBase = A.assets + 'data/' + A.lang + '/';
   A.img = s => !s ? '' : (s.startsWith('~/') ? SITE + s.slice(2) : s);
@@ -43,7 +43,7 @@
     const file = (location.pathname.split('/').pop() || 'index.html');
     const tail = file + location.search + location.hash;
     if (code === A.lang) return tail;
-    return code === 'en' ? 'en/' + tail : '../' + tail;
+    return code === 'th' ? 'th/' + tail : '../' + tail;
   };
 
   /* ---------- events bridge (features call onEvent; the plan store and analytics listen) ---------- */
@@ -112,7 +112,7 @@
       }
       return `<a href="${h}"${cur}>${A.esc(A.t(k))}</a>`;
     }).join('');
-    const langs = [['th','TH'],['en','EN']].map(([c,t]) => `<a href="${A.langHref(c)}" hreflang="${c}" lang="${c}" class="${c===A.lang?'on':''}"${c===A.lang?' aria-current="true"':''}>${t}</a>`).join('');
+    const langs = [['en','EN'],['th','TH']].map(([c,t]) => `<a href="${A.langHref(c)}" hreflang="${c}" lang="${c}" class="${c===A.lang?'on':''}"${c===A.lang?' aria-current="true"':''}>${t}</a>`).join('');
     const el = document.createElement('header');
     el.className = 'hdr';
     el.innerHTML = `<a class="skip" href="#main">${A.esc(A.t('skip'))}</a><div class="hdr-in">
@@ -198,7 +198,7 @@
     </div>
     <div class="ftr-word" data-w="APEX" aria-hidden="true"></div>
     ${S.footerNote ? `<p class="ftr-note">${A.esc(S.footerNote)}</p>` : ''}
-    <div class="ftr-bot"><span>${A.esc(S.copyright || '')}</span><span>${[['th','TH'],['en','EN']].map(([c,t]) => `<a href="${A.langHref(c)}" hreflang="${c}" style="display:inline;padding:0 6px">${t}</a>`).join('·')}</span></div></div>`;
+    <div class="ftr-bot"><span>${A.esc(S.copyright || '')}</span><span>${[['en','EN'],['th','TH']].map(([c,t]) => `<a href="${A.langHref(c)}" hreflang="${c}" style="display:inline;padding:0 6px">${t}</a>`).join('·')}</span></div></div>`;
     document.body.append(f);
   }
 

@@ -3,7 +3,7 @@ from playwright.async_api import async_playwright
 BASE='http://localhost:8811/'
 OUT='/home/claude/apex-surgery/_shots/shell/'
 pages=sys.argv[1].split(',') if len(sys.argv)>1 else ['index.html','service.html?p=rhinoplasty','service.html?p=lipo','article.html?p=facelift-faq','promotions.html','contact.html','nose.html','play.html']
-langs=sys.argv[2].split(',') if len(sys.argv)>2 else ['th']
+langs=sys.argv[2].split(',') if len(sys.argv)>2 else ['en']
 sizes=[(375,812),(1440,900)] if len(sys.argv)<=3 else [tuple(map(int,s.split('x'))) for s in sys.argv[3].split(',')]
 full = os.environ.get('FULL','1')=='1'
 async def main():
@@ -18,7 +18,7 @@ async def main():
                     errs=[]
                     page.on('console', lambda m: errs.append(m.type+': '+m.text) if m.type in ('error',) else None)
                     page.on('pageerror', lambda e: errs.append('pageerror: '+str(e)))
-                    url=BASE+('en/' if lang=='en' else '')+pg
+                    url=BASE+('th/' if lang=='th' else '')+pg
                     await page.goto(url, wait_until='domcontentloaded')
                     await page.wait_for_timeout(2500)
                     # reveal everything

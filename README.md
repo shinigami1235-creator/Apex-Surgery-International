@@ -1,6 +1,6 @@
 # Apex Surgery International
 
-Redesign of apexsurgeryhospital.com for Apex. Thai pages sit at the root and English pages under `/en/`, each built from the same templates. This folder holds the design stage as plain pages for review on GitHub Pages. The WordPress theme comes next, once Apex's IT gives server access.
+Redesign of apexsurgeryhospital.com for Apex. English is the main language since the site is for international clients, so English pages sit at the root and Thai pages under `/th/`, each built from the same templates. This folder holds the design stage as plain pages for review on GitHub Pages. The WordPress theme comes next, once Apex's IT gives server access.
 
 ## Decisions
 
@@ -9,7 +9,7 @@ Redesign of apexsurgeryhospital.com for Apex. Thai pages sit at the root and Eng
 | Platform | WordPress, since Apex's IT already runs the current site on it |
 | Layout | Custom theme with fixed blocks editors fill in. No Elementor unless Apex asks for it |
 | Order | Design first on GitHub Pages, then the WordPress theme |
-| Languages | English first, Thai the same day. Thai keeps the current URLs and English goes under `/en/` |
+| Languages | English at the root and Thai under `/th/` (changed 22 Oct 2026; Thai was at the root before). The current Thai URLs redirect to their `/th/` pages so they keep their rankings |
 | Translation | Done by us, priced as a small extra |
 | Content | All of Apex's pages, 25 articles and reviews, and promotions are in the design |
 | LINE reminders | The opt-in tick and frequency choice are in the design. Sending waits until Gid has discussed it with Apex |
@@ -21,7 +21,7 @@ Redesign of apexsurgeryhospital.com for Apex. Thai pages sit at the root and Eng
 |---|---|---|
 | Body map | Home | Male and female particle bodies from the MakeHuman base mesh (CC0). Tap an area to zoom in and see its procedures, concerns and recovery |
 | Nose preview | `nose.html` | Front, 45 degree and profile photos, preset noses, drag handles, save to phone. Runs in the browser |
-| Golden proportions | `proportions.html` | A front photo is measured on five ratios and warped toward them: chin length (middle and lower face equal), nose width (equal to the gap between the eyes), lip balance (lower lip 1.6 times the upper), jawline (against the cheekbones, with a women and men ideal) and the golden ratio of mouth to nose. Only what treatment can change moves. Each change can be switched off, an amount slider sets the strength, and the saved image lists the ratios before and after. Runs in the browser |
+| Golden proportions | `proportions.html` | A front photo is measured on five ratios and warped toward them: chin length (middle and lower face equal), nose width (equal to the gap between the eyes), lip balance (lower lip 1.6 times the upper), jawline (against the cheekbones, with a women and men ideal) and the golden ratio of mouth to nose. Only what treatment can change moves. Each change can be switched off, an amount slider sets the strength, and the saved image lists the ratios before and after. A golden spiral can be shown on the face and the saved image. Runs in the browser |
 | Games | `play.html` | Steady Hand, Proportion, Fact Rush, Recovery Sort, Memory Match, Learn mode, daily tries, prize tiers, voucher with QR, LINE reminder opt-in |
 | My Plan | `plan.html` | Procedures, vouchers, trip and notes. Sends to WhatsApp or LINE, or saves to phone |
 | Trip planner | `trip.html` | Day-by-day stay with a calendar file |
@@ -36,7 +36,7 @@ Score targets and prizes in `assets/features/games/config.js` are examples set f
 
 | Path | Contents |
 |---|---|
-| `site/` | The site. Thai pages at the root, English in `site/en/` |
+| `site/` | The site. English pages at the root, Thai in `site/th/`. `site/en/` only forwards the old review links to the root |
 | `site/assets/data/th/`, `site/assets/data/en/` | All content as data files, one per page, service and article. These become the WordPress fields |
 | `site/assets/features/` | One folder per interactive feature |
 | `site/lab/` | Test pages for each feature |
@@ -48,6 +48,8 @@ Score targets and prizes in `assets/features/games/config.js` are examples set f
 ## Golden proportions
 
 The ratios and their limits are in `site/assets/features/proportions/geometry.js`. The ideals are standard clinical proportions and the caps keep every change inside what surgery or filler can do: the chin moves at most 12% of the lower face, the nose narrows at most 18%, a lip fills by at most 35% and the jaw narrows by at most 10%. Apex's surgeons should check the ideals and caps, the women and men jaw ideals in particular, before launch. `tests/proportions/` runs it on eleven test photos.
+
+The golden spiral is decoration and has no score, since a spiral can be scaled and turned to fit almost any face. It curls into the pupil of the eye nearer the camera, and its first arc passes through the bottom of the chin, so it sits the same way on every face and moves with the chin in the after picture.
 
 ## Surgery Wars
 
@@ -83,7 +85,7 @@ A new episode is one new post. The hub, the home rail, the episode buttons and t
 3. Get Apex's prize list and confirm the score targets with a human playtest.
 4. Confirm WhatsApp +66 85 000 2001 (the Apex group's international line) is the right number for this hospital.
 5. Check the composite before/after images and set their layout.
-6. Ask IT whether they prefer Polylang or WPML.
+6. Ask IT whether they prefer Polylang or WPML. Either one sets English as the default language at the root and Thai under `/th/`. Each current Thai URL needs a 301 redirect to its `/th/` page, the typo URLs included.
 7. Review the articles the translators flagged. Several make claims the advertising rules may not allow, and some recovery times in the articles differ from the service pages:
    - "look up to 20 years younger";
    - "leader in facelift";

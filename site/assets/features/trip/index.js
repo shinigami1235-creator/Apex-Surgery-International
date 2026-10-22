@@ -294,7 +294,7 @@ export function mount(container, opts = {}) {
   const base = opts.base || new URL('../../', import.meta.url).href;
   const serviceUrl = typeof opts.serviceUrl === 'function' ? opts.serviceUrl : k => `service.html?p=${k}`;
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) { /* host handler error */ } };
-  const site = new URL('../', base).href + (lang === 'en' ? 'en/' : '');
+  const site = new URL('../', base).href + (lang === 'th' ? 'th/' : '');
   const links = { plan: site + 'my-plan.html', ...(opts.links || {}) };
   const uid = 'apxt' + Math.random().toString(36).slice(2, 7);
 

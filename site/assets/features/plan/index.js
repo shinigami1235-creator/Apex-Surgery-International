@@ -219,7 +219,7 @@ export function mount(container, opts = {}) {
   const base = opts.base || new URL('../../', import.meta.url).href;
   const serviceUrl = typeof opts.serviceUrl === 'function' ? opts.serviceUrl : k => `service.html?p=${k}`;
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) { /* host handler error */ } };
-  const site = new URL('../', base).href + (lang === 'en' ? 'en/' : '');
+  const site = new URL('../', base).href + (lang === 'th' ? 'th/' : '');
   const links = { bodymap: site + 'bodymap.html', nose: site + 'nose.html', games: site + 'games.html', trip: site + 'trip.html', ...(opts.links || {}) };
 
   const root = h('div', { class: 'apxp', lang });

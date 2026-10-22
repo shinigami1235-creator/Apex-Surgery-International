@@ -152,6 +152,43 @@ export function plan(L, on, amt, sex){
   return {pts, ell, D, info};
 }
 
+/* The golden spiral, drawn for show and never scored. A golden rectangle (1 wide, 1.618 tall) is cut into
+   squares, one quarter circle in each. The point the spiral curls into sits on the pupil of the eye nearer the
+   camera, and the size is set so the first, largest arc passes through the bottom of the chin. From there it
+   runs up the far cheek, over the forehead and into the eye. */
+const PHI = (1 + Math.sqrt(5)) / 2;
+const POLE = {x:.7236068, y:.4472136}; // where the spiral ends inside the rectangle, as a share of its width
+export function spiral(L, squares = 9){
+  const F = frame(L), {u, v} = F;
+  const irisA = L[468] || V.mid(L[33], L[133]), irisB = L[473] || V.mid(L[263], L[362]);
+  const [lo, hi] = V.dot(V.sub(irisB, irisA), v) > 0 ? [irisA, irisB] : [irisB, irisA];
+  // the eye nearer the camera is on the wider half of the face
+  const a = Math.abs(along(L[I.tip], L[I.bzA], v)), b = Math.abs(along(L[I.tip], L[I.bzB], v));
+  const toHi = a <= b, eye = toHi ? hi : lo, X = toHi ? v : V.mul(v, -1);
+  // size: the first arc, centred on the corner (s, s/φ), passes through the chin
+  const dm = V.sub(L[I.me], eye), D = {x:V.dot(dm, X), y:V.dot(dm, u)};
+  const c = {x:1 - POLE.x, y:1 / PHI - POLE.y}, cc = c.x * c.x + c.y * c.y, dc = D.x * c.x + D.y * c.y, dd = D.x * D.x + D.y * D.y;
+  const s = (-dc + Math.sqrt(dc * dc + (1 - cc) * dd)) / (1 - cc);
+  const at = (x, y) => V.add(eye, V.add(V.mul(X, x - POLE.x * s), V.mul(u, y - POLE.y * s)));
+  let x = 0, y = 0, w = s, h = s * PHI;
+  const boxes = [[at(0, 0), at(w, 0), at(w, h), at(0, h)]], arc = [];
+  for (let k = 0; k < squares; k++) {
+    const q = Math.min(w, h), d = k % 4;
+    let cx, cy, a0;
+    // the square is cut from the bottom, left, top and right in turn; the arc's centre is the square's inner corner
+    if (d === 0) { h -= q; cx = x + q; cy = y + h; a0 = Math.PI / 2; boxes.push([at(x, cy), at(x + w, cy)]); }
+    else if (d === 1) { cx = x + q; cy = y + q; x += q; w -= q; a0 = Math.PI; boxes.push([at(x, y), at(x, y + h)]); }
+    else if (d === 2) { cx = x; cy = y + q; y += q; h -= q; a0 = 3 * Math.PI / 2; boxes.push([at(x, y), at(x + w, y)]); }
+    else { w -= q; cx = x + w; cy = y; a0 = 0; boxes.push([at(cx, y), at(cx, y + h)]); }
+    const n = Math.max(6, 28 - k * 3);
+    for (let j = k ? 1 : 0; j <= n; j++) {
+      const t = a0 + j / n * Math.PI / 2;
+      arc.push(at(cx + q * Math.cos(t), cy + q * Math.sin(t)));
+    }
+  }
+  return {boxes, arc, eye, s};
+}
+
 /* the mesh points after the plan, used for the guides and the after measure */
 export function moved(L, P){
   return L.map((p, i) => { const d = P.D.get(i); return d ? V.add(p, d) : p; });

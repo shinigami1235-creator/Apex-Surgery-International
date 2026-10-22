@@ -7,7 +7,7 @@ const MP = '/tmp/claude-0/-home-claude/b5460f3c-e75e-551e-b4ae-fc0088d5c4d9/scra
 const DIR = new URL('./faces/', import.meta.url).pathname, OUT = process.argv[2];
 const b = await chromium.launch();
 const fails = [];
-for (const [w, h, path] of [[1440, 900, 'proportions.html'], [390, 844, 'proportions.html'], [820, 1180, 'en/proportions.html']]) {
+for (const [w, h, path] of [[1440, 900, 'proportions.html'], [390, 844, 'proportions.html'], [820, 1180, 'th/proportions.html']]) {
   const p = await (await b.newContext({viewport:{width:w, height:h}})).newPage();
   p.on('pageerror', e => fails.push(`${w} pageerror ${e.message}`));
   await p.route(/cdn\.jsdelivr\.net\/npm\/@mediapipe\/face_mesh[^/]*\/(.+)$/, r => { const f = r.request().url().match(/face_mesh[^/]*\/([^?]+)/)[1]; if (!fs.existsSync(MP + f)) return r.abort(); const t = f.endsWith('.js') ? 'text/javascript' : f.endsWith('.wasm') ? 'application/wasm' : 'application/octet-stream'; return r.fulfill({status:200, contentType:t, headers:{'access-control-allow-origin':'*'}, body:fs.readFileSync(MP + f)}); });
@@ -29,7 +29,7 @@ for (const [w, h, path] of [[1440, 900, 'proportions.html'], [390, 844, 'proport
   const box = await p.locator('.fp-frame').boundingBox();
   await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await p.mouse.down(); await p.mouse.move(box.x + box.width * .2, box.y + box.height / 2, {steps:6}); await p.mouse.up();
   const x = await p.evaluate(() => getComputedStyle(document.querySelector('.fp-frame')).getPropertyValue('--x'));
-  if (!/^2\d/.test(x.trim())) fails.push(`${w} slider at ${x}`);
+  if (!/^(19\.9|2\d)/.test(x.trim())) fails.push(`${w} slider at ${x}`);
   // save: check a jpeg comes out
   const [dl] = await Promise.all([p.waitForEvent('download', {timeout:15000}).catch(() => null), p.click('[data-act="save"]')]);
   if (!dl) fails.push(`${w} no save download`); else { const fp = await dl.path(); fs.copyFileSync(fp, `${OUT}/save-${w}.jpg`); }

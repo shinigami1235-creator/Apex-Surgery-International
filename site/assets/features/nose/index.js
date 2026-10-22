@@ -4,7 +4,7 @@
    Everything runs in the browser. No photo leaves the device.
 
    mount(container, opts) -> {destroy()}
-   opts: lang 'th' | 'en', base (assets/ URL), serviceUrl(key), onEvent(name, data)
+   opts: lang 'en' | 'th', base (assets/ URL), serviceUrl(key), onEvent(name, data)
    Testing only: mpBase (folder of @mediapipe/face_mesh) */
 
 /* =====================================================================
@@ -853,7 +853,7 @@ function toCanvas(im, max = 1100){
 let styleRefs = 0, styleEl = null;
 
 export function mount(container, opts = {}){
-  const lang = opts.lang === 'en' ? 'en' : 'th', S = STR[lang];
+  const lang = opts.lang === 'th' ? 'th' : 'en', S = STR[lang];
   const mpBase = opts.mpBase || MP_CDN;
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) {} };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
