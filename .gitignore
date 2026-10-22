@@ -4,3 +4,4 @@ tests/**/shots/
 tests/**/*.log
 node_modules/
 __pycache__/
+undefined/
