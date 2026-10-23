@@ -387,6 +387,9 @@ export function mount(container, opts = {}){
   const G = {};          // working buffers
   async function start3d(){
     try {
+      // the model (about 370 KB) waits until the page has drawn, so it does not hold up the first screen
+      await new Promise(go => { const run = () => requestAnimationFrame(() => setTimeout(go, 0)); document.readyState === 'complete' ? run() : addEventListener('load', run, {once:true}); });
+      if (dead) return;
       const url = new URL(face ? './face.bin' : './torso.bin', import.meta.url);
       const [buf, scene] = await Promise.all([fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); }),
         createScene($('.im-3d'), {threeUrl:opts.threeUrl, fov:face ? 20 : 24, fit:face ? .78 : .75, onTouch:() => { const h = $('.im-hint'); if (h) h.style.opacity = 0; }, onChange:() => syncViews(), onLayout:st => $('.im-panes').classList.toggle('stack', st)})]);

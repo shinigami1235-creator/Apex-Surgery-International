@@ -123,6 +123,19 @@ function apex_img_store( $s ): string {
 	}
 	return $s;
 }
+/** srcset and sizes for a wide photo that `wp apex webp` made phone-size copies of; '' for any other photo. */
+function apex_srcset( $src, string $sizes ): string {
+	static $map = null;
+	if ( $map === null ) { $map = get_option( 'apex_photo_sizes' ); $map = is_array( $map ) ? $map : []; }
+	$src = (string) $src;
+	if ( ! $map || ! preg_match( '#/wp-content/uploads/(.+)$#', $src, $m ) ) return '';
+	$rel = rawurldecode( $m[1] );
+	if ( empty( $map[ $rel ]['v'] ) ) return '';
+	$set = [];
+	foreach ( $map[ $rel ]['v'] as $w => $r ) $set[] = esc_url( apex_img( '~/wp-content/uploads/' . $r ) ) . " {$w}w";
+	$set[] = esc_url( apex_img( $src ) ) . ' ' . (int) $map[ $rel ]['w'] . 'w';
+	return ' srcset="' . implode( ', ', $set ) . '" sizes="' . esc_attr( $sizes ) . '"';
+}
 function apex_yt( string $id ): string { return 'https://i.ytimg.com/vi/' . $id . '/hqdefault.jpg'; }
 function apex_asset( string $path ): string { return APEX_URI . '/assets/' . ltrim( $path, '/' ); }
 

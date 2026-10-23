@@ -27,6 +27,7 @@ The theme in the repository has no `assets/` folder. Build it with `node wordpre
 - Rank Math (the free plugin). The theme writes titles, descriptions, canonicals and structured data by itself. Rank Math adds what editors need page by page: a focus keyword, a canonical or noindex for one page, extra schema, and editing robots.txt. The theme fills any Rank Math field an editor leaves empty.
 - A daily backup of the database and `wp-content/uploads/`, `apex-private/` included: the host's own backup, or UpdraftPlus sending to cloud storage. Keep 30 days.
 - A page cache: the host's own, or a plugin such as LiteSpeed Cache or WP Super Cache. Leave logged-in users and `/wp-json/` out of it, which is the default in all of them. The cookie banner and the forms work with a cached page.
+- Gzip or Brotli on HTML, CSS, JavaScript and SVG, and a one-year browser cache on the theme's files and the uploads. Most hosts and Cloudflare do both already; step 8 has the lines for a server that does not. Without compression a page sends about four times the bytes.
 
 ## Install
 
@@ -36,7 +37,7 @@ Do this on staging first. When staging passes the checks at the end, repeat on t
 2. Start from a clean WordPress install with the live site's `wp-content/uploads/` copied in. The content refers to the same image files the live site uses, so the folder has to be there.
 3. Install and activate Polylang: `wp plugin install polylang --activate`.
 4. Upload the theme zip under Appearance › Themes, or copy `apex-surgery/` into `wp-content/themes/`, and activate it.
-5. Import the content: `wp apex import`. It takes about 30 seconds and can be run again at any time. Each item is found by its key and language and updated in place.
+5. Import the content: `wp apex import`. It takes about a minute and can be run again at any time. Each item is found by its key and language and updated in place. At the end it saves a WebP copy of each JPEG and PNG photo the pages show (the old site had ten, up to 1.2 MB each) and makes phone-size copies of wide photos, named `photo-w800.webp` and `photo-w1200.webp`, next to the originals. Phones download those instead of the full photo. The originals stay where they are.
 6. Check the import: `wp apex check`. It should end with `All 100 content objects match the design`.
 7. Add these lines to `wp-config.php`:
 
@@ -52,6 +53,26 @@ Do this on staging first. When staging passes the checks at the end, repeat on t
    location ^~ /wp-content/uploads/apex-private/ { deny all; }
    location ~* /wp-content/uploads/.*\.php$ { deny all; }
    ```
+
+   Check compression and caching with `curl -sI -H "Accept-Encoding: gzip" https://<site>/wp-content/themes/apex-surgery/assets/css/site.css`. It should show `Content-Encoding: gzip` (or `br`) and a `Cache-Control` with a long `max-age`. If not, on nginx:
+
+   ```nginx
+   gzip on; gzip_types text/css application/javascript text/javascript image/svg+xml application/json;
+   location ~* /wp-content/(themes/apex-surgery/assets|uploads)/.*\.(css|js|woff2|webp|jpe?g|png|svg|bin)$ { expires 1y; add_header Cache-Control "public"; }
+   ```
+
+   and on Apache, with mod_deflate and mod_expires on:
+
+   ```apache
+   AddOutputFilterByType DEFLATE text/html text/css application/javascript text/javascript image/svg+xml application/json
+   ExpiresActive On
+   ExpiresByType text/css "access plus 1 year"
+   ExpiresByType application/javascript "access plus 1 year"
+   ExpiresByType font/woff2 "access plus 1 year"
+   ExpiresByType image/webp "access plus 1 year"
+   ```
+
+   A year is safe since the theme adds a version to its file addresses and changes it whenever a file changes.
 
 9. Fill in Apex settings in the admin:
    - **Forms:** the email addresses that get enquiry alerts. Leave it empty and the alerts go to the WordPress admin address, so check that address first.
@@ -97,7 +118,8 @@ Each page is drawn in PHP from the same content structure the design used, with 
 - Tags on an article show as small labels under the text. The site has no tag pages, so the labels are not links.
 - A plain page (one without a design of its own, such as the privacy policy) has two templates under Page attributes › Template: Wide text, and Text then the consultation band.
 - Redirects move for good (301). A line ending in 302 moves only for now.
-- JPEG and PNG uploads are saved as WebP at quality 82, which loads faster. Settings › Media turns this off.
+- JPEG and PNG uploads are saved as WebP at quality 82, which loads faster. Settings › Media turns this off. Once a day the site also makes the phone-size copies of new wide photos; `wp apex webp` does it straight away.
+- One photo in the article "Brow Lift: Restore a Bright Face with Endotine" and its Thai version (`/wp-content/uploads/2025/05/image-13.png`) is missing on the live site too. Upload it again or take the image block out.
 
 ## Who can see what
 

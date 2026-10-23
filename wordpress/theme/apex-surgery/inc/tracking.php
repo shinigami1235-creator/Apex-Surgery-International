@@ -63,6 +63,7 @@ add_action( 'wp_footer', function () {
 </div>
 <style>
 .ck{position:fixed;z-index:120;left:16px;right:16px;bottom:16px;max-width:560px;background:#fff;color:var(--ink,#2A1F33);border-radius:22px;box-shadow:0 18px 60px rgba(31,10,48,.28);border:1px solid var(--lilac-200,#E4D8EE)}
+.ck [hidden]{display:none!important}
 .ck-in{padding:20px 22px}.ck-h{font-weight:800;font-size:17px;margin:0 0 6px}.ck-p{font-size:14px;line-height:1.55;margin:0 0 14px;color:var(--ink-2,#5A4A66)}
 .ck-acts{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.ck-set{background:none;border:0;padding:8px 4px;font:inherit;font-size:14px;font-weight:700;color:var(--plum,#6A388C);text-decoration:underline;cursor:pointer}
 .ck-opts{display:grid;gap:10px;margin:0 0 14px}.ck-opts label{display:grid;grid-template-columns:22px 1fr;column-gap:8px;font-size:14px;cursor:pointer}.ck-opts small{grid-column:2;color:var(--ink-2,#5A4A66)}
@@ -87,7 +88,9 @@ add_action( 'wp_footer', function () {
     if(k==='all')write(1,1);else if(k==='none')write(0,0);
     else if(k==='set'){opts.hidden=false;save.hidden=false;set.hidden=true;box.querySelector('[name=analytics]').focus();}
     else if(k==='save')write(box.querySelector('[name=analytics]').checked,box.querySelector('[name=ads]').checked);});
-  if(!read()) open();
+  // the banner waits for the site font (at most 1.2 s), so its height does not change under the reader and push its own text
+  if(!read()){var go=function(){open();};var t=<?php echo wp_json_encode( $th ? 'กa' : 'a' ); ?>,f=document.fonts&&document.fonts.load?Promise.all([document.fonts.load('400 16px "LINE Seed"',t),document.fonts.load('800 16px "LINE Seed"',t)]):null;
+    f?Promise.race([f,new Promise(function(r){setTimeout(r,1200);})]).then(go,go):go();}
   function link(){var f=document.querySelector('.ftr-bot span');if(!f||document.querySelector('.ck-link'))return;
     var w=document.createElement('span'),a=document.createElement('button');w.className='ck-wrap';a.type='button';a.className='ck-link';a.textContent=<?php echo wp_json_encode( $t['link'], JSON_UNESCAPED_UNICODE ); ?>;a.addEventListener('click',open);w.append(' · ',a);f.append(w);}
   document.addEventListener('apex:ready',link);if(document.readyState!=='loading')link();else document.addEventListener('DOMContentLoaded',link);

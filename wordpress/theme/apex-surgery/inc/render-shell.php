@@ -205,7 +205,11 @@ function apex_fab_html(): string {
 /* ---------- scripts and styles ---------- */
 function apex_ver(): string {
 	static $v = null;
-	if ( $v === null ) $v = substr( md5( APEX_VERSION . '|' . @filemtime( APEX_DIR . '/assets/js/pages.js' ) . '|' . @filemtime( APEX_DIR . '/assets/css/site.css' ) . '|' . @filemtime( APEX_DIR . '/assets/js/core.js' ) ), 0, 8 );
+	if ( $v === null ) {   // changes when any of the files below does, so browsers fetch the new copy
+		$m = APEX_VERSION;
+		foreach ( [ 'css/base.css', 'css/site.css', 'js/icons.js', 'js/i18n.js', 'js/core.js', 'js/pages.js' ] as $f ) $m .= '|' . @filemtime( APEX_DIR . '/assets/' . $f );
+		$v = substr( md5( $m ), 0, 8 );
+	}
 	return $v;
 }
 add_action( 'wp_enqueue_scripts', function () {
@@ -220,6 +224,8 @@ add_action( 'wp_enqueue_scripts', function () {
 	wp_enqueue_script( 'apex-pages', apex_asset( 'js/pages.js' ), [ 'apex-core' ], $v, $d );
 	// WordPress's own block styles: the site draws its own markup and does not use them on the front end
 	foreach ( [ 'wp-block-library', 'wp-block-library-theme', 'classic-theme-styles', 'global-styles' ] as $h ) wp_dequeue_style( $h );
+	// Polylang's switcher styles: the theme draws its own language switch, and each file would hold up the first paint
+	foreach ( [ 'pll-language-switcher', 'pll-navigation-language-switcher' ] as $h ) { wp_dequeue_style( $h ); wp_deregister_style( $h ); }
 }, 20 );
 remove_action( 'wp_enqueue_scripts', 'wp_enqueue_global_styles' );
 remove_action( 'wp_footer', 'wp_enqueue_global_styles', 1 );
@@ -288,7 +294,9 @@ function apex_render(): void {
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1F0A30">
 <link rel="icon" href="<?php echo esc_url( apex_asset( 'img/favicon.svg' ) ); ?>" type="image/svg+xml">
-<link rel="preload" href="<?php echo esc_url( apex_asset( 'fonts/LINESeedSansTH-Rg.woff2' ) ); ?>" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="<?php echo esc_url( apex_asset( 'fonts/LINESeed-Rg-latin.woff2' ) ); ?>" as="font" type="font/woff2" crossorigin>
+<?php if ( $L === 'th' ) : ?><link rel="preload" href="<?php echo esc_url( apex_asset( 'fonts/LINESeed-Rg-thai.woff2' ) ); ?>" as="font" type="font/woff2" crossorigin>
+<?php endif; ?>
 <?php if ( apex_media_base() !== trailingslashit( home_url() ) ) : ?><link rel="preconnect" href="<?php echo esc_url( untrailingslashit( apex_media_base() ) ); ?>">
 <?php endif; ?>
 <?php if ( defined( 'APEX_THREE_URL' ) ) : ?><script type="importmap"><?php echo wp_json_encode( [ 'imports' => [ 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js' => APEX_THREE_URL ] ], JSON_UNESCAPED_SLASHES ); ?></script>
@@ -302,6 +310,9 @@ function apex_render(): void {
 <?php wp_body_open(); ?>
 <?php echo apex_header_html( $r['page'] ); ?>
 <main id="main" tabindex="-1"><?php echo $main; ?></main>
+<script>/* what is on the first screen shows at once, without waiting for the scripts at the end */
+(function(){var h=innerHeight,big=null,a=0;document.querySelectorAll('#main .rv,#main .rv-clip').forEach(function(e){var r=e.getBoundingClientRect();if(r.top<h&&r.bottom>0&&r.height)e.classList.add('rv-now','in')});
+document.querySelectorAll('#main img[loading=lazy]').forEach(function(i){var r=i.getBoundingClientRect(),s=r.width*r.height;if(r.top<h&&r.bottom>0&&s){i.loading='eager';if(s>a){a=s;big=i}}});if(big&&!document.querySelector('#main img[fetchpriority=high]'))big.fetchPriority='high'})();</script>
 <?php echo apex_sheet_html(); ?>
 <?php echo apex_footer_html(); ?>
 <?php echo apex_fab_html(); ?>

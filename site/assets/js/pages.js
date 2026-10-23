@@ -207,6 +207,8 @@
   };
   const mountShowcase = async (el, cases, extra={}) => {
     if (!el || !cases.length) return;
+    // the wall waits until it is near the screen, so its photos do not compete with the top of the page
+    if ('IntersectionObserver' in window) await new Promise(go => { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); go(); } }, {rootMargin:'600px 0px'}); io.observe(el); });
     try {
       const m = await import(A.vurl(A.assets + 'features/compare/showcase.js'));
       el.innerHTML = ''; el.classList.add('feat-on');
@@ -497,7 +499,7 @@
           ${recoveryCard(key, S)}
         </div>
       </div>
-      ${D.hero ? `<figure class="sh-banner rv-clip ph-img wrap-wide"><img src="${IMG(D.hero)}" alt="${E(D.heroAlt || D.name)}" data-field="svc.hero" data-par="24"></figure>` : ''}
+      ${D.hero ? `<figure class="sh-banner rv-clip ph-img wrap-wide"><img src="${IMG(D.hero)}" alt="${E(D.heroAlt || D.name)}" data-field="svc.hero" data-par="24" fetchpriority="high"></figure>` : ''}
     </section>
 
     <section class="section svc-intro">
@@ -581,7 +583,7 @@
     const S = A.d('shared') || {}, D = A.d('about') || {}, F = A.d('founder');
     A.setMeta(D.title, D.desc);
     main().innerHTML = phead(D.h1 || T('about'), null, [homeCrumb(), [T('about')]]) + `
-      ${D.hero && D.hero.src ? `<figure class="about-banner ph-img rv-clip wrap-wide"><img src="${IMG(D.hero.src)}" alt="${E(D.hero.alt || D.h1)}" data-par="22"></figure>` : ''}
+      ${D.hero && D.hero.src ? `<figure class="about-banner ph-img rv-clip wrap-wide"><img src="${IMG(D.hero.src)}" alt="${E(D.hero.alt || D.h1)}" data-par="22" fetchpriority="high"></figure>` : ''}
       <section class="section"><div class="wrap about-grid">
         <div class="prose big" data-field="about.intro">${(D.intro || []).map((p, i) => `<p class="rv${i ? '' : ' si-lead'}">${E(p)}</p>${i === 0 && (D.intro || []).length > 1 ? pullQuote(pickQuote((D.intro || []).slice(1), false)) : ''}`).join('')}</div>
         <aside class="about-aside">
@@ -641,7 +643,7 @@
     const proc = procOf((d.tag || '') + ' ' + p.title + ' ' + p.key);
     return `<article class="story${i === 0 ? ' big' : ''} rv" data-d="${(i % 2) * 80}" data-cat="${E(proc || '')}">
       <a class="st-media" href="${A.postUrl(p.key)}" aria-label="${E(p.title)}" tabindex="-1">
-        <span class="st-main ph-img"><img src="${IMG(imgs[0])}" alt="" loading="lazy" decoding="async" decoding="async"></span>
+        <span class="st-main ph-img"><img src="${IMG(imgs[0])}" alt="" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" decoding="async"></span>
         ${imgs.length > 1 ? `<span class="st-stack" aria-hidden="true">${imgs.slice(1, 4).map((src, j) => `<span class="st-th ph-img" style="--k:${j}"><img src="${IMG(src)}" alt="" loading="lazy" decoding="async" decoding="async"></span>`).join('')}</span>` : ''}
       </a>
       <div class="st-body">
@@ -786,7 +788,7 @@
         <p class="art-meta rv"><span class="pc-cat">${E(catName)}</span>${D.date ? `<time datetime="${E(D.date)}">${E(A.fmtDate(D.date))}</time>` : ''}<span class="art-read">${I('clock')}${E(T('readMin').replace('{n}', body.mins))}</span></p>
         <h1 class="h-xl rv" data-d="60" data-field="post.title">${E(D.title)}</h1>
 </div></section>
-      ${D.img ? `<figure class="art-banner ph-img rv-clip wrap-mid"><img src="${IMG(D.img)}" alt="${E(D.title)}" data-par="22"></figure>` : ''}
+      ${D.img ? `<figure class="art-banner ph-img rv-clip wrap-mid"><img src="${IMG(D.img)}" alt="${E(D.title)}" data-par="22" fetchpriority="high"></figure>` : ''}
       <section class="section art-s"><div class="wrap art-grid${hasToc ? '' : ' notoc'}">${hasToc ? `<nav class="toc art-toc" id="toc" aria-label="${E(T('inArticle'))}"><p class="toc-h">${E(T('inArticle'))}</p>${body.toc.map(x => `<a href="#${x.id}">${E(x.x)}</a>`).join('')}</nav>` : ''}<article class="prose art-prose" id="body" data-field="post.blocks">${body.html}${(D.tags || []).length ? `<div class="art-tags">${D.tags.map(t => `<span class="o-tag">${E(t)}</span>`).join('')}</div>` : ''}</article></div></section>
       ${related.length ? `<section class="section washed"><div class="wrap"><div class="shead"><h2 class="h-l rv">${E(catName)}</h2><a class="link-arrow rv" href="blog.html">${E(T('backToArticles'))} ${I('arrow-right')}</a></div><div class="post-grid">${related.map((p, i) => postCard(p, i)).join('')}</div></div></section>` : ''}
       <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
@@ -811,7 +813,7 @@
   const WAR_PROC = [['facelift', /ดึงหน้า|ดึงคอ|face ?lift|neck lift/i], ['browlift', /ยกคิ้ว|ยกหน้าผาก|brow lift|forehead lift/i], ['rhinoplasty', /เสริมจมูก|แก้จมูก|rhinoplasty/i],
     ['eyelid', /ตาสองชั้น|ทำตา|ตาบน|หนังตา|eyelid/i], ['breast', /เสริมหน้าอก|ยกกระชับหน้าอก|breast (augmentation|lift)/i], ['lipo', /ดูดไขมัน|liposuction/i]];
   const warStage = (e, D) => `<div class="war-stage rv-clip"><button type="button" class="ws-poster" data-ytw="${E(D.yt || e.yt)}" aria-label="${E(T('warWatch').replace('{n}', e.n))}">
-      <img src="${IMG(warSrc(e.img))}" alt="${E(D.title)}" width="1200" height="630"><span class="ws-play">${I('play')}<span>${E(T('warWatch').replace('{n}', e.n))}</span></span></button></div>`;
+      <img src="${IMG(warSrc(e.img))}" alt="${E(D.title)}" width="1200" height="630" fetchpriority="high"><span class="ws-play">${I('play')}<span>${E(T('warWatch').replace('{n}', e.n))}</span></span></button></div>`;
   async function war(){
     const S = A.d('shared') || {}, W = A.d('war') || {}, eps = W.episodes || [];
     const n = +A.param('ep');

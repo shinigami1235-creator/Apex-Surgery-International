@@ -1,6 +1,14 @@
 /* Apex Medical Center — site styles */
-@font-face{font-family:"LINE Seed";src:url(../fonts/LINESeedSansTH-Rg.woff2) format("woff2");font-weight:300 500;font-display:swap}
-@font-face{font-family:"LINE Seed";src:url(../fonts/LINESeedSansTH-Bd.woff2) format("woff2");font-weight:600 800;font-display:swap}
+/* LINE Seed in two parts: English pages only download the Latin letters, Thai pages add the Thai ones */
+@font-face{font-family:"LINE Seed";src:url(../fonts/LINESeed-Rg-latin.woff2) format("woff2");font-weight:300 500;font-display:swap;unicode-range:U+0000-024F,U+2000-206F,U+20AC,U+2122,U+2212,U+263B,U+2709,U+E000-E0FF,U+FB00-FB04,U+FEFF,U+1F300-1F6FF}
+@font-face{font-family:"LINE Seed";src:url(../fonts/LINESeed-Bd-latin.woff2) format("woff2");font-weight:600 800;font-display:swap;unicode-range:U+0000-024F,U+2000-206F,U+20AC,U+2122,U+2212,U+263B,U+2709,U+E000-E0FF,U+FB00-FB04,U+FEFF,U+1F300-1F6FF}
+@font-face{font-family:"LINE Seed";src:url(../fonts/LINESeed-Rg-thai.woff2) format("woff2");font-weight:300 500;font-display:swap;unicode-range:U+0E00-0E7F,U+200B-200D,U+25CC}
+@font-face{font-family:"LINE Seed";src:url(../fonts/LINESeed-Bd-thai.woff2) format("woff2");font-weight:600 800;font-display:swap;unicode-range:U+0E00-0E7F,U+200B-200D,U+25CC}
+/* stand-ins sized to LINE Seed, so text does not reflow when the real font arrives (Arial on computers and iPhones, Roboto on Android) */
+@font-face{font-family:"LINE Seed A";src:local("Arial"),local("ArialMT");font-weight:300 500;size-adjust:105.07%;ascent-override:108.88%;descent-override:41.88%;line-gap-override:0%}
+@font-face{font-family:"LINE Seed A";src:local("Arial Bold"),local("Arial-BoldMT");font-weight:600 800;size-adjust:103.27%;ascent-override:110.78%;descent-override:42.61%;line-gap-override:0%}
+@font-face{font-family:"LINE Seed R";src:local("Roboto"),local("Roboto-Regular");font-weight:300 500;size-adjust:106.81%;ascent-override:107.11%;descent-override:41.19%;line-gap-override:0%}
+@font-face{font-family:"LINE Seed R";src:local("Roboto Bold"),local("Roboto-Bold");font-weight:600 800;size-adjust:109.26%;ascent-override:104.7%;descent-override:40.27%;line-gap-override:0%}
 
 :root{
   --plum:#6A388C; --plum-700:#55286F; --plum-800:#3F1B55;
@@ -16,7 +24,7 @@
   --shadow-2:0 24px 60px -24px rgba(63,27,85,.42);
   --ease-out:cubic-bezier(.23,1,.32,1); --ease-io:cubic-bezier(.77,0,.175,1); --ease-drawer:cubic-bezier(.32,.72,0,1);
   --gutter:clamp(16px,4vw,56px); --maxw:1320px;
-  --font:"LINE Seed","Sarabun","Noto Sans Thai",system-ui,sans-serif;
+  --font:"LINE Seed","LINE Seed A","LINE Seed R","Sarabun","Noto Sans Thai",system-ui,sans-serif;
   color-scheme:light;
 }
 @view-transition{navigation:auto}
@@ -132,7 +140,7 @@ input,select,textarea{font:inherit;caret-color:var(--plum)}
 .fab-btn:active{transform:scale(.95)}
 .fab-btn .i{width:26px;height:26px;transition:transform .3s var(--ease-out)}
 .fab.open .fab-btn .i{transform:rotate(90deg)}
-.fab-list{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.fab-list{display:flex;flex-direction:column;gap:8px;align-items:flex-end;position:absolute;right:0;bottom:calc(100% + 10px);width:max-content}
 .fab-list a{display:flex;align-items:center;gap:10px;height:46px;padding:0 18px 0 14px;border-radius:var(--pill);background:#fff;box-shadow:var(--shadow-1);font-size:15px;font-weight:700;color:var(--ink);opacity:0;transform:translateY(10px) scale(.96);transform-origin:bottom right;pointer-events:none;transition:opacity .2s,transform .3s var(--ease-out)}
 .fab.open .fab-list a{opacity:1;transform:none;pointer-events:auto}
 .fab.open .fab-list a:nth-child(1){transition-delay:.09s}.fab.open .fab-list a:nth-child(2){transition-delay:.06s}.fab.open .fab-list a:nth-child(3){transition-delay:.03s}
@@ -144,8 +152,13 @@ input,select,textarea{font:inherit;caret-color:var(--plum)}
 .rv-clip{clip-path:inset(18% 0 0 0 round var(--r-m));transition:clip-path 1.2s var(--ease-io)}
 .rv-clip.in{clip-path:inset(0 0 0 0 round var(--r-m))}
 .no-js .rv{opacity:1;transform:none;filter:none}
+/* the first screen does not wait for the scripts: its words are painted at once and only rise into place */
+main>:first-child .rv,main>:first-child.rv{opacity:1;filter:none;transform:none;transition:none;animation:rv-rise .9s var(--ease-out) both}
+@keyframes rv-rise{from{transform:translateY(22px)}}
+.rv.rv-now{opacity:1;filter:none;transform:none;transition:none;animation:rv-rise .9s var(--ease-out) both}
+.rv-clip.rv-now{clip-path:inset(0 0 0 0 round var(--r-m));transition:none}
 @media (prefers-reduced-motion:reduce){
-  .rv,.rv-clip{opacity:1!important;transform:none!important;filter:none!important;clip-path:none!important;transition:opacity .3s!important}
+  .rv,.rv-clip{opacity:1!important;transform:none!important;filter:none!important;clip-path:none!important;transition:opacity .3s!important;animation:none!important}
   *{scroll-behavior:auto!important}
   .marquee-track,.vmarquee-track{animation:none!important}
 }

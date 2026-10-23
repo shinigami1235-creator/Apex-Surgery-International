@@ -212,7 +212,7 @@ def page_html(lang, fname, key, extras, prod_path, meta_id):
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#1F0A30">
 <link rel="icon" href="{up}assets/img/favicon.svg" type="image/svg+xml">
-<link rel="preload" href="{up}assets/fonts/LINESeedSansTH-Rg.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{up}assets/fonts/LINESeed-Rg-latin.woff2" as="font" type="font/woff2" crossorigin>{'' if lang == 'en' else chr(10) + '<link rel="preload" href="' + up + 'assets/fonts/LINESeed-Rg-thai.woff2" as="font" type="font/woff2" crossorigin>'}
 <link rel="preconnect" href="https://www.apexsurgeryhospital.com">
 <link rel="stylesheet" href="{up}assets/css/base.css?v={ASSET_V}">
 <link rel="stylesheet" href="{up}assets/css/site.css?v={ASSET_V}">

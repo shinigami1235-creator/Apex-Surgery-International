@@ -454,6 +454,11 @@ section.night.sx-join{position:relative}
 @keyframes sxBleed{from{transform:scaleY(1.35);opacity:.75}to{transform:none;opacity:1}}
 
 /* page heads leave room for the curve; banners bridge the edge */
+/* the room is there from the first paint, before the script adds the curve, so nothing below jumps */
+.phead:has(+ :not(.night,.night-s,.phead,.svc-head,.art-head,.hero-body)){padding-bottom:calc(70px + clamp(34px,5.4vw,84px))}
+.hero-body:has(+ :not(.night,.night-s,.phead,.svc-head,.art-head,.hero-body)){padding-bottom:calc(40px + clamp(34px,5.4vw,84px))}
+.art-head:has(+ :not(.night,.night-s,.phead,.svc-head,.art-head,.hero-body)){padding-bottom:calc(110px + clamp(34px,5.4vw,84px))}
+.svc-head:has(+ :not(.night,.night-s,.phead,.svc-head,.art-head,.hero-body)){padding-bottom:0}
 .phead.has-curve{padding-bottom:calc(70px + clamp(34px,5.4vw,84px))}
 .hero-body.has-curve{padding-bottom:calc(40px + clamp(34px,5.4vw,84px))}
 .hero-body{background:radial-gradient(120% 90% at 70% 40%,#3a1358 0%,var(--night) 55%,var(--night) 100%)}

@@ -254,7 +254,7 @@ function apex_figure( ?array $img, string $cls = '', bool $par = true ): string 
 	$un = ! empty( $img['un'] );
 	$g = apex_gallery();
 	$alt = $img['alt'] ?? '';
-	return '<figure class="xfig ' . $cls . ' ' . ( $un ? 'un' : 'own' ) . ' rv-clip"><span class="xfig-in ph-img"><button type="button" class="xfig-btn" ' . apex_gattr( $g, 0 ) . ' aria-label="' . apex_e( $alt ?: apex_t( 'image' ) ) . '"><img src="' . esc_url( apex_img( $img['src'] ) ) . '" alt="' . apex_e( $alt ) . '" loading="lazy"' . ( $par ? ' data-par="28"' : '' ) . '></button></span>' . ( $un ? '<figcaption>' . apex_e( apex_t( 'photoCredit' ) ) . '</figcaption>' : '' ) . '</figure>';
+	return '<figure class="xfig ' . $cls . ' ' . ( $un ? 'un' : 'own' ) . ' rv-clip"><span class="xfig-in ph-img"><button type="button" class="xfig-btn" ' . apex_gattr( $g, 0 ) . ' aria-label="' . apex_e( $alt ?: apex_t( 'image' ) ) . '"><img src="' . esc_url( apex_img( $img['src'] ) ) . '"' . apex_srcset( $img['src'], '(max-width: 900px) 100vw, 760px' ) . ' alt="' . apex_e( $alt ) . '" loading="lazy"' . ( $par ? ' data-par="28"' : '' ) . '></button></span>' . ( $un ? '<figcaption>' . apex_e( apex_t( 'photoCredit' ) ) . '</figcaption>' : '' ) . '</figure>';
 }
 
 /* a service section: rich cards for lists, numbered steps for h3/p sequences, with a side photo */
@@ -338,7 +338,7 @@ function apex_cat_label( ?string $c ): string { return apex_t( [ 'review' => 'ca
 function apex_post_card( array $p, int $i = 0, bool $big = false ): string {
 	$ex = ( $p['excerpt'] ?? '' ) ?: ( $p['desc'] ?? '' );
 	return '<a class="post-card rv' . ( $big ? ' big' : '' ) . '" data-d="' . ( ( $i % 3 ) * 70 ) . '" href="' . esc_url( apex_post_url( $p['key'] ) ) . '" data-cat="' . apex_e( $p['cat'] ?? '' ) . '">
-    <span class="pc-ph ph-img"><img src="' . esc_url( apex_img( $p['img'] ?? '' ) ) . '" alt="" loading="lazy" decoding="async" decoding="async"></span>
+    <span class="pc-ph ph-img"><img src="' . esc_url( apex_img( $p['img'] ?? '' ) ) . '"' . apex_srcset( $p['img'] ?? '', '(max-width: 900px) 100vw, 560px' ) . ' alt="" loading="lazy" decoding="async" decoding="async"></span>
     <span class="pc-meta"><span class="pc-cat">' . apex_e( apex_cat_label( $p['cat'] ?? null ) ) . '</span>' . ( ! empty( $p['date'] ) ? '<time datetime="' . apex_e( $p['date'] ) . '">' . apex_e( apex_fmt_date( $p['date'] ) ) . '</time>' : '' ) . '</span>
     <span class="pc-title">' . apex_e( $p['title'] ?? '' ) . '</span>' . ( $ex !== '' ? '<span class="pc-ex">' . apex_e( $ex ) . '</span>' : '' ) . '</a>';
 }
@@ -624,7 +624,7 @@ function apex_page_service( array $r ): string {
           ' . apex_recovery_card( $key ) . '
         </div>
       </div>
-      ' . ( ! empty( $D['hero'] ) ? '<figure class="sh-banner rv-clip ph-img wrap-wide"><img src="' . esc_url( apex_img( $D['hero'] ) ) . '" alt="' . $E( ( $D['heroAlt'] ?? '' ) ?: ( $D['name'] ?? '' ) ) . '" data-field="svc.hero" data-par="24"></figure>' : '' ) . '
+      ' . ( ! empty( $D['hero'] ) ? '<figure class="sh-banner rv-clip ph-img wrap-wide"><img src="' . esc_url( apex_img( $D['hero'] ) ) . '"' . apex_srcset( $D['hero'], '(max-width: 900px) 150vw, 1500px' ) . ' alt="' . $E( ( $D['heroAlt'] ?? '' ) ?: ( $D['name'] ?? '' ) ) . '" data-field="svc.hero" data-par="24" fetchpriority="high"></figure>' : '' ) . '
     </section>
 ';
 	$ip = '';
@@ -728,7 +728,7 @@ function apex_page_about( array $r ): string {
 	$pillars = '';
 	foreach ( $D['pillars'] ?? [] as $i => $p ) $pillars .= '<li class="rv" data-d="' . ( $i * 90 ) . '"><span class="pl-ic">' . $I( [ 'stethoscope', 'cpu', 'shield-check' ][ $i % 3 ] ) . '</span><b>' . $E( $p['h'] ?? '' ) . '</b><span>' . $E( $p['x'] ?? '' ) . '</span></li>';
 	return apex_phead( ( $D['h1'] ?? '' ) ?: $T( 'about' ), null, [ apex_home_crumb(), [ $T( 'about' ) ] ] ) . '
-      ' . ( ! empty( $D['hero']['src'] ) ? '<figure class="about-banner ph-img rv-clip wrap-wide"><img src="' . esc_url( apex_img( $D['hero']['src'] ) ) . '" alt="' . $E( ( $D['hero']['alt'] ?? '' ) ?: ( $D['h1'] ?? '' ) ) . '" data-par="22"></figure>' : '' ) . '
+      ' . ( ! empty( $D['hero']['src'] ) ? '<figure class="about-banner ph-img rv-clip wrap-wide"><img src="' . esc_url( apex_img( $D['hero']['src'] ) ) . '"' . apex_srcset( $D['hero']['src'], '(max-width: 900px) 160vw, 100vw' ) . ' alt="' . $E( ( $D['hero']['alt'] ?? '' ) ?: ( $D['h1'] ?? '' ) ) . '" data-par="22" fetchpriority="high"></figure>' : '' ) . '
       <section class="section"><div class="wrap about-grid">
         <div class="prose big" data-field="about.intro">' . $ip . '</div>
         <aside class="about-aside">
@@ -799,7 +799,7 @@ function apex_story_card( array $x, int $i, array $S ): string {
 	$url = apex_post_url( $p['key'] );
 	return '<article class="story' . ( $i === 0 ? ' big' : '' ) . ' rv" data-d="' . ( ( $i % 2 ) * 80 ) . '" data-cat="' . $E( $proc ?? '' ) . '">
       <a class="st-media" href="' . esc_url( $url ) . '" aria-label="' . $E( $p['title'] ) . '" tabindex="-1">
-        <span class="st-main ph-img"><img src="' . esc_url( apex_img( $imgs[0] ?? '' ) ) . '" alt="" loading="lazy" decoding="async" decoding="async"></span>
+        <span class="st-main ph-img"><img src="' . esc_url( apex_img( $imgs[0] ?? '' ) ) . '"' . apex_srcset( $imgs[0] ?? '', '(max-width: 900px) 100vw, 640px' ) . ' alt="" ' . ( $i === 0 ? 'fetchpriority="high"' : 'loading="lazy"' ) . ' decoding="async" decoding="async"></span>
         ' . ( count( $imgs ) > 1 ? '<span class="st-stack" aria-hidden="true">' . $stack . '</span>' : '' ) . '
       </a>
       <div class="st-body">
@@ -977,7 +977,7 @@ function apex_page_article( array $r ): string {
         <p class="art-meta rv"><span class="pc-cat">' . $E( $catName ) . '</span>' . ( ! empty( $D['date'] ) ? '<time datetime="' . $E( $D['date'] ) . '">' . $E( apex_fmt_date( $D['date'] ) ) . '</time>' : '' ) . '<span class="art-read">' . $I( 'clock' ) . $E( str_replace( '{n}', (string) $body['mins'], $T( 'readMin' ) ) ) . '</span></p>
         <h1 class="h-xl rv" data-d="60" data-field="post.title">' . $E( $D['title'] ) . '</h1>
 </div></section>
-      ' . ( ! empty( $D['img'] ) ? '<figure class="art-banner ph-img rv-clip wrap-mid"><img src="' . esc_url( apex_img( $D['img'] ) ) . '" alt="' . $E( $D['title'] ) . '" data-par="22"></figure>' : '' ) . '
+      ' . ( ! empty( $D['img'] ) ? '<figure class="art-banner ph-img rv-clip wrap-mid"><img src="' . esc_url( apex_img( $D['img'] ) ) . '"' . apex_srcset( $D['img'], '(max-width: 900px) 135vw, 1100px' ) . ' alt="' . $E( $D['title'] ) . '" data-par="22" fetchpriority="high"></figure>' : '' ) . '
       <section class="section art-s"><div class="wrap art-grid' . ( $hasToc ? '' : ' notoc' ) . '">' . $tocH . '<article class="prose art-prose" id="body" data-field="post.blocks">' . $body['html'] . ( ! empty( $D['tags'] ) ? '<div class="art-tags">' . implode( '', array_map( fn( $t ) => '<span class="o-tag">' . $E( $t ) . '</span>', $D['tags'] ) ) . '</div>' : '' ) . '</article></div></section>
       ' . ( $related ? '<section class="section washed"><div class="wrap"><div class="shead"><h2 class="h-l rv">' . $E( $catName ) . '</h2><a class="link-arrow rv" href="' . esc_url( apex_link( 'blog.html' ) ) . '">' . $E( $T( 'backToArticles' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div><div class="post-grid">' . implode( '', array_map( 'apex_post_card', $related, array_keys( $related ) ) ) . '</div></div></section>' : '' ) . '
       <section class="section night"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>';
@@ -1000,7 +1000,7 @@ const APEX_WAR_PROC = [ [ 'facelift', '/ดึงหน้า|ดึงคอ|fa
 function apex_war_stage( array $e, array $D ): string {
 	$w = str_replace( '{n}', (string) $e['n'], apex_t( 'warWatch' ) );
 	return '<div class="war-stage rv-clip"><button type="button" class="ws-poster" data-ytw="' . apex_e( ( $D['yt'] ?? '' ) ?: ( $e['yt'] ?? '' ) ) . '" aria-label="' . apex_e( $w ) . '">
-      <img src="' . esc_url( apex_img( apex_war_src( $e['img'] ?? '' ) ) ) . '" alt="' . apex_e( $D['title'] ) . '" width="1200" height="630"><span class="ws-play">' . apex_ic( 'play' ) . '<span>' . apex_e( $w ) . '</span></span></button></div>';
+      <img src="' . esc_url( apex_img( apex_war_src( $e['img'] ?? '' ) ) ) . '" alt="' . apex_e( $D['title'] ) . '" width="1200" height="630" fetchpriority="high"><span class="ws-play">' . apex_ic( 'play' ) . '<span>' . apex_e( $w ) . '</span></span></button></div>';
 }
 function apex_page_war( array $r ): string {
 	$S = apex_data( 'shared' ) ?: []; $W = apex_data( 'war' ) ?: []; $eps = $W['episodes'] ?? [];

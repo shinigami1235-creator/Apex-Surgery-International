@@ -294,8 +294,8 @@ export function mount(container, opts = {}) {
     const sub = opts.tileFacts ? ((c.facts || [])[1] || [])[1] : first && first[1];
     return `<button type="button" class="s-tile ${esc(c.layout)}" data-i="${c.i}" data-cat="${esc(c.cat)}" aria-label="${esc(fill(L(T.open), { n: c.i + 1, p: c.procName }))}">
       <span class="s-ph">${ICON.img}</span>
-      <span class="s-layer s-before" style="background-image:url('${esc(c.url)}')"></span>
-      ${c.layout === 'single' ? '' : `<span class="s-layer s-after" style="background-image:url('${esc(c.url)}')"></span><span class="s-line" aria-hidden="true"></span>`}
+      <span class="s-layer s-before"></span>
+      ${c.layout === 'single' ? '' : `<span class="s-layer s-after"></span><span class="s-line" aria-hidden="true"></span>`}
       <span class="s-tag b" aria-hidden="true">${esc(L(T.before))}</span><span class="s-tag a" aria-hidden="true">${esc(L(T.after))}</span>
       ${c.story ? `<span class="s-story-dot" aria-hidden="true">${ICON.book}</span>` : ''}
       <span class="s-meta"><span><b>${esc(lab)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</span>${ICON.open}</span></button>`;
@@ -320,9 +320,12 @@ export function mount(container, opts = {}) {
   cap.innerHTML = `<span lang="th">${RULE_TH}</span><span lang="en">${RULE_EN}</span>${opts.vary ? `<span>${esc(opts.vary)}</span>` : ''}`;
   root.append(cap);
 
-  /* tile proportions follow the half of the composite each one shows */
-  wall.querySelectorAll('.s-tile').forEach(t => {
+  /* a tile's photo loads when the tile comes near the screen; its proportions follow the half of the composite it shows */
+  const loadTile = t => {
+    if (t.dataset.on) return;
+    t.dataset.on = '1';
     const c = cases[+t.dataset.i];
+    t.querySelectorAll('.s-layer').forEach(l => { l.style.backgroundImage = `url('${c.url.replace(/'/g, '%27')}')`; });
     const im = new Image();
     im.onload = () => {
       const w = im.naturalWidth, hgt = im.naturalHeight;
@@ -332,7 +335,11 @@ export function mount(container, opts = {}) {
       t.classList.add('ok');
     };
     im.src = c.url;
-  });
+  };
+  if ('IntersectionObserver' in window) {
+    const tio = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { tio.unobserve(e.target); loadTile(e.target); } }), { rootMargin: '500px 0px' });
+    wall.querySelectorAll('.s-tile').forEach(t => tio.observe(t));
+  } else wall.querySelectorAll('.s-tile').forEach(loadTile);
   /* hover wipes to "after"; a tap wipes first, then opens the viewer */
   const fine = matchMedia('(hover:hover) and (pointer:fine)').matches;
   wall.addEventListener('pointerover', e => { const t = e.target.closest('.s-tile'); if (t && fine && e.pointerType === 'mouse') reveal(t); });

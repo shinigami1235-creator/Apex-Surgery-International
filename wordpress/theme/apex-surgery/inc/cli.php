@@ -3,6 +3,7 @@
  * wp apex import   load the design's content (import/content-<lang>.json) into WordPress, both languages
  * wp apex check    compare what WordPress now returns with the design's content, field by field
  * wp apex export   print one content object as WordPress returns it, e.g. wp apex export svc:facelift --lang=th
+ * wp apex webp     save a WebP copy of every JPEG and PNG the content shows, and point the content at it
  *
  * The import can run again at any time: it finds each item by its key and language and updates it in place.
  * Polylang must be active (the free version is enough).
@@ -23,6 +24,9 @@ class Apex_CLI {
 	 *
 	 * [--only=<types>]
 	 * : Comma list of: settings, pages, services, posts, episodes, offers, cases, branches, doctors.
+	 *
+	 * [--no-webp]
+	 * : Leave JPEG and PNG photos as they are. Without it the import ends with `wp apex webp`.
 	 */
 	public function import( $args, $assoc ) {
 		if ( ! function_exists( 'pll_set_post_language' ) ) WP_CLI::error( 'Polylang is not active. Run: wp plugin activate polylang' );
@@ -51,6 +55,7 @@ class Apex_CLI {
 		if ( $run( 'pages' ) ) $this->pages();
 		$this->link();
 		wp_defer_term_counting( false );
+		if ( empty( $assoc['no-webp'] ) ) { $w = apex_photo_pass( false, 40 ); if ( $w['kb'] ) WP_CLI::log( "Photos: {$w['done']} saved as WebP, {$w['kb']} KB lighter" ); }
 		apex_data_bump();
 		PLL()->model->clean_languages_cache();   // Polylang keeps each language's front page in its cache
 		flush_rewrite_rules( false );
@@ -334,7 +339,8 @@ class Apex_CLI {
 			}
 			return $list ? array_values( $o ) : $o;
 		}
-		if ( is_string( $v ) ) return trim( preg_replace( '/[ \t]+\n/', "\n", $v ) );
+		// a photo saved again as WebP by `wp apex webp` is the same photo
+		if ( is_string( $v ) ) return trim( preg_replace( [ '/[ \t]+\n/', '#(/wp-content/uploads/[^"\'\s()<>?]+?)\.(?:jpe?g|png|webp)(?=["\'\s()<>?]|$)#i' ], [ "\n", '$1.photo' ], $v ) );
 		return $v;
 	}
 	private static function cmp( $a, $b, string $p, array &$diff ): void {
@@ -351,6 +357,22 @@ class Apex_CLI {
 	}
 	private static function short( $v ): string { $s = is_scalar( $v ) ? var_export( $v, true ) : wp_json_encode( $v, JSON_UNESCAPED_UNICODE ); return mb_strlen( $s ) > 90 ? mb_substr( $s, 0, 90 ) . '…' : $s; }
 
+	/**
+	 * Save a WebP copy of every JPEG and PNG photo the content shows, and point the content at the copy.
+	 * The original files stay in the uploads folder, so nothing breaks if a copy is deleted later.
+	 *
+	 * [--dry-run]
+	 * : List what would change and how much lighter it would be, and change nothing.
+	 *
+	 * [--min-kb=<kb>]
+	 * : Leave photos smaller than this alone. Default 40.
+	 */
+	public function webp( $args, $assoc ) {
+		$dry = ! empty( $assoc['dry-run'] );
+		$r = apex_photo_pass( $dry, (int) ( $assoc['min-kb'] ?? 40 ), fn( $m ) => WP_CLI::log( $m ) );
+		if ( ! $dry ) apex_data_bump();
+		WP_CLI::success( ( $dry ? 'Would save ' : 'Saved ' ) . "{$r['done']} photos as WebP, {$r['kb']} KB lighter in all. {$r['missing']} photos the content shows are not in the uploads folder." );
+	}
 	/**
 	 * Print one content object as JSON.
 	 *
