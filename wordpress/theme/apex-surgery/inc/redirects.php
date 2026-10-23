@@ -3,7 +3,7 @@
  * Old addresses keep working. The live site was Thai only, at the root; Thai now lives under /th/.
  * Every page, service and article the import brought over carries its old address (meta _apex_old), so a visit
  * to /review/smas/ lands on /th/review/smas/ with a permanent (301) redirect. Apex settings › Redirects adds
- * any others by hand, one "old -> new" per line.
+ * any others by hand, one "old -> new" per line, with 302 at the end of the line for a temporary move.
  */
 defined( 'ABSPATH' ) || exit;
 
@@ -26,7 +26,7 @@ function apex_redirect_for( string $path ): string {
 	$p = apex_norm_path( $path );
 	if ( $p === '' ) return '';
 	// 1. typed in by an editor
-	foreach ( apex_manual_redirects() as $from => $to ) if ( $from === $p ) return $to;
+	foreach ( apex_manual_redirects() as $from => $r ) if ( $from === $p ) return $r['to'];
 	// 2. an item that came from the old site
 	$ids = get_posts( [ 'post_type' => 'any', 'post_status' => 'publish', 'meta_key' => '_apex_old', 'meta_value' => $p, 'posts_per_page' => 1, 'fields' => 'ids', 'lang' => '', 'suppress_filters' => true ] );
 	if ( $ids ) return get_permalink( $ids[0] );
@@ -45,10 +45,10 @@ function apex_term_lang( int $id ): string { return function_exists( 'pll_get_te
 function apex_manual_redirects(): array {
 	$out = [];
 	foreach ( preg_split( '/\r\n|\r|\n/', (string) get_option( 'apex_redirects', '' ) ) as $line ) {
-		if ( ! preg_match( '/^\s*(\S+)\s*(?:->|=>|\s)\s*(\S+)\s*$/u', $line, $m ) ) continue;
+		if ( ! preg_match( '/^\s*(\S+)\s*(?:->|=>|\s)\s*(\S+?)(?:\s+(30[1278]))?\s*$/u', $line, $m ) ) continue;
 		$to = $m[2];
 		if ( ! preg_match( '#^https?://#', $to ) ) $to = home_url( '/' . ltrim( $to, '/' ) );
-		$out[ apex_norm_path( $m[1] ) ] = $to;
+		$out[ apex_norm_path( $m[1] ) ] = [ 'to' => $to, 'code' => (int) ( $m[3] ?? 0 ) ?: 301 ];
 	}
 	return $out;
 }
@@ -60,9 +60,9 @@ add_action( 'template_redirect', function () {
 	if ( ! $to ) return;
 	$q = (string) parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_QUERY );
 	if ( $q !== '' && ! str_contains( $to, '?' ) ) $to .= '?' . $q;
-	// addresses an administrator typed under Apex settings › Redirects may go to another site
-	$manual = in_array( $to, apex_manual_redirects(), true );
-	$manual ? wp_redirect( $to, 301, 'Apex' ) : wp_safe_redirect( $to, 301, 'Apex' );
+	// addresses an administrator typed under Apex settings › Redirects may go to another site, and may be temporary
+	$manual = apex_manual_redirects()[ apex_norm_path( $_SERVER['REQUEST_URI'] ?? '' ) ] ?? null;
+	$manual ? wp_redirect( $to, $manual['code'], 'Apex' ) : wp_safe_redirect( $to, 301, 'Apex' );
 	exit;
 }, 1 );
 
@@ -76,7 +76,7 @@ add_action( 'admin_menu', function () {
 		}
 		$test = isset( $_GET['test'] ) ? sanitize_text_field( wp_unslash( $_GET['test'] ) ) : '';
 		echo '<div class="wrap"><h1>' . esc_html__( 'Redirects', 'apex' ) . '</h1>';
-		echo '<p>' . esc_html__( 'Addresses from the old site already forward to their new pages. Add others here, one per line: the old address, an arrow, the new one.', 'apex' ) . '</p><p><code>/old-page/ -> /th/promotions/</code></p>';
+		echo '<p>' . esc_html__( 'Addresses from the old site already forward to their new pages. Add others here, one per line: the old address, an arrow, the new one. They move for good (301). Add 302 at the end of a line for a move that is only for now, such as a page down for a week.', 'apex' ) . '</p><p><code>/old-page/ -> /th/promotions/</code><br><code>/summer/ -> /th/promotions/ 302</code></p>';
 		echo '<form method="post">';
 		wp_nonce_field( 'apex_redirects', 'apex_redirects_nonce' );
 		echo '<textarea name="apex_redirects" rows="12" class="large-text code">' . esc_textarea( (string) get_option( 'apex_redirects', '' ) ) . '</textarea>';
@@ -86,7 +86,8 @@ add_action( 'admin_menu', function () {
 		echo '</form>';
 		if ( $test !== '' ) {
 			$to = apex_redirect_for( $test );
-			echo '<p>' . ( $to ? esc_html__( 'Goes to', 'apex' ) . ' <a href="' . esc_url( $to ) . '">' . esc_html( rawurldecode( $to ) ) . '</a>' : esc_html__( 'No redirect: this address shows its own page, or the not-found page.', 'apex' ) ) . '</p>';
+			$code = ( apex_manual_redirects()[ apex_norm_path( $test ) ]['code'] ?? 301 );
+			echo '<p>' . ( $to ? esc_html__( 'Goes to', 'apex' ) . ' <a href="' . esc_url( $to ) . '">' . esc_html( rawurldecode( $to ) ) . '</a> (' . $code . ')' : esc_html__( 'No redirect: this address shows its own page, or the not-found page.', 'apex' ) ) . '</p>';
 		}
 		echo '</div>';
 	} );

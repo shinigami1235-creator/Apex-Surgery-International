@@ -118,22 +118,22 @@
     if (h3n >= 3) {
       const steps = [];
       bl.forEach((b, j) => { if (b.t === 'h3') steps.push({h:b.x, p:[]}); else if (b.t === 'p' && steps.length && j > firstStruct) steps[steps.length - 1].p.push(b.x); });
-      body = `<ol class="steps">${steps.map((s, j) => `<li class="step rv" data-d="${(j % 3) * 70}"><span class="step-n" aria-hidden="true">${String(j + 1).padStart(2, '0')}</span><div class="step-b"><h3>${E(s.h)}</h3>${s.p.map(p => `<p>${E(p)}</p>`).join('')}</div></li>`).join('')}</ol>`;
+      body = `<ol class="steps">${steps.map((s, j) => `<li class="step rv" data-d="${(j % 3) * 70}"><span class="step-n" aria-hidden="true">${String(j + 1).padStart(2, '0')}</span><div class="step-b"><h3>${E(s.h)}</h3>${s.p.map(p => `<p>${A.inl(p)}</p>`).join('')}</div></li>`).join('')}</ol>`;
     } else {
       const items = bl.filter(b => b.t === 'list').flatMap(b => (b.items || []).map(x => x.x || x));
       const isAreas = items.length >= 4 && items.filter(x => areaFig(splitLabel(x)[0] || x)).length >= items.length - 1;
       body = `<ul class="who-grid${items.length % 3 === 1 && items.length > 3 ? ' odd' : ''}${isAreas ? ' areas' : ''}">${items.map((x, j) => {
         const [lab, txt] = splitLabel(x);
         const art = isAreas ? (areaFig(lab || x) || `<span class="wc-ic">${I(pickIcon(x, j))}</span>`) : `<span class="wc-ic">${I(pickIcon(lab || x, j))}</span>`;
-        return `<li class="who-card rv" data-d="${(j % 3) * 60}">${art}${lab ? `<h3>${E(lab)}</h3><p>${E(txt)}</p>` : `<p class="${txt.length < 90 ? 'wc-solo' : 'wc-long'}">${E(txt)}</p>`}</li>`;
+        return `<li class="who-card rv" data-d="${(j % 3) * 60}">${art}${lab ? `<h3>${E(lab)}</h3><p>${A.inl(txt)}</p>` : `<p class="${txt.length < 90 ? 'wc-solo' : 'wc-long'}">${A.inl(txt)}</p>`}</li>`;
       }).join('')}</ul>`;
     }
     const pic = (SVC_PHOTOS[key] || [])[i] ? ph(SVC_PHOTOS[key][i], 1000) : null;
     return `<section class="section svc-sec${alt ? ' washed' : ''}" id="sec-${i}">
       <div class="wrap">
-        <div class="ss-head${pic ? ' has-pic' : ''}"><div class="ss-copy"><h2 class="h-l rv">${E(sec.h || '')}</h2>${lead.map(p => `<p class="lead rv">${E(p)}</p>`).join('')}</div>${pic ? figure(pic, 'ss-pic') : ''}</div>
+        <div class="ss-head${pic ? ' has-pic' : ''}"><div class="ss-copy"><h2 class="h-l rv">${E(sec.h || '')}</h2>${lead.map(p => `<p class="lead rv">${A.inl(p)}</p>`).join('')}</div>${pic ? figure(pic, 'ss-pic') : ''}</div>
         ${body}
-        ${tail.length ? `<div class="ss-tail rv">${tail.map(p => `<p>${E(p)}</p>`).join('')}</div>` : ''}
+        ${tail.length ? `<div class="ss-tail rv">${tail.map(p => `<p>${A.inl(p)}</p>`).join('')}</div>` : ''}
       </div></section>`;
   };
 
@@ -740,13 +740,13 @@
           html += m ? `<${b.t} ${id ? `id="${id}" ` : ''}class="qnum"><span class="qn" aria-hidden="true">${m[1]}</span><span class="qt"><span class="sr">${m[1]}. </span>${E(m[2])}</span></${b.t}>` : `<${b.t}${id ? ` id="${id}"` : ''}>${E(b.x)}</${b.t}>`;
           break;
         }
-        case 'h4': case 'h5': case 'h6': html += `<h4>${E(b.x)}</h4>`; break;
-        case 'p': html += `<p class="${firstP ? 'lede' : ''}${b.b ? ' b' : ''}">${E(b.x)}</p>`; firstP = false; break;
+        case 'h4': case 'h5': case 'h6': html += `<${b.t}>${E(b.x)}</${b.t}>`; break;
+        case 'p': html += `<p class="${firstP ? 'lede' : ''}${b.b ? ' b' : ''}">${A.inl(b.x)}</p>`; firstP = false; break;
         case 'list': {
           const items = (b.items || []).map(li => li.x || li);
           const lab = items.filter(x => splitLabel(x)[0]).length;
           if (items.length >= 3 && lab >= items.length - 1 && items.join('').length / items.length > 70) {
-            html += `<ul class="li-cards">${items.map((x, j) => { const [l, t] = splitLabel(x); return `<li><span class="lc-ic">${I(pickIcon(l || x, j))}</span><div>${l ? `<b>${E(l)}</b><p>${E(t)}</p>` : `<p>${E(t)}</p>`}</div></li>`; }).join('')}</ul>`;
+            html += `<ul class="li-cards">${items.map((x, j) => { const [l, t] = splitLabel(x); return `<li><span class="lc-ic">${I(pickIcon(l || x, j))}</span><div>${l ? `<b>${E(l)}</b><p>${A.inl(t)}</p>` : `<p>${A.inl(t)}</p>`}</div></li>`; }).join('')}</ul>`;
           } else { const tag = b.o ? 'ol' : 'ul'; html += `<${tag}>${items.map(x => `<li>${A.fmtLi(x)}</li>`).join('')}</${tag}>`; }
           break;
         }
@@ -760,7 +760,7 @@
         }
         case 'yt': html += `<div class="ytbox"><button type="button" data-yt="${b.id}" aria-label="${E(T('playVideo'))}"><img loading="lazy" decoding="async" src="${A.yt(b.id)}" alt=""><span class="pl">${I('play')}</span></button></div>`; break;
         case 'faqs': html += A.faqHtml((b.items || []).map(q => ({q:q.q, a:q.a}))); break;
-        case 'table': html += `<div class="tbl"><table>${(b.rows || []).map((r, j) => `<tr>${r.map(c => j === 0 ? `<th>${E(c)}</th>` : `<td>${E(c)}</td>`).join('')}</tr>`).join('')}</table></div>`; break;
+        case 'table': html += `<div class="tbl"><table>${(b.rows || []).map((r, j) => `<tr>${r.map(c => j === 0 ? `<th>${A.inl(c)}</th>` : `<td>${A.inl(c)}</td>`).join('')}</tr>`).join('')}</table></div>`; break;
         case 'btn': if (b.h) html += `<p><a class="btn btn-plum btn-sm" href="${b.h}" target="_blank" rel="noopener">${E(b.x)}</a></p>`; break;
       }
     }
@@ -787,7 +787,7 @@
         <h1 class="h-xl rv" data-d="60" data-field="post.title">${E(D.title)}</h1>
 </div></section>
       ${D.img ? `<figure class="art-banner ph-img rv-clip wrap-mid"><img src="${IMG(D.img)}" alt="${E(D.title)}" data-par="22"></figure>` : ''}
-      <section class="section art-s"><div class="wrap art-grid${hasToc ? '' : ' notoc'}">${hasToc ? `<nav class="toc art-toc" id="toc" aria-label="${E(T('inArticle'))}"><p class="toc-h">${E(T('inArticle'))}</p>${body.toc.map(x => `<a href="#${x.id}">${E(x.x)}</a>`).join('')}</nav>` : ''}<article class="prose art-prose" id="body" data-field="post.blocks">${body.html}</article></div></section>
+      <section class="section art-s"><div class="wrap art-grid${hasToc ? '' : ' notoc'}">${hasToc ? `<nav class="toc art-toc" id="toc" aria-label="${E(T('inArticle'))}"><p class="toc-h">${E(T('inArticle'))}</p>${body.toc.map(x => `<a href="#${x.id}">${E(x.x)}</a>`).join('')}</nav>` : ''}<article class="prose art-prose" id="body" data-field="post.blocks">${body.html}${(D.tags || []).length ? `<div class="art-tags">${D.tags.map(t => `<span class="o-tag">${E(t)}</span>`).join('')}</div>` : ''}</article></div></section>
       ${related.length ? `<section class="section washed"><div class="wrap"><div class="shead"><h2 class="h-l rv">${E(catName)}</h2><a class="link-arrow rv" href="blog.html">${E(T('backToArticles'))} ${I('arrow-right')}</a></div><div class="post-grid">${related.map((p, i) => postCard(p, i)).join('')}</div></div></section>` : ''}
       <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
     A.bindMedia(main());

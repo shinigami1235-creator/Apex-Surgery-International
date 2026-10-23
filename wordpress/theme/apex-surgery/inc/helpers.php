@@ -65,6 +65,14 @@ function apex_t( string $key ): string {
 function apex_e( $s ): string {
 	return str_replace( [ '&', '<', '>', '"', "'" ], [ '&amp;', '&lt;', '&gt;', '&quot;', '&#39;' ], (string) ( $s ?? '' ) );
 }
+/** Inline formatting written in the editor, carried as **bold**, *italic* and [text](link). Escaped first, so
+ *  nothing else can turn into markup; core.js A.inl() does exactly the same in the browser. */
+function apex_inl( $s ): string {
+	$h = apex_e( $s );
+	$h = preg_replace( '#\[([^\]\n]+)\]\(((?:https?://|mailto:|tel:|/|\#)[^\s()]*)\)#u', '<a href="$2">$1</a>', $h );
+	$h = preg_replace( '#\*\*([^*\n]+?)\*\*#u', '<strong>$1</strong>', $h );
+	return preg_replace( '#(^|[^*\w])\*([^*\s](?:[^*\n]*?[^*\s])?)\*(?![*\w])#u', '$1<em>$2</em>', $h );
+}
 function apex_fmt_num( $n ): string {
 	$n = (float) $n;
 	return number_format( $n, floor( $n ) == $n ? 0 : 2 );
@@ -154,6 +162,8 @@ function apex_home_url( ?string $lang = null ): string {
 /** Post id of a content item by its design key (services, articles, episodes). */
 function apex_key_id( string $type, string $key, ?string $lang = null ): int {
 	static $cache = [];
+	$pv = $GLOBALS['apex_preview'] ?? null;
+	if ( $pv && $pv->post_type === $type && (string) get_post_meta( $pv->ID, '_apex_key', true ) === $key ) return (int) $pv->ID;
 	$lang = $lang ?: apex_lang();
 	$ck = "$type|$key|$lang";
 	if ( isset( $cache[ $ck ] ) ) return $cache[ $ck ];

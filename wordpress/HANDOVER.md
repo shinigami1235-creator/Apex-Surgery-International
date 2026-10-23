@@ -24,7 +24,9 @@ The theme in the repository has no `assets/` folder. Build it with `node wordpre
 - WP-CLI for the content import. Most hosts have it. If yours does not, run the import on the Docker copy and move the database across.
 - Outgoing email that works. Install WP Mail SMTP or the host's own mailer, since enquiry alerts go out with `wp_mail`.
 - Polylang (the free plugin) 3.9 or newer.
-- Rank Math is optional. With it the theme fills only the fields Rank Math leaves empty.
+- Rank Math (the free plugin). The theme writes titles, descriptions, canonicals and structured data by itself. Rank Math adds what editors need page by page: a focus keyword, a canonical or noindex for one page, extra schema, and editing robots.txt. The theme fills any Rank Math field an editor leaves empty.
+- A daily backup of the database and `wp-content/uploads/`, `apex-private/` included: the host's own backup, or UpdraftPlus sending to cloud storage. Keep 30 days.
+- A page cache: the host's own, or a plugin such as LiteSpeed Cache or WP Super Cache. Leave logged-in users and `/wp-json/` out of it, which is the default in all of them. The cookie banner and the forms work with a cached page.
 
 ## Install
 
@@ -53,7 +55,7 @@ Do this on staging first. When staging passes the checks at the end, repeat on t
 
 9. Fill in Apex settings in the admin:
    - **Forms:** the email addresses that get enquiry alerts. Leave it empty and the alerts go to the WordPress admin address, so check that address first.
-   - **Tracking:** the Tag Manager container. It is set to GTM-WJQF6Z62.
+   - **Tracking and code:** the Tag Manager container, set to GTM-WJQF6Z62. Below it are boxes for code in the head, after `<body>` and before `</body>`, plus custom CSS and JavaScript. Only administrators can change them. Code in these boxes runs before the visitor answers the cookie banner, so pixels belong in Tag Manager.
    - **Games and prizes:** the three prizes and the score each game needs.
    - **Site settings:** check the phone numbers, LINE and WhatsApp in both languages.
 10. Create the staff accounts (see Who can see what).
@@ -86,6 +88,16 @@ Each page is drawn in PHP from the same content structure the design used, with 
 - `inc/render-pages.php` is a PHP copy of `assets/js/pages.js`. When one changes, change the other the same way and run `tests/wordpress/ssr.mjs`, which compares the two on every page.
 - Articles, episodes and service sections are written in the block editor. Headings, paragraphs, lists, images, YouTube, tables, buttons and the Details block (for questions and answers) are the blocks the site draws.
 - The page also prints its content as JSON for the scripts, and `?apex_data=<lang>/<id>` serves the same content to the tools that load it later. Only published content goes through it.
+
+## What editors can do
+
+- Bold, italic and links inside paragraphs, list items, table cells and question answers. A link can go to a web address, an email, a phone number or a page on the site.
+- Headings from H2 to H6.
+- Preview shows a draft, or the unsaved changes of a published page, the way it will look. Only logged-in editors can open it, and search engines are told to skip it.
+- Tags on an article show as small labels under the text. The site has no tag pages, so the labels are not links.
+- A plain page (one without a design of its own, such as the privacy policy) has two templates under Page attributes › Template: Wide text, and Text then the consultation band.
+- Redirects move for good (301). A line ending in 302 moves only for now.
+- JPEG and PNG uploads are saved as WebP at quality 82, which loads faster. Settings › Media turns this off.
 
 ## Who can see what
 
@@ -122,7 +134,7 @@ From the repository root, with the staging site at `$SITE`:
 ```bash
 node tests/wordpress/ssr.mjs $SITE        # every page: the server's markup matches the scripts' (124 pages)
 WP_PASS_FILE=... node tests/wordpress/admin.mjs $SITE   # opens and saves every edit screen, then wp apex check
-WP_PASS_FILE=... node tests/wordpress/flows.mjs $SITE   # consultation, vouchers, redirects, page heads, cookie banner
+WP_PASS_FILE=... node tests/wordpress/flows.mjs $SITE   # consultation, vouchers, redirects, page heads, cookie banner, editor tools
 AXE=.../axe.min.js node tests/wordpress/axe.mjs $SITE  # accessibility, WCAG 2 A and AA
 ```
 
@@ -136,6 +148,8 @@ Then by hand:
 4. Claim a voucher in a game and check it under Vouchers › Check a code.
 5. Open five old addresses from Google Search Console and check each lands on its Thai page.
 6. Submit the new sitemap (`/wp-sitemap.xml`) in Search Console.
+7. Measure Core Web Vitals on staging with the cache on: PageSpeed Insights, mobile, on the home page, one service, one article and the breast implant viewer. Aim for LCP under 2.5 s, INP under 200 ms and CLS under 0.1. Search Console shows the figures from real visitors about 28 days after launch.
+8. Restore one backup to a spare copy, to know the backup works.
 
 ## Updating the design later
 

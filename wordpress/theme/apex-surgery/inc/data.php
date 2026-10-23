@@ -11,6 +11,17 @@ defined( 'ABSPATH' ) || exit;
 
 /** Content anyone may see: no password, or the request that unlocked it. */
 function apex_open( $p ): bool { return $p && ( $p->post_password === '' || ! empty( $GLOBALS['apex_allow_protected'] ) ); }
+/* ---------- preview ----------
+   An editor who presses Preview sees the draft, or the unsaved changes of a published item, drawn by the same
+   templates. WordPress hands over the previewed post (with its autosave already merged in); the content layer
+   uses it in place of the stored post and skips the cache for that request. */
+function apex_preview_post( int $id ) { $p = $GLOBALS['apex_preview'] ?? null; return $p && (int) $p->ID === $id ? $p : null; }
+function apex_post( $p ) { $id = is_object( $p ) ? (int) $p->ID : (int) $p; return apex_preview_post( $id ) ?: get_post( $p ); }
+add_action( 'wp', function () {
+	if ( is_admin() || ! is_preview() || ! is_singular() ) return;
+	$o = get_queried_object();
+	if ( $o instanceof WP_Post && current_user_can( 'edit_post', $o->ID ) ) { $GLOBALS['apex_preview'] = $o; nocache_headers(); }
+} );
 function apex_meta_key( string $k ): string { return $k === 'key' ? '_apex_key' : 'apex_' . $k; }
 
 /** A stored value cleaned to its field type: numbers as numbers, lists without blanks, empty groups as null. */
@@ -54,7 +65,7 @@ function apex_drop_nulls( array $a ): array { return array_filter( $a, fn( $x ) 
 
 /** Read every schema field of a post as the design object. 'content' fields come back as raw markup. */
 function apex_read_post( $post, string $schema ): array {
-	$post = get_post( $post );
+	$post = apex_post( $post );
 	if ( ! $post ) return [];
 	$o = [];
 	foreach ( apex_schema( $schema ) as $f ) {
@@ -105,6 +116,7 @@ function apex_posts( string $type, string $lang, array $q = [] ): array {
 function apex_data( string $id, ?string $lang = null ) {
 	$lang = $lang ?: apex_lang();
 	// a password-protected item the visitor has unlocked: built for this request only
+	if ( ! empty( $GLOBALS['apex_preview'] ) ) return apex_with_lang( $lang, fn() => apex_build( $id, $lang ) );   // never cached
 	if ( in_array( $id, $GLOBALS['apex_unlocked'] ?? [], true ) ) {
 		$GLOBALS['apex_allow_protected'] = true;
 		try { return apex_with_lang( $lang, fn() => apex_build( $id, $lang ) ); } finally { $GLOBALS['apex_allow_protected'] = false; }
@@ -266,10 +278,13 @@ function apex_post_list( string $lang ): array {
 function apex_post_obj( string $key, string $lang ) {
 	$id = apex_key_id( 'post', $key, $lang );
 	if ( ! $id ) return null;
-	$p = get_post( $id );
-	if ( ! $p || $p->post_type !== 'post' || $p->post_status !== 'publish' || ! apex_open( $p ) ) return null;
+	$p = apex_post( $id );
+	if ( ! $p || $p->post_type !== 'post' || ( $p->post_status !== 'publish' && ! apex_preview_post( $id ) ) || ! apex_open( $p ) ) return null;
 	$o = apex_read_post( $id, 'post' );
-	return [ 'key' => $key, 'title' => $p->post_title, 'date' => substr( $p->post_date, 0, 10 ), 'cat' => apex_post_cat( $id ), 'img' => $o['img'], 'author' => $o['author'], 'tag' => $o['tag'] !== '' ? $o['tag'] : null, 'blocks' => apex_markup_to_blocks( $p->post_content ) ];
+	$out = [ 'key' => $key, 'title' => $p->post_title, 'date' => substr( $p->post_date, 0, 10 ), 'cat' => apex_post_cat( $id ), 'img' => $o['img'], 'author' => $o['author'], 'tag' => $o['tag'] !== '' ? $o['tag'] : null, 'blocks' => apex_markup_to_blocks( $p->post_content ) ];
+	$tags = wp_get_post_terms( $id, 'post_tag', [ 'fields' => 'names' ] );
+	if ( is_array( $tags ) && $tags ) $out['tags'] = array_values( $tags );   // shown as chips under the article
+	return $out;
 }
 function apex_svc_obj( string $key, string $lang ) {
 	$id = apex_key_id( 'apex_service', $key, $lang );
@@ -291,6 +306,8 @@ function apex_episodes( string $lang ): array {
 	return $out;
 }
 function apex_episode_id( int $n, string $lang ): int {
+	$pv = $GLOBALS['apex_preview'] ?? null;
+	if ( $pv && $pv->post_type === 'apex_episode' && (int) get_post_meta( $pv->ID, 'apex_n', true ) === $n ) return (int) $pv->ID;
 	foreach ( apex_posts( 'apex_episode', $lang ) as $id ) if ( (int) get_post_meta( $id, 'apex_n', true ) === $n ) return $id;
 	return 0;
 }

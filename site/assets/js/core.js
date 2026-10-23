@@ -317,12 +317,18 @@
 
   /* ---------- content renderer (service sections + articles) ---------- */
   const slug = s => String(s).toLowerCase().replace(/[^a-z0-9฀-๿]+/g,'-').replace(/^-|-$/g,'').slice(0,50);
+  /* inline formatting written in the editor, carried as **bold**, *italic* and [text](link): escaped first, so
+     nothing else can turn into markup. inc/blocks.php apex_inl() does the same on the server. */
+  A.inl = s => A.esc(s)
+    .replace(/\[([^\]\n]+)\]\(((?:https?:\/\/|mailto:|tel:|\/|#)[^\s()]*)\)/g, '<a href="$2">$1</a>')
+    .replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*\w])\*([^*\s](?:[^*\n]*?[^*\s])?)\*(?![*\w])/g, '$1<em>$2</em>');
   A.fmtLi = x => {
     const m = x.match(/^([^:]{2,80}?)\s?:\s(.+)$/s);
-    if (m && !/https?$/.test(m[1])) return `<strong>${A.esc(m[1])}:</strong> ${A.esc(m[2])}`;
-    return A.esc(x);
+    if (m && !/https?$/.test(m[1]) && !/[\[*]/.test(m[1])) return `<strong>${A.esc(m[1])}:</strong> ${A.inl(m[2])}`;
+    return A.inl(x);
   };
-  A.faqHtml = items => `<div class="faq">${items.map(q => `<details><summary>${A.esc(q.q)}<span class="pm">${A.ic('plus')}</span></summary><div class="ans">${(q.a || []).map(a => `<p>${A.esc(typeof a === 'string' ? a : a.x)}</p>`).join('')}</div></details>`).join('')}</div>`;
+  A.faqHtml = items => `<div class="faq">${items.map(q => `<details><summary>${A.esc(q.q)}<span class="pm">${A.ic('plus')}</span></summary><div class="ans">${(q.a || []).map(a => `<p>${A.inl(typeof a === 'string' ? a : a.x)}</p>`).join('')}</div></details>`).join('')}</div>`;
   A.renderBlocks = (blocks, el) => {
     const toc = [];
     let html = '';
@@ -330,13 +336,13 @@
       switch (b.t) {
         case 'h2': { const id = 's-' + toc.length + '-' + slug(b.x); toc.push({id, x:b.x}); html += `<h2 id="${id}">${A.esc(b.x)}</h2>`; break; }
         case 'h3': html += `<h3>${A.esc(b.x)}</h3>`; break;
-        case 'h4': case 'h5': case 'h6': html += `<h4>${A.esc(b.x)}</h4>`; break;
-        case 'p': html += `<p${b.b ? ' class="b"' : ''}>${A.esc(b.x)}</p>`; break;
+        case 'h4': case 'h5': case 'h6': html += `<${b.t}>${A.esc(b.x)}</${b.t}>`; break;
+        case 'p': html += `<p${b.b ? ' class="b"' : ''}>${A.inl(b.x)}</p>`; break;
         case 'list': { const tag = b.o ? 'ol' : 'ul'; html += `<${tag}>${(b.items || []).map(li => `<li>${A.fmtLi(li.x || li)}</li>`).join('')}</${tag}>`; break; }
         case 'img': if (b.src) html += `<figure class="rv-clip ph-img"><img loading="lazy" decoding="async" src="${A.img(b.src)}" alt="${A.esc(b.alt || '')}"></figure>`; break;
         case 'yt': html += `<div class="ytbox"><button type="button" data-yt="${b.id}" aria-label="${A.esc(A.t('playVideo'))}"><img loading="lazy" decoding="async" src="${A.yt(b.id)}" alt=""><span class="pl">${A.ic('play')}</span></button></div>`; break;
         case 'faqs': html += A.faqHtml((b.items || []).map(q => ({q:q.q, a:q.a}))); break;
-        case 'table': html += `<div class="tbl"><table>${(b.rows || []).map((r, i) => `<tr>${r.map(c => i === 0 ? `<th>${A.esc(c)}</th>` : `<td>${A.esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>`; break;
+        case 'table': html += `<div class="tbl"><table>${(b.rows || []).map((r, i) => `<tr>${r.map(c => i === 0 ? `<th>${A.inl(c)}</th>` : `<td>${A.inl(c)}</td>`).join('')}</tr>`).join('')}</table></div>`; break;
         case 'btn': if (b.h) html += `<p><a class="btn btn-plum btn-sm" href="${b.h}" target="_blank" rel="noopener">${A.esc(b.x)}</a></p>`; break;
       }
     }

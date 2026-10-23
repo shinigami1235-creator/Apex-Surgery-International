@@ -5,10 +5,14 @@
 //  4. every page's head: title, description, canonical, hreflang, Open Graph, structured data that parses
 //  5. the cookie banner: nothing granted before a choice, the choice is kept
 //  6. the server-drawn pages work: gallery, filters, branch tabs, menu, language switch
+//  7. editor tools: preview of a draft, inline formatting and tags, page templates, 302 redirects,
+//     custom code boxes, uploads saved as WebP
 //   WP_PASS_FILE=... node tests/wordpress/flows.mjs [http://localhost:8080]
 import {createRequire} from 'module';
 import {execSync} from 'child_process';
 import fs from 'fs';
+import os from 'os';
+import path from 'path';
 const require = createRequire('/opt/npm-tools/node_modules/');
 const {chromium} = require('playwright');
 
@@ -242,6 +246,55 @@ ok(await p.isVisible('.apxg'), 'games: the hub loads');
 await p.goto(BASE + '/nose-preview/');
 await p.waitForSelector('#nose.feat-on, #nose.feat-off', {timeout:20000}).catch(() => {});
 ok(await p.$('#nose.feat-on'), 'nose preview: the tool loads');
+
+/* 7. editor tools */
+{
+  const wpIn = (c, input) => execSync(`wp --allow-root --path=${WP} ${c}`, {encoding:'utf8', input}).trim();
+  const tmp = path.join(os.tmpdir(), 'apex-flows-draft.html');
+  fs.writeFileSync(tmp, '<!-- wp:paragraph --><p>Lead line of the draft.</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>A <strong>firm</strong> word, a <em>soft</em> one and <a href="/contact/">a link</a>.</p><!-- /wp:paragraph --><!-- wp:heading {"level":5} --><h5 class="wp-block-heading">Fifth level</h5><!-- /wp:heading -->');
+  const cat = wp(`eval 'foreach(get_terms(["taxonomy"=>"category","hide_empty"=>false,"lang"=>""]) as $t) if(get_term_meta($t->term_id,"_apex_cat",true)==="blog" && pll_get_term_language($t->term_id)==="en"){echo $t->term_id;break;}'`);
+  const draft = wp(`post create ${tmp} --post_type=post --post_status=draft --post_title="Flows draft probe" --post_category=${cat} --tags_input="Flows tag" --porcelain`);
+  wp(`eval 'pll_set_post_language(${draft},"en");'`);
+  const page = wp(`post create ${tmp} --post_type=page --post_status=publish --post_title="Flows template probe" --post_name=flows-template-probe --porcelain`);
+  wp(`eval 'pll_set_post_language(${page},"en");'`);
+  wp(`post meta update ${page} _wp_page_template apex-consult`);
+  const oldRedirects = wp(`eval 'echo get_option("apex_redirects","");'`);
+  wpIn('option update apex_redirects', '/flows-temp/ -> /offers/ 302\n/flows-perm/ -> /offers/');
+  wp(`option update apex_code_head '<meta name="flows-probe" content="1">'`);
+  wp(`option update apex_code_js 'window.__flowsProbe=1;'`);
+  const staff = await b.newContext();
+  const s = await staff.newPage();
+  try {
+    await s.goto(BASE + '/wp-login.php');
+    await s.fill('#user_login', 'apexadmin'); await s.fill('#user_pass', PASS);
+    await Promise.all([s.waitForNavigation(), s.click('#wp-submit')]);
+    await s.goto(`${BASE}/?p=${draft}&preview=true`);
+    const h = await s.content();
+    ok(/Flows draft probe/.test(await s.textContent('h1')), 'preview: an editor sees the draft');
+    ok(h.includes('<strong>firm</strong>') && h.includes('<em>soft</em>') && h.includes('<a href="/contact/">a link</a>'), 'preview: bold, italic and links show');
+    ok(h.includes('<h5>Fifth level</h5>'), 'preview: an H5 heading shows');
+    ok(/<div class="art-tags"><span class="o-tag">Flows tag<\/span>/.test(h), 'preview: the article tags show');
+    ok(/noindex/.test(await s.getAttribute('meta[name=robots]', 'content') || ''), 'preview: search engines are told to skip it');
+    const anon = await fetch(`${BASE}/?p=${draft}&preview=true`, {redirect:'manual'});
+    ok(anon.status === 404, `preview: a visitor gets not found (${anon.status})`);
+    const tp = await (await fetch(BASE + '/flows-template-probe/')).text();
+    ok(tp.includes('section washed'), 'page template: "Text, then the consultation band" adds the band');
+    const r1 = await fetch(BASE + '/flows-temp/', {redirect:'manual'}), r2 = await fetch(BASE + '/flows-perm/', {redirect:'manual'});
+    ok(r1.status === 302 && r2.status === 301, `redirects: a line ending in 302 is temporary (${r1.status}), others permanent (${r2.status})`);
+    await p.goto(BASE + '/');
+    ok(await p.$('meta[name=flows-probe]') && await p.evaluate(() => window.__flowsProbe === 1), 'custom code: the head box and the JavaScript box run');
+    const att = wp(`media import ${PHOTO} --porcelain`);
+    ok(wp(`post get ${att} --field=post_mime_type`) === 'image/webp', 'uploads: a JPEG is saved as WebP');
+    wp(`post delete ${att} --force`);
+  } finally {
+    await staff.close();
+    wp(`post delete ${draft} ${page} --force`);
+    wp(`eval '$t=get_term_by("name","Flows tag","post_tag"); if($t) wp_delete_term($t->term_id,"post_tag");'`);
+    wpIn('option update apex_redirects', oldRedirects);
+    wp('option delete apex_code_head apex_code_js');
+    fs.rmSync(tmp, {force:true});
+  }
+}
 
 errors.forEach(e => console.log('ERROR ' + e));
 ok(!errors.length, `no script errors (${errors.length})`);

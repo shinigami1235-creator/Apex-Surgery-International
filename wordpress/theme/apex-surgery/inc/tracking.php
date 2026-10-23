@@ -5,6 +5,8 @@
  * straight away with everything denied, so tags that respect consent (GA4, Google Ads) wait for the choice.
  * The site's own events (apex_* in dataLayer, see assets/js/core.js A.emit) go to the same dataLayer.
  * Apex settings › Tracking sets the container ID; empty turns tracking off.
+ * The same page holds custom code: boxes printed as typed in the head, after <body>, before </body>, plus
+ * custom CSS and JavaScript. Only someone allowed to post raw HTML (an administrator) can change them.
  */
 defined( 'ABSPATH' ) || exit;
 
@@ -94,16 +96,45 @@ add_action( 'wp_footer', function () {
 <?php
 }, 50 );
 
+/* ---------- custom code ---------- */
+const APEX_CODE = [ 'head', 'body', 'footer', 'css', 'js' ];
+function apex_code( string $k ): string { $v = get_option( 'apex_code_' . $k, '' ); return is_string( $v ) ? $v : ''; }
+add_action( 'wp_head', function () {
+	if ( is_admin() ) return;
+	if ( ( $c = apex_code( 'css' ) ) !== '' ) echo "<style id=\"apex-custom-css\">\n" . str_ireplace( '</style', '<\\/style', $c ) . "\n</style>\n";
+	if ( ( $c = apex_code( 'head' ) ) !== '' ) echo $c . "\n";
+}, 99 );
+add_action( 'wp_body_open', function () { if ( ( $c = apex_code( 'body' ) ) !== '' ) echo $c . "\n"; }, 20 );
+add_action( 'wp_footer', function () {
+	if ( is_admin() ) return;
+	if ( ( $c = apex_code( 'footer' ) ) !== '' ) echo $c . "\n";
+	if ( ( $c = apex_code( 'js' ) ) !== '' ) echo "<script id=\"apex-custom-js\">\n" . str_ireplace( '</script', '<\\/script', $c ) . "\n</script>\n";
+}, 99 );
+
 /* Apex settings › Tracking */
 add_action( 'admin_menu', function () {
-	add_submenu_page( 'apex-settings', __( 'Tracking', 'apex' ), __( 'Tracking', 'apex' ), 'manage_options', 'apex-tracking', function () {
+	add_submenu_page( 'apex-settings', __( 'Tracking and code', 'apex' ), __( 'Tracking and code', 'apex' ), 'manage_options', 'apex-tracking', function () {
 		if ( ! current_user_can( 'manage_options' ) ) return;
 		if ( isset( $_POST['apex_gtm_nonce'] ) && wp_verify_nonce( sanitize_key( $_POST['apex_gtm_nonce'] ), 'apex_gtm' ) ) {
 			$v = strtoupper( sanitize_text_field( wp_unslash( $_POST['apex_gtm'] ?? '' ) ) );
 			update_option( 'apex_gtm', preg_match( '/^GTM-[A-Z0-9]{4,12}$/', $v ) ? $v : '', true );
+			if ( current_user_can( 'unfiltered_html' ) ) foreach ( APEX_CODE as $k ) update_option( 'apex_code_' . $k, (string) wp_unslash( $_POST[ 'apex_code_' . $k ] ?? '' ), true );
 			echo '<div class="notice notice-success"><p>' . esc_html__( 'Saved.', 'apex' ) . '</p></div>';
 		}
-		echo '<div class="wrap"><h1>' . esc_html__( 'Tracking', 'apex' ) . '</h1><form method="post"><table class="form-table"><tr><th><label for="apex-gtm">' . esc_html__( 'Google Tag Manager container', 'apex' ) . '</label></th><td><input id="apex-gtm" name="apex_gtm" class="regular-text" value="' . esc_attr( apex_gtm_id() ) . '" placeholder="GTM-XXXXXXX"><p class="description">' . esc_html__( 'Empty turns Tag Manager off. Analytics and ads tags in the container must use Consent Mode: they only store cookies after the visitor accepts in the cookie banner.', 'apex' ) . '</p></td></tr></table>';
+		echo '<div class="wrap"><h1>' . esc_html__( 'Tracking and code', 'apex' ) . '</h1><form method="post"><table class="form-table"><tr><th><label for="apex-gtm">' . esc_html__( 'Google Tag Manager container', 'apex' ) . '</label></th><td><input id="apex-gtm" name="apex_gtm" class="regular-text" value="' . esc_attr( apex_gtm_id() ) . '" placeholder="GTM-XXXXXXX"><p class="description">' . esc_html__( 'Empty turns Tag Manager off. Analytics and ads tags in the container must use Consent Mode: they only store cookies after the visitor accepts in the cookie banner.', 'apex' ) . '</p></td></tr></table>';
+		$boxes = [
+			'head' => [ __( 'Code in the head', 'apex' ), __( 'Printed as typed before </head> on every page: verification meta tags, a font, a script a vendor gives you.', 'apex' ) ],
+			'body' => [ __( 'Code after <body>', 'apex' ), __( 'Printed right after the <body> tag. Some vendors ask for a noscript tag here.', 'apex' ) ],
+			'footer' => [ __( 'Code before </body>', 'apex' ), __( 'Printed at the end of every page: chat widgets and other scripts that can load last.', 'apex' ) ],
+			'css' => [ __( 'Custom CSS', 'apex' ), __( 'Plain CSS without the <style> tag. It loads after the theme\'s styles, so it wins.', 'apex' ) ],
+			'js' => [ __( 'Custom JavaScript', 'apex' ), __( 'Plain JavaScript without the <script> tag. Runs at the end of every page.', 'apex' ) ],
+		];
+		$can = current_user_can( 'unfiltered_html' );
+		echo '<h2>' . esc_html__( 'Custom code', 'apex' ) . '</h2><p>' . esc_html__( 'Code here runs on every page of the site without asking for cookie consent. Put analytics and ad pixels in Tag Manager instead, so the cookie banner controls them. A mistake here can break the site: test on staging first.', 'apex' ) . '</p>';
+		if ( ! $can ) echo '<p><b>' . esc_html__( 'Only an administrator who may post raw HTML can change these boxes.', 'apex' ) . '</b></p>';
+		echo '<table class="form-table">';
+		foreach ( $boxes as $k => [ $label, $help ] ) echo '<tr><th><label for="apex-code-' . $k . '">' . esc_html( $label ) . '</label></th><td><textarea id="apex-code-' . $k . '" name="apex_code_' . $k . '" class="large-text code" rows="6" spellcheck="false"' . ( $can ? '' : ' readonly' ) . '>' . esc_textarea( apex_code( $k ) ) . '</textarea><p class="description">' . esc_html( $help ) . '</p></td></tr>';
+		echo '</table>';
 		wp_nonce_field( 'apex_gtm', 'apex_gtm_nonce' );
 		submit_button();
 		echo '<h2>' . esc_html__( 'Events the site sends', 'apex' ) . '</h2><p>' . esc_html__( 'Every tool on the site pushes an event named apex_… to the dataLayer, for example apex_consult_submit, apex_contact_click, apex_plan_add, apex_games_voucher, apex_promo_ask. Use them as triggers in Tag Manager.', 'apex' ) . '</p></form></div>';

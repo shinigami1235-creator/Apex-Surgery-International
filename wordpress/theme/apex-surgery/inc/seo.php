@@ -16,7 +16,7 @@ function apex_seo(): array {
 	$r = apex_route();
 	$brand = 'Apex Surgery Hospital';
 	$title = ''; $desc = ''; $img = '';
-	$page = $r['id'] ? get_post( $r['id'] ) : null;
+	$page = $r['id'] ? apex_post( $r['id'] ) : null;
 	if ( $page && $page->post_password !== '' ) {
 		return $m = [ 'title' => get_the_title( $page ) . ' | ' . $brand, 'desc' => '', 'img' => apex_img( '~/wp-content/uploads/2025/11/Apex-Surgery.webp' ) ];
 	}
@@ -62,7 +62,7 @@ function apex_seo(): array {
 add_filter( 'pre_get_document_title', function ( $t ) { return apex_seo_plugin() || is_admin() ? $t : apex_seo()['title']; }, 20 );
 add_filter( 'wp_robots', function ( $robots ) {
 	$r = apex_route();
-	if ( in_array( $r['page'], [ 'notfound', 'plan' ], true ) ) $robots['noindex'] = true;
+	if ( in_array( $r['page'], [ 'notfound', 'plan' ], true ) || is_preview() ) $robots['noindex'] = true;
 	if ( ! empty( $r['params']['c'] ) && in_array( $r['page'], [ 'promotions', 'blog' ], true ) && ! is_category() ) { $robots['noindex'] = true; $robots['follow'] = true; }
 	return $robots;
 } );
