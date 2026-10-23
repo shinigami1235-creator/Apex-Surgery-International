@@ -248,7 +248,7 @@
     </div>
     <div class="ftr-word" data-w="APEX" aria-hidden="true"></div>
     ${S.footerNote ? `<p class="ftr-note">${A.esc(S.footerNote)}</p>` : ''}
-    <div class="ftr-bot"><span>${A.esc(S.copyright || '')}</span><span>${[['en','EN'],['th','TH']].map(([c,t]) => `<a href="${A.langHref(c)}" hreflang="${c}" style="display:inline;padding:0 6px">${t}</a>`).join('·')}</span></div></div>`;
+    <div class="ftr-bot"><span>${A.esc(S.copyright || '')} · <a class="ftr-pp" href="privacy.html">${A.esc(A.t('privacy'))}</a></span><span>${[['en','EN'],['th','TH']].map(([c,t]) => `<a href="${A.langHref(c)}" hreflang="${c}" style="display:inline;padding:0 6px">${t}</a>`).join('·')}</span></div></div>`;
     document.body.append(f);
   }
 

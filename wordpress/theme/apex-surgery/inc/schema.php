@@ -193,6 +193,7 @@ function apex_schema( string $type ): array {
 	$S['page:promotions'] = [ ...apex_seo_f(), apex_f( 'h1', 'text', 'Heading' ), apex_f( 'filters', 'repeater', 'Filter labels', [ 'f' => [ apex_f( 'k', 'select', 'Procedure', [ 'o' => [ 'all' => 'All' ] + apex_service_keys() ] ), apex_f( 'x', 'text', 'Label' ) ] ] ) ];
 	$S['page:reviews'] = [ ...apex_seo_f(), apex_f( 'h1', 'text', 'Heading' ) ];
 	$S['page:blog'] = [ ...apex_seo_f(), apex_f( 'h1', 'text', 'Heading' ) ];
+	$S['page:privacy'] = [ ...apex_seo_f(), apex_f( 'h1', 'text', 'Heading' ), apex_f( 'blocks', 'content', 'Policy', [ 'h' => 'Written in the editor above: headings, paragraphs and lists.' ] ) ];
 	$S['page:contact'] = [ ...apex_seo_f(), apex_f( 'h1', 'text', 'Heading' ), apex_f( 'formH', 'text', 'Form heading' ), $branches ];
 	foreach ( [ 'doctor', 'war', 'nose', 'analysis', 'proportions', 'implBreast', 'implChin', 'implForehead', 'implNose', 'play', 'plan', 'trip', 'consult', 'notfound' ] as $k ) $S[ 'page:' . $k ] = apex_seo_f();
 	return $S[ $type ] ?? [];
@@ -222,5 +223,6 @@ function apex_page_types(): array {
 		'plan' => [ 'My Plan', 'my-plan', 'my-plan' ],
 		'trip' => [ 'Trip planner', 'trip-planner', 'trip-planner' ],
 		'consult' => [ 'Online consultation', 'consultation', 'consultation' ],
+		'privacy' => [ 'Privacy policy', 'privacy-policy', 'privacy-policy' ],
 	];
 }

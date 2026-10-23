@@ -189,6 +189,7 @@ main>:first-child .rv,main>:first-child.rv{opacity:1;filter:none;transform:none;
 .ftr-socials a:hover{background:#fff;color:var(--plum);transform:translateY(-2px)}
 .ftr-word{font-size:clamp(80px,22vw,360px);line-height:.8;letter-spacing:-.06em;color:rgba(201,179,221,.07);margin:60px 0 0;user-select:none;white-space:nowrap}
 .ftr-bot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;border-top:1px solid rgba(201,179,221,.14);padding-top:22px;font-size:14px}
+.ftr-bot .ftr-pp{display:inline;padding:0;font-size:inherit;color:inherit;text-decoration:underline!important;text-underline-offset:2px;opacity:.8}
 
 /* ---------- HERO (home) ---------- */
 .hero{position:relative;min-height:100svh;background:var(--night);color:var(--on-night);overflow:hidden;display:grid;align-items:end}

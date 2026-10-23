@@ -48,6 +48,7 @@ PAGES = [
     ('plan.html',       'plan',       [],                       'my-plan/',       None),
     ('trip.html',       'trip',       [],                       'trip-planner/',  None),
     ('consult.html',    'consult',    [],                       'consultation/',  None),
+    ('privacy.html',    'privacy',    ['privacy'],              'privacy-policy/', 'privacy'),
     ('404.html',        'notfound',   [],                       '404/',           None),
 ]
 

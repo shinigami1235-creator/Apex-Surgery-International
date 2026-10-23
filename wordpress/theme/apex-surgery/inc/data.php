@@ -157,6 +157,11 @@ function apex_build( string $id, string $lang ) {
 		case 'about': return apex_page_obj( 'about', $lang );
 		case 'services': return apex_page_obj( 'services', $lang );
 		case 'contact': return apex_page_obj( 'contact', $lang );
+		case 'privacy':
+			$o = apex_page_obj( 'privacy', $lang );
+			if ( ! $o ) return null;
+			$o['blocks'] = apex_markup_to_blocks( (string) ( $o['blocks'] ?? '' ) );
+			return $o;
 		case 'blogs': return apex_page_obj( 'blog', $lang );
 		case 'reviews': return apex_page_obj( 'reviews', $lang ) + [ 'items' => apex_cases( $lang ) ];
 		case 'promotions':

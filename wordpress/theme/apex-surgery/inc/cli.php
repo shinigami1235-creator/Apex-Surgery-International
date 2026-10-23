@@ -259,7 +259,7 @@ class Apex_CLI {
 		WP_CLI::log( 'Cases: ' . count( $this->made['apex_case'] ?? [] ) );
 	}
 	private function pages(): void {
-		$src = [ 'home' => 'home', 'about' => 'about', 'services' => 'services', 'promotions' => 'promotions', 'reviews' => 'reviews', 'blog' => 'blogs', 'contact' => 'contact' ];
+		$src = [ 'home' => 'home', 'about' => 'about', 'services' => 'services', 'promotions' => 'promotions', 'reviews' => 'reviews', 'blog' => 'blogs', 'contact' => 'contact', 'privacy' => 'privacy' ];
 		$i18n_title = [ 'about' => 'about', 'services' => 'services', 'doctor' => 'doctorsH', 'promotions' => 'promotions', 'reviews' => 'reviews', 'blog' => 'articles', 'war' => 'war', 'contact' => 'contact', 'nose' => 'nose', 'analysis' => 'ana', 'proportions' => 'prop', 'implBreast' => 'implBreastH', 'implChin' => 'implChinH', 'implForehead' => 'implForeheadH', 'implNose' => 'implNoseH', 'play' => 'games', 'plan' => 'plan', 'trip' => 'trip', 'consult' => 'consultPageH' ];
 		$order = 0;
 		foreach ( apex_page_types() as $key => [ $label, $en_slug, $th_slug ] ) {
@@ -273,6 +273,7 @@ class Apex_CLI {
 					$vals['reviews'] = [ 'h' => $obj['reviews']['h'] ?? '' ];
 					$vals['promos'] = [ 'h' => $obj['promos']['h'] ?? '' ];
 				}
+				if ( $key === 'privacy' && isset( $vals['blocks'] ) ) $vals['blocks'] = apex_blocks_to_markup( (array) $vals['blocks'] );
 				$m = $this->meta[ $l ][ $key ] ?? null;
 				if ( $m ) { $vals['title'] = $vals['title'] ?? $m[0]; $vals['desc'] = $vals['desc'] ?? $m[1]; }
 				$title = $key === 'home' ? 'Apex Surgery Hospital' : apex_with_lang( $l, fn() => apex_t( $i18n_title[ $key ] ?? $key ) );
@@ -284,6 +285,7 @@ class Apex_CLI {
 		}
 		$home = $this->made['page']['home']['en'] ?? 0;
 		if ( $home ) { update_option( 'show_on_front', 'page' ); update_option( 'page_on_front', $home ); }
+		if ( $p = $this->made['page']['privacy']['en'] ?? 0 ) update_option( 'wp_page_for_privacy_policy', $p );   // Settings › Privacy
 		WP_CLI::log( 'Pages: ' . count( $this->made['page'] ?? [] ) );
 	}
 

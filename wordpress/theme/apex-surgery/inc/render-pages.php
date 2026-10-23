@@ -1098,15 +1098,8 @@ function apex_page_feature( string $page ): string {
       ' . ( $name === 'plan' || $name === 'consult' ? '' : '<section class="section washed"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>' );
 }
 
-/* any other WordPress page (privacy policy and the like): a heading and its text */
-function apex_password_page( int $id ): string {
-	return apex_phead( get_the_title( $id ), null, [ apex_home_crumb(), [ get_the_title( $id ) ] ] ) . '<section class="section"><div class="wrap prose">' . get_the_password_form( $id ) . '</div></section>';
-}
-function apex_page_page( array $r ): string {
-	$p = apex_post( $r['id'] );
-	if ( ! $p ) return apex_page_notfound( $r );
-	if ( post_password_required( $p ) ) return apex_password_page( $p->ID );
-	$blocks = apex_markup_to_blocks( $p->post_content );
+/* plain text pages: headings, paragraphs, lists, photos, questions and tables (pages.js plainBlocks) */
+function apex_plain_blocks( array $blocks ): string {
 	$html = '';
 	foreach ( $blocks as $b ) {
 		switch ( $b['t'] ) {
@@ -1119,11 +1112,29 @@ function apex_page_page( array $r ): string {
 			case 'table': $html .= '<div class="tbl"><table>' . implode( '', array_map( fn( $row, $j ) => '<tr>' . implode( '', array_map( fn( $c ) => $j === 0 ? '<th>' . apex_inl( $c ) . '</th>' : '<td>' . apex_inl( $c ) . '</td>', $row ) ) . '</tr>', $b['rows'] ?? [], array_keys( $b['rows'] ?? [] ) ) ) . '</table></div>'; break;
 		}
 	}
+	return $html;
+}
+
+/* PRIVACY POLICY */
+function apex_page_privacy( array $r ): string {
+	$D = apex_data( 'privacy' ) ?: [];
+	return apex_phead( ( $D['h1'] ?? '' ) ?: apex_t( 'privacy' ), null, [ apex_home_crumb(), [ apex_t( 'privacy' ) ] ] ) . '<section class="section"><div class="wrap"><div class="prose art-prose" data-field="privacy.blocks">' . apex_plain_blocks( $D['blocks'] ?? [] ) . '</div></div></section>';
+}
+
+/* any other WordPress page: a heading and its text */
+function apex_password_page( int $id ): string {
+	return apex_phead( get_the_title( $id ), null, [ apex_home_crumb(), [ get_the_title( $id ) ] ] ) . '<section class="section"><div class="wrap prose">' . get_the_password_form( $id ) . '</div></section>';
+}
+function apex_page_page( array $r ): string {
+	$p = apex_post( $r['id'] );
+	if ( ! $p ) return apex_page_notfound( $r );
+	if ( post_password_required( $p ) ) return apex_password_page( $p->ID );
+	$html = apex_plain_blocks( apex_markup_to_blocks( $p->post_content ) );
 	$tpl = get_page_template_slug( $p->ID );
 	return apex_phead( get_the_title( $p ), null, [ apex_home_crumb(), [ get_the_title( $p ) ] ] ) . '<section class="section"><div class="wrap"><div class="prose art-prose' . ( $tpl === 'apex-wide' ? ' wide' : '' ) . '">' . $html . '</div></div></section>'
 		. ( $tpl === 'apex-consult' ? '<section class="section washed"><div class="wrap">' . apex_consult_band( apex_data( 'shared' ) ?: [] ) . '</div></section>' : '' );
 }
-/* Page attributes › Template, for pages without a design of their own (privacy policy, a landing page) */
+/* Page attributes › Template, for pages without a design of their own (a landing page, terms of use) */
 add_filter( 'theme_page_templates', fn( $t ) => $t + [ 'apex-wide' => __( 'Wide text', 'apex' ), 'apex-consult' => __( 'Text, then the consultation band', 'apex' ) ] );
 
 /* 404 */

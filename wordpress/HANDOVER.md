@@ -118,6 +118,7 @@ Each page is drawn in PHP from the same content structure the design used, with 
 - Tags on an article show as small labels under the text. The site has no tag pages, so the labels are not links.
 - A plain page (one without a design of its own, such as the privacy policy) has two templates under Page attributes › Template: Wide text, and Text then the consultation band.
 - Redirects move for good (301). A line ending in 302 moves only for now.
+- The privacy policy is the page Privacy policy, at `/privacy-policy/` and `/th/privacy-policy/`, written in the block editor. The import sets it as WordPress's privacy page (Settings › Privacy), and every footer links to it.
 - JPEG and PNG uploads are saved as WebP at quality 82, which loads faster. Settings › Media turns this off. Once a day the site also makes the phone-size copies of new wide photos; `wp apex webp` does it straight away.
 - One photo in the article "Brow Lift: Restore a Bright Face with Endotine" and its Thai version (`/wp-content/uploads/2025/05/image-13.png`) is missing on the live site too. Upload it again or take the image block out.
 

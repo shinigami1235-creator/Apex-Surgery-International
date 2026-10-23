@@ -67,6 +67,7 @@ function apex_page_data_ids( array $r ): array {
 		case 'article': array_push( $ids, 'posts', 'post:' . ( $p['p'] ?? '' ) ); break;
 		case 'war': $ids[] = 'war'; if ( ! empty( $p['ep'] ) ) $ids[] = 'war:' . $p['ep']; break;
 		case 'contact': $ids[] = 'contact'; break;
+		case 'privacy': $ids[] = 'privacy'; break;
 	}
 	return $ids;
 }
@@ -188,7 +189,7 @@ function apex_footer_html(): string {
     </div>
     <div class="ftr-word" data-w="APEX" aria-hidden="true"></div>
     ' . ( ! empty( $S['footerNote'] ) ? '<p class="ftr-note">' . apex_e( $S['footerNote'] ) . '</p>' : '' ) . '
-    <div class="ftr-bot"><span>' . apex_e( $S['copyright'] ?? '' ) . '</span><span>' . $foot_langs . '</span></div></div></footer>';
+    <div class="ftr-bot"><span>' . apex_e( $S['copyright'] ?? '' ) . ' · <a class="ftr-pp" href="' . esc_url( apex_link( 'privacy.html' ) ) . '">' . apex_e( apex_t( 'privacy' ) ) . '</a></span><span>' . $foot_langs . '</span></div></div></footer>';
 }
 function apex_fab_html(): string {
 	$S = apex_data( 'shared' );

@@ -3,7 +3,7 @@ window.APEX = window.APEX || {};
 APEX.I18N = {
   en: {
     home: 'Home', about: 'About us', services: 'Services', promotions: 'Promotions', reviews: 'Reviews',
-    articles: 'Articles', contact: 'Contact us', allServices: 'All services', menu: 'Menu', close: 'Close',
+    articles: 'Articles', contact: 'Contact us', allServices: 'All services', menu: 'Menu', close: 'Close', privacy: 'Privacy policy',
     consult: 'Consultation', consultShort: 'Consult', plan: 'My Plan', doctor: 'Our doctors',
     nose: 'Nose preview', games: 'Play and win', trip: 'Trip planner', tools: 'Try it',
     readMore: 'Read more', viewAll: 'View all', book: 'Book an appointment', callUs: 'Call',
@@ -92,7 +92,7 @@ APEX.I18N = {
   },
   th: {
     home: 'หน้าแรก', about: 'เกี่ยวกับเรา', services: 'บริการ', promotions: 'โปรโมชั่น', reviews: 'รีวิว',
-    articles: 'บทความศัลยกรรม', contact: 'ติดต่อเรา', allServices: 'บริการทั้งหมด', menu: 'เมนู', close: 'ปิด',
+    articles: 'บทความศัลยกรรม', contact: 'ติดต่อเรา', allServices: 'บริการทั้งหมด', menu: 'เมนู', close: 'ปิด', privacy: 'นโยบายความเป็นส่วนตัว',
     consult: 'ปรึกษาแพทย์', consultShort: 'ปรึกษา', plan: 'แผนของฉัน', doctor: 'แพทย์ของเรา',
     nose: 'ลองทรงจมูก', games: 'เล่นเกมรับรางวัล', trip: 'วางแผนการเดินทาง', tools: 'ลองใช้',
     readMore: 'อ่านเพิ่มเติม', viewAll: 'ดูทั้งหมด', book: 'นัดหมาย', callUs: 'โทร',

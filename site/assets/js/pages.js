@@ -925,7 +925,25 @@
       <div class="nf-links rv"><a class="btn btn-light" href="index.html">${E(T('goHome'))}</a><a class="btn btn-ghost" href="services.html">${E(T('services'))}</a><a class="btn btn-ghost" href="blog.html">${E(T('articles'))}</a><a class="btn btn-ghost" href="contact.html">${E(T('contact'))}</a></div></div></section>`;
   }
 
-  const page = async () => {};   // any other WordPress page (privacy policy and the like): the server's text as it is
-  const PAGES = {home, services, service, about, doctor, promotions, reviews, blog, article, war, contact, nose, analysis, proportions, implBreast, implChin, implForehead, implNose, play, plan, trip, consult, notfound, page};
+  /* plain text pages: headings, paragraphs, lists, photos, questions and tables (inc/render-pages.php apex_plain_blocks) */
+  const plainBlocks = bl => (bl || []).map(b => {
+    switch (b.t) {
+      case 'h2': case 'h3': case 'h4': case 'h5': case 'h6': return `<${b.t}>${E(b.x)}</${b.t}>`;
+      case 'p': return `<p${b.b ? ' class="b"' : ''}>${A.inl(b.x)}</p>`;
+      case 'list': { const tag = b.o ? 'ol' : 'ul'; return `<${tag}>${(b.items || []).map(x => `<li>${A.fmtLi(x.x || x)}</li>`).join('')}</${tag}>`; }
+      case 'img': return b.src ? `<figure class="ph-img"><img loading="lazy" decoding="async" src="${IMG(b.src)}" alt="${E(b.alt || '')}"></figure>` : '';
+      case 'faqs': return A.faqHtml((b.items || []).map(q => ({q:q.q, a:q.a})));
+      case 'table': return `<div class="tbl"><table>${(b.rows || []).map((r, j) => `<tr>${r.map(c => j === 0 ? `<th>${A.inl(c)}</th>` : `<td>${A.inl(c)}</td>`).join('')}</tr>`).join('')}</table></div>`;
+    }
+    return '';
+  }).join('');
+  async function privacy(){
+    const D = A.d('privacy') || {};
+    A.setMeta(D.title, D.desc);
+    main().innerHTML = phead(D.h1 || T('privacy'), null, [homeCrumb(), [T('privacy')]]) + `<section class="section"><div class="wrap"><div class="prose art-prose" data-field="privacy.blocks">${plainBlocks(D.blocks)}</div></div></section>`;
+  }
+
+  const page = async () => {};   // any other WordPress page: the server's text as it is
+  const PAGES = {home, services, service, about, doctor, promotions, reviews, blog, article, war, contact, nose, analysis, proportions, implBreast, implChin, implForehead, implNose, play, plan, trip, consult, privacy, notfound, page};
   A.boot(() => (PAGES[document.body.dataset.page] || home)());
 })();

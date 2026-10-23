@@ -15,13 +15,17 @@ function apex_schema_for( WP_Post $p ): string {
 	return in_array( $p->post_type, [ 'apex_service', 'apex_episode', 'apex_offer', 'apex_case', 'apex_branch', 'apex_doctor', 'post' ], true ) ? $p->post_type : '';
 }
 
-/* ---------- design pages: no block editor, their content is the form ---------- */
+/* ---------- design pages: no block editor, their content is the form (unless the page has body text, like the privacy policy) ---------- */
+function apex_page_has_body( WP_Post $post ): bool {
+	foreach ( apex_schema( 'page:' . get_post_meta( $post->ID, '_apex_page', true ) ) as $f ) if ( $f['t'] === 'content' ) return true;
+	return false;
+}
 add_filter( 'use_block_editor_for_post', function ( $use, $post ) {
-	if ( $post && $post->post_type === 'page' && get_post_meta( $post->ID, '_apex_page', true ) !== '' ) return false;
+	if ( $post && $post->post_type === 'page' && get_post_meta( $post->ID, '_apex_page', true ) !== '' && ! apex_page_has_body( $post ) ) return false;
 	return $use;
 }, 10, 2 );
 add_action( 'add_meta_boxes_page', function ( $post ) {
-	if ( get_post_meta( $post->ID, '_apex_page', true ) === '' ) return;
+	if ( get_post_meta( $post->ID, '_apex_page', true ) === '' || apex_page_has_body( $post ) ) return;
 	remove_post_type_support( 'page', 'editor' );
 	remove_post_type_support( 'page', 'thumbnail' );
 	remove_post_type_support( 'page', 'custom-fields' );

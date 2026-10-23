@@ -147,7 +147,7 @@ const APEX_PAGES = [
 	'promotions.html' => 'promotions', 'reviews.html' => 'reviews', 'blog.html' => 'blog', 'surgery-wars.html' => 'war',
 	'contact.html' => 'contact', 'nose.html' => 'nose', 'analysis.html' => 'analysis', 'proportions.html' => 'proportions',
 	'breast-implants.html' => 'implBreast', 'chin-implants.html' => 'implChin', 'forehead-implants.html' => 'implForehead',
-	'nose-implants.html' => 'implNose', 'play.html' => 'play', 'plan.html' => 'plan', 'trip.html' => 'trip', 'consult.html' => 'consult',
+	'nose-implants.html' => 'implNose', 'play.html' => 'play', 'plan.html' => 'plan', 'trip.html' => 'trip', 'consult.html' => 'consult', 'privacy.html' => 'privacy',
 	// names the feature modules use
 	'my-plan.html' => 'plan', 'games.html' => 'play', 'bodymap.html' => 'home',
 ];
