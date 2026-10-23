@@ -19,6 +19,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, '..', '..', 'bodymap', 'build'))
 from mhload import load_obj, apply, joints as mh_joints, D
 from morphs import FEMALE, MALE
+from headshapes import HEAD_FEMALE, male_fit
 from meshlib import cc_operator, quads_to_tris, vertex_normals, visibility, surface_samples, compact, unit
 
 OUT = sys.argv[1]
@@ -240,7 +241,8 @@ def build_face():
     used = np.unique(quads); remap = -np.ones(nv0, int); remap[used] = np.arange(len(used))
     Q = remap[quads]
     VM = morph(MALE)
-    SHh = np.stack([V0[used], VF[used], VM[used]])
+    VFh = morph(HEAD_FEMALE)            # the face viewers' woman (headshapes.py); the torso keeps VF
+    SHh = np.stack([V0[used], VFh[used], VM[used]])
     FL = np.stack([FIELDS[k][used] for k in FIELDS], 1)
     EYE = np.zeros(len(used)); EYE[np.unique(Q[part == 2])] = 1
     S, Q = cc_operator(Q, len(used))
@@ -283,6 +285,18 @@ def build_face():
     lips = (np.maximum(FL[:, 0], FL[:, 1]) > .5) & (Pn[:, 2] > 1.2)
     hkind[lips & (hkind == 0)] = 1
     hkind[(Pn[:, 1] < CUT_Y + .1) & (hkind == 0)] = 3
+    if os.environ.get('FACE_DUMP'):
+        # the cleaned head, for fitting onto a scan (fit_scan/)
+        np.savez_compressed(os.environ['FACE_DUMP'], Pn=Pn, Pf=Pf, Pm=Pm, T=T, kind=hkind, FL=FL, cutY=CUT_Y)
+    MF = male_fit()
+    if MF is not None:
+        assert MF.shape == Pm.shape, 'male_head_fit.npz no longer matches the face mesh: refit it (fit_scan/)'
+        Pm = MF.copy()
+        for loop in boundary_loops(T):              # level the neck opening again
+            L = np.array(loop)
+            if len(L) < 40 or Pn[L, 1].mean() > CUT_Y + .4: continue
+            for _ in range(10): Pm[L] = .5 * Pm[L] + .25 * (Pm[np.roll(L, 1)] + Pm[np.roll(L, -1)])
+            Pm[L, 1] = Pm[L, 1].mean()
 
     def landmarks(P):
         """Midline profile points: glabella, nasion, nose tip, subnasale, chin point, chin bottom, top of forehead."""

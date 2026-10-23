@@ -40,6 +40,7 @@ const STR = {
     photoH:{breast:'Take or choose a front photo of your chest.', face:'Take or choose a side photo of your face.'},
     photoP:{breast:'Stand straight in a bra or fitted top, arms by your sides.', face:'Turn fully to the side, look straight ahead with your lips closed, against a plain wall.'},
     take:'Take photo', choose:'Choose photo', sampleBtn:'Sample face', privacy:'No photo uploaded.',
+    modelCredit:['The men\'s 3D head is adapted from', 'by lKutts,'],
     points:'Adjust points', done:'See result', pointsHint:'Drag each point onto the place named below.',
     before:'Before', camHint:'Line up with the outline.', shutter:'Take photo', cancel:'Cancel', newPhoto:'New photo',
     credit:'Sample photo: Unsplash', photoNote:'A front photo shows the width and the upper chest. Turn the 3D model to the side to see the projection.', estimate:'Tip lift is an estimate. No maker publishes one.',
@@ -67,6 +68,7 @@ const STR = {
     photoH:{breast:'ถ่ายหรือเลือกรูปหน้าอกด้านหน้า', face:'ถ่ายหรือเลือกรูปใบหน้าด้านข้าง'},
     photoP:{breast:'ยืนตรง ใส่บราหรือเสื้อรัดรูป แขนแนบลำตัว', face:'หันข้างให้สุด มองตรง ปิดปาก ถ่ายหน้าผนังสีเรียบ'},
     take:'ถ่ายรูป', choose:'เลือกรูป', sampleBtn:'ใบหน้าตัวอย่าง', privacy:'ไม่มีการอัปโหลดรูปภาพ',
+    modelCredit:['ศีรษะ 3D ของผู้ชายดัดแปลงจาก', 'โดย lKutts ภายใต้'],
     points:'ปรับจุด', done:'ดูผลลัพธ์', pointsHint:'ลากแต่ละจุดไปยังตำแหน่งตามรายการด้านล่าง',
     before:'ก่อน', camHint:'จัดตัวให้อยู่ในเส้น', shutter:'ถ่ายรูป', cancel:'ยกเลิก', newPhoto:'เปลี่ยนรูป',
     credit:'ภาพตัวอย่าง: Unsplash', photoNote:'รูปด้านหน้าแสดงความกว้างและช่วงบนของหน้าอก หมุนโมเดล 3 มิติไปด้านข้างเพื่อดูความยื่น', estimate:'ระยะปลายจมูกที่ยื่นขึ้นเป็นค่าประมาณ ผู้ผลิตไม่ได้ระบุไว้',
@@ -229,6 +231,8 @@ const CSS = `
 .im-priv .im-i{color:var(--im-plum)}
 .im-err{margin:0;font-size:14px;color:#CC3366}
 .im-note{margin:0;font-size:13px;line-height:1.45;color:var(--im-ink-3)}
+.im-mcredit{margin:8px 0 0;font-size:11.5px;line-height:1.45;color:var(--im-ink-3)}
+.im-mcredit a{color:inherit}
 .im-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;padding:14px 18px;border-radius:20px;background:var(--im-wash);border:1px solid var(--im-lilac-2)}
 .im-foot p{margin:0;font-size:15px;color:var(--im-ink-2)}
 @media (prefers-reduced-motion:reduce){.im *{transition:none!important;animation-duration:1.6s!important}}
@@ -369,6 +373,7 @@ export function mount(container, opts = {}){
         <a class="im-btn ol wide" href="${esc(links.consult)}">${ic('msg')}${esc(T.consult)}</a>
         <p class="im-priv">${ic('shield')}${esc(T.privacy)}</p>
         <p class="im-err" data-r="saveerr" hidden></p>
+        ${face ? `<p class="im-mcredit">${esc(T.modelCredit[0])} <a href="https://sketchfab.com/3d-models/male-head-sculpt-deb721f8d38e4b00b17abadd5ace9cc1" target="_blank" rel="noopener">Male Head Sculpt</a> ${esc(T.modelCredit[1])} <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></p>` : ''}
       </div>
     </aside>
   </div>
