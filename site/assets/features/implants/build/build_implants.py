@@ -1,10 +1,11 @@
 """Usage: MH_DATA=<makehuman>/makehuman/data python3 build_implants.py <out dir>
 
-Build the two meshes the implant viewers draw, from the MakeHuman hm08 base mesh (CC0),
-with the same female and male morphs as the Body Map (../../bodymap/build/morphs.py).
+Build the two meshes the implant viewers draw, from the MakeHuman hm08 base mesh (CC0).
+The woman is MakeHuman's own young woman (headshapes.HEAD_FEMALE); the man's head is wrapped onto a sculpt
+(headshapes.py, male_head_fit.npz).
 
-torso.bin  A dress-form torso: the female body from the upper thighs to the middle of the neck,
-           arms taken off at the shoulder, openings closed with flat caps, one Catmull-Clark step.
+torso.bin  The woman's upper body from just under the navel to the middle of the neck, arms lowered to the sides
+           and cut at the same level line, openings closed with flat caps, one Catmull-Clark step.
            Carries the morphs the visitor sets (body weight, current breast size, firmness) as
            deltas, and per-vertex fields the breast viewer needs (breast weight, fold weight).
 face.bin   Head and neck, female and male, one Catmull-Clark step, inside of the mouth and
@@ -18,7 +19,7 @@ import sys, os, json, struct, numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, '..', '..', 'bodymap', 'build'))
 from mhload import load_obj, apply, joints as mh_joints, D
-from morphs import FEMALE, MALE
+from morphs import MALE
 from headshapes import HEAD_FEMALE, male_fit
 from meshlib import cc_operator, quads_to_tris, vertex_normals, visibility, surface_samples, compact, unit
 
@@ -77,44 +78,70 @@ def boundary_loops(T):
         loops.append(loop)
     return loops
 
-VF = morph(FEMALE)
 PART = os.environ.get('PART', 'all')
-ARM_CUT = float(os.environ.get('ARM_CUT', .28))
 # =====================================================================
 # torso
 # =====================================================================
+ARM_DOWN = float(os.environ.get('ARM_DOWN', 18))   # degrees from straight down the arms end up at
+
+def arm_weights(side):
+    """How much each vertex follows the arm (upper arm to fingers), the shoulder and the collarbone on one side."""
+    arm = np.zeros(nv0); sh = np.zeros(nv0); cl = np.zeros(nv0)
+    for b, lst in W.items():
+        if not b.endswith('.' + side): continue
+        for i, w in lst:
+            if b.startswith(('upperarm', 'lowerarm', 'wrist', 'finger', 'metacarpal')): arm[i] += w
+            elif b.startswith('shoulder'): sh[i] += w
+            elif b.startswith('clavicle'): cl[i] += w
+    return np.clip(arm + .55 * sh + .15 * cl, 0, 1)
+ARMW = {'L': arm_weights('L'), 'R': arm_weights('R')}
+
+def lower_arms(V, J):
+    """Bring the arms down from MakeHuman's A-pose to the sides. Each vertex turns about the shoulder joint by the
+    arm angle times its arm weight; blending the angle rather than the positions keeps the armpit from collapsing."""
+    V = V.copy()
+    for side, sgn in (('L', 1), ('R', -1)):
+        S, E = J[side.lower() + '-shoulder'], J[side.lower() + '-elbow']
+        d = E - S
+        th = np.radians(np.degrees(np.arctan2(abs(d[0]), -d[1])) - ARM_DOWN) * sgn
+        w = ARMW[side]; m = w > 0
+        a = -th * w[m]; c, s_ = np.cos(a), np.sin(a)
+        x, y = V[m, 0] - S[0], V[m, 1] - S[1]
+        V[m, 0] = S[0] + c * x - s_ * y
+        V[m, 1] = S[1] + s_ * x + c * y
+    return V
+
 def build_torso():
-    # arms end in short stumps, cut square to the upper arm a little below the shoulder, like a bust form
-    ARM = ('upperarm', 'lowerarm', 'wrist', 'finger', 'metacarpal')
-    arm = np.array([b.startswith(ARM) for b in bone])
-    armAx = {}
-    for sd in ('l', 'r'):
-        S0, E0 = J0[sd + '-shoulder'], J0[sd + '-elbow']
-        armAx[sd] = (S0, unit(E0 - S0), np.linalg.norm(E0 - S0))
-    def beyond(v):
-        sd = 'l' if V0[v, 0] > 0 else 'r'
-        S0, a, ln = armAx[sd]
-        return (V0[v] - S0) @ a > ln * ARM_CUT
-    yLow = J0['l-upper-leg'][1] + .3
-    yHigh = J0['neck'][1] + .12
+    # the upper body from the hips to the middle of the neck, arms down at the sides, everything below a level
+    # line just under the navel left out. The woman is the face viewers' woman (headshapes.HEAD_FEMALE).
+    VB = morph(HEAD_FEMALE)
+    JB = mh_joints(VB, F, G)
+    MORPHS0 = {}
+    BR = 'breast/female-young-averagemuscle-averageweight-'
+    for k, t in (('weightUp', 'macrodetails/universal-female-young-averagemuscle-maxweight.target'),
+                 ('weightDown', 'macrodetails/universal-female-young-averagemuscle-minweight.target'),
+                 ('cupUp', BR + 'maxcup-averagefirmness.target'), ('cupDown', BR + 'mincup-averagefirmness.target'),
+                 ('firmDown', BR + 'averagecup-minfirmness.target'), ('firmUp', BR + 'averagecup-maxfirmness.target')):
+        MORPHS0[k] = delta(t)
+    PB = lower_arms(VB, JB)
+    MORPHS = {k: lower_arms(VB + d, JB) - PB for k, d in MORPHS0.items()}
+    yLow = JB['pelvis'][1] + float(os.environ.get('HIP_CUT', .15))
+    yHigh = JB['neck'][1] + .12
     HEADB = ('head', 'jaw', 'eye', 'oculi', 'orbicularis', 'oris', 'risorius', 'levator', 'special', 'tongue')
     headb = np.array([b.startswith(HEADB) for b in bone])
-    quads = [f for f, g in zip(F, G) if g == 'body' and len(f) == 4 and not headb[f].any()
-             and not any(arm[v] and beyond(v) for v in f) and V0[f, 1].min() > yLow and V0[f, 1].max() < yHigh]
+    # the arms end a hand's width below the elbow, level like the other cuts, so no wrist or fingers reach the edge
+    armv = (ARMW['L'] + ARMW['R']) > .5
+    S, E = JB['l-shoulder'], JB['l-elbow']
+    elbowY = S[1] - np.linalg.norm((E - S)[:2]) * np.cos(np.radians(ARM_DOWN))      # the elbow once the arm is down
+    yArm = max(yLow, elbowY - float(os.environ.get('FOREARM', .9)))
+    def keep(f):
+        if not (PB[f, 1].min() > yLow and PB[f, 1].max() < yHigh): return False
+        return not (armv[f].any() and PB[f, 1].min() <= yArm)
+    quads = [f for f, g in zip(F, G) if g == 'body' and len(f) == 4 and not headb[f].any() and keep(f)]
     quads = np.array(quads)
     used = np.unique(quads); remap = -np.ones(nv0, int); remap[used] = np.arange(len(used))
     Q = remap[quads]
-
-    BR = 'breast/female-young-averagemuscle-averageweight-'
-    MORPHS = {
-        'weightUp':   delta('macrodetails/universal-female-young-averagemuscle-maxweight.target'),
-        'weightDown': delta('macrodetails/universal-female-young-averagemuscle-minweight.target'),
-        'cupUp':      delta(BR + 'maxcup-averagefirmness.target'),
-        'cupDown':    delta(BR + 'mincup-averagefirmness.target'),
-        'firmDown':   delta(BR + 'averagecup-minfirmness.target'),
-        'firmUp':     delta(BR + 'averagecup-maxfirmness.target'),
-    }
-    SH = {'base': VF, **MORPHS}
+    SH = {'base': PB, **MORPHS}
     SH = {k: v[used] for k, v in SH.items()}
     breastw = field('breast')[used]
 
@@ -126,11 +153,8 @@ def build_torso():
     # arm and leg openings leave ragged edges: smooth each boundary loop a little (the same linear step on
     # every shape, so the morphs stay consistent), then close it with a fan around its centre
     loops = boundary_loops(T)
-    def loop_plane(L):
-        c = SH['base'][L].mean(0)
-        if abs(c[0]) > .9:                                   # an arm stump: square to the upper arm
-            return c, armAx['l' if c[0] > 0 else 'r'][1]
-        return c, np.array([0, 1., 0])
+    def loop_plane(L):                                       # every opening is cut level: hips, forearms, neck
+        return SH['base'][L].mean(0), np.array([0, 1., 0])
     for loop in loops:
         L = np.array(loop)
         for _ in range(8):
@@ -216,7 +240,7 @@ def build_torso():
         N=N, T=len(T), capStart=int(capStart), c=c.round(6).tolist(), s=s,
         nipples=nip, axes=axes, foldBelowNipple=[round(f, 4) for f in foldY],
         # the whole base figure, so the viewer can scale it to the visitor's height
-        figureHeight=float(VF[:, 1].max() - VF[:, 1].min()), figureTop=float(VF[:, 1].max()),
+        figureHeight=float(VB[:, 1].max() - VB[:, 1].min()), figureTop=float(VB[:, 1].max()),
         yTop=yTop, yBot=yBot))
     print('torso.bin', size, 'bytes,', N, 'vertices,', len(T), 'triangles, caps', len(cap), 'nipples', nip, 'axes', axes, 'fold', foldY)
 
@@ -241,7 +265,7 @@ def build_face():
     used = np.unique(quads); remap = -np.ones(nv0, int); remap[used] = np.arange(len(used))
     Q = remap[quads]
     VM = morph(MALE)
-    VFh = morph(HEAD_FEMALE)            # the face viewers' woman (headshapes.py); the torso keeps VF
+    VFh = morph(HEAD_FEMALE)            # the woman Gid chose (headshapes.py), the same as the torso's
     SHh = np.stack([V0[used], VFh[used], VM[used]])
     FL = np.stack([FIELDS[k][used] for k in FIELDS], 1)
     EYE = np.zeros(len(used)); EYE[np.unique(Q[part == 2])] = 1
