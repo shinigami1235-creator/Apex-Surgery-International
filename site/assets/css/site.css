@@ -1223,3 +1223,37 @@ html[lang=en] .art-prose p.lede::first-letter{float:left;font-size:4.1em;line-he
 .tc-art.impl .ti-t{fill:#C9B3DD;font:700 16px var(--font,system-ui)}
 .tool-impl .eyebrow{color:#E3B85C}
 @media (max-width:640px){.tool-impl{grid-template-columns:1fr}.tool-impl .tc-art.impl{position:absolute;right:20px;top:20px}.tool-impl .tc-art.impl svg{width:96px}.tool-impl .tc-body{padding-right:90px}}
+
+/* revision 1k: tool cards drawn on the clinic's face stencil (the one the Proportion game uses), and a calendar for the trip planner */
+.st-art{display:grid;place-items:center}
+.st-art>*{grid-area:1/1;display:block}
+.st-art img{opacity:.6}
+.tool-nose .tc-art.st-art img,.tool-nose .tc-art.st-art svg{width:min(100%,340px);height:auto}
+.tool-nose .tc-prof2{stroke-width:5;stroke-dasharray:160;stroke-dashoffset:160}
+.tc-art.gold.st-art img,.tc-art.gold.st-art svg,.tc-art.ana.st-art img,.tc-art.ana.st-art svg{width:clamp(110px,13vw,168px);height:auto;overflow:visible}
+.tc-art.gold .tg-l{stroke-width:4}
+.tc-art.gold .tg-g{stroke-width:3.4;stroke-dasharray:10 10}
+.tc-art.gold .tg-d{fill:#E3B85C}
+.tc-art.ana .ta-s{fill:rgba(227,184,92,.12);stroke:#E3B85C;stroke-width:3.4}
+.tc-art.ana .ta-b{fill:none;stroke:#C9B3DD;stroke-width:4;stroke-linecap:round;opacity:.8}
+.tc-art.ana .ta-scan{stroke-width:4;animation:ta-scan2 3.2s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes ta-scan2{0%,100%{transform:translateY(-200px);opacity:.25}50%{transform:translateY(200px);opacity:1}}
+.tc-art.cal2{position:absolute;right:26px;top:24px;width:150px}
+.tc-art.cal2 svg{width:100%;height:auto;display:block;overflow:visible}
+.cl-card{fill:rgba(255,255,255,.06);stroke:rgba(201,179,221,.35);stroke-width:1.2}
+.cl-top{fill:rgba(142,45,207,.55)}
+.cl-ring{fill:#C9B3DD}
+.cl-plane{fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.cl-wd{stroke:rgba(201,179,221,.45);stroke-width:2;stroke-linecap:round}
+.cl-stay{fill:rgba(201,179,221,.24)}
+.cl-op{fill:var(--rose)}
+.cl-n{font-size:9.5px;text-anchor:middle;fill:rgba(241,234,247,.5);font-weight:500}
+.cl-n.on{fill:#fff;font-weight:700}
+.tool-trip .tc-body{padding-right:160px}
+@media (max-width:640px){
+  .tc-art.cal2{width:110px;right:18px;top:18px}.tool-trip .tc-body{padding-right:0;padding-top:100px}
+  .tool-gold .tc-art.gold,.tool-ana .tc-art.ana{top:52px}
+  .tc-art.gold.st-art img,.tc-art.gold.st-art svg,.tc-art.ana.st-art img,.tc-art.ana.st-art svg{width:84px}
+  .tool-gold .tc-body,.tool-ana .tc-body{padding-right:92px}
+}
+@media (prefers-reduced-motion:reduce){.tc-art.ana .ta-scan{animation:none}}
