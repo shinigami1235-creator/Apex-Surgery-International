@@ -1,23 +1,23 @@
 /* Filler simulator
-   A visitor picks what bothers them (saggy cheeks, tear troughs, a recessed chin...) and sees which areas a doctor
-   would usually treat, the amount for each, the total in mL and syringes, and a simulation on a front photo.
+   A visitor picks what they want to improve (saggy cheeks, tear troughs, a recessed chin...) and sees, on a 3D head,
+   where a doctor would usually treat and how much: each point holds a drop of the real amount, and the skin lifts
+   where the filler goes. Below it: the effect of each choice, the areas in plain words and the total in mL and syringes.
    Areas and amounts follow the MD Codes method (de Maio 2021, CC BY 4.0), see codes.js.
-   Everything runs in the browser. No photo leaves the device.
+   It is a model head, not the visitor's face, since a photo simulation of volume is not accurate enough yet.
 
    mount(container, opts) -> {destroy()}
-   opts: lang 'en' | 'th', base (assets/ URL), serviceUrl(key), onEvent(name, data)
-   Testing only: mpBase (folder of @mediapipe/face_mesh), sample (photo URL) */
-import {CODES, CONCERNS, STEPS, PER_SESSION, planFor} from './codes.js';
-import {warpInto} from '../proportions/warp.js';
-import {V, clamp, smooth, frame} from '../proportions/geometry.js';
-import {MP_CDN, loadMesh, find, frameFace, loadImage, toCanvas} from '../face/mesh.js';
+   opts: lang 'en' | 'th', base (assets/ URL), onEvent(name, data). Testing only: threeUrl */
+import {CODES, CONCERNS, STEPS, PER_SESSION, planFor, HEAD_AT} from './codes.js';
+import {createHead} from './head.js';
 
-const SAMPLE = 'https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?w=1100&q=85';
 const REF = 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8012343/';
-const STEP_C = {foundation:'#E3B85C', contour:'#C9B3DD', refine:'#F49AC1'};
+const STEP_C = {foundation:'#E3B85C', contour:'#B99BFF', refine:'#F49AC1'};
 
 const STR = {
   en:{
+    head:'3D head', women:'Women', men:'Men', front:'Front', q:'45°', side:'Side', drag:'Drag to turn the head.',
+    slider:'Before and after', loading:'Loading the 3D head', webgl:'This browser cannot show the 3D head.',
+    drops:'Each drop is the real amount. The lift is drawn larger than life so you can see it.',
     fx:{"cheeks": "Lifts and supports the midface so the cheeks look fuller.", "temples": "Fills the hollow at the side of the forehead.", "chin": "Brings the chin forward and lengthens it a little.", "jowls": "Sharpens the jawline and the angle of the jaw.", "forehead": "Rounds out a flat forehead.", "brows": "Supports the brows so they sit a little higher.", "orbit": "Fills the hollow beside the outer eye.", "tear": "Softens the shadow under the eyes.", "folds": "Softens the lines from the nose to the mouth.", "lips": "Adds volume and shape to the lips.", "corners": "Lifts the corners of the mouth.", "marionette": "Softens the lines below the corners of the mouth.", "nose": "Raises the bridge and lifts the tip without surgery."},
     change:'New photo', photo:'Photo', take:'Take photo', choose:'Choose photo', sample:'Sample face', privacy:'No photo uploaded.',
     hint:'Face the camera straight on, with your hair off your face.', emptyH:'Take or choose a front photo.',
@@ -55,6 +55,9 @@ const STR = {
          model:'The face model could not be loaded.', save:'The image could not be saved.', sample:'The sample photo could not be loaded.'},
   },
   th:{
+    head:'หุ่นศีรษะ 3 มิติ', women:'ผู้หญิง', men:'ผู้ชาย', front:'ด้านหน้า', q:'45°', side:'ด้านข้าง', drag:'ลากเพื่อหมุนศีรษะ',
+    slider:'ก่อนและหลัง', loading:'กำลังโหลดหุ่นศีรษะ 3 มิติ', webgl:'เบราว์เซอร์นี้แสดงหุ่น 3 มิติไม่ได้',
+    drops:'แต่ละหยดคือปริมาณจริง ส่วนที่นูนขึ้นวาดให้ใหญ่กว่าจริงเพื่อให้มองเห็นได้',
     fx:{"cheeks": "ยกและพยุงช่วงกลางใบหน้า แก้มดูเต็มขึ้น", "temples": "เติมร่องขมับด้านข้างหน้าผาก", "chin": "คางยื่นขึ้นและยาวขึ้นเล็กน้อย", "jowls": "กรอบหน้าและมุมกรามชัดขึ้น", "forehead": "หน้าผากโค้งมนขึ้น", "brows": "พยุงคิ้วให้ยกขึ้นเล็กน้อย", "orbit": "เติมร่องลึกข้างหางตา", "tear": "ลดเงาใต้ตา", "folds": "ร่องจากข้างจมูกถึงมุมปากตื้นขึ้น", "lips": "ริมฝีปากอิ่มและได้รูปขึ้น", "corners": "ยกมุมปากขึ้น", "marionette": "ร่องใต้มุมปากตื้นขึ้น", "nose": "เสริมสันจมูกและยกปลายจมูกโดยไม่ผ่าตัด"},
     change:'เปลี่ยนรูป', photo:'รูปภาพ', take:'ถ่ายรูป', choose:'เลือกรูป', sample:'ใบหน้าตัวอย่าง', privacy:'ไม่มีการอัปโหลดรูปภาพ',
     hint:'หันหน้าตรงเข้าหากล้อง และเก็บผมไม่ให้ปิดใบหน้า', emptyH:'ถ่ายหรือเลือกรูปหน้าตรง',
@@ -93,20 +96,16 @@ const STR = {
   },
 };
 
+
 const ICON = {
-  camera:'<path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"/><circle cx="12" cy="13" r="3"/>',
-  upload:'<path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>',
-  image:'<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
   download:'<path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/>',
   plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',
   check:'<path d="M20 6 9 17l-5-5"/>',
-  face:'<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01"/><path d="M15 9h.01"/>',
-  shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
-  move:'<path d="m18 8 4 4-4 4"/><path d="M2 12h20"/><path d="m6 8-4 4 4 4"/>',
   alert:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
   msg:'<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
   drop:'<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
   book:'<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  turn:'<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>',
 };
 const ic = k => `<svg class="ff-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
 
@@ -313,118 +312,34 @@ const CSS = `
 .ff-g .halo{fill:none;stroke:#fff;stroke-width:1;opacity:.6;vector-effect:non-scaling-stroke}
 .ff.nopoints .ff-g{opacity:0}
 .ff-g{transition:opacity .25s}
+
+.ff-view{min-height:0!important;aspect-ratio:5/6;max-height:78vh;width:100%;place-items:stretch}
+@media (min-width:960px){.ff-view{aspect-ratio:auto;height:min(76vh,700px)}}
+.ff-3d{position:absolute;inset:0;border-radius:20px;overflow:hidden;background:radial-gradient(70% 60% at 50% 40%,rgba(142,45,207,.22),transparent 70%)}
+.ff-3d canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
+.ff-3d canvas:active{cursor:grabbing}
+.ff-hud{position:absolute;left:10px;right:10px;top:10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none}
+.ff-hud>*{pointer-events:auto}
+.ff-seg2{display:inline-flex;gap:2px;padding:3px;border-radius:999px;background:rgba(31,10,48,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.ff-seg2 button{min-height:34px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:700;color:var(--ff-on-2)}
+.ff-seg2 button[aria-pressed=true]{background:#fff;color:var(--ff-plum)}
+.ff-hint{position:absolute;left:0;right:0;bottom:12px;margin:0;text-align:center;font-size:12.5px;color:var(--ff-on-2);display:flex;justify-content:center;align-items:center;gap:6px;pointer-events:none}
+.ff-ba{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:4px 8px;color:#fff;font-size:14px;font-weight:700}
+.ff .ff-ba input[type=range]{background:linear-gradient(90deg,#F49AC1 var(--v,100%),rgba(255,255,255,.2) var(--v,100%));margin:0}
+.ff .ff-ba input[type=range]::-webkit-slider-thumb{border-color:#F49AC1}
+.ff-ba-r{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 8px 6px;flex-wrap:wrap}
+.ff-note3{margin:0;font-size:12.5px;line-height:1.45;color:var(--ff-on-2);max-width:52ch}
+.ff-load{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:12px;color:#fff;font-weight:700}
 `;
 
-/* ---------- where each code sits on this face ---------- */
-function geom(L){
-  const F = frame(L), cx = V.mid(L[234], L[454]), W = V.dist(L[234], L[454]);
-  return {...F, cx, W};
-}
-// every injection point of a code: {p, side (-1 right, 1 left, 0 centre), part}
-function pointsOf(k, L, G){
-  const d = CODES[k], out = [];
-  d.at.forEach((a, part) => {
-    if (a.length === 1) { out.push({p:L[a[0]], side:0, part}); return; }
-    [a[0], a[1]].forEach((i, s) => {
-      const side = s ? 1 : -1;
-      let p = L[i];
-      if (a[2]) p = V.add(p, V.mul(G.v, side * a[2] * G.W));
-      out.push({p, side, part});
-    });
-  });
-  return out;
-}
-
-/* ---------- the simulation: skin moves for volume, shadows lift where hollows fill ---------- */
-const MOVE_R = .075;   // how far a moved point pulls the skin around it, share of face width
-const MOVE_K = 1.3, FILL_R = 1.9;   // overall strength of the moves and size of the lifted shadows
-function effects(L, plan){
-  const G = geom(L), D = new Float64Array(L.length * 2), fills = [], lits = [];
+/* every injection point of the plan on the head, with the mL at that point */
+function headPoints(plan){
+  const out = [];
   for (const x of plan.list) {
-    const d = CODES[x.k], k = clamp(x.vol / d.vol || 1, .5, 1.6), parts = d.parts || 1;
-    for (const q of pointsOf(x.k, L, G)) {
-      const fx = d.fx;
-      if (fx.mv) {
-        const u = Array.isArray(fx.mv.u) ? fx.mv.u[q.part] : (fx.mv.u || 0), v = fx.mv.v || 0;
-        const out = q.side ? q.side : 0;
-        const dv = V.add(V.mul(G.u, u * MOVE_K * G.W * k), V.mul(G.v, out * v * MOVE_K * G.W * k));
-        const R = MOVE_R * G.W;
-        for (let i = 0; i < 468; i++) {
-          const r = V.dist(L[i], q.p);
-          if (r > R) continue;
-          const w = 1 - smooth(0, 1, r / R);
-          D[i * 2] += dv.x * w; D[i * 2 + 1] += dv.y * w;
-        }
-      }
-      if (fx.fill) fills.push({p:q.p, r:fx.fill * FILL_R * G.W * Math.sqrt(k), k:Math.min(1, .6 + .3 * k)});
-      if (fx.lit) lits.push({p:q.p, r:fx.lit * 1.5 * G.W, k:.5 + .3 * k});
-    }
+    const parts = HEAD_AT[x.k] || [], per = x.vol / parts.length;   // vol is per side (or the centre total) shared by its parts
+    for (const part of parts) for (const v of part) out.push({v, ml:per, color:STEP_C[x.step], k:x.k});
   }
-  // the warp moves the face mesh points; every unmoved point holds still so the change stays local
-  const pts = [];
-  for (let i = 0; i < 468; i++) pts.push({i, p:L[i], d:{x:D[i * 2], y:D[i * 2 + 1]}});
-  const fc = V.mid(L[10], L[152]), R = G.W * .62, H = V.dist(L[10], L[152]) * .66;
-  for (let j = 0; j < 28; j++) {
-    const a = j / 28 * Math.PI * 2;
-    pts.push({i:-1, p:V.add(fc, V.add(V.mul(G.v, Math.cos(a) * R * 1.32), V.mul(G.u, Math.sin(a) * H * 1.3))), d:{x:0, y:0}});
-  }
-  const ell = {c:V.add(fc, V.mul(G.u, .06 * H)), a:G.v, ra:R * 1.5, b:G.u, rb:H * 1.48};
-  return {warp:{pts, ell}, fills, lits, G};
-}
-
-/* a blurred copy of the brightness, a quarter of the size: what a hollow is lifted toward */
-function blurLum(img, rad){
-  const W = img.width, H = img.height, s = 4, w = Math.ceil(W / s), h = Math.ceil(H / s), S = img.data;
-  let a = new Float32Array(w * h);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const o = (Math.min(H - 1, y * s) * W + Math.min(W - 1, x * s)) * 4;
-    a[y * w + x] = .299 * S[o] + .587 * S[o + 1] + .114 * S[o + 2];
-  }
-  const r = Math.max(1, Math.round(rad / s)), b = new Float32Array(w * h);
-  for (let pass = 0; pass < 2; pass++) {
-    for (let y = 0; y < h; y++) { let acc = 0, n = 0; for (let x = -r; x < w + r; x++) { if (x + r < w) { acc += a[y * w + x + r]; n++; } if (x - r - 1 >= 0) { acc -= a[y * w + x - r - 1]; n--; } if (x >= 0 && x < w) b[y * w + x] = acc / n; } }
-    for (let x = 0; x < w; x++) { let acc = 0, n = 0; for (let y = -r; y < h + r; y++) { if (y + r < h) { acc += b[(y + r) * w + x]; n++; } if (y - r - 1 >= 0) { acc -= b[(y - r - 1) * w + x]; n--; } if (y >= 0 && y < h) a[y * w + x] = acc / n; } }
-  }
-  return {a, w, h, s};
-}
-function shade(ctx, W, H, E){
-  if (!E.fills.length && !E.lits.length) return;
-  const img = ctx.getImageData(0, 0, W, H), P = img.data, B = blurLum(img, E.G.W * .09);
-  const at = (x, y) => B.a[Math.min(B.h - 1, (y / B.s) | 0) * B.w + Math.min(B.w - 1, (x / B.s) | 0)];
-  const spot = (s, fn) => {
-    const x0 = Math.max(0, Math.floor(s.p.x - s.r)), x1 = Math.min(W - 1, Math.ceil(s.p.x + s.r));
-    const y0 = Math.max(0, Math.floor(s.p.y - s.r)), y1 = Math.min(H - 1, Math.ceil(s.p.y + s.r));
-    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
-      const r = Math.hypot(x - s.p.x, y - s.p.y) / s.r;
-      if (r >= 1) continue;
-      fn((y * W + x) * 4, (1 - smooth(.25, 1, r)) * s.k, x, y);
-    }
-  };
-  for (const s of E.fills) spot(s, (o, w, x, y) => {
-    const Y = .299 * P[o] + .587 * P[o + 1] + .114 * P[o + 2], t = at(x, y) * 1.02;
-    if (Y >= t || Y < 1) return;
-    const m = (Y + (t - Y) * w * .9) / Y;
-    P[o] = Math.min(255, P[o] * m); P[o + 1] = Math.min(255, P[o + 1] * m); P[o + 2] = Math.min(255, P[o + 2] * m);
-  });
-  for (const s of E.lits) spot(s, (o, w) => {
-    const m = 1 + .08 * w;
-    P[o] = Math.min(255, P[o] * m); P[o + 1] = Math.min(255, P[o + 1] * m); P[o + 2] = Math.min(255, P[o + 2] * m);
-  });
-  ctx.putImageData(img, 0, 0);
-}
-function render(base, data, L, plan, out, grid){
-  const g = out.getContext('2d', {willReadFrequently:true});
-  g.drawImage(base, 0, 0);
-  if (!plan.list.length) return null;
-  const E = effects(L, plan);
-  warpInto(data, out, E.warp, grid);
-  shade(g, out.width, out.height, E);
-  return E;
-}
-function drawPoints(svg, L, plan, W, H){
-  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  const G = geom(L), r = Math.max(3, G.W * .011);
-  svg.innerHTML = plan.list.map(x => pointsOf(x.k, L, G).map(q => `<circle class="pt" cx="${q.p.x.toFixed(1)}" cy="${q.p.y.toFixed(1)}" r="${r.toFixed(1)}" fill="${STEP_C[x.step]}"/>`).join('')).join('');
+  return out;
 }
 
 /* ===================================================================== */
@@ -432,72 +347,39 @@ let styleRefs = 0, styleEl = null;
 
 export function mount(container, opts = {}){
   const lang = opts.lang === 'th' ? 'th' : 'en', S = STR[lang];
-  const mpBase = opts.mpBase || MP_CDN, sampleSrc = opts.sample || SAMPLE;
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) {} };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
   const n2 = x => (Math.round(x * 100) / 100).toLocaleString(lang === 'th' ? 'th-TH' : 'en-GB', {maximumFractionDigits:2});
   const plural = (w, n) => Array.isArray(w) ? w[n === 1 ? 0 : 1] : w;
   if (!styleRefs++) { styleEl = document.createElement('style'); styleEl.dataset.feature = 'filler'; styleEl.textContent = CSS; document.head.append(styleEl); }
 
-  const state = {base:null, data:null, L:null, sample:false, err:null, stream:null, on:new Set(['cheeks']), deep:false, points:true, planned:false};
+  const state = {on:new Set(['cheeks']), deep:false, points:true, planned:false, gender:'female', view:'q', after:100, head:null, err:null};
   try {
     const p = JSON.parse(localStorage.getItem('apex.filler') || 'null');
-    if (p) { if (Array.isArray(p.on)) state.on = new Set(p.on.filter(k => CONCERNS.some(c => c.k === k))); state.deep = !!p.deep; if (p.points === false) state.points = false; }
+    if (p) { if (Array.isArray(p.on)) state.on = new Set(p.on.filter(k => CONCERNS.some(c => c.k === k))); state.deep = !!p.deep; if (p.points === false) state.points = false; if (p.gender === 'male') state.gender = 'male'; }
   } catch (e) {}
-  const remember = () => { try { localStorage.setItem('apex.filler', JSON.stringify({on:[...state.on], deep:state.deep, points:state.points})); } catch (e) {} };
+  const remember = () => { try { localStorage.setItem('apex.filler', JSON.stringify({on:[...state.on], deep:state.deep, points:state.points, gender:state.gender})); } catch (e) {} };
 
   const chip = c => `<button type="button" class="ff-chip" data-c="${c.k}" aria-pressed="false"><span class="ff-dot" style="background:${STEP_C[c.step]}"></span>${esc(S.c[c.k])}</button>`;
   const root = document.createElement('div');
   root.className = 'ff'; root.lang = lang;
   root.innerHTML = `
   <div class="ff-main">
-    <section class="ff-stage" aria-label="${esc(S.compare)}">
+    <section class="ff-stage" aria-label="${esc(S.head)}">
       <div class="ff-view">
-        <div class="ff-empty">
-          <span class="ff-big">${ic('face')}</span>
-          <h3>${esc(S.emptyH)}</h3><p>${esc(S.hint)}</p>
-          <div class="ff-row">
-            <button class="ff-btn lt" data-act="take">${ic('camera')}${esc(S.take)}</button>
-            <button class="ff-btn gh" data-act="choose">${ic('upload')}${esc(S.choose)}</button>
-            <button class="ff-btn gh" data-act="sample">${ic('image')}${esc(S.sample)}</button>
-          </div>
+        <div class="ff-3d" data-r="host"></div>
+        <div class="ff-load" data-r="load"><span class="ff-spin"></span><span>${esc(S.loading)}</span></div>
+        <div class="ff-error" data-r="err" hidden><span class="ff-big">${ic('alert')}</span><h3>${esc(S.webgl)}</h3></div>
+        <div class="ff-hud">
+          <div class="ff-seg2" role="group" aria-label="${esc(S.head)}"><button data-g="female" aria-pressed="true">${esc(S.women)}</button><button data-g="male" aria-pressed="false">${esc(S.men)}</button></div>
+          <div class="ff-seg2" role="group"><button data-v="front" aria-pressed="false">${esc(S.front)}</button><button data-v="q" aria-pressed="true">${esc(S.q)}</button><button data-v="side" aria-pressed="false">${esc(S.side)}</button></div>
         </div>
-        <div class="ff-error" hidden>
-          <span class="ff-big">${ic('alert')}</span><h3 data-r="emsg"></h3>
-          <div class="ff-row">
-            <button class="ff-btn lt" data-act="take">${ic('camera')}${esc(S.take)}</button>
-            <button class="ff-btn gh" data-act="choose">${ic('upload')}${esc(S.choose)}</button>
-            <button class="ff-btn gh" data-act="sample">${ic('image')}${esc(S.sample)}</button>
-          </div>
-        </div>
-        <div class="ff-fbox" hidden>
-          <div class="ff-frame" tabindex="0" role="slider" aria-label="${esc(S.compare)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
-            <canvas class="ff-before"></canvas><canvas class="ff-after"></canvas>
-            <svg class="ff-g ff-ga" aria-hidden="true"></svg>
-            <span class="ff-corners"></span>
-            <span class="ff-line"></span><span class="ff-knob">${ic('move')}</span>
-            <span class="ff-tag l">${esc(S.before)}</span><span class="ff-tag r">${esc(S.after)}</span><span class="ff-tag sim">${esc(S.sim)}</span>
-          </div>
-        </div>
-        <div class="ff-cam" hidden>
-          <video playsinline muted autoplay></video>
-          <svg viewBox="0 0 100 130" aria-hidden="true"><ellipse cx="50" cy="60" rx="27" ry="36"/></svg>
-          <p>${esc(S.camHint)}</p>
-          <div class="ff-cambar">
-            <button class="ff-btn gh sm" data-act="camcancel">${esc(S.cancel)}</button>
-            <button class="ff-shutter" data-act="shutter" aria-label="${esc(S.shutter)}">${ic('camera')}</button><span></span>
-          </div>
-        </div>
-        <div class="ff-busy" hidden><span class="ff-spin"></span><span>${esc(S.busy)}</span></div>
+        <span class="ff-tag sim" style="bottom:38px">${esc(S.sim)}</span>
+        <p class="ff-hint">${ic('turn')}${esc(S.drag)}</p>
       </div>
-      <div class="ff-bar" hidden>
-        <span></span>
-        <div class="ff-bar-r">
-          <button class="ff-sw-b" data-act="points" role="switch" aria-checked="true">${esc(S.points)}<span class="ff-sw" aria-hidden="true"></span></button>
-          <button class="ff-btn gh sm" data-act="choose" aria-label="${esc(S.choose)}">${ic('upload')}<span class="ff-hide-s">${esc(S.change)}</span></button>
-        </div>
-      </div>
-      <p class="ff-credit" hidden>${esc(S.credit)}</p>
+      <label class="ff-ba"><span>${esc(S.before)}</span><input type="range" min="0" max="100" step="1" value="100" data-r="ba" aria-label="${esc(S.slider)}"><span>${esc(S.after)}</span></label>
+      <div class="ff-ba-r"><p class="ff-note3">${esc(S.drops)}</p>
+        <button class="ff-sw-b" data-act="points" role="switch" aria-checked="true">${esc(S.points)}<span class="ff-sw" aria-hidden="true"></span></button></div>
     </section>
     <section class="ff-props" aria-live="polite">
       <div class="ff-tot">
@@ -517,16 +399,7 @@ export function mount(container, opts = {}){
           <button class="ff-tg" data-act="deep" role="switch" aria-checked="false" aria-label="${esc(S.deep)}"><span class="ff-sw" aria-hidden="true"></span></button></div>
       </div>
       <div class="ff-sec">
-        <h3><i>2</i>${esc(S.photo)}</h3>
-        <div class="ff-src">
-          <button class="ff-btn pri" data-act="take">${ic('camera')}${esc(S.take)}</button>
-          <button class="ff-btn ol" data-act="choose">${ic('upload')}${esc(S.choose)}</button>
-          <button class="ff-btn ol full" data-act="sample">${ic('image')}${esc(S.sample)}</button>
-        </div>
-        <p class="ff-priv">${ic('shield')}${esc(S.privacy)}</p>
-      </div>
-      <div class="ff-sec">
-        <h3><i>3</i>${esc(S.save)}</h3>
+        <h3><i>2</i>${esc(S.save)}</h3>
         <div class="ff-saves">
           <button class="ff-btn pri wide" data-act="save" disabled>${ic('download')}${esc(S.saveBtn)}</button>
           <button class="ff-btn ol wide" data-act="plan">${ic('plus')}<span>${esc(S.plan)}</span></button>
@@ -536,38 +409,12 @@ export function mount(container, opts = {}){
       </div>
     </aside>
   </div>
-  <div class="ff-foot"><p>${esc(S.vary)}</p></div>
-  <input type="file" accept="image/*" hidden>`;
+  <div class="ff-foot"><p>${esc(S.vary)}</p></div>`;
   container.append(root);
 
   const $ = s => root.querySelector(s), $$ = s => [...root.querySelectorAll(s)], R = k => root.querySelector(`[data-r="${k}"]`);
-  const view = $('.ff-view'), fbox = $('.ff-fbox'), frameEl = $('.ff-frame'), cvB = $('.ff-before'), cvA = $('.ff-after');
-  const gA = $('.ff-ga'), empty = $('.ff-empty'), errBox = $('.ff-error'), cam = $('.ff-cam'), video = $('video'), busy = $('.ff-busy');
-  const bar = $('.ff-bar'), file = $('input[type=file]');
-  const has = () => !!(state.base && state.L);
+  const ba = R('ba');
   const curPlan = () => planFor([...state.on], state.deep);
-
-  /* ---------- drawing ---------- */
-  let rq = 0;
-  function draw(){
-    if (rq) return;
-    rq = requestAnimationFrame(() => {
-      rq = 0;
-      const P = curPlan();
-      panel(P);
-      if (!has()) return;
-      render(state.base, state.data, state.L, P, cvA, 4);
-      drawPoints(gA, state.L, P, cvA.width, cvA.height);
-    });
-  }
-  function showPhoto(){
-    const W = state.base.width, H = state.base.height;
-    cvB.width = cvA.width = W; cvB.height = cvA.height = H;
-    cvB.getContext('2d').drawImage(state.base, 0, 0);
-    cvA.getContext('2d').drawImage(state.base, 0, 0);
-    view.style.setProperty('--ar', (W / H).toFixed(4));
-    setX(50);
-  }
 
   /* ---------- the plan ---------- */
   function panel(P){
@@ -581,115 +428,55 @@ export function mount(container, opts = {}){
         <ul class="ff-tags">${b.codes.map(x => `<li>${esc(S.a[x.k])}</li>`).join('')}</ul></li>`;
     }).join('')}</ul>` : `<p class="ff-none">${esc(S.none)}</p>`;
   }
+  function draw(){
+    const P = curPlan();
+    panel(P);
+    if (state.head) state.head.setPlan(headPoints(P));
+  }
   function sync(){
-    const ready = has(), camOn = !!state.stream;
-    cam.hidden = !camOn;
-    errBox.hidden = camOn || !state.err;
-    empty.hidden = camOn || ready || !!state.err;
-    fbox.hidden = camOn || !ready || !!state.err;
-    view.classList.toggle('fit', !fbox.hidden);
-    bar.hidden = !(ready && !camOn && !state.err);
-    $('.ff-credit').hidden = !(ready && state.sample && !camOn && !state.err);
-    R('emsg').textContent = state.err ? S.err[state.err] || '' : '';
     $$('[data-c]').forEach(b => b.setAttribute('aria-pressed', String(state.on.has(b.dataset.c))));
     R('deep').hidden = !state.on.has('folds');
     $('[data-act="deep"]').setAttribute('aria-checked', String(state.deep));
     $('[data-act="points"]').setAttribute('aria-checked', String(state.points));
-    root.classList.toggle('nopoints', !state.points);
-    $('[data-act="save"]').disabled = !ready;
+    $$('[data-g]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.g === state.gender)));
+    $$('[data-v]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === state.view)));
+    ba.value = state.after; ba.style.setProperty('--v', state.after + '%');
+    $('[data-act="save"]').disabled = !state.head;
     const pl = $('[data-act="plan"]');
     pl.innerHTML = (state.planned ? ic('check') : ic('plus')) + `<span>${esc(state.planned ? S.planned : S.plan)}</span>`;
-  }
-  const setBusy = on => { busy.hidden = !on; };
-
-  /* ---------- compare slider ---------- */
-  let sx = 50, gest = null;
-  const local = e => { const r = frameEl.getBoundingClientRect(); return {x:(e.clientX - r.left) / r.width, w:r.width}; };
-  const setX = x => { sx = clamp(x, 0, 100); frameEl.style.setProperty('--x', sx + '%'); frameEl.setAttribute('aria-valuenow', Math.round(sx)); };
-  frameEl.addEventListener('pointerdown', e => {
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
-    const l = local(e), near = Math.abs(l.x * 100 - sx) * l.w / 100 < 44 || !!e.target.closest('.ff-knob');
-    gest = {id:e.pointerId, x:e.clientX, y:e.clientY, on:e.pointerType === 'mouse' || near};
-    if (gest.on) { try { frameEl.setPointerCapture(e.pointerId); } catch (er) {} setX(l.x * 100); }
-  });
-  frameEl.addEventListener('pointermove', e => {
-    if (!gest || e.pointerId !== gest.id) return;
-    if (!gest.on) {
-      const dx = Math.abs(e.clientX - gest.x), dy = Math.abs(e.clientY - gest.y);
-      if (dx > 4 && dx >= dy * .75) { gest.on = true; try { frameEl.setPointerCapture(e.pointerId); } catch (er) {} } else if (dy > 12 && dy > dx * 1.5) { gest = null; return; } else return;
-    }
-    setX(local(e).x * 100);
-  });
-  const endG = (e, up) => { if (!gest || e.pointerId !== gest.id) return; if (up && !gest.on) setX(local(e).x * 100); gest = null; };
-  frameEl.addEventListener('pointerup', e => endG(e, true));
-  frameEl.addEventListener('pointercancel', e => endG(e, false));
-  frameEl.addEventListener('keydown', e => { const d = {ArrowLeft:-5, ArrowRight:5}[e.key]; if (d) { e.preventDefault(); setX(sx + d); } });
-
-  /* ---------- photos ---------- */
-  async function usePhoto(canvas, sample){
-    stopCam();
-    state.err = null; setBusy(true); sync();
-    let hit = null, err = null;
-    try { hit = await find(mpBase, canvas); } catch (e) { err = 'model'; }
-    setBusy(false);
-    if (!hit) { Object.assign(state, {base:null, L:null, data:null, sample:false, err:err || 'noFace'}); emit('filler:error', {error:state.err}); sync(); return; }
-    const f = frameFace(hit.canvas, hit.lm);
-    Object.assign(state, {base:f.base, L:f.L, sample:!!sample, err:null, data:f.base.getContext('2d', {willReadFrequently:true}).getImageData(0, 0, f.base.width, f.base.height)});
-    showPhoto(); sync(); draw();
-    emit('filler:photo', {sample:!!sample});
-  }
-  async function useFile(f){
-    if (!f) return;
-    if (!/^image\//.test(f.type)) { state.err = 'read'; state.base = null; sync(); return; }
-    const url = URL.createObjectURL(f);
-    try { const im = await loadImage(url); await usePhoto(toCanvas(im)); }
-    catch (e) { Object.assign(state, {err:'read', base:null, L:null}); setBusy(false); sync(); }
-    URL.revokeObjectURL(url);
-  }
-  let loadingSample = false;
-  async function useSample(){
-    if (loadingSample) return;
-    loadingSample = true; setBusy(true);
-    try { const im = await loadImage(sampleSrc); await usePhoto(toCanvas(im), true); emit('filler:sample', {}); }
-    catch (e) { setBusy(false); Object.assign(state, {err:'sample', base:null, L:null}); sync(); }
-    finally { loadingSample = false; }
-  }
-  async function startCam(){
-    try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('no camera');
-      state.stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user', width:{ideal:1280}, height:{ideal:1280}}, audio:false});
-      video.srcObject = state.stream; state.err = null; sync();
-      await video.play().catch(() => {});
-    } catch (e) { stopCam(); Object.assign(state, {err:'camera', base:null, L:null}); sync(); }
-  }
-  function stopCam(){ if (state.stream) { state.stream.getTracks().forEach(t => t.stop()); state.stream = null; } video.srcObject = null; }
-  function shoot(){
-    if (!video.videoWidth) return;
-    const c = document.createElement('canvas'); c.width = video.videoWidth; c.height = video.videoHeight;
-    const x = c.getContext('2d'); x.translate(c.width, 0); x.scale(-1, 1); x.drawImage(video, 0, 0);
-    usePhoto(toCanvas(c));
+    if (state.head) { state.head.setPoints(state.points); }
   }
 
-  /* ---------- save: before and after with the areas and amounts underneath ---------- */
+  /* ---------- the head ---------- */
+  let alive = true;
+  createHead(R('host'), {threeUrl:opts.threeUrl, base:opts.base || '', gender:state.gender}).then(h => {
+    if (!alive) { h.destroy(); return; }
+    state.head = h; R('load').hidden = true;
+    h.setView(state.view);
+    h.jumpAfter(0); draw(); sync();
+    setTimeout(() => h.setAfter(state.after / 100), 350);   // the filler goes in once the head is up
+    emit('filler:ready', {});
+  }).catch(e => { console.warn('[filler] 3D head', e); R('load').hidden = true; R('err').hidden = false; emit('filler:error', {error:'webgl'}); });
+
+  /* ---------- save: front before and after with the areas and amounts underneath ---------- */
   async function save(){
     const err = R('saveerr'); err.hidden = true;
-    if (!has()) return;
+    if (!state.head) return;
     try {
       const P = curPlan(), font = getComputedStyle(root).fontFamily;
       try { await document.fonts.load(`700 20px ${font}`); } catch (e) {}
-      const rowH = 760, w = Math.round(state.base.width * rowH / state.base.height), gap = 12, pad = 32;
-      const after = document.createElement('canvas'); after.width = state.base.width; after.height = state.base.height;
-      render(state.base, state.data, state.L, P, after, 3);
+      const w = 560, rowH = 680, gap = 12, pad = 32;
+      const b0 = state.head.snapshot(0, w, rowH, -.35), b1 = state.head.snapshot(1, w, rowH, -.35);
       const rows = CONCERNS.filter(c => P.byConcern[c.k]);
       const W = w * 2 + gap + pad * 2, H = pad + rowH + 30 + (rows.length + 1) * 44 + 110;
       const c = document.createElement('canvas'); c.width = W; c.height = H;
       const g = c.getContext('2d');
       g.fillStyle = '#1F0A30'; g.fillRect(0, 0, W, H);
-      const clip = (x, img) => { g.save(); g.beginPath(); g.roundRect ? g.roundRect(x, pad, w, rowH, 20) : g.rect(x, pad, w, rowH); g.clip(); g.drawImage(img, x, pad, w, rowH); g.restore(); };
-      clip(pad, state.base); clip(pad + w + gap, after);
+      const box = (x, img) => { g.save(); g.beginPath(); g.roundRect ? g.roundRect(x, pad, w, rowH, 20) : g.rect(x, pad, w, rowH); g.fillStyle = '#2A0F40'; g.fill(); g.clip(); g.drawImage(img, x, pad, w, rowH); g.restore(); };
+      box(pad, b0); box(pad + w + gap, b1);
       const pill = (t, x, y, bg, fg) => { g.font = `700 20px ${font}`; const tw = g.measureText(t).width + 24; g.fillStyle = bg; g.beginPath(); g.roundRect ? g.roundRect(x, y, tw, 34, 17) : g.rect(x, y, tw, 34); g.fill(); g.fillStyle = fg; g.textBaseline = 'middle'; g.fillText(t, x + 12, y + 18); };
-      pill(S.before, pad + 12, pad + 12, 'rgba(31,10,48,.7)', '#fff');
-      pill(S.after, pad + w + gap + 12, pad + 12, 'rgba(31,10,48,.7)', '#fff');
+      pill(S.before, pad + 12, pad + 12, 'rgba(255,255,255,.12)', '#fff');
+      pill(S.after, pad + w + gap + 12, pad + 12, 'rgba(255,255,255,.12)', '#fff');
       pill(S.sim, pad + w + gap + 12, pad + rowH - 46, 'rgba(255,255,255,.9)', '#6A388C');
       let y = pad + rowH + 50;
       g.textBaseline = 'alphabetic';
@@ -728,29 +515,30 @@ export function mount(container, opts = {}){
   /* ---------- events ---------- */
   function onClick(e){
     const cb = e.target.closest('[data-c]');
-    if (cb) { const k = cb.dataset.c; state.on.has(k) ? state.on.delete(k) : state.on.add(k); remember(); emit('filler:concern', {concern:k, on:state.on.has(k)}); sync(); draw(); return; }
+    if (cb) {
+      const k = cb.dataset.c; state.on.has(k) ? state.on.delete(k) : state.on.add(k); remember(); emit('filler:concern', {concern:k, on:state.on.has(k)});
+      sync(); draw();
+      if (state.head && state.on.has(k)) { state.head.jumpAfter(0); state.head.setAfter(state.after / 100); }   // replay the filler going in
+      return;
+    }
+    const gb = e.target.closest('[data-g]');
+    if (gb) { state.gender = gb.dataset.g; remember(); if (state.head) state.head.setGender(state.gender); sync(); return; }
+    const vb = e.target.closest('[data-v]');
+    if (vb) { state.view = vb.dataset.v; if (state.head) state.head.setView(state.view); sync(); return; }
     const b = e.target.closest('[data-act]'); if (!b) return;
     const a = b.dataset.act;
-    if (a === 'take') startCam();
-    else if (a === 'choose') file.click();
-    else if (a === 'sample') useSample();
-    else if (a === 'camcancel') { stopCam(); sync(); }
-    else if (a === 'shutter') shoot();
-    else if (a === 'points') { state.points = !state.points; remember(); sync(); }
+    if (a === 'points') { state.points = !state.points; remember(); sync(); }
     else if (a === 'deep') { state.deep = !state.deep; remember(); sync(); draw(); }
     else if (a === 'save') save();
     else if (a === 'plan') { state.planned = true; emit('plan:add', {procedure:'consult', source:'filler', concerns:[...state.on], ml:curPlan().total}); sync(); }
   }
   root.addEventListener('click', onClick);
-  file.addEventListener('change', () => { const f = file.files[0]; file.value = ''; useFile(f); });
-  view.addEventListener('dragover', e => e.preventDefault());
-  view.addEventListener('drop', e => { e.preventDefault(); const f = e.dataTransfer && e.dataTransfer.files[0]; if (f) useFile(f); });
+  ba.addEventListener('input', () => { state.after = +ba.value; ba.style.setProperty('--v', ba.value + '%'); if (state.head) state.head.jumpAfter(state.after / 100); });
 
   sync(); draw();
-  const idle = setTimeout(() => loadMesh(mpBase).catch(() => {}), 2500);
   return {
     destroy(){
-      clearTimeout(idle); cancelAnimationFrame(rq); stopCam();
+      alive = false; if (state.head) state.head.destroy();
       root.removeEventListener('click', onClick); root.remove();
       if (!--styleRefs && styleEl) { styleEl.remove(); styleEl = null; }
     },
