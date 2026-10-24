@@ -1,14 +1,16 @@
 /* The 3D head for the filler simulator: the body map's face-zoom head (heads.bin), drawn in the same net
    look, with the chosen areas lifted along the skin's normal and lit in the colour of their step.
    Each injection point carries a drop whose volume is the real amount (1 mL = 1 cm³, the head is in
-   decimetres). The lift itself is drawn LIFT times larger than life so it reads on screen.
+   decimetres), and the skin lifts by that same volume, true to size.
+   The view is a wipe: before on the left of the line, after on the right.
 
-   createHead(host, {threeUrl, base, gender, onReady, onError}) -> {setPlan(points), setAfter(t), setGender(g),
-     setView(name), setPoints(on), snapshot(after, w, h) -> canvas, destroy()}
+   createHead(host, {threeUrl, base, gender}) -> {setPlan(points), setAmount(f), jumpAmount(f), setWipe(x),
+     setGender(g), setView(name), setPoints(on), snapshot(amount, w, h, yaw) -> canvas, destroy()}
+   f scales every point's mL (1 = the paper's minimum). x is the wipe line, 0 to 1 across the view.
    points: [{v:vertex index, ml:mL at this point, color:'#hex'}] */
 
 const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-export const LIFT = 4;          // how much larger than life the lift is drawn
+export const LIFT = 1;          // the lift is drawn true to size
 const RADIUS = .16;             // spread of one injection on the skin, decimetres (1.6 cm)
 
 const VS = `
@@ -21,7 +23,7 @@ void main(){
   float m = smoothstep(0., 1., uMorph);
   vec3 p = mix(position, aPosB, m);
   vec3 n = normalize(mix(aNrmA, aNrmB, m));
-  float a = smoothstep(0., 1., uAfter);
+  float a = max(uAfter, 0.);
   p += n * mix(aDispA, aDispB, m) * a;
   vec4 mv = modelViewMatrix * vec4(p, 1.);
   gl_Position = projectionMatrix * mv;
@@ -30,7 +32,7 @@ void main(){
   float tone = 1. - is(aKind, 1.) * .55 - is(aKind, 7.) * .5 - is(aKind, 2.) * .5 - is(aKind, 3.) * .3 - is(aKind, 4.) * .15 + is(aKind, 5.) * .4;
   tone *= mix(.55, 1., smoothstep(.55, .95, aAo));
   float keep = smoothstep(uCut - .1, uCut + .14, p.y);
-  float h = aHeat * a;
+  float h = aHeat * min(a, 1.);
   vH = h; vC = aCol;
   vA = back * tone * keep * (uIsLine > .5 ? mix(uLine, .5, h) : 1.);
   float ew = aEdge < .5 ? 1. : (aEdge < 1.5 ? .75 : .55);
@@ -139,7 +141,7 @@ export async function createHead(host, opts = {}){
     for (let i = 0; i < n; i++) { const y = p[i * 3 + 1]; if (y < cut) continue; x0 = Math.min(x0, p[i * 3]); x1 = Math.max(x1, p[i * 3]); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
     return {x:(x0 + x1) / 2, y:y0 + (y1 - y0) * .5, z:.45, h:y1 - y0};
   };
-  const state = {g:opts.gender === 'male' ? 1 : 0, gT:opts.gender === 'male' ? 1 : 0, after:1, afterT:1, yaw:-.5, yawT:-.5, pitch:.04, plan:[], points:true, dirty:true};
+  const state = {g:opts.gender === 'male' ? 1 : 0, gT:opts.gender === 'male' ? 1 : 0, after:1, afterT:1, wipe:.5, yaw:-.5, yawT:-.5, pitch:.04, plan:[], points:true, dirty:true};
   const VIEWS = {front:0, q:-.62, side:-1.45};
 
   function computeDisp(){
@@ -183,17 +185,19 @@ export async function createHead(host, opts = {}){
     state.dirty = true;
   }
   function placeDrops(cam = camera){
-    const g = state.g, a = state.after * state.after * (3 - 2 * state.after);
+    const g = state.g, a = Math.max(0, state.after);
     for (const m of drops.children) {
       const v = m.userData.v, pA = H.pf, pB = H.pm, nA = H.nf, nB = H.nm, r = m.userData.r;
       const P3 = c => pA[v * 3 + c] + (pB[v * 3 + c] - pA[v * 3 + c]) * g, N3 = c => nA[v * 3 + c] + (nB[v * 3 + c] - nA[v * 3 + c]) * g;
-      const lift = (dispA[v] + (dispB[v] - dispA[v]) * g) * a + r * .4;
+      const rr = r * Math.cbrt(Math.max(a, .001));
+      m.scale.setScalar(rr);
+      const lift = (dispA[v] + (dispB[v] - dispA[v]) * g) * a + rr * .4;
       m.position.set(P3(0) + N3(0) * lift, P3(1) + N3(1) * lift, P3(2) + N3(2) * lift);
       // drops on the far side of the head fade out
       const cx = cam.position.x - m.position.x, cy = cam.position.y - m.position.y, cz = cam.position.z - m.position.z, cl = Math.hypot(cx, cy, cz) || 1;
       const face = (N3(0) * cx + N3(1) * cy + N3(2) * cz) / cl, vis = Math.min(1, Math.max(0, (face + .15) / .45));
       m.visible = state.points && vis > .02;
-      m.material.uniforms.uOp.value = (.35 + .65 * a) * vis;
+      m.material.uniforms.uOp.value = Math.min(1, .35 + .65 * a) * vis;
     }
   }
 
@@ -206,6 +210,7 @@ export async function createHead(host, opts = {}){
     cam.position.set(C.x + Math.sin(yaw) * d * Math.cos(state.pitch), C.y + Math.sin(state.pitch) * d, C.z + Math.cos(yaw) * d * Math.cos(state.pitch));
     cam.lookAt(C.x, C.y, C.z);
   }
+  const setAmt = a => { U.uAfter.value = a; };
   let raf = 0, t0 = performance.now(), alive = true, drag = null;
   function frame(now){
     if (!alive) return;
@@ -215,12 +220,14 @@ export async function createHead(host, opts = {}){
     const ap = (k, kT, s) => { const d = state[kT] - state[k]; if (Math.abs(d) > 1e-4) { state[k] += d * Math.min(1, dt * s); moving = true; } else state[k] = state[kT]; };
     ap('g', 'gT', 5); ap('after', 'afterT', 3.2); if (!drag) ap('yaw', 'yawT', 4);
     if (!moving && !state.dirty) return;
-    U.uMorph.value = state.g; U.uAfter.value = state.after; U.uCut.value = H.cutF + (H.cutM - H.cutF) * state.g;
-    pmat.uniforms.uMorph.value = lmat.uniforms.uMorph.value = state.g;
-    pmat.uniforms.uAfter.value = lmat.uniforms.uAfter.value = state.after;
-    pmat.uniforms.uCut.value = lmat.uniforms.uCut.value = U.uCut.value;
-    place(); placeDrops();
-    renderer.render(scene, camera);
+    U.uMorph.value = state.g; U.uCut.value = H.cutF + (H.cutM - H.cutF) * state.g;
+    place();
+    // the wipe: before (no filler) left of the line, after right of it
+    const w = host.clientWidth || 600, h = host.clientHeight || 600, wx = Math.round(w * state.wipe);
+    renderer.setScissorTest(true);
+    renderer.setScissor(0, 0, wx, h); setAmt(0); drops.visible = false; renderer.render(scene, camera);
+    renderer.setScissor(wx, 0, w - wx, h); setAmt(state.after); drops.visible = true; placeDrops(); renderer.render(scene, camera);
+    renderer.setScissorTest(false);
     state.dirty = false;
   }
   const ro = new ResizeObserver(size); ro.observe(host); size();
@@ -240,18 +247,20 @@ export async function createHead(host, opts = {}){
 
   return {
     setPlan(pts){ state.plan = pts; computeDisp(); },
-    setAfter(t){ state.afterT = t; state.dirty = true; },
-    jumpAfter(t){ state.after = state.afterT = t; state.dirty = true; },
+    setAmount(f){ state.afterT = f; state.dirty = true; },
+    jumpAmount(f){ state.after = state.afterT = f; state.dirty = true; },
+    setWipe(x){ state.wipe = Math.max(0, Math.min(1, x)); state.dirty = true; },
     setGender(g){ state.gT = g === 'male' ? 1 : 0; state.dirty = true; },
     setView(v){ state.yawT = VIEWS[v] ?? state.yawT; state.dirty = true; },
     setPoints(on){ state.points = on; state.dirty = true; },
-    /* a still of the head at before (0) or after (1), front-on, for the saved image */
+    /* a still of the head with no filler (0) or the chosen amount, for the saved image */
     snapshot(after, w = 700, h = 840, yaw = 0){
       const keep = {after:state.after, yaw:state.yaw};
       state.after = after;
       const cam = camera.clone(); cam.aspect = w / h; cam.updateProjectionMatrix();
       renderer.setSize(w, h, false); renderer.setPixelRatio(1);
-      for (const m of [pmat, lmat]) { m.uniforms.uAfter.value = after; m.uniforms.uPix.value = 1; }
+      for (const m of [pmat, lmat]) m.uniforms.uPix.value = 1;
+      setAmt(after); drops.visible = after > 0;
       place(cam, yaw); placeDrops(cam);
       renderer.render(scene, cam);
       const out = document.createElement('canvas'); out.width = w; out.height = h;

@@ -11,13 +11,15 @@ import {CODES, CONCERNS, STEPS, PER_SESSION, planFor, HEAD_AT} from './codes.js'
 import {createHead} from './head.js';
 
 const REF = 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8012343/';
+// where the wipe line starts in each view: on the profile in the side view, since that is where the change shows
+const WIPE_AT = {front:.5, q:.56, side:.7};
 const STEP_C = {foundation:'#E3B85C', contour:'#B99BFF', refine:'#F49AC1'};
 
 const STR = {
   en:{
     head:'3D head', women:'Women', men:'Men', front:'Front', q:'45°', side:'Side', drag:'Drag to turn the head.',
-    slider:'Before and after', loading:'Loading the 3D head', webgl:'This browser cannot show the 3D head.',
-    drops:'Each drop is the real amount. The lift is drawn larger than life so you can see it.',
+    amount:'Amount', minimum:'minimum', wipe:'Drag the line to compare before and after.', loading:'Loading the 3D head', webgl:'This browser cannot show the 3D head.',
+    drops:'The drops and the lift are true to size. 100% is the minimum amount for each area.',
     fx:{"cheeks": "Lifts and supports the midface so the cheeks look fuller.", "temples": "Fills the hollow at the side of the forehead.", "chin": "Brings the chin forward and lengthens it a little.", "jowls": "Sharpens the jawline and the angle of the jaw.", "forehead": "Rounds out a flat forehead.", "brows": "Supports the brows so they sit a little higher.", "orbit": "Fills the hollow beside the outer eye.", "tear": "Softens the shadow under the eyes.", "folds": "Softens the lines from the nose to the mouth.", "lips": "Adds volume and shape to the lips.", "corners": "Lifts the corners of the mouth.", "marionette": "Softens the lines below the corners of the mouth.", "nose": "Raises the bridge and lifts the tip without surgery."},
     change:'New photo', photo:'Photo', take:'Take photo', choose:'Choose photo', sample:'Sample face', privacy:'No photo uploaded.',
     hint:'Face the camera straight on, with your hair off your face.', emptyH:'Take or choose a front photo.',
@@ -56,8 +58,8 @@ const STR = {
   },
   th:{
     head:'หุ่นศีรษะ 3 มิติ', women:'ผู้หญิง', men:'ผู้ชาย', front:'ด้านหน้า', q:'45°', side:'ด้านข้าง', drag:'ลากเพื่อหมุนศีรษะ',
-    slider:'ก่อนและหลัง', loading:'กำลังโหลดหุ่นศีรษะ 3 มิติ', webgl:'เบราว์เซอร์นี้แสดงหุ่น 3 มิติไม่ได้',
-    drops:'แต่ละหยดคือปริมาณจริง ส่วนที่นูนขึ้นวาดให้ใหญ่กว่าจริงเพื่อให้มองเห็นได้',
+    amount:'ปริมาณ', minimum:'ขั้นต่ำ', wipe:'ลากเส้นเพื่อเทียบก่อนและหลัง', loading:'กำลังโหลดหุ่นศีรษะ 3 มิติ', webgl:'เบราว์เซอร์นี้แสดงหุ่น 3 มิติไม่ได้',
+    drops:'หยดและส่วนที่นูนขึ้นเป็นขนาดจริง 100% คือปริมาณขั้นต่ำของแต่ละตำแหน่ง',
     fx:{"cheeks": "ยกและพยุงช่วงกลางใบหน้า แก้มดูเต็มขึ้น", "temples": "เติมร่องขมับด้านข้างหน้าผาก", "chin": "คางยื่นขึ้นและยาวขึ้นเล็กน้อย", "jowls": "กรอบหน้าและมุมกรามชัดขึ้น", "forehead": "หน้าผากโค้งมนขึ้น", "brows": "พยุงคิ้วให้ยกขึ้นเล็กน้อย", "orbit": "เติมร่องลึกข้างหางตา", "tear": "ลดเงาใต้ตา", "folds": "ร่องจากข้างจมูกถึงมุมปากตื้นขึ้น", "lips": "ริมฝีปากอิ่มและได้รูปขึ้น", "corners": "ยกมุมปากขึ้น", "marionette": "ร่องใต้มุมปากตื้นขึ้น", "nose": "เสริมสันจมูกและยกปลายจมูกโดยไม่ผ่าตัด"},
     change:'เปลี่ยนรูป', photo:'รูปภาพ', take:'ถ่ายรูป', choose:'เลือกรูป', sample:'ใบหน้าตัวอย่าง', privacy:'ไม่มีการอัปโหลดรูปภาพ',
     hint:'หันหน้าตรงเข้าหากล้อง และเก็บผมไม่ให้ปิดใบหน้า', emptyH:'ถ่ายหรือเลือกรูปหน้าตรง',
@@ -105,6 +107,7 @@ const ICON = {
   msg:'<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
   drop:'<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
   book:'<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  move:'<path d="m18 8 4 4-4 4"/><path d="M2 12h20"/><path d="m6 8-4 4 4 4"/>',
   turn:'<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>',
 };
 const ic = k => `<svg class="ff-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
@@ -329,6 +332,12 @@ const CSS = `
 .ff .ff-ba input[type=range]::-webkit-slider-thumb{border-color:#F49AC1}
 .ff-ba-r{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 8px 6px;flex-wrap:wrap}
 .ff-note3{margin:0;font-size:12.5px;line-height:1.45;color:var(--ff-on-2);max-width:52ch}
+.ff-ba output{font-variant-numeric:tabular-nums;color:#F49AC1;min-width:4ch;text-align:right}
+.ff-wipe{position:absolute;inset:0;pointer-events:none}
+.ff-wline{position:absolute;top:0;bottom:0;left:var(--x);width:2px;margin-left:-1px;background:rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(31,10,48,.25)}
+.ff .ff-wknob{position:absolute;top:50%;left:var(--x);width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:#fff;color:var(--ff-plum);display:grid;place-items:center;box-shadow:0 10px 24px -8px rgba(20,6,31,.6);cursor:ew-resize;touch-action:none;pointer-events:auto}
+.ff .ff-wknob:focus-visible{outline:2px solid var(--ff-lilac);outline-offset:3px}
+.ff-bt{top:58px}
 .ff-load{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:12px;color:#fff;font-weight:700}
 `;
 
@@ -353,7 +362,7 @@ export function mount(container, opts = {}){
   const plural = (w, n) => Array.isArray(w) ? w[n === 1 ? 0 : 1] : w;
   if (!styleRefs++) { styleEl = document.createElement('style'); styleEl.dataset.feature = 'filler'; styleEl.textContent = CSS; document.head.append(styleEl); }
 
-  const state = {on:new Set(['cheeks']), deep:false, points:true, planned:false, gender:'female', view:'q', after:100, head:null, err:null};
+  const state = {on:new Set(['cheeks']), deep:false, points:true, planned:false, gender:'female', view:'q', amt:100, head:null, err:null};
   try {
     const p = JSON.parse(localStorage.getItem('apex.filler') || 'null');
     if (p) { if (Array.isArray(p.on)) state.on = new Set(p.on.filter(k => CONCERNS.some(c => c.k === k))); state.deep = !!p.deep; if (p.points === false) state.points = false; if (p.gender === 'male') state.gender = 'male'; }
@@ -374,10 +383,12 @@ export function mount(container, opts = {}){
           <div class="ff-seg2" role="group" aria-label="${esc(S.head)}"><button data-g="female" aria-pressed="true">${esc(S.women)}</button><button data-g="male" aria-pressed="false">${esc(S.men)}</button></div>
           <div class="ff-seg2" role="group"><button data-v="front" aria-pressed="false">${esc(S.front)}</button><button data-v="q" aria-pressed="true">${esc(S.q)}</button><button data-v="side" aria-pressed="false">${esc(S.side)}</button></div>
         </div>
+        <div class="ff-wipe" data-r="wipe" style="--x:50%"><span class="ff-wline"></span><button type="button" class="ff-wknob" aria-label="${esc(S.wipe)}">${ic('move')}</button></div>
+        <span class="ff-tag l ff-bt">${esc(S.before)}</span><span class="ff-tag r ff-bt">${esc(S.after)}</span>
         <span class="ff-tag sim" style="bottom:38px">${esc(S.sim)}</span>
         <p class="ff-hint">${ic('turn')}${esc(S.drag)}</p>
       </div>
-      <label class="ff-ba"><span>${esc(S.before)}</span><input type="range" min="0" max="100" step="1" value="100" data-r="ba" aria-label="${esc(S.slider)}"><span>${esc(S.after)}</span></label>
+      <label class="ff-ba"><span>${esc(S.amount)}</span><input type="range" min="0" max="200" step="5" value="100" data-r="ba" aria-label="${esc(S.amount)}"><output data-r="bav"></output></label>
       <div class="ff-ba-r"><p class="ff-note3">${esc(S.drops)}</p>
         <button class="ff-sw-b" data-act="points" role="switch" aria-checked="true">${esc(S.points)}<span class="ff-sw" aria-hidden="true"></span></button></div>
     </section>
@@ -414,7 +425,13 @@ export function mount(container, opts = {}){
 
   const $ = s => root.querySelector(s), $$ = s => [...root.querySelectorAll(s)], R = k => root.querySelector(`[data-r="${k}"]`);
   const ba = R('ba');
-  const curPlan = () => planFor([...state.on], state.deep);
+  const scaled = (P, f) => {
+    const r2 = x => Math.round(x * 100) / 100, total = r2(P.total * f), byConcern = {};
+    for (const k in P.byConcern) byConcern[k] = {...P.byConcern[k], total:r2(P.byConcern[k].total * f)};
+    return {...P, total, byConcern, syringes:Math.ceil(total - 1e-9), sessions:Math.max(1, Math.ceil(total / PER_SESSION - 1e-9))};
+  };
+  const basePlan = () => planFor([...state.on], state.deep);
+  const curPlan = () => scaled(basePlan(), state.amt / 100);
 
   /* ---------- the plan ---------- */
   function panel(P){
@@ -431,7 +448,7 @@ export function mount(container, opts = {}){
   function draw(){
     const P = curPlan();
     panel(P);
-    if (state.head) state.head.setPlan(headPoints(P));
+    if (state.head) state.head.setPlan(headPoints(basePlan()));
   }
   function sync(){
     $$('[data-c]').forEach(b => b.setAttribute('aria-pressed', String(state.on.has(b.dataset.c))));
@@ -440,7 +457,7 @@ export function mount(container, opts = {}){
     $('[data-act="points"]').setAttribute('aria-checked', String(state.points));
     $$('[data-g]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.g === state.gender)));
     $$('[data-v]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === state.view)));
-    ba.value = state.after; ba.style.setProperty('--v', state.after + '%');
+    ba.value = state.amt; ba.style.setProperty('--v', state.amt / 2 + '%'); R('bav').textContent = state.amt + '%';
     $('[data-act="save"]').disabled = !state.head;
     const pl = $('[data-act="plan"]');
     pl.innerHTML = (state.planned ? ic('check') : ic('plus')) + `<span>${esc(state.planned ? S.planned : S.plan)}</span>`;
@@ -453,8 +470,8 @@ export function mount(container, opts = {}){
     if (!alive) { h.destroy(); return; }
     state.head = h; R('load').hidden = true;
     h.setView(state.view);
-    h.jumpAfter(0); draw(); sync();
-    setTimeout(() => h.setAfter(state.after / 100), 350);   // the filler goes in once the head is up
+    h.jumpAmount(0); setW(WIPE_AT[state.view]); draw(); sync();
+    setTimeout(() => h.setAmount(state.amt / 100), 350);   // the filler goes in once the head is up
     emit('filler:ready', {});
   }).catch(e => { console.warn('[filler] 3D head', e); R('load').hidden = true; R('err').hidden = false; emit('filler:error', {error:'webgl'}); });
 
@@ -466,7 +483,7 @@ export function mount(container, opts = {}){
       const P = curPlan(), font = getComputedStyle(root).fontFamily;
       try { await document.fonts.load(`700 20px ${font}`); } catch (e) {}
       const w = 560, rowH = 680, gap = 12, pad = 32;
-      const b0 = state.head.snapshot(0, w, rowH, -.35), b1 = state.head.snapshot(1, w, rowH, -.35);
+      const b0 = state.head.snapshot(0, w, rowH, -.9), b1 = state.head.snapshot(state.amt / 100, w, rowH, -.9);
       const rows = CONCERNS.filter(c => P.byConcern[c.k]);
       const W = w * 2 + gap + pad * 2, H = pad + rowH + 30 + (rows.length + 1) * 44 + 110;
       const c = document.createElement('canvas'); c.width = W; c.height = H;
@@ -518,13 +535,13 @@ export function mount(container, opts = {}){
     if (cb) {
       const k = cb.dataset.c; state.on.has(k) ? state.on.delete(k) : state.on.add(k); remember(); emit('filler:concern', {concern:k, on:state.on.has(k)});
       sync(); draw();
-      if (state.head && state.on.has(k)) { state.head.jumpAfter(0); state.head.setAfter(state.after / 100); }   // replay the filler going in
+      if (state.head && state.on.has(k)) { state.head.jumpAmount(0); state.head.setAmount(state.amt / 100); }   // replay the filler going in
       return;
     }
     const gb = e.target.closest('[data-g]');
     if (gb) { state.gender = gb.dataset.g; remember(); if (state.head) state.head.setGender(state.gender); sync(); return; }
     const vb = e.target.closest('[data-v]');
-    if (vb) { state.view = vb.dataset.v; if (state.head) state.head.setView(state.view); sync(); return; }
+    if (vb) { state.view = vb.dataset.v; if (state.head) state.head.setView(state.view); setW(WIPE_AT[state.view]); sync(); return; }
     const b = e.target.closest('[data-act]'); if (!b) return;
     const a = b.dataset.act;
     if (a === 'points') { state.points = !state.points; remember(); sync(); }
@@ -533,7 +550,17 @@ export function mount(container, opts = {}){
     else if (a === 'plan') { state.planned = true; emit('plan:add', {procedure:'consult', source:'filler', concerns:[...state.on], ml:curPlan().total}); sync(); }
   }
   root.addEventListener('click', onClick);
-  ba.addEventListener('input', () => { state.after = +ba.value; ba.style.setProperty('--v', ba.value + '%'); if (state.head) state.head.jumpAfter(state.after / 100); });
+  ba.addEventListener('input', () => { state.amt = +ba.value; sync(); panel(curPlan()); if (state.head) state.head.jumpAmount(state.amt / 100); });
+  /* the wipe line */
+  const wipe = R('wipe'), view = $('.ff-view');
+  let wx = .5, wd = null;
+  const setW = x => { wx = Math.max(.02, Math.min(.98, x)); wipe.style.setProperty('--x', wx * 100 + '%'); if (state.head) state.head.setWipe(wx); };
+  const knob = $('.ff-wknob');
+  knob.addEventListener('pointerdown', e => { wd = e.pointerId; try { knob.setPointerCapture(e.pointerId); } catch (er) {} e.preventDefault(); });
+  knob.addEventListener('pointermove', e => { if (wd !== e.pointerId) return; const r = view.getBoundingClientRect(); setW((e.clientX - r.left) / r.width); });
+  const wEnd = e => { if (wd === e.pointerId) wd = null; };
+  knob.addEventListener('pointerup', wEnd); knob.addEventListener('pointercancel', wEnd);
+  knob.addEventListener('keydown', e => { const d = {ArrowLeft:-.05, ArrowRight:.05}[e.key]; if (d) { e.preventDefault(); setW(wx + d); } });
 
   sync(); draw();
   return {
