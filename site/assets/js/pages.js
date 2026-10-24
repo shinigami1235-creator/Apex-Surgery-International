@@ -460,7 +460,8 @@
     const S = A.d('shared') || {}, D = A.d('services') || {};
     A.setMeta(D.title, D.desc);
     main().innerHTML = phead(D.h || T('services'), T('servicesSub'), [homeCrumb(), [T('services')]]) + `
-      <section class="section"><div class="wrap">${A.svcCards(S)}</div></section>
+      <section class="section"><div class="wrap">${A.svcCards(S)}
+        <a class="tx-band rv" href="treatments.html"><span class="tx-gi">${I('sparkles')}</span><span><b>${E(T('treatments'))}</b><span>${E(T('txBand'))}</span></span>${I('arrow-right')}</a></div></section>
       <section class="section washed"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(T('tools'))}</h2></div>
         <div class="mini-tools">
           <a class="mini-tool rv mt-new" href="filler.html">${I('syringe')}<b>${E(T('fill'))}<span class="tc-new">${E(T('newTag'))}</span></b><span>${E(T('fillPageP'))}</span></a>
@@ -472,6 +473,50 @@
           <a class="mini-tool rv" data-d="140" href="play.html">${I('sparkles')}<b>${E(T('games'))}</b><span>${E(T('gamesP'))}</span></a>
         </div></div></section>
       <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
+  }
+
+  /* =================== NON-SURGICAL TREATMENTS =================== */
+  const TX_IC = {inject:'syringe', lift:'layers', laser:'sun', 'hair-removal':'scan-line', body:'dumbbell', hair:'sparkles', wellness:'heart-pulse', weight:'weight', intimate:'heart'};
+  async function treatments(){
+    const S = A.d('shared') || {}, D = A.d('treatments') || {groups:[]}, G = D.groups || [];
+    A.setMeta(D.title, D.desc);
+    const n = g => Math.max(1, g.cards.reduce((a, c) => a + Math.max(1, c.items.length), 0));
+    const card = (c, i) => `<article class="tx-card rv" data-d="${Math.min(i, 5) * 40}">
+        <h3>${E(c.n)}</h3>${c.p ? `<p>${E(c.p)}</p>` : ''}
+        ${c.items.length ? `<ul class="tx-items">${c.items.map(x => `<li>${E(x)}</li>`).join('')}</ul>` : ''}
+        ${c.link ? `<a class="link-arrow" href="${E(c.link)}">${E(T('txTry'))} ${I('arrow-right')}</a>` : ''}</article>`;
+    main().innerHTML = phead(D.h || T('treatments'), D.lead, [homeCrumb(), [T('services'), 'services.html'], [D.h || T('treatments')]],
+      `<label class="tx-search rv" data-d="140">${I('search')}<span class="sr">${E(T('txSearch'))}</span><input type="search" placeholder="${E(T('txSearch'))}" autocomplete="off" data-r="q"></label>`) + `
+      <section class="section tx"><div class="wrap tx-grid">
+        <nav class="tx-nav" aria-label="${E(T('txGroups'))}">${G.map(g => `<a href="#tx-${E(g.k)}" data-k="${E(g.k)}">${I(TX_IC[g.k] || 'sparkles')}<span>${E(g.h)}</span><i>${n(g)}</i></a>`).join('')}</nav>
+        <div class="tx-body">${G.map(g => `<section class="tx-g" id="tx-${E(g.k)}" data-k="${E(g.k)}">
+          <div class="tx-gh rv"><span class="tx-gi">${I(TX_IC[g.k] || 'sparkles')}</span><div><h2 class="h-l">${E(g.h)}</h2><p>${E(g.p)}</p></div></div>
+          ${g.cards.length ? `<div class="tx-cards">${g.cards.map(card).join('')}</div>` : `<a class="btn btn-ghost rv" href="consult.html">${I('message-circle')}${E(T('consult'))}</a>`}</section>`).join('')}
+          <p class="tx-none" hidden data-r="none">${E(T('txNone'))}</p>
+          <p class="note tx-from">${E(D.from || '')}</p></div></div></section>
+      <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
+    const q = A.qs('[data-r="q"]'), none = A.qs('[data-r="none"]'), nav = A.qsa('.tx-nav a');
+    const norm = x => x.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '');
+    q.addEventListener('input', () => {
+      const v = norm(q.value.trim()); let any = false;
+      A.qsa('.tx-g').forEach(g => {
+        let shown = 0;
+        A.qsa('.tx-card', g).forEach(c => {
+          const head = norm(A.qs('h3', c).textContent + ' ' + (A.qs('p', c) || {textContent:''}).textContent).includes(v);
+          let hit = 0;
+          A.qsa('.tx-items li', c).forEach(li => { const m = !!v && norm(li.textContent).includes(v); li.classList.toggle('hit', m); hit += m; });
+          const on = !v || head || hit > 0; c.hidden = !on; shown += on;
+        });
+        const gOn = !v || shown > 0 || norm(A.qs('.tx-gh', g).textContent).includes(v);
+        g.hidden = !gOn; any = any || gOn;
+        const a = nav.find(x => x.dataset.k === g.dataset.k); if (a) a.classList.toggle('dim', !gOn);
+      });
+      none.hidden = any;
+    });
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) nav.forEach(a => a.classList.toggle('on', a.dataset.k === e.target.dataset.k)); }), {rootMargin:'-30% 0px -60% 0px'});
+      A.qsa('.tx-g').forEach(g => io.observe(g));
+    }
   }
 
   /* =================== SERVICE =================== */
@@ -980,6 +1025,6 @@
   }
 
   const page = async () => {};   // any other WordPress page: the server's text as it is
-  const PAGES = {home, services, service, about, doctor, promotions, reviews, blog, article, war, contact, nose, analysis, proportions, filler, implBreast, implChin, implForehead, implNose, play, plan, trip, consult, privacy, notfound, page};
+  const PAGES = {home, services, treatments, service, about, doctor, promotions, reviews, blog, article, war, contact, nose, analysis, proportions, filler, implBreast, implChin, implForehead, implNose, play, plan, trip, consult, privacy, notfound, page};
   A.boot(() => (PAGES[document.body.dataset.page] || home)());
 })();

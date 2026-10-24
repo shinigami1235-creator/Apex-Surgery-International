@@ -116,3 +116,43 @@ export function planFor(keys, deep = false){
    front-facing photos in a frame set by the eyes, mouth and chin, then on the head in the same frame
    (the nearest skin vertex facing the camera). */
 export const HEAD_AT = {"Ck1":[[2286,2907],[115,816],[58,766]],"Ck2":[[1920,2545]],"Ck3":[[1518,1689]],"Ck4":[[2119,2745]],"Ck5":[[2254,2879]],"T1":[[456,1131]],"T2":[[455,1130]],"C1":[[190,883]],"C2":[[569,1231]],"C3":[[522,1188]],"C4":[[527]],"C5":[[2142,2767]],"C6":[[524,1190]],"Jw1":[[1550,1721]],"Jw2":[[2285,2906]],"Jw3":[[2154,2779]],"Jw4":[[2113,2739]],"Jw5":[[2115,2741]],"F1":[[93,797]],"F2":[[2241,2866]],"F3":[[95,798]],"E1":[[1798,2419]],"E2":[[66,773]],"E3":[[67,774]],"O1":[[1775,2397]],"O2":[[30,1139]],"O3":[[1926,763]],"Tt1":[[1739,2361]],"Tt2":[[2233,717]],"Tt3":[[633,1294]],"NL1":[[2081,2707]],"NL2":[[638,1298]],"NL3":[[2093,2719]],"M1":[[196,1601]],"M2":[[2091,2715]],"M3":[[528,1193]],"Lp1":[[179,872],[192,886]],"Lp2":[[1429,1430]],"Lp3":[[2276,2898],[1838,2461]],"Lp4":[[1429]],"Lp5":[[181,874]],"Lp6":[[162,863]],"Lp7":[[2258,2883]],"Lp8":[[2264,2888],[187,880]],"N1":[[144]],"N2":[[2068]],"N3":[[40]],"N4":[[19]],"N5":[[136]]};
+
+/* Hyaluronic acid fillers on Apex's treatment list (Oct 2026), the syringe size and the areas each maker or
+   regulator lists for it. An area is only listed when a label, instructions for use or the maker's own product page
+   says so; marketing copy from distributors was left out. Forehead, brows, outer eye and nose have no product here
+   since none of these labels name them, so the doctor chooses. Thai package inserts, if they differ, win. */
+export const PRODUCTS = [
+  {k:'voluma', name:'Juvederm Voluma', ml:1, areas:['cheeks', 'chin', 'temples'],
+   src:'https://www.accessdata.fda.gov/cdrh_docs/pdf11/P110033S070C.pdf'},
+  {k:'volift', name:'Juvederm Volift', ml:1, areas:['cheeks', 'chin', 'jowls', 'lips'],
+   src:'https://media.allergan.com/actavis/actavis/media/allergan-pdf-documents/Juv%C3%A9derm%C2%AE_VOLIFT_DFU_GR.pdf'},
+  {k:'volbella', name:'Juvederm Volbella', ml:1, areas:['lips', 'tear'],
+   src:'https://media.allergan.com/actavis/actavis/media/allergan-pdf-documents/Juv%C3%A9derm%C2%AE_VOLBELLA_DFU_GR.pdf'},
+  {k:'kysse', name:'Restylane Kysse', ml:1, areas:['lips'],
+   src:'https://www.galderma.com/us/sites/g/files/jcdfhc341/files/2020-04/Restylane_Kysse-IFU.pdf'},
+  {k:'belotero', name:'Belotero Intense', ml:1, areas:['folds', 'lips', 'corners', 'marionette'],
+   src:'https://www.ddgroup.com/facial-aesthetics/fillers/600055--belotero-intense-with-lidocaine/'},
+  {k:'shape', name:'Revanesse Shape', ml:1.2, areas:['cheeks', 'chin', 'jowls'],
+   src:'https://international.revanesse.com/products/revanesse-shape/'},
+  {k:'ultra', name:'Revanesse Ultra', ml:1.2, areas:['cheeks', 'folds', 'marionette', 'corners'],
+   src:'https://international.revanesse.com/products/revanesse-ultra/'},
+  {k:'rha4', name:'Teosyal RHA 4', ml:1.2, areas:['folds', 'cheeks'],
+   src:'https://www.teoxane.com/en/productinfo-ksa'},
+  {k:'ultradeep', name:'Teosyal Ultra Deep', ml:1.2, areas:['cheeks', 'folds'],
+   src:'https://www.teoxane.com/en/productinfo-ksa'},
+  {k:'redensity2', name:'Teosyal Redensity 2', ml:1, areas:['tear'],
+   src:'https://www.teoxane.com/en/productinfo-ksa'},
+];
+export const productsFor = concern => PRODUCTS.filter(p => p.areas.includes(concern));
+
+/* Syringes for a plan when each concern may use its own product: amounts of the same product share syringes,
+   and concerns left to the doctor count in 1 mL syringes. byConcern: {concern: {total}}, pick: {concern: product key}. */
+export function syringesFor(byConcern, pick = {}){
+  const by = {};
+  for (const c in byConcern) {
+    const p = PRODUCTS.find(x => x.k === pick[c] && x.areas.includes(c));
+    const k = p ? p.k : '', b = by[k] = by[k] || {ml:0, size:p ? p.ml : SYRINGE};
+    b.ml += byConcern[c].total;
+  }
+  return Object.values(by).reduce((a, b) => a + Math.ceil(b.ml / b.size - 1e-9), 0);
+}

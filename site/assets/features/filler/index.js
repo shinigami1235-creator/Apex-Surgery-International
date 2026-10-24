@@ -7,7 +7,7 @@
 
    mount(container, opts) -> {destroy()}
    opts: lang 'en' | 'th', base (assets/ URL), onEvent(name, data). Testing only: threeUrl */
-import {CODES, CONCERNS, STEPS, PER_SESSION, planFor, HEAD_AT} from './codes.js';
+import {CODES, CONCERNS, STEPS, PER_SESSION, planFor, HEAD_AT, PRODUCTS, productsFor, syringesFor} from './codes.js';
 import {createHead} from './head.js';
 
 const REF = 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8012343/';
@@ -46,6 +46,7 @@ const STR = {
        Lp6:'Corners of the mouth', Lp7:'Philtrum', Lp8:'Lines around the lips',
        N1:'Base of the nose', N2:'Between the nostrils', N3:'Top of the bridge', N4:'Upper bridge', N5:'Lower bridge'},
     total:'Estimated amount', totalP:'Both sides of the face, using the minimum amount for each area.',
+    prod:'Product', doc:"Doctor's choice", size:'{n} mL syringe', prodP:'Fillers Apex uses, matched to the areas their makers list. Syringes are counted by each product\'s size.',
     ml:'mL', syr:['syringe', 'syringes'], ses:['session', 'sessions'], sesP:'About {n} mL a session',
     each:'each side', mid:'centre', none:'Pick a concern to see the areas and amounts.',
     save:'Save', saveBtn:'Save to phone', plan:'Add to My Plan', planned:'Added to My Plan', consult:'Ask a doctor',
@@ -85,6 +86,7 @@ const STR = {
        Lp1:'เนื้อริมฝีปาก', Lp2:'กระจับ', Lp3:'ขอบปาก', Lp4:'กลางปากบน', Lp5:'ปากล่างด้านข้าง',
        Lp6:'มุมปาก', Lp7:'ร่องเหนือริมฝีปากบน', Lp8:'ริ้วรอยรอบปาก',
        N1:'ฐานจมูก', N2:'แกนกลางรูจมูก', N3:'ดั้งจมูกช่วงบน', N4:'สันจมูกช่วงบน', N5:'สันจมูกช่วงล่าง'},
+    prod:'ผลิตภัณฑ์', doc:'ให้แพทย์เลือก', size:'หลอดละ {n} มล.', prodP:'ฟิลเลอร์ที่ Apex ใช้ จับคู่กับตำแหน่งที่ผู้ผลิตระบุ จำนวนหลอดนับตามขนาดหลอดของแต่ละผลิตภัณฑ์',
     total:'ปริมาณโดยประมาณ', totalP:'รวมทั้งสองข้างของใบหน้า ใช้ปริมาณขั้นต่ำของแต่ละตำแหน่ง',
     ml:'มล.', syr:'หลอด', ses:'ครั้ง', sesP:'ประมาณ {n} มล. ต่อครั้ง',
     each:'ข้างละ', mid:'กึ่งกลาง', none:'เลือกสิ่งที่อยากแก้ไขเพื่อดูตำแหน่งและปริมาณ',
@@ -290,6 +292,12 @@ const CSS = `
 .ff-fx{margin:0;font-size:14px;line-height:1.45;color:var(--ff-ink-2)}
 .ff-tags{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:5px}
 .ff-tags li{font-size:12.5px;line-height:1.3;padding:4px 10px;border-radius:999px;background:var(--ff-lilac-1);color:var(--ff-plum-7)}
+.ff-prod{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--ff-ink-2)}
+.ff-prod span{font-weight:700;color:var(--ff-ink)}
+.ff-prod select{flex:1;min-width:150px;height:34px;padding:0 30px 0 12px;border-radius:999px;border:1px solid var(--ff-lilac-2);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236A388C' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;appearance:none;-webkit-appearance:none;font:inherit;font-size:13.5px;color:var(--ff-ink);cursor:pointer}
+.ff-prod select:focus-visible{outline:2px solid var(--ff-plum);outline-offset:2px}
+.ff-prod small{font-size:12.5px;color:var(--ff-ink-3)}
+.ff-prodp{margin:10px 0 0;font-size:13px;line-height:1.5;color:var(--ff-ink-3)}
 .ff-none{margin:0;padding:18px;border-radius:18px;border:1px dashed var(--ff-lilac-3);color:var(--ff-ink-2);font-size:15px;text-align:center}
 .ff-ref{display:flex;gap:10px;align-items:flex-start;margin:0;font-size:13px;line-height:1.5;color:var(--ff-ink-3)}
 .ff-ref .ff-i{color:var(--ff-plum);margin-top:2px}
@@ -362,12 +370,12 @@ export function mount(container, opts = {}){
   const plural = (w, n) => Array.isArray(w) ? w[n === 1 ? 0 : 1] : w;
   if (!styleRefs++) { styleEl = document.createElement('style'); styleEl.dataset.feature = 'filler'; styleEl.textContent = CSS; document.head.append(styleEl); }
 
-  const state = {on:new Set(['cheeks']), deep:false, points:true, planned:false, gender:'female', view:'q', amt:100, head:null, err:null};
+  const state = {on:new Set(['cheeks']), deep:false, points:true, planned:false, gender:'female', view:'q', amt:100, head:null, err:null, pick:{}};
   try {
     const p = JSON.parse(localStorage.getItem('apex.filler') || 'null');
-    if (p) { if (Array.isArray(p.on)) state.on = new Set(p.on.filter(k => CONCERNS.some(c => c.k === k))); state.deep = !!p.deep; if (p.points === false) state.points = false; if (p.gender === 'male') state.gender = 'male'; }
+    if (p) { if (Array.isArray(p.on)) state.on = new Set(p.on.filter(k => CONCERNS.some(c => c.k === k))); state.deep = !!p.deep; if (p.points === false) state.points = false; if (p.gender === 'male') state.gender = 'male'; if (p.pick && typeof p.pick === 'object') for (const c in p.pick) if (productsFor(c).some(x => x.k === p.pick[c])) state.pick[c] = p.pick[c]; }
   } catch (e) {}
-  const remember = () => { try { localStorage.setItem('apex.filler', JSON.stringify({on:[...state.on], deep:state.deep, points:state.points, gender:state.gender})); } catch (e) {} };
+  const remember = () => { try { localStorage.setItem('apex.filler', JSON.stringify({on:[...state.on], deep:state.deep, points:state.points, gender:state.gender, pick:state.pick})); } catch (e) {} };
 
   const chip = c => `<button type="button" class="ff-chip" data-c="${c.k}" aria-pressed="false"><span class="ff-dot" style="background:${STEP_C[c.step]}"></span>${esc(S.c[c.k])}</button>`;
   const root = document.createElement('div');
@@ -428,12 +436,21 @@ export function mount(container, opts = {}){
   const scaled = (P, f) => {
     const r2 = x => Math.round(x * 100) / 100, total = r2(P.total * f), byConcern = {};
     for (const k in P.byConcern) byConcern[k] = {...P.byConcern[k], total:r2(P.byConcern[k].total * f)};
-    return {...P, total, byConcern, syringes:Math.ceil(total - 1e-9), sessions:Math.max(1, Math.ceil(total / PER_SESSION - 1e-9))};
+    return {...P, total, byConcern, syringes:syringesFor(byConcern, state.pick), sessions:Math.max(1, Math.ceil(total / PER_SESSION - 1e-9))};
   };
   const basePlan = () => planFor([...state.on], state.deep);
   const curPlan = () => scaled(basePlan(), state.amt / 100);
 
   /* ---------- the plan ---------- */
+  const prodOf = c => PRODUCTS.find(x => x.k === state.pick[c] && x.areas.includes(c));
+  const prodRow = c => {
+    const ps = productsFor(c); if (!ps.length) return '';
+    const p = prodOf(c);
+    return `<label class="ff-prod"><span>${esc(S.prod)}</span><select data-pick="${c}">
+      <option value="">${esc(S.doc)}</option>${ps.map(x => `<option value="${x.k}"${p && p.k === x.k ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select>
+      ${p ? `<small>${esc(S.size.replace('{n}', n2(p.ml)))}</small>` : ''}</label>`;
+  };
+
   function panel(P){
     R('ml').textContent = n2(P.total);
     R('kpis').innerHTML = P.list.length ? `<span>${ic('drop')}${P.syringes} ${esc(plural(S.syr, P.syringes))}</span>`
@@ -442,8 +459,8 @@ export function mount(container, opts = {}){
       const b = P.byConcern[c.k];
       return `<li class="ff-area"><div class="ff-area-h"><span class="ff-dot" style="background:${STEP_C[c.step]}"></span><b>${esc(S.c[c.k])}</b><span>${n2(b.total)} ${esc(S.ml)}</span></div>
         <p class="ff-fx">${esc(S.fx[c.k])}</p>
-        <ul class="ff-tags">${b.codes.map(x => `<li>${esc(S.a[x.k])}</li>`).join('')}</ul></li>`;
-    }).join('')}</ul>` : `<p class="ff-none">${esc(S.none)}</p>`;
+        <ul class="ff-tags">${b.codes.map(x => `<li>${esc(S.a[x.k])}</li>`).join('')}</ul>${prodRow(c.k)}</li>`;
+    }).join('')}</ul><p class="ff-prodp">${esc(S.prodP)}</p>` : `<p class="ff-none">${esc(S.none)}</p>`;
   }
   function draw(){
     const P = curPlan();
@@ -503,6 +520,7 @@ export function mount(container, opts = {}){
       y += 44;
       for (const r of rows) {
         g.font = `700 24px ${font}`; g.fillStyle = '#fff'; g.fillText(S.c[r.k], pad, y);
+        const pr = prodOf(r.k); if (pr) { const x0 = pad + g.measureText(S.c[r.k]).width + 14; g.font = `400 20px ${font}`; g.fillStyle = '#E3B85C'; g.fillText(pr.name, x0, y); }
         g.font = `400 22px ${font}`; g.fillStyle = '#CDB9DD';
         const txt = `${n2(P.byConcern[r.k].total)} ${S.ml}`;
         g.fillText(txt, W - pad - g.measureText(txt).width, y);
@@ -550,6 +568,8 @@ export function mount(container, opts = {}){
     else if (a === 'plan') { state.planned = true; emit('plan:add', {procedure:'consult', source:'filler', concerns:[...state.on], ml:curPlan().total}); sync(); }
   }
   root.addEventListener('click', onClick);
+  const onPick = e => { const sel = e.target.closest('[data-pick]'); if (!sel) return; if (sel.value) state.pick[sel.dataset.pick] = sel.value; else delete state.pick[sel.dataset.pick]; remember(); panel(curPlan()); const n = R('areas').querySelector(`[data-pick="${sel.dataset.pick}"]`); if (n) n.focus(); };
+  root.addEventListener('change', onPick);
   ba.addEventListener('input', () => { state.amt = +ba.value; sync(); panel(curPlan()); if (state.head) state.head.jumpAmount(state.amt / 100); });
   /* the wipe line */
   const wipe = R('wipe'), view = $('.ff-view');
@@ -566,7 +586,7 @@ export function mount(container, opts = {}){
   return {
     destroy(){
       alive = false; if (state.head) state.head.destroy();
-      root.removeEventListener('click', onClick); root.remove();
+      root.removeEventListener('click', onClick); root.removeEventListener('change', onPick); root.remove();
       if (!--styleRefs && styleEl) { styleEl.remove(); styleEl = null; }
     },
     _state:state, _plan:curPlan,

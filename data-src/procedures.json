@@ -1,0 +1,1288 @@
+{
+ "source": "Precedure list  Dr Gideon.xlsx (Apex), Oct 2026",
+ "groups": [
+  {
+   "key": "inject",
+   "en": "Injectables",
+   "th": "งานฉีด"
+  },
+  {
+   "key": "lift",
+   "en": "Lifting",
+   "th": "ยกกระชับ"
+  },
+  {
+   "key": "pico",
+   "en": "Pico",
+   "th": "เลเซอร์และผิว"
+  },
+  {
+   "key": "laser",
+   "en": "Laser & skin",
+   "th": "เลเซอร์และผิว"
+  },
+  {
+   "key": "hair-removal",
+   "en": "Laser hair removal",
+   "th": "เลเซอร์กำจัดขน"
+  },
+  {
+   "key": "body",
+   "en": "Body contouring",
+   "th": "กระชับสัดส่วน"
+  },
+  {
+   "key": "hair",
+   "en": "Hair",
+   "th": "ผม"
+  },
+  {
+   "key": "wellness",
+   "en": "Wellness",
+   "th": "เวลเนส"
+  },
+  {
+   "key": "weight",
+   "en": "Weight management",
+   "th": "ควบคุมน้ำหนัก"
+  },
+  {
+   "key": "intimate",
+   "en": "Intimate health",
+   "th": "สุขภาพสตรี/บุรุษ"
+  }
+ ],
+ "items": [
+  {
+   "group": "inject",
+   "name": "Botox (Allergan)",
+   "unit": "U",
+   "raw": "Botox (Allergan)"
+  },
+  {
+   "group": "inject",
+   "name": "Nabota",
+   "unit": "U",
+   "raw": "Nabota"
+  },
+  {
+   "group": "inject",
+   "name": "Xeomin",
+   "unit": "U",
+   "raw": "xeomin"
+  },
+  {
+   "group": "inject",
+   "name": "Neuronox",
+   "unit": "U",
+   "raw": "Neuronox "
+  },
+  {
+   "group": "inject",
+   "name": "Belotero Intense",
+   "unit": "cc",
+   "raw": "Belotero intense "
+  },
+  {
+   "group": "inject",
+   "name": "Juvederm Volbella",
+   "unit": "cc",
+   "raw": "Juvederm vobella "
+  },
+  {
+   "group": "inject",
+   "name": "Juvederm Volift",
+   "unit": "cc",
+   "raw": "Juvederm volift"
+  },
+  {
+   "group": "inject",
+   "name": "Juvederm Voluma",
+   "unit": "cc",
+   "raw": "Juvederm voluma"
+  },
+  {
+   "group": "inject",
+   "name": "Neauvia Hydro Deluxe",
+   "unit": "syringe",
+   "raw": "Neauvia hhydrodeluxe"
+  },
+  {
+   "group": "inject",
+   "name": "Restylane Kysse",
+   "unit": "syringe",
+   "raw": "Restylane kysse"
+  },
+  {
+   "group": "inject",
+   "name": "Restylane Vital Light",
+   "unit": "cc",
+   "raw": "Restylane vital light"
+  },
+  {
+   "group": "inject",
+   "name": "Revanesse Shape",
+   "unit": "syringe",
+   "raw": "Revanesse shape"
+  },
+  {
+   "group": "inject",
+   "name": "Revanesse Ultra",
+   "unit": "syringe",
+   "raw": "Revanesse ultra"
+  },
+  {
+   "group": "inject",
+   "name": "Teosyal Redensity 2",
+   "unit": "syringe",
+   "raw": "Redensity 2"
+  },
+  {
+   "group": "inject",
+   "name": "Teosyal Redensity 1 (3 mL)",
+   "unit": "syringe",
+   "raw": "rednsity 1 (3 ml)"
+  },
+  {
+   "group": "inject",
+   "name": "Teosyal Redensity 1 (1 mL)",
+   "unit": "syringe",
+   "raw": "redensity 1 (1ml )"
+  },
+  {
+   "group": "inject",
+   "name": "Teosyal Ultra Deep",
+   "unit": "syringe",
+   "raw": "Teosyal Ultradeep "
+  },
+  {
+   "group": "inject",
+   "name": "Teosyal RHA 4",
+   "unit": "syringe",
+   "raw": "Teosyal RH 4"
+  },
+  {
+   "group": "inject",
+   "name": "Neobella",
+   "unit": "mL",
+   "raw": "Neobella "
+  },
+  {
+   "group": "inject",
+   "name": "SiSi",
+   "unit": "mL",
+   "raw": "SiSi",
+   "check": "spelling"
+  },
+  {
+   "group": "inject",
+   "name": "Cell booster",
+   "unit": null,
+   "raw": "cell booster",
+   "check": "which product"
+  },
+  {
+   "group": "inject",
+   "name": "Nucleofill",
+   "unit": "syringe",
+   "raw": "Nucleofill"
+  },
+  {
+   "group": "inject",
+   "name": "Plinest",
+   "unit": "syringe",
+   "raw": "Plinest"
+  },
+  {
+   "group": "inject",
+   "name": "Vitaran",
+   "unit": "syringe",
+   "raw": "Vitaran"
+  },
+  {
+   "group": "inject",
+   "name": "Belotero Revive",
+   "unit": "cc",
+   "raw": "Belotero Revive"
+  },
+  {
+   "group": "inject",
+   "name": "Ejal",
+   "unit": "syringe",
+   "raw": "Ejal"
+  },
+  {
+   "group": "inject",
+   "name": "Profhilo",
+   "unit": "syringe",
+   "raw": "Profhilo"
+  },
+  {
+   "group": "inject",
+   "name": "Skin booster",
+   "unit": "vial",
+   "raw": "Skin booster"
+  },
+  {
+   "group": "inject",
+   "name": "Skinvive",
+   "unit": "syringe",
+   "raw": "skinvive"
+  },
+  {
+   "group": "inject",
+   "name": "HArmonyCa",
+   "unit": "syringe",
+   "raw": "HArmonyCa"
+  },
+  {
+   "group": "inject",
+   "name": "Radiesse",
+   "unit": "syringe",
+   "raw": "Radiesse "
+  },
+  {
+   "group": "inject",
+   "name": "Radiesse (+)",
+   "unit": "syringe",
+   "raw": "Radiesse plus"
+  },
+  {
+   "group": "inject",
+   "name": "Sculptra",
+   "unit": "vial",
+   "raw": "Sculptra"
+  },
+  {
+   "group": "inject",
+   "name": "Derma Glow",
+   "unit": "mL",
+   "raw": "Derma glow"
+  },
+  {
+   "group": "inject",
+   "name": "Exosome (skin)",
+   "unit": "vial",
+   "raw": "Exosome (skin)"
+  },
+  {
+   "group": "inject",
+   "name": "NCTF 135",
+   "unit": "cc",
+   "raw": "NCTF 135"
+  },
+  {
+   "group": "inject",
+   "name": "Placen Glow",
+   "unit": "vial",
+   "raw": "Placen Glow"
+  },
+  {
+   "group": "inject",
+   "name": "Definisse thread 23 cm",
+   "unit": "thread",
+   "raw": "Definisse thread 23 cm"
+  },
+  {
+   "group": "inject",
+   "name": "Epithicon 18G",
+   "unit": "thread",
+   "raw": "Epithicon 18 g",
+   "check": "spelling (thread brand)"
+  },
+  {
+   "group": "inject",
+   "name": "Small thread 50",
+   "unit": "thread",
+   "raw": "Small thread 50"
+  },
+  {
+   "group": "inject",
+   "name": "Large thread 90",
+   "unit": "thread",
+   "raw": "Large thread 90"
+  },
+  {
+   "group": "inject",
+   "name": "MSC",
+   "unit": null,
+   "raw": "MSC",
+   "check": "what MSC is used for"
+  },
+  {
+   "group": "inject",
+   "name": "PPD (Transamin)",
+   "unit": "amp",
+   "raw": "PPD ( transamine)"
+  },
+  {
+   "group": "inject",
+   "name": "PPM (Neobella)",
+   "unit": null,
+   "raw": "PPM ( Neobella)"
+  },
+  {
+   "group": "inject",
+   "name": "PPO (Oxelle)",
+   "unit": null,
+   "raw": "PPO ( oxelle)",
+   "check": "spelling"
+  },
+  {
+   "group": "inject",
+   "name": "Placenta 100 pg",
+   "unit": "vial",
+   "raw": "Placenta 100 pg"
+  },
+  {
+   "group": "inject",
+   "name": "Placenta 200 pg",
+   "unit": "vial",
+   "raw": "Placenta 200 pg"
+  },
+  {
+   "group": "inject",
+   "name": "PRP",
+   "unit": "tube",
+   "raw": "PRP"
+  },
+  {
+   "group": "inject",
+   "name": "Hyaluronidase",
+   "unit": "vial",
+   "raw": "Hyaluronidase"
+  },
+  {
+   "group": "inject",
+   "name": "Acne injection",
+   "unit": null,
+   "raw": "acne inj"
+  },
+  {
+   "group": "inject",
+   "name": "Keloid injection",
+   "unit": null,
+   "raw": "Keloid inj"
+  },
+  {
+   "group": "lift",
+   "name": "MPT 1.5 Boost",
+   "unit": "shot",
+   "raw": "MPT 1.5  boost"
+  },
+  {
+   "group": "lift",
+   "name": "MPT 4.5 Boost",
+   "unit": "shot",
+   "raw": "MPT 4.5 boost"
+  },
+  {
+   "group": "lift",
+   "name": "MPT 2.0",
+   "unit": "shot",
+   "raw": "MPT 2.0"
+  },
+  {
+   "group": "lift",
+   "name": "MPT 4.5",
+   "unit": "shot",
+   "raw": "MPT 4.5"
+  },
+  {
+   "group": "lift",
+   "name": "MPT 6",
+   "unit": "shot",
+   "raw": "MPT 6"
+  },
+  {
+   "group": "lift",
+   "name": "MPT 9",
+   "unit": "shot",
+   "raw": "MPT 9"
+  },
+  {
+   "group": "lift",
+   "name": "Linear Z 3",
+   "unit": "shot",
+   "raw": "Linear Z 3"
+  },
+  {
+   "group": "lift",
+   "name": "Linear Z 4.5",
+   "unit": "shot",
+   "raw": "Linear Z 4.5"
+  },
+  {
+   "group": "lift",
+   "name": "Linear Z 6",
+   "unit": "shot",
+   "raw": "Linear Z 6"
+  },
+  {
+   "group": "lift",
+   "name": "Linear Z 9",
+   "unit": "shot",
+   "raw": "Linear Z 9"
+  },
+  {
+   "group": "lift",
+   "name": "Linear Z 13",
+   "unit": null,
+   "raw": "Linear Z 13"
+  },
+  {
+   "group": "lift",
+   "name": "Thermage Blue 900",
+   "unit": "tip",
+   "raw": "Thermage Blue 900"
+  },
+  {
+   "group": "lift",
+   "name": "Thermage FLX 400",
+   "unit": "tip",
+   "raw": "Thermage flx 400"
+  },
+  {
+   "group": "lift",
+   "name": "Thermage Eye",
+   "unit": "tip",
+   "raw": "Thermage Eye"
+  },
+  {
+   "group": "lift",
+   "name": "Thermage FLX 600",
+   "unit": "tip",
+   "raw": "Thermage FLX 600"
+  },
+  {
+   "group": "lift",
+   "name": "Thermage FLX 900",
+   "unit": "tip",
+   "raw": "Thermage FLX 900"
+  },
+  {
+   "group": "lift",
+   "name": "Thermage Body 500",
+   "unit": "tip",
+   "raw": "Thermage Body 500"
+  },
+  {
+   "group": "lift",
+   "name": "Thermage CPT 900",
+   "unit": "tip",
+   "raw": "Thermage CPT 900"
+  },
+  {
+   "group": "lift",
+   "name": "Ulthera 1.5",
+   "unit": "shot",
+   "raw": "Ulthera 1.5"
+  },
+  {
+   "group": "lift",
+   "name": "Ulthera 4.5",
+   "unit": "shot",
+   "raw": "Ulthera 4.5"
+  },
+  {
+   "group": "lift",
+   "name": "Ulthera 3",
+   "unit": "shot",
+   "raw": "Ulthera 3"
+  },
+  {
+   "group": "lift",
+   "name": "Oligio",
+   "unit": "shot",
+   "raw": "Oligio"
+  },
+  {
+   "group": "lift",
+   "name": "Oligio X",
+   "unit": "shot",
+   "raw": "Oligio X"
+  },
+  {
+   "group": "lift",
+   "name": "Volnewmer face 3",
+   "unit": "shot",
+   "raw": "Volnewmer face 3"
+  },
+  {
+   "group": "lift",
+   "name": "Volnewmer eye",
+   "unit": "shot",
+   "raw": "Volnewmer eye"
+  },
+  {
+   "group": "lift",
+   "name": "Volnewmer body 16",
+   "unit": "shot",
+   "raw": "Volnewmer body 16"
+  },
+  {
+   "group": "lift",
+   "name": "EMFACE cheek",
+   "unit": "pc",
+   "raw": "EMFACE cheek"
+  },
+  {
+   "group": "lift",
+   "name": "EMFACE eye",
+   "unit": "pair",
+   "raw": "EMFACE eye"
+  },
+  {
+   "group": "lift",
+   "name": "EMFACE forehead",
+   "unit": "pc",
+   "raw": "EMFACE forehead"
+  },
+  {
+   "group": "lift",
+   "name": "EMFACE neck",
+   "unit": "pc",
+   "raw": "EMFACE neck"
+  },
+  {
+   "group": "lift",
+   "name": "Titanium Lift",
+   "unit": null,
+   "raw": "Titanium lift"
+  },
+  {
+   "group": "lift",
+   "name": "V Lift",
+   "unit": null,
+   "raw": "V lift"
+  },
+  {
+   "group": "lift",
+   "name": "Fotona 4D",
+   "unit": null,
+   "raw": "Fotona 4D"
+  },
+  {
+   "group": "lift",
+   "name": "Sofwave",
+   "unit": "shot",
+   "raw": "Sofwave"
+  },
+  {
+   "group": "lift",
+   "name": "Density",
+   "unit": null,
+   "raw": "Density ",
+   "check": "which device"
+  },
+  {
+   "group": "lift",
+   "name": "XTherma body",
+   "unit": "shot",
+   "raw": "XTherma  body"
+  },
+  {
+   "group": "lift",
+   "name": "XTherma face",
+   "unit": "shot",
+   "raw": "XTherma face "
+  },
+  {
+   "group": "pico",
+   "name": "Pico toning face (Dr)",
+   "unit": null,
+   "raw": "Pico toning face Dr"
+  },
+  {
+   "group": "pico",
+   "name": "Pico toning body (Dr)",
+   "unit": null,
+   "raw": "Pico toning body (Dr)"
+  },
+  {
+   "group": "pico",
+   "name": "Pico all modes (Dr)",
+   "unit": null,
+   "raw": "Pico all mode Dr"
+  },
+  {
+   "group": "pico",
+   "name": "Pico toning body (LT)",
+   "unit": null,
+   "raw": "Pico toning body (LT)"
+  },
+  {
+   "group": "pico",
+   "name": "Pico toning face (LT)",
+   "unit": null,
+   "raw": "Pico toning face( LT)"
+  },
+  {
+   "group": "laser",
+   "name": "Ultrabright",
+   "unit": null,
+   "raw": "Ultrabright"
+  },
+  {
+   "group": "laser",
+   "name": "Cryo (polar) bright",
+   "unit": null,
+   "raw": "Cryo (polar) bright"
+  },
+  {
+   "group": "laser",
+   "name": "LED face",
+   "unit": null,
+   "raw": "LED face "
+  },
+  {
+   "group": "laser",
+   "name": "Perfect bright",
+   "unit": null,
+   "raw": "Perfect bright"
+  },
+  {
+   "group": "laser",
+   "name": "Sylfirm X 49",
+   "unit": "tip",
+   "raw": "Sylfirm X 49"
+  },
+  {
+   "group": "laser",
+   "name": "Sylfirm X 25",
+   "unit": "tip",
+   "raw": "Sylfirm X 25"
+  },
+  {
+   "group": "laser",
+   "name": "Acne extraction",
+   "unit": null,
+   "raw": "Acne extraction"
+  },
+  {
+   "group": "laser",
+   "name": "Plasma laser",
+   "unit": null,
+   "raw": "Plasma laser"
+  },
+  {
+   "group": "laser",
+   "name": "Q-switched Nd:YAG laser",
+   "unit": null,
+   "raw": "Q-switched Nd:YAG laser"
+  },
+  {
+   "group": "laser",
+   "name": "Eye Refresh",
+   "unit": null,
+   "raw": "Eye refrest"
+  },
+  {
+   "group": "laser",
+   "name": "Eye Bright & Glow",
+   "unit": null,
+   "raw": "Eye bright & glow"
+  },
+  {
+   "group": "laser",
+   "name": "Eye Smooth & Firm",
+   "unit": null,
+   "raw": "Eye smooth & firm"
+  },
+  {
+   "group": "laser",
+   "name": "Total Eye",
+   "unit": null,
+   "raw": "Total eye "
+  },
+  {
+   "group": "laser",
+   "name": "Chemical peel (AHA)",
+   "unit": null,
+   "raw": "Chemical peel (AHA)"
+  },
+  {
+   "group": "laser",
+   "name": "Laser coring / UltraClear",
+   "unit": null,
+   "raw": "Laser coring / UltraClear"
+  },
+  {
+   "group": "laser",
+   "name": "Erbium:YAG laser",
+   "unit": null,
+   "raw": "Erbium:YAG laser"
+  },
+  {
+   "group": "laser",
+   "name": "Copper laser",
+   "unit": null,
+   "raw": "Copper  laser",
+   "check": "which device"
+  },
+  {
+   "group": "laser",
+   "name": "LaserMe",
+   "unit": null,
+   "raw": "LaserMe"
+  },
+  {
+   "group": "laser",
+   "name": "Laser lip lightening",
+   "unit": null,
+   "raw": "Laser lip lightening"
+  },
+  {
+   "group": "laser",
+   "name": "Laser nipple lightening",
+   "unit": null,
+   "raw": "Laser nipple lightening"
+  },
+  {
+   "group": "laser",
+   "name": "AviClear",
+   "unit": "shot",
+   "raw": "AviClear"
+  },
+  {
+   "group": "laser",
+   "name": "CO2 laser",
+   "unit": null,
+   "raw": "co2"
+  },
+  {
+   "group": "laser",
+   "name": "V laser",
+   "unit": null,
+   "raw": "V laser",
+   "check": "which device"
+  },
+  {
+   "group": "laser",
+   "name": "Fotona vessel",
+   "unit": null,
+   "raw": "Fotona vessel "
+  },
+  {
+   "group": "laser",
+   "name": "AccuRe",
+   "unit": null,
+   "raw": "accure"
+  },
+  {
+   "group": "laser",
+   "name": "EnerJet",
+   "unit": null,
+   "raw": "enerjet"
+  },
+  {
+   "group": "laser",
+   "name": "SkinPen",
+   "unit": "set",
+   "raw": "SkinPen"
+  },
+  {
+   "group": "laser",
+   "name": "Subcision",
+   "unit": null,
+   "raw": "subcision"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Underarm",
+   "unit": "min",
+   "raw": "Underarm"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Upper lip",
+   "unit": "min",
+   "raw": "Upper lip"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Chin",
+   "unit": "min",
+   "raw": "Chin"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Bikini line",
+   "unit": "min",
+   "raw": "Bikini line"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Neck",
+   "unit": "min",
+   "raw": "Neck"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Hands or feet",
+   "unit": "min",
+   "raw": "Hands or feet"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Upper or lower back",
+   "unit": "min",
+   "raw": "Upper or lower back"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Chest",
+   "unit": "min",
+   "raw": "Chest"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Abdomen",
+   "unit": "min",
+   "raw": "Abdomen"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Whole face",
+   "unit": "min",
+   "raw": "Whole face"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Brazilian",
+   "unit": "min",
+   "raw": "Brazilian"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Lower or upper arm",
+   "unit": "min",
+   "raw": "Lower or upper arm"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Lower or upper legs",
+   "unit": "min",
+   "raw": "Lower or upper legs"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Full back",
+   "unit": "min",
+   "raw": "Full back"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Full arm",
+   "unit": "min",
+   "raw": "Full arm"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Lower legs with feet",
+   "unit": "min",
+   "raw": "Lower legs with feet"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Full legs",
+   "unit": "min",
+   "raw": "Full legs"
+  },
+  {
+   "group": "hair-removal",
+   "name": "Full legs with feet",
+   "unit": "min",
+   "raw": "Full legs with feet"
+  },
+  {
+   "group": "body",
+   "name": "FitFirm",
+   "unit": null,
+   "raw": "fitfirm"
+  },
+  {
+   "group": "body",
+   "name": "Cool Elite",
+   "unit": "cycle",
+   "raw": "Cool Elite"
+  },
+  {
+   "group": "body",
+   "name": "Cool Advantage",
+   "unit": "cycle",
+   "raw": "Cool Advantage"
+  },
+  {
+   "group": "body",
+   "name": "Cool Advantage Plus",
+   "unit": "cycle",
+   "raw": "Cool Advantage Plus"
+  },
+  {
+   "group": "body",
+   "name": "CoolSmooth Pro",
+   "unit": "cycle",
+   "raw": "CoolSmooth Pro"
+  },
+  {
+   "group": "body",
+   "name": "Emsculpt",
+   "unit": "min",
+   "raw": "Emsculpt"
+  },
+  {
+   "group": "body",
+   "name": "Z Lipo",
+   "unit": null,
+   "raw": "zlipo"
+  },
+  {
+   "group": "body",
+   "name": "Emsculpt Neo edge",
+   "unit": "min",
+   "raw": "Emsculpt Neo edge"
+  },
+  {
+   "group": "body",
+   "name": "Emsculpt Neo large",
+   "unit": "min",
+   "raw": "Emsculpt Neo large"
+  },
+  {
+   "group": "body",
+   "name": "Emsculpt Neo small",
+   "unit": "min",
+   "raw": "Emsculpt Neo small"
+  },
+  {
+   "group": "body",
+   "name": "EMtone",
+   "unit": "min",
+   "raw": "EMtone"
+  },
+  {
+   "group": "body",
+   "name": "Magic Muscle",
+   "unit": null,
+   "raw": "Magic Muscle"
+  },
+  {
+   "group": "body",
+   "name": "Massage",
+   "unit": null,
+   "raw": "นวด"
+  },
+  {
+   "group": "body",
+   "name": "True Slim",
+   "unit": null,
+   "raw": "True Slim"
+  },
+  {
+   "group": "body",
+   "name": "truSculpt",
+   "unit": null,
+   "raw": "truSculpt"
+  },
+  {
+   "group": "body",
+   "name": "Evolve X",
+   "unit": null,
+   "raw": "Evolve X"
+  },
+  {
+   "group": "body",
+   "name": "miraDry",
+   "unit": null,
+   "raw": "miradry"
+  },
+  {
+   "group": "body",
+   "name": "CFU",
+   "unit": null,
+   "raw": "CFU",
+   "check": "what CFU stands for"
+  },
+  {
+   "group": "body",
+   "name": "X Wave",
+   "unit": null,
+   "raw": "X wave "
+  },
+  {
+   "group": "hair",
+   "name": "LED hair",
+   "unit": null,
+   "raw": "LED hair "
+  },
+  {
+   "group": "hair",
+   "name": "Robot",
+   "unit": null,
+   "raw": "Robot",
+   "check": "which treatment (hair transplant robot?)"
+  },
+  {
+   "group": "hair",
+   "name": "Hair vitamin",
+   "unit": "vial",
+   "raw": "Hair vitamin"
+  },
+  {
+   "group": "hair",
+   "name": "PRP",
+   "unit": "tube",
+   "raw": "PRP"
+  },
+  {
+   "group": "hair",
+   "name": "Exosome hair",
+   "unit": "vial",
+   "raw": "Exosome hair"
+  },
+  {
+   "group": "hair",
+   "name": "SkinPen hair",
+   "unit": "set",
+   "raw": "SkinPen hair"
+  },
+  {
+   "group": "wellness",
+   "name": "Celebrity's Secret",
+   "unit": null,
+   "raw": "Celebrity's Secret"
+  },
+  {
+   "group": "wellness",
+   "name": "Shining Star",
+   "unit": null,
+   "raw": "Shining Star"
+  },
+  {
+   "group": "wellness",
+   "name": "Rejuvenation Cocktail",
+   "unit": null,
+   "raw": "Rejuvenation Cocktail"
+  },
+  {
+   "group": "wellness",
+   "name": "Weight Loss",
+   "unit": null,
+   "raw": "Weight Loss"
+  },
+  {
+   "group": "wellness",
+   "name": "Speed White",
+   "unit": null,
+   "raw": "Speed White"
+  },
+  {
+   "group": "wellness",
+   "name": "NAC B+",
+   "unit": null,
+   "raw": "NAC B+"
+  },
+  {
+   "group": "wellness",
+   "name": "NAD+",
+   "unit": null,
+   "raw": "NAD+"
+  },
+  {
+   "group": "wellness",
+   "name": "Fat Burn",
+   "unit": null,
+   "raw": "Fat Burn"
+  },
+  {
+   "group": "wellness",
+   "name": "Skin Brightening Cocktail",
+   "unit": null,
+   "raw": "Skin Brightening Cocktail"
+  },
+  {
+   "group": "wellness",
+   "name": "Weight Control",
+   "unit": null,
+   "raw": "Weight Control"
+  },
+  {
+   "group": "wellness",
+   "name": "Super C",
+   "unit": null,
+   "raw": "Super C"
+  },
+  {
+   "group": "wellness",
+   "name": "Super Energy Charger",
+   "unit": null,
+   "raw": "Super Energy Charger"
+  },
+  {
+   "group": "wellness",
+   "name": "Revital Hair & Nail",
+   "unit": null,
+   "raw": "Revital Hair & Nail"
+  },
+  {
+   "group": "wellness",
+   "name": "Lab tests",
+   "unit": null,
+   "raw": "lab"
+  },
+  {
+   "group": "wellness",
+   "name": "INDIBA",
+   "unit": null,
+   "raw": "indiba"
+  },
+  {
+   "group": "wellness",
+   "name": "Hyperbaric oxygen",
+   "unit": null,
+   "raw": "Hyperbarric"
+  },
+  {
+   "group": "wellness",
+   "name": "Snorlase",
+   "unit": null,
+   "raw": "Snorlase"
+  },
+  {
+   "group": "wellness",
+   "name": "NK cell",
+   "unit": null,
+   "raw": "NK cell "
+  },
+  {
+   "group": "wellness",
+   "name": "Colon",
+   "unit": null,
+   "raw": "Colon"
+  },
+  {
+   "group": "wellness",
+   "name": "EIS",
+   "unit": null,
+   "raw": "EIS"
+  },
+  {
+   "group": "wellness",
+   "name": "Vitamin",
+   "unit": null,
+   "raw": "Vitamin "
+  },
+  {
+   "group": "wellness",
+   "name": "Hormone injection",
+   "unit": null,
+   "raw": "ฉีดฮอร์โมน"
+  },
+  {
+   "group": "wellness",
+   "name": "Ozone",
+   "unit": null,
+   "raw": "Ozone"
+  },
+  {
+   "group": "wellness",
+   "name": "Exomind",
+   "unit": null,
+   "raw": "Exomind"
+  },
+  {
+   "group": "wellness",
+   "name": "IV laser",
+   "unit": null,
+   "raw": "IV laser"
+  },
+  {
+   "group": "wellness",
+   "name": "Dry needling",
+   "unit": null,
+   "raw": "ฝังเข็ม (Dry needling)"
+  },
+  {
+   "group": "wellness",
+   "name": "PRP joint",
+   "unit": "tube",
+   "raw": "PRP joint"
+  },
+  {
+   "group": "wellness",
+   "name": "Fat stem cell",
+   "unit": null,
+   "raw": "Fat stem cell"
+  },
+  {
+   "group": "wellness",
+   "name": "InBody",
+   "unit": null,
+   "raw": "InBody"
+  },
+  {
+   "group": "weight",
+   "name": "Mounjaro 1.25 mg",
+   "unit": "dose",
+   "raw": "Mounjaro (1.25 mg) 999",
+   "check": "what 999 means (price?)"
+  },
+  {
+   "group": "weight",
+   "name": "Wegovy 0.25 mg",
+   "unit": "dose",
+   "raw": "Wegovy (0.25 mg) 999",
+   "check": "what 999 means (price?)"
+  },
+  {
+   "group": "intimate",
+   "name": "Vagial",
+   "unit": null,
+   "raw": "Vagial",
+   "check": "spelling (vaginal laser?)"
+  },
+  {
+   "group": "intimate",
+   "name": "Emsella",
+   "unit": null,
+   "raw": "Emsella"
+  },
+  {
+   "group": "intimate",
+   "name": "Viveve",
+   "unit": "tip",
+   "raw": "Viveve"
+  },
+  {
+   "group": "intimate",
+   "name": "Vfiller",
+   "unit": null,
+   "raw": "Vfiller"
+  },
+  {
+   "group": "intimate",
+   "name": "O-Shot",
+   "unit": "tube",
+   "raw": "O shot"
+  },
+  {
+   "group": "intimate",
+   "name": "P-Shot",
+   "unit": "tube",
+   "raw": "P shot"
+  },
+  {
+   "group": "intimate",
+   "name": "ED shock wave",
+   "unit": null,
+   "raw": "ED shock wave "
+  },
+  {
+   "group": "intimate",
+   "name": "Starformer",
+   "unit": null,
+   "raw": "Starformer"
+  }
+ ]
+}
