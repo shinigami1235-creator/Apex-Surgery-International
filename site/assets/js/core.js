@@ -16,7 +16,7 @@
   A.assets = A.assets || A.root + 'assets/';
   A.dataBase = A.assets + 'data/' + A.lang + '/';
   A.media = A.media || SITE;
-  A.img = s => !s ? '' : (s.startsWith('~/') ? A.media + s.slice(2) : s);
+  A.img = s => !s ? '' : (s.startsWith('~/') ? A.media + s.slice(2) : /^(img|fonts|css|js|features)\//.test(s) ? A.assets + s : s);
   A.esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   A.qs = (s, r=document) => r.querySelector(s);
   A.qsa = (s, r=document) => [...r.querySelectorAll(s)];
@@ -52,11 +52,12 @@
   A.ic = (n, cls='') => {
     const I = window.ICONS || {};
     if (n === 'close') n = 'x';
-    if (I['b_'+n]) return `<svg class="i br ${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${I['b_'+n]}"/></svg>`;
+    const brand = n.startsWith('brand:') ? (n = n.slice(6), true) : n !== 'x';   // plain "x" is the close cross, "brand:x" the X logo
+    if (brand && I['b_'+n]) return `<svg class="i br ${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${I['b_'+n]}"/></svg>`;
     if (I['l_'+n]) return `<svg class="i l ${cls}" viewBox="0 0 24 24" aria-hidden="true">${I['l_'+n]}</svg>`;
     return '';
   };
-  A.socIcon = k => A.ic(k) || A.ic('globe');
+  A.socIcon = k => A.ic('brand:' + k) || A.ic('globe');
 
   /* ---------- data loading ---------- */
   A.load = src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.append(s); });
@@ -151,6 +152,7 @@
             <a href="nose.html">${A.ic('scan-face')}${A.esc(A.t('nose'))}</a>
             <a href="analysis.html">${A.ic('scan-line')}${A.esc(A.t('ana'))}</a>
             <a href="proportions.html">${A.ic('gem')}${A.esc(A.t('prop'))}</a>
+            <a href="filler.html">${A.ic('syringe')}${A.esc(A.t('fill'))}</a>
             <a href="breast-implants.html">${A.ic('ruler')}${A.esc(A.t('impl'))}</a>
             <a href="play.html">${A.ic('sparkles')}${A.esc(A.t('games'))}</a>
             <a href="trip.html">${A.ic('calendar')}${A.esc(A.t('trip'))}</a>
@@ -197,7 +199,7 @@
     const subs = svcs.map(s => `<a href="${A.svcUrl(s.key)}">${A.esc(s.short || s.name)}</a>`).join('');
     sh.innerHTML = `<div class="sheet-top"><span class="logo-txt light">APEX<small>Surgery Hospital</small></span><button class="close" aria-label="${A.esc(A.t('close'))}">${A.ic('close')}</button></div>
       <nav>${NAV.map(([h, k]) => k === 'services' ? `<details><summary>${A.esc(A.t('services'))}${A.ic('chevron-down')}</summary><div class="sub"><a href="services.html">${A.esc(A.t('allServices'))}</a>${subs}</div></details>` : `<a href="${h}">${A.esc(A.t(k))}${A.ic('arrow-up-right')}</a>`).join('')}
-      <details><summary>${A.esc(A.t('tools'))}${A.ic('chevron-down')}</summary><div class="sub"><a href="nose.html">${A.esc(A.t('nose'))}</a><a href="analysis.html">${A.esc(A.t('ana'))}</a><a href="proportions.html">${A.esc(A.t('prop'))}</a><a href="breast-implants.html">${A.esc(A.t('impl'))}</a><a href="play.html">${A.esc(A.t('games'))}</a><a href="trip.html">${A.esc(A.t('trip'))}</a><a href="plan.html">${A.esc(A.t('plan'))}</a><a href="doctor.html">${A.esc(A.t('doctor'))}</a></div></details></nav>
+      <details><summary>${A.esc(A.t('tools'))}${A.ic('chevron-down')}</summary><div class="sub"><a href="nose.html">${A.esc(A.t('nose'))}</a><a href="analysis.html">${A.esc(A.t('ana'))}</a><a href="proportions.html">${A.esc(A.t('prop'))}</a><a href="filler.html">${A.esc(A.t('fill'))}</a><a href="breast-implants.html">${A.esc(A.t('impl'))}</a><a href="play.html">${A.esc(A.t('games'))}</a><a href="trip.html">${A.esc(A.t('trip'))}</a><a href="plan.html">${A.esc(A.t('plan'))}</a><a href="doctor.html">${A.esc(A.t('doctor'))}</a></div></details></nav>
       <div class="sheet-cta"><a class="btn btn-light" href="consult.html">${A.ic('message-circle')}${A.esc(A.t('consult'))}</a>
       <div class="lang" style="display:flex;justify-content:center;border-color:rgba(201,179,221,.3)">${langs}</div></div>`;
     document.body.append(sh);
@@ -241,7 +243,7 @@
         <p>${A.esc(A.lang === 'th' ? S.brandTh : (S.brandTh && S.brand ? S.brand : S.brand))}</p>
         <p class="ftr-lic">${A.esc(S.license || '')}</p>${aaci}
         <div class="ftr-socials">${(S.socials || []).map(s => `<a href="${s.h}"${ext} aria-label="${A.esc(s.x || s.k)}">${A.socIcon(s.k)}</a>`).join('')}<a href="${A.WA.h}"${ext} aria-label="WhatsApp">${A.ic('whatsapp')}</a></div></div>
-      <div><h2 class="ftr-h">${A.esc(A.t('ourServices'))}</h2>${svcs}<a href="nose.html">${A.esc(A.t('nose'))}</a><a href="analysis.html">${A.esc(A.t('ana'))}</a><a href="proportions.html">${A.esc(A.t('prop'))}</a><a href="breast-implants.html">${A.esc(A.t('impl'))}</a><a href="play.html">${A.esc(A.t('games'))}</a></div>
+      <div><h2 class="ftr-h">${A.esc(A.t('ourServices'))}</h2>${svcs}<a href="nose.html">${A.esc(A.t('nose'))}</a><a href="analysis.html">${A.esc(A.t('ana'))}</a><a href="proportions.html">${A.esc(A.t('prop'))}</a><a href="filler.html">${A.esc(A.t('fill'))}</a><a href="breast-implants.html">${A.esc(A.t('impl'))}</a><a href="play.html">${A.esc(A.t('games'))}</a></div>
       ${br}
       <div><h2 class="ftr-h">${A.esc(A.t('contactLine'))}</h2><a href="${S.line && S.line.h}"${ext} style="padding:0"><img class="qr" src="${A.img(S.line && S.line.qr)}" alt="LINE ${A.esc(S.line && S.line.x)}" loading="lazy" decoding="async" decoding="async"></a><p style="margin-top:10px">${A.esc(S.line && S.line.x)}</p>
         <a href="${A.WA.h}"${ext}>${A.ic('whatsapp')}${A.esc(A.WA.x)}</a></div>

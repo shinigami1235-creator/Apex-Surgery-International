@@ -7,24 +7,26 @@
   /* recovery facts, taken from the service pages' own Q&A and recovery text */
   const RECOVERY = {
     en: {
-      facelift: [['2 to 3 weeks','Back to light activity'],['4 to 6 weeks','No strenuous exercise'],['7 to 10 years','How long results last']],
+      facelift: [['4 to 7 days','Back to light office work'],['3 to 4 weeks','No strenuous exercise'],['7 to 12 years','How long a deep plane facelift lasts']],
       browlift: [['7 to 14 days','Initial recovery'],['4 to 6 weeks','No strenuous exercise'],['3 to 6 months','Final shape']],
-      rhinoplasty: [['1 to 2 weeks','Soft food'],['7 to 14 days','Rest at home'],['1 to 3 months','Shape settles'],['3 to 6 months','Final result']],
-      eyelid: [['7 to 14 days','Swelling eases'],['1 month','No alcohol'],['3 to 6 months','Final shape']],
-      breast: [['3 to 7 days','Soreness'],['5 to 7 days','Off work'],['1 to 2 months','Back to exercise']],
-      lipo: [['3 to 7 days','Driving again'],['1 month','Compression garment 24 hours a day'],['3 to 6 months','Results settle']]
+      rhinoplasty: [['1 to 2 weeks','Soft food'],['7 to 14 days','Rest at home'],['2 to 3 weeks','No glasses or heavy exercise'],['3 to 6 months','Result clearly visible'],['6 to 12 months','Fully settled']],
+      eyelid: [['7 to 14 days','Swelling eases'],['At least 2 weeks','No alcohol or smoking'],['3 to 6 months','Final shape']],
+      breast: [['3 to 7 days','Soreness'],['Weeks 2 to 4','Back to light work'],['1 to 2 months','Back to exercise']],
+      bone: [['1 to 2 weeks','Swelling and bruising ease'],['Weeks 2 to 4','Back to work'],['1 to 3 months','Outline shows clearly'],['3 to 6 months','Face settles']],
+      lipo: [['3 to 7 days','Driving again'],['Week 1','Garment 22 to 24 hours a day'],['Weeks 2 to 4','Garment 12 to 18 hours a day'],['3 to 6 months','Results settle']]
     },
     th: {
-      facelift: [['2 ถึง 3 สัปดาห์','กลับมาทำกิจกรรมเบา ๆ'],['4 ถึง 6 สัปดาห์','งดออกกำลังกายหนัก'],['7 ถึง 10 ปี','ผลลัพธ์อยู่ได้นาน']],
+      facelift: [['4 ถึง 7 วัน','กลับไปทำงานออฟฟิศเบา ๆ'],['3 ถึง 4 สัปดาห์','งดออกกำลังกายหนัก'],['7 ถึง 12 ปี','ผลลัพธ์ Deep Plane อยู่ได้นาน']],
       browlift: [['7 ถึง 14 วัน','พักฟื้นช่วงแรก'],['4 ถึง 6 สัปดาห์','งดออกกำลังกายหนัก'],['3 ถึง 6 เดือน','รูปทรงเข้าที่']],
-      rhinoplasty: [['1 ถึง 2 สัปดาห์','ทานอาหารอ่อน'],['7 ถึง 14 วัน','พักฟื้นที่บ้าน'],['1 ถึง 3 เดือน','จมูกเริ่มรัดแกน'],['3 ถึง 6 เดือน','ผลลัพธ์ดีที่สุด']],
-      eyelid: [['7 ถึง 14 วัน','อาการบวมลดลง'],['1 เดือน','งดแอลกอฮอล์'],['3 ถึง 6 เดือน','รูปทรงเข้าที่']],
-      breast: [['3 ถึง 7 วัน','อาการระบม'],['5 ถึง 7 วัน','หยุดงาน'],['1 ถึง 2 เดือน','กลับมาออกกำลังกาย']],
-      lipo: [['3 ถึง 7 วัน','ขับรถได้'],['1 เดือน','ใส่ชุดกระชับตลอด 24 ชั่วโมง'],['3 ถึง 6 เดือน','ผลลัพธ์เข้าที่']]
+      rhinoplasty: [['1 ถึง 2 สัปดาห์','ทานอาหารอ่อน'],['7 ถึง 14 วัน','พักฟื้นที่บ้าน'],['2 ถึง 3 สัปดาห์','งดสวมแว่นและออกกำลังกายหนัก'],['3 ถึง 6 เดือน','เห็นผลลัพธ์ชัด'],['6 ถึง 12 เดือน','เข้าที่สมบูรณ์']],
+      eyelid: [['7 ถึง 14 วัน','อาการบวมลดลง'],['อย่างน้อย 2 สัปดาห์','งดแอลกอฮอล์และบุหรี่'],['3 ถึง 6 เดือน','รูปทรงเข้าที่']],
+      breast: [['3 ถึง 7 วัน','อาการระบม'],['สัปดาห์ที่ 2 ถึง 4','กลับไปทำงานเบา ๆ'],['1 ถึง 2 เดือน','กลับมาออกกำลังกาย']],
+      bone: [['1 ถึง 2 สัปดาห์','อาการบวมช้ำลดลง'],['สัปดาห์ที่ 2 ถึง 4','กลับไปทำงาน'],['1 ถึง 3 เดือน','กรอบหน้าเห็นชัดขึ้น'],['3 ถึง 6 เดือน','โครงหน้าเข้าที่']],
+      lipo: [['3 ถึง 7 วัน','ขับรถได้'],['สัปดาห์แรก','ชุดกระชับวันละ 22 ถึง 24 ชั่วโมง'],['สัปดาห์ที่ 2 ถึง 4','ชุดกระชับวันละ 12 ถึง 18 ชั่วโมง'],['3 ถึง 6 เดือน','ผลลัพธ์เข้าที่']]
     }
   };
   A.RECOVERY = RECOVERY;
-  const SVC_CATS = ['facelift','browlift','rhinoplasty','eyelid','breast','lipo'];
+  const SVC_CATS = ['facelift','browlift','rhinoplasty','eyelid','bone','breast','lipo'];
   const svcName = (S, k) => { const s = (S.services || []).find(x => x.key === k); return s ? (s.short || s.name) : k; };
 
   /* ---------- photos for pages and articles that have none of their own (Unsplash, each one checked by search) ---------- */
@@ -49,7 +51,7 @@
     dress2: ['1621390842036-f01b53d9cbfd', 'A woman in a brown shirt', 'ผู้หญิงในเสื้อสีน้ำตาล']
   };
   const ph = (k, w=1400) => { const p = PH[k]; return p ? {src:`https://images.unsplash.com/photo-${p[0]}?auto=format&fit=crop&w=${w}&q=80`, alt:A.lang === 'th' ? p[2] : p[1], un:true} : null; };
-  const SVC_PHOTOS = {facelift:['mature', 'or2'], browlift:['face4', 'consult3'], rhinoplasty:['profile', 'or1'], eyelid:['eye', 'consult2'], breast:['dress', 'or2'], lipo:['tape', 'consult3']};
+  const SVC_PHOTOS = {facelift:['mature', 'or2'], browlift:['face4', 'consult3'], rhinoplasty:['profile', 'or1'], eyelid:['eye', 'consult2'], bone:['face1', 'consult1'], breast:['dress', 'or2'], lipo:['tape', 'consult3']};
   const POST_PHOTOS = {
     smas:['mature', 'or1', 'face1'], 'deep-plane-face-lift':['mature', 'or2'], 'rhinoplasty-faq-questions':['profile', 'consult1'],
     'double-eyelid-surgery-facts':['eye', 'face3'], 'facelift-faq':['mature', 'consult2', 'face2'], 'endotine-browlift-fact':['face4', 'consult3'],
@@ -62,7 +64,8 @@
     if (/breast|หน้าอก|motiva|mentor/i.test(s)) return 'breast';
     if (/brow|forehead|endotine|คิ้ว|หน้าผาก/i.test(s)) return 'browlift';
     if (/rhino|nose|จมูก/i.test(s)) return 'rhinoplasty';
-    if (/eyelid|double eye|ตาสองชั้น|ทำตา/i.test(s)) return 'eyelid';
+    if (/eyelid|double eye|eye bag|ptosis|ตาสองชั้น|ทำตา|ถุงใต้ตา/i.test(s)) return 'eyelid';
+    if (/facial bone|genioplasty|jaw (reduction|surgery)|v-line|โครงหน้า|กระดูกคาง|ตัดกราม|ขากรรไกร/i.test(s)) return 'bone';
     if (/face ?lift|smas|deep plane|ดึงหน้า|ยกกระชับ/i.test(s)) return 'facelift';
     return null;
   };
@@ -164,7 +167,7 @@
     } catch (e) { /* keep the plain rail */ }
   };
   // How each procedure's before/after composites are split: lr = before left, after right; tb = before on top; single = a collage shown whole
-  const BA_LAYOUT = {facelift:'lr', rhinoplasty:'lr', lipo:'lr', eyelid:'tb', breast:'tb', browlift:'single'};
+  const BA_LAYOUT = {facelift:'lr', rhinoplasty:'lr', lipo:'lr', bone:'lr', eyelid:'tb', breast:'tb', browlift:'single'};
   const mountCompare = async (el, pairs, key) => {
     if (!el) return;
     try {
@@ -459,6 +462,7 @@
           <a class="mini-tool rv" href="nose.html">${I('scan-face')}<b>${E(T('nose'))}</b><span>${E(T('nosePageP'))}</span></a>
           <a class="mini-tool rv" data-d="20" href="analysis.html">${I('scan-line')}<b>${E(T('ana'))}</b><span>${E(T('anaPageP'))}</span></a>
           <a class="mini-tool rv" data-d="35" href="proportions.html">${I('gem')}<b>${E(T('prop'))}</b><span>${E(T('propPageP'))}</span></a>
+          <a class="mini-tool rv" data-d="45" href="filler.html">${I('syringe')}<b>${E(T('fill'))}</b><span>${E(T('fillPageP'))}</span></a>
           <a class="mini-tool rv" data-d="50" href="breast-implants.html">${I('ruler')}<b>${E(T('impl'))}</b><span>${E(T('implP'))}</span></a>
           <a class="mini-tool rv" data-d="70" href="trip.html">${I('calendar')}<b>${E(T('trip'))}</b><span>${E(T('tripP'))}</span></a>
           <a class="mini-tool rv" data-d="140" href="play.html">${I('sparkles')}<b>${E(T('games'))}</b><span>${E(T('gamesP'))}</span></a>
@@ -599,14 +603,42 @@
   }
 
   /* =================== DOCTOR =================== */
+  /* the surgical team (data "team"): a card per doctor, the full profile opens in a side panel */
+  const TM_SECS = [['edu', 'eduH'], ['train', 'trainH'], ['skills', 'skillsH'], ['work', 'workH'], ['member', 'memberH'], ['talks', 'talksH']];
+  const tmCard = (d, i) => `<li class="rv" data-d="${(i % 3) * 70}"><button type="button" class="tm-card" data-doc="${E(d.key)}" aria-haspopup="dialog">
+      <span class="tm-ph ph-img"><img src="${IMG(d.photo)}" alt="${E(d.name)}" loading="lazy" decoding="async" width="731" height="1024"></span>
+      <span class="tm-body"><span class="tm-nick">${E(d.nick || '')}</span><b class="tm-name">${E(d.name)}</b><span class="tm-role">${E(d.role || '')}</span>
+        <span class="tm-focus">${(d.focus || []).map(f => `<span>${E(f)}</span>`).join('')}</span>
+        <span class="tm-more">${E(T('viewProfile'))} ${I('arrow-right')}</span></span></button></li>`;
+  const tmProfile = d => `<button type="button" class="tm-x" aria-label="${E(T('close'))}">${I('x')}</button>
+      <div class="tm-dh"><span class="tm-dph ph-img"><img src="${IMG(d.photo)}" alt="" width="731" height="1024"></span>
+        <div><p class="eyebrow">${E(d.nick || '')}</p><h2 class="h-l" id="tm-dlg-h">${E(d.name)}</h2>${d.nameAlt ? `<p class="tm-alt">${E(d.nameAlt)}</p>` : ''}
+        <p class="doc-meta"><span>${E(d.license || '')}</span></p>${d.role ? `<p class="tm-role2">${E(d.role)}</p>` : ''}</div></div>
+      ${TM_SECS.filter(([k]) => (d[k] || []).length).map(([k, h]) => `<section class="tm-sec"><h3 class="h-s">${E(T(h))}</h3><ul class="ticks">${d[k].map(x => `<li>${A.fmtLi(x)}</li>`).join('')}</ul></section>`).join('')}`;
+  const bindTeam = (root, docs) => {
+    const dlg = A.qs('#tm-dlg', root); if (!dlg) return;
+    const inner = dlg.firstElementChild;
+    const open = key => { const d = docs.find(x => x.key === key); if (!d) return; inner.innerHTML = tmProfile(d); inner.scrollTop = 0; if (!dlg.open) dlg.showModal(); history.replaceState(null, '', '#dr-' + key); };
+    const shut = () => { dlg.close(); };
+    dlg.addEventListener('close', () => { if (/^#dr-/.test(location.hash)) history.replaceState(null, '', location.pathname + location.search); });
+    root.addEventListener('click', e => { const b = e.target.closest('.tm-card'); if (b) open(b.dataset.doc); });
+    dlg.addEventListener('click', e => { if (e.target === dlg || e.target.closest('.tm-x')) shut(); });
+    const m = location.hash.match(/^#dr-([\w-]+)$/); if (m) open(m[1]);
+  };
   async function doctor(){
-    const S = A.d('shared') || {}, Dr = S.doctor || {}, F = A.d('founder');
-    A.setMeta(`${T('doctorsH')}: ${Dr.name}${F ? ', ' + F.name : ''} | Apex Surgery Hospital`, Dr.specialty);
-    main().innerHTML = phead(T('doctorsH'), `${Dr.name} · ${Dr.title || ''}${F ? ` · ${F.name}` : ''}`, [homeCrumb(), [T('doctorsH')]]) + `
-      <section class="section"><div class="wrap">${A.doctorCard(S, true)}</div></section>
+    const S = A.d('shared') || {}, Dr = S.doctor || {}, F = A.d('founder'), TM = A.d('team');
+    const docs = (TM && TM.docs) || [];
+    A.setMeta(`${T('doctorsH')}: ${(docs.length ? docs.map(d => d.name).slice(0, 3) : [Dr.name]).join(', ')}${F ? ', ' + F.name : ''} | Apex Surgery Hospital`, docs.length ? docs.map(d => `${d.name} (${d.role})`).join('; ') : Dr.specialty);
+    main().innerHTML = phead(T('doctorsH'), docs.length ? TM.p : `${Dr.name} · ${Dr.title || ''}${F ? ` · ${F.name}` : ''}`, [homeCrumb(), [T('doctorsH')]]) + `
+      ${docs.length ? `<section class="section team-s"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(TM.h)}</h2></div>
+        <ul class="team-grid">${docs.map(tmCard).join('')}</ul></div>
+        <dialog class="tm-dlg" id="tm-dlg" aria-labelledby="tm-dlg-h"><div class="tm-dlg-in"></div></dialog></section>`
+        : `<section class="section"><div class="wrap">${A.doctorCard(S, true)}</div></section>`}
       ${F ? `<section class="section washed founder-s"><div class="wrap">${founderBlock(F, true)}</div></section>` : ''}
       <section class="section"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(T('servicesH'))}</h2></div>${A.svcCards(S)}</div></section>
       <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
+    bindTeam(main(), docs);
+    docs.forEach(d => A.jsonld({'@context':'https://schema.org','@type':'Physician', name:d.name, alternateName:d.nameAlt, image:d.photo, identifier:d.license, description:d.role, medicalSpecialty:'PlasticSurgery', worksFor:{'@type':'Hospital', name:'Apex Surgery Hospital'}}));
     if (F) A.jsonld({'@context':'https://schema.org','@type':'Physician', name:F.name, image:F.portrait, identifier:F.license, description:F.specialty, worksFor:{'@type':'Organization', name:'Apex Medical Center'}});
     if (location.hash === '#founder') setTimeout(() => { const f = A.qs('#founder'); f && f.scrollIntoView(); }, 60);
   }
@@ -811,7 +843,7 @@
       <span class="wc-ph ph-img"><img src="${IMG(warSrc(e.cover))}" alt="" loading="lazy" decoding="async" width="640" height="336"><span class="wc-ep">EP.${e.n}</span><span class="wc-pl" aria-hidden="true">${I('play')}</span></span>
       <span class="wc-t">${nb(e.title)}</span></a>`;
   const WAR_PROC = [['facelift', /ดึงหน้า|ดึงคอ|face ?lift|neck lift/i], ['browlift', /ยกคิ้ว|ยกหน้าผาก|brow lift|forehead lift/i], ['rhinoplasty', /เสริมจมูก|แก้จมูก|rhinoplasty/i],
-    ['eyelid', /ตาสองชั้น|ทำตา|ตาบน|หนังตา|eyelid/i], ['breast', /เสริมหน้าอก|ยกกระชับหน้าอก|breast (augmentation|lift)/i], ['lipo', /ดูดไขมัน|liposuction/i]];
+    ['eyelid', /ตาสองชั้น|ทำตา|ตาบน|หนังตา|eyelid/i], ['bone', /กระดูกคาง|ผ่าตัดขากรรไกร|genioplasty|jaw surgery/i], ['breast', /เสริมหน้าอก|ยกกระชับหน้าอก|breast (augmentation|lift)/i], ['lipo', /ดูดไขมัน|liposuction/i]];
   const warStage = (e, D) => `<div class="war-stage rv-clip"><button type="button" class="ws-poster" data-ytw="${E(D.yt || e.yt)}" aria-label="${E(T('warWatch').replace('{n}', e.n))}">
       <img src="${IMG(warSrc(e.img))}" alt="${E(D.title)}" width="1200" height="630" fetchpriority="high"><span class="ws-play">${I('play')}<span>${E(T('warWatch').replace('{n}', e.n))}</span></span></button></div>`;
   async function war(){
@@ -909,6 +941,7 @@
   };
   const nose = featurePage('nose', 'nosePageH', 'nosePageP', 'nose', () => A.mpBase ? {mpBase:A.mpBase} : {}, 'night-s');
   const proportions = featurePage('proportions', 'propPageH', 'propPageP', 'proportions', () => A.mpBase ? {mpBase:A.mpBase} : {}, 'prop-s');
+  const filler = featurePage('filler', 'fillPageH', 'fillPageP', 'filler', () => A.mpBase ? {mpBase:A.mpBase} : {}, 'prop-s');
   const analysis = featurePage('analysis', 'anaPageH', 'anaPageP', 'analysis', () => Object.assign(A.mpBase ? {mpBase:A.mpBase} : {}, {links:{consult:'consult.html', proportions:'proportions.html'}}), 'prop-s');
   const play = featurePage('games', 'playPageH', 'playPageP', 'games', {}, 'play-s');
   const IMPL_LINKS = {breast:'breast-implants.html', chin:'chin-implants.html', forehead:'forehead-implants.html', nose:'nose-implants.html', consult:'consult.html'};
@@ -944,6 +977,6 @@
   }
 
   const page = async () => {};   // any other WordPress page: the server's text as it is
-  const PAGES = {home, services, service, about, doctor, promotions, reviews, blog, article, war, contact, nose, analysis, proportions, implBreast, implChin, implForehead, implNose, play, plan, trip, consult, privacy, notfound, page};
+  const PAGES = {home, services, service, about, doctor, promotions, reviews, blog, article, war, contact, nose, analysis, proportions, filler, implBreast, implChin, implForehead, implNose, play, plan, trip, consult, privacy, notfound, page};
   A.boot(() => (PAGES[document.body.dataset.page] || home)());
 })();

@@ -94,11 +94,12 @@ function apex_ic( string $n, string $cls = '' ): string {
 	static $I = null;
 	if ( $I === null ) $I = json_decode( (string) file_get_contents( APEX_DIR . '/data/icons.json' ), true ) ?: [];
 	if ( $n === 'close' ) $n = 'x';
-	if ( isset( $I[ 'b_' . $n ] ) ) return '<svg class="i br ' . $cls . '" viewBox="0 0 24 24" aria-hidden="true"><path d="' . $I[ 'b_' . $n ] . '"/></svg>';
+	$brand = str_starts_with( $n, 'brand:' ) ? ( ( $n = substr( $n, 6 ) ) !== '' ) : $n !== 'x';   // plain "x" is the close cross, "brand:x" the X logo
+	if ( $brand && isset( $I[ 'b_' . $n ] ) ) return '<svg class="i br ' . $cls . '" viewBox="0 0 24 24" aria-hidden="true"><path d="' . $I[ 'b_' . $n ] . '"/></svg>';
 	if ( isset( $I[ 'l_' . $n ] ) ) return '<svg class="i l ' . $cls . '" viewBox="0 0 24 24" aria-hidden="true">' . $I[ 'l_' . $n ] . '</svg>';
 	return '';
 }
-function apex_soc_icon( string $k ): string { return apex_ic( $k ) ?: apex_ic( 'globe' ); }
+function apex_soc_icon( string $k ): string { return apex_ic( 'brand:' . $k ) ?: apex_ic( 'globe' ); }
 
 /* ---------- images ---------- */
 /** Images saved as "~/wp-content/uploads/..." sit at the site root. A local copy can point them at the live

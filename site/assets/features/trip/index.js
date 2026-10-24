@@ -11,11 +11,11 @@ import { PROCS, PROC_KEYS, BRANCHES, BRANCH_KEYS, t, procName } from '../plan/pr
    light-activity milestone in features/plan/procedures.js and includes the follow-up check.
    ------------------------------------------------------------------------------------------ */
 export const STAY_DAYS = {
-  facelift: 14,     /* light activity after about 2 to 3 weeks */
+  facelift: 14,     /* light office work after 4 to 7 days, stitches out at about day 7 */
   browlift: 10,     /* initial recovery 7 to 14 days */
   rhinoplasty: 10,  /* rest at least 7 to 14 days */
   eyelid: 7,        /* swelling eases in 7 to 14 days */
-  breast: 10,       /* 5 to 7 days off work */
+  breast: 14,       /* back to light work in weeks 2 to 4 */
   lipo: 10          /* driving after 3 to 7 days */
 };
 /* Several procedures are assumed to be done together on one surgery day: longest stay plus this many days. */

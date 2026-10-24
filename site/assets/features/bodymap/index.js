@@ -31,23 +31,23 @@ const STR = {
 /* Recovery facts come from the client's own service pages (Q&A blocks). */
 const PROC = {
   facelift: { en: 'Facelift', th: 'ดึงหน้า', rec: {
-    en: [['Light activity', 'After about 2 to 3 weeks'], ['No strenuous exercise', 'For 4 to 6 weeks'], ['Results last', 'About 7 to 10 years']],
-    th: [['กิจกรรมที่ไม่ใช้แรงมาก', 'ประมาณ 2 ถึง 3 สัปดาห์'], ['งดออกกำลังกายหนัก', '4 ถึง 6 สัปดาห์'], ['ผลลัพธ์อยู่ได้', 'ประมาณ 7 ถึง 10 ปี']] } },
+    en: [['Light office work', 'After about 4 to 7 days'], ['No strenuous exercise', 'For 3 to 4 weeks'], ['Results last', 'About 7 to 12 years for a deep plane facelift']],
+    th: [['งานออฟฟิศเบา ๆ', 'ประมาณ 4 ถึง 7 วัน'], ['งดออกกำลังกายหนัก', '3 ถึง 4 สัปดาห์'], ['ผลลัพธ์อยู่ได้', 'ประมาณ 7 ถึง 12 ปี สำหรับ Deep Plane']] } },
   browlift: { en: 'Brow lift', th: 'ยกคิ้ว', rec: {
     en: [['Initial recovery', '7 to 14 days'], ['No strenuous exercise', 'For 4 to 6 weeks'], ['Final shape', '3 to 6 months'], ['Results last', 'About 5 to 10 years']],
     th: [['พักฟื้นเบื้องต้น', '7 ถึง 14 วัน'], ['งดออกกำลังกายหนัก', '4 ถึง 6 สัปดาห์'], ['คิ้วเข้าที่', '3 ถึง 6 เดือน'], ['ผลลัพธ์อยู่ได้', 'ประมาณ 5 ถึง 10 ปี']] } },
   rhinoplasty: { en: 'Rhinoplasty', th: 'เสริมจมูก', rec: {
-    en: [['Rest', 'At least 7 to 14 days'], ['Swelling eases', 'Around 2 weeks'], ['Shape settles', '1 to 3 months'], ['Full result', '3 to 6 months'], ['Soft food', '1 to 2 weeks']],
-    th: [['พักฟื้น', 'อย่างน้อย 7 ถึง 14 วัน'], ['อาการบวมเริ่มบรรเทา', 'ประมาณ 2 สัปดาห์'], ['ทรงจมูกรัดแกน', '1 ถึง 3 เดือน'], ['ผลลัพธ์ชัดเจนที่สุด', '3 ถึง 6 เดือน'], ['อาหารอ่อน', '1 ถึง 2 สัปดาห์แรก']] } },
+    en: [['Rest', 'At least 7 to 14 days'], ['Swelling eases', 'Around 2 weeks'], ['Shape settles', '1 to 3 months'], ['Clearly visible', '3 to 6 months'], ['Fully settled', '6 to 12 months'], ['Soft food', '1 to 2 weeks']],
+    th: [['พักฟื้น', 'อย่างน้อย 7 ถึง 14 วัน'], ['อาการบวมเริ่มบรรเทา', 'ประมาณ 2 สัปดาห์'], ['ทรงจมูกรัดแกน', '1 ถึง 3 เดือน'], ['ผลลัพธ์เห็นชัด', '3 ถึง 6 เดือน'], ['เข้าที่สมบูรณ์', '6 ถึง 12 เดือน'], ['อาหารอ่อน', '1 ถึง 2 สัปดาห์แรก']] } },
   eyelid: { en: 'Double eyelid surgery', th: 'ทำตาสองชั้น', rec: {
-    en: [['Swelling eases', '7 to 14 days'], ['Final shape', '3 to 6 months'], ['No alcohol', '1 month']],
-    th: [['อาการบวมช้ำลดลง', '7 ถึง 14 วัน'], ['ชั้นตาเข้าที่', '3 ถึง 6 เดือน'], ['งดแอลกอฮอล์', 'อย่างน้อย 1 เดือน']] } },
+    en: [['Swelling eases', '7 to 14 days'], ['Final shape', '3 to 6 months'], ['No alcohol or smoking', 'At least 2 weeks']],
+    th: [['อาการบวมช้ำลดลง', '7 ถึง 14 วัน'], ['ชั้นตาเข้าที่', '3 ถึง 6 เดือน'], ['งดแอลกอฮอล์และบุหรี่', 'อย่างน้อย 2 สัปดาห์']] } },
   breast: { en: 'Breast augmentation', th: 'เสริมหน้าอก', rec: {
-    en: [['Soreness', '3 to 7 days'], ['Time off work', '5 to 7 days'], ['Exercise', 'After about 1 to 2 months']],
-    th: [['อาการปวดตึง', '3 ถึง 7 วันแรก'], ['ลางานพักฟื้น', 'ประมาณ 5 ถึง 7 วัน'], ['ออกกำลังกาย', 'หลังประมาณ 1 ถึง 2 เดือน']] } },
+    en: [['Soreness', '3 to 7 days'], ['Back to light work', 'Weeks 2 to 4'], ['Exercise', 'After about 1 to 2 months']],
+    th: [['อาการปวดตึง', '3 ถึง 7 วันแรก'], ['กลับไปทำงานเบา ๆ', 'สัปดาห์ที่ 2 ถึง 4'], ['ออกกำลังกาย', 'หลังประมาณ 1 ถึง 2 เดือน']] } },
   lipo: { en: 'Liposuction', th: 'ดูดไขมัน', rec: {
-    en: [['Compression garment', '24 hours a day for the first month, then daytime for 1 to 2 more months'], ['Driving', 'After 3 to 7 days'], ['Results settle', '3 to 6 months']],
-    th: [['ชุดกระชับ', 'ใส่ตลอด 24 ชั่วโมงในเดือนแรก แล้วใส่ช่วงกลางวันต่ออีก 1 ถึง 2 เดือน'], ['ขับรถ', 'หลัง 3 ถึง 7 วัน'], ['ผลลัพธ์เข้าที่', '3 ถึง 6 เดือน']] } }
+    en: [['Compression garment', '22 to 24 hours a day in week 1, then 12 to 18 hours a day in weeks 2 to 4'], ['Driving', 'After 3 to 7 days'], ['Results settle', '3 to 6 months']],
+    th: [['ชุดกระชับ', 'วันละ 22 ถึง 24 ชั่วโมงในสัปดาห์แรก แล้ววันละ 12 ถึง 18 ชั่วโมงในสัปดาห์ที่ 2 ถึง 4'], ['ขับรถ', 'หลัง 3 ถึง 7 วัน'], ['ผลลัพธ์เข้าที่', '3 ถึง 6 เดือน']] } }
 };
 
 /* Body region ids written by the Python build (see SOURCE.md). */

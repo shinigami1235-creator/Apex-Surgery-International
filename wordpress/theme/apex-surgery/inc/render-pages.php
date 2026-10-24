@@ -128,20 +128,22 @@ function apex_branches( array $S, ?string $h = null, ?string $p = null ): string
 /* ---------- pages.js: shared tables ---------- */
 const APEX_RECOVERY = [
 	'en' => [
-		'facelift' => [ [ '2 to 3 weeks', 'Back to light activity' ], [ '4 to 6 weeks', 'No strenuous exercise' ], [ '7 to 10 years', 'How long results last' ] ],
+		'facelift' => [ [ '4 to 7 days', 'Back to light office work' ], [ '3 to 4 weeks', 'No strenuous exercise' ], [ '7 to 12 years', 'How long a deep plane facelift lasts' ] ],
 		'browlift' => [ [ '7 to 14 days', 'Initial recovery' ], [ '4 to 6 weeks', 'No strenuous exercise' ], [ '3 to 6 months', 'Final shape' ] ],
-		'rhinoplasty' => [ [ '1 to 2 weeks', 'Soft food' ], [ '7 to 14 days', 'Rest at home' ], [ '1 to 3 months', 'Shape settles' ], [ '3 to 6 months', 'Final result' ] ],
-		'eyelid' => [ [ '7 to 14 days', 'Swelling eases' ], [ '1 month', 'No alcohol' ], [ '3 to 6 months', 'Final shape' ] ],
-		'breast' => [ [ '3 to 7 days', 'Soreness' ], [ '5 to 7 days', 'Off work' ], [ '1 to 2 months', 'Back to exercise' ] ],
-		'lipo' => [ [ '3 to 7 days', 'Driving again' ], [ '1 month', 'Compression garment 24 hours a day' ], [ '3 to 6 months', 'Results settle' ] ],
+		'rhinoplasty' => [ [ '1 to 2 weeks', 'Soft food' ], [ '7 to 14 days', 'Rest at home' ], [ '2 to 3 weeks', 'No glasses or heavy exercise' ], [ '3 to 6 months', 'Result clearly visible' ], [ '6 to 12 months', 'Fully settled' ] ],
+		'eyelid' => [ [ '7 to 14 days', 'Swelling eases' ], [ 'At least 2 weeks', 'No alcohol or smoking' ], [ '3 to 6 months', 'Final shape' ] ],
+		'breast' => [ [ '3 to 7 days', 'Soreness' ], [ 'Weeks 2 to 4', 'Back to light work' ], [ '1 to 2 months', 'Back to exercise' ] ],
+		'bone' => [ [ '1 to 2 weeks', 'Swelling and bruising ease' ], [ 'Weeks 2 to 4', 'Back to work' ], [ '1 to 3 months', 'Outline shows clearly' ], [ '3 to 6 months', 'Face settles' ] ],
+		'lipo' => [ [ '3 to 7 days', 'Driving again' ], [ 'Week 1', 'Garment 22 to 24 hours a day' ], [ 'Weeks 2 to 4', 'Garment 12 to 18 hours a day' ], [ '3 to 6 months', 'Results settle' ] ],
 	],
 	'th' => [
-		'facelift' => [ [ '2 ถึง 3 สัปดาห์', 'กลับมาทำกิจกรรมเบา ๆ' ], [ '4 ถึง 6 สัปดาห์', 'งดออกกำลังกายหนัก' ], [ '7 ถึง 10 ปี', 'ผลลัพธ์อยู่ได้นาน' ] ],
+		'facelift' => [ [ '4 ถึง 7 วัน', 'กลับไปทำงานออฟฟิศเบา ๆ' ], [ '3 ถึง 4 สัปดาห์', 'งดออกกำลังกายหนัก' ], [ '7 ถึง 12 ปี', 'ผลลัพธ์ Deep Plane อยู่ได้นาน' ] ],
 		'browlift' => [ [ '7 ถึง 14 วัน', 'พักฟื้นช่วงแรก' ], [ '4 ถึง 6 สัปดาห์', 'งดออกกำลังกายหนัก' ], [ '3 ถึง 6 เดือน', 'รูปทรงเข้าที่' ] ],
-		'rhinoplasty' => [ [ '1 ถึง 2 สัปดาห์', 'ทานอาหารอ่อน' ], [ '7 ถึง 14 วัน', 'พักฟื้นที่บ้าน' ], [ '1 ถึง 3 เดือน', 'จมูกเริ่มรัดแกน' ], [ '3 ถึง 6 เดือน', 'ผลลัพธ์ดีที่สุด' ] ],
-		'eyelid' => [ [ '7 ถึง 14 วัน', 'อาการบวมลดลง' ], [ '1 เดือน', 'งดแอลกอฮอล์' ], [ '3 ถึง 6 เดือน', 'รูปทรงเข้าที่' ] ],
-		'breast' => [ [ '3 ถึง 7 วัน', 'อาการระบม' ], [ '5 ถึง 7 วัน', 'หยุดงาน' ], [ '1 ถึง 2 เดือน', 'กลับมาออกกำลังกาย' ] ],
-		'lipo' => [ [ '3 ถึง 7 วัน', 'ขับรถได้' ], [ '1 เดือน', 'ใส่ชุดกระชับตลอด 24 ชั่วโมง' ], [ '3 ถึง 6 เดือน', 'ผลลัพธ์เข้าที่' ] ],
+		'rhinoplasty' => [ [ '1 ถึง 2 สัปดาห์', 'ทานอาหารอ่อน' ], [ '7 ถึง 14 วัน', 'พักฟื้นที่บ้าน' ], [ '2 ถึง 3 สัปดาห์', 'งดสวมแว่นและออกกำลังกายหนัก' ], [ '3 ถึง 6 เดือน', 'เห็นผลลัพธ์ชัด' ], [ '6 ถึง 12 เดือน', 'เข้าที่สมบูรณ์' ] ],
+		'eyelid' => [ [ '7 ถึง 14 วัน', 'อาการบวมลดลง' ], [ 'อย่างน้อย 2 สัปดาห์', 'งดแอลกอฮอล์และบุหรี่' ], [ '3 ถึง 6 เดือน', 'รูปทรงเข้าที่' ] ],
+		'breast' => [ [ '3 ถึง 7 วัน', 'อาการระบม' ], [ 'สัปดาห์ที่ 2 ถึง 4', 'กลับไปทำงานเบา ๆ' ], [ '1 ถึง 2 เดือน', 'กลับมาออกกำลังกาย' ] ],
+		'bone' => [ [ '1 ถึง 2 สัปดาห์', 'อาการบวมช้ำลดลง' ], [ 'สัปดาห์ที่ 2 ถึง 4', 'กลับไปทำงาน' ], [ '1 ถึง 3 เดือน', 'กรอบหน้าเห็นชัดขึ้น' ], [ '3 ถึง 6 เดือน', 'โครงหน้าเข้าที่' ] ],
+		'lipo' => [ [ '3 ถึง 7 วัน', 'ขับรถได้' ], [ 'สัปดาห์แรก', 'ชุดกระชับวันละ 22 ถึง 24 ชั่วโมง' ], [ 'สัปดาห์ที่ 2 ถึง 4', 'ชุดกระชับวันละ 12 ถึง 18 ชั่วโมง' ], [ '3 ถึง 6 เดือน', 'ผลลัพธ์เข้าที่' ] ],
 	],
 ];
 const APEX_SVC_CATS = [ 'facelift', 'browlift', 'rhinoplasty', 'eyelid', 'breast', 'lipo' ];
