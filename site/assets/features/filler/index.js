@@ -318,7 +318,7 @@ const CSS = `
 
 .ff-view{min-height:0!important;aspect-ratio:5/6;max-height:78vh;width:100%;place-items:stretch}
 @media (min-width:960px){.ff-view{aspect-ratio:auto;height:min(76vh,700px)}}
-.ff-3d{position:absolute;inset:0;border-radius:20px;overflow:hidden;background:radial-gradient(70% 60% at 50% 40%,rgba(142,45,207,.22),transparent 70%)}
+.ff-3d{position:absolute;inset:0;border-radius:20px;overflow:hidden;background:radial-gradient(60% 55% at 50% 42%,rgba(142,45,207,.12),transparent 72%),#12051d}
 .ff-3d canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
 .ff-3d canvas:active{cursor:grabbing}
 .ff-hud{position:absolute;left:10px;right:10px;top:10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none}

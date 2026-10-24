@@ -280,7 +280,7 @@ const NET_PLACE = `
   vRim = pow(1. - clamp(f, 0., 1.), 3.) * step(0., f);
   float back = f < 0. ? .06 : 1.;
   /* nearer is brighter, as on the atlas */
-  float depth = 1. - smoothstep(0., 1., (-mv.z - uFocus) / uDepthR) * .55;
+  float depth = 1. - smoothstep(0., 1., (-mv.z - uFocus) / uDepthR) * .65;
   vA = k * keep * tone * back * depth;
 `;
 const PT_VS = NET_HEAD + `
@@ -774,8 +774,8 @@ export function mount(container, opts = {}){
     /* ---- detailed head (loaded on demand, same units as the body) ---- */
     let face = null, faceLoading = null;
     const fU = { uTime: U.uTime, uPix: U.uPix, uFace: { value: 0 }, uAct: { value: -1 }, uHov: { value: -1 }, uSize: { value: 2.8 }, uRef: { value: 5.6 },
-      uMorph: U.uMorph, uCut: U.uCut, uFocus: U.uFocus, uDepthR: { value: 1.4 }, uE1: { value: 0 }, uE2: { value: 0 }, uWob: { value: reduced ? 0 : .003 }, uPop: { value: .014 },
-      uLine: { value: .14 }, uHC: { value: new THREE.Vector3() } };
+      uMorph: U.uMorph, uCut: U.uCut, uFocus: U.uFocus, uDepthR: { value: 1.2 }, uE1: { value: 0 }, uE2: { value: 0 }, uWob: { value: reduced ? 0 : .003 }, uPop: { value: .014 },
+      uLine: { value: .19 }, uHC: { value: new THREE.Vector3() } };
     /* camera target, marker anchor and radius of each face area, per gender */
     function areaStats(P, Nn, area){
       const n = area.length;

@@ -115,6 +115,10 @@ Kinds: 0 skin, 1 lips, 2 eyeball, 3 ear, 4 scalp, 5 upper lid margin, 6 lower li
 
 Together the two files are 184,072 bytes. They replace `female.bin`, `male.bin` (128,052 bytes each) and the MediaPipe face mask `facemesh.js` (18,733 bytes), none of which are used any more.
 
+## Male crown
+
+`build/flatten_male_crown.py` runs once after both builds. Above a line 3 cm over the eyes it pulls the male head down by an amount that grows with height, so the top of the scalp comes down about 1 cm and the head reads rounder. The forehead and face stay where they are, the normals are corrected, and the female shapes are not touched. It edits `bodies.bin` and `heads.bin` in place, so rebuilding either file means running it again.
+
 ## three.js
 
 The module loads `three@0.160.0` from cdn.jsdelivr.net at runtime (MIT). `site/lab/vendor/three.module.js` is a local copy for offline testing only. The lab page maps to it when served from localhost, and it is not needed in production.

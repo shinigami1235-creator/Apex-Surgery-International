@@ -16,7 +16,7 @@ const RADIUS = .16;             // spread of one injection on the skin, decimetr
 const VS = `
 attribute vec3 aPosB; attribute vec3 aNrmA; attribute vec3 aNrmB; attribute float aRnd; attribute float aEdge;
 attribute float aKind; attribute float aAo; attribute float aDispA; attribute float aDispB; attribute vec3 aCol; attribute float aHeat;
-uniform float uMorph, uAfter, uPix, uSize, uCut, uTime, uLine, uIsLine;
+uniform float uMorph, uAfter, uPix, uSize, uCut, uTime, uLine, uIsLine, uFocus, uDepthR;
 varying float vA; varying vec3 vC; varying float vH;
 float is(float v, float t){ return 1. - step(.1, abs(v - t)); }
 void main(){
@@ -33,8 +33,10 @@ void main(){
   tone *= mix(.55, 1., smoothstep(.55, .95, aAo));
   float keep = smoothstep(uCut - .1, uCut + .14, p.y);
   float h = aHeat * min(a, 1.);
+  /* nearer is brighter, so the shape of the head reads in depth */
+  float depth = 1. - smoothstep(0., 1., (-mv.z - uFocus) / uDepthR) * .72;
   vH = h; vC = aCol;
-  vA = back * tone * keep * (uIsLine > .5 ? mix(uLine, .5, h) : 1.);
+  vA = back * tone * keep * depth * (uIsLine > .5 ? mix(uLine, .5, h) : 1.);
   float ew = aEdge < .5 ? 1. : (aEdge < 1.5 ? .75 : .55);
   vA *= uIsLine > .5 ? 1. : ew;
   gl_PointSize = clamp(uSize * (1. + h * .9) * (.75 + aRnd * .5) * 3.4 / -mv.z, 1., 8.) * uPix;
@@ -48,7 +50,7 @@ void main(){
   float a = uIsLine > .5 ? 1. : 1. - smoothstep(0., .5, d);
   vec3 base = uIsLine > .5 ? vec3(.55, .42, .72) : vec3(.70, .58, .86);
   vec3 col = mix(base, vC, min(1., vH * 1.4));
-  gl_FragColor = vec4(col, a * vA * (.72 + vH * .6));
+  gl_FragColor = vec4(col, a * vA * (.85 + vH * .6));
 }`;
 const DROP_VS = `varying vec3 vN; varying vec3 vV;
 void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`;
@@ -125,7 +127,7 @@ export async function createHead(host, opts = {}){
   host.prepend(renderer.domElement);
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(26, 1, .05, 100);
   const U = {uMorph:{value:opts.gender === 'male' ? 1 : 0}, uAfter:{value:1}, uPix:{value:pix}, uSize:{value:2.6}, uCut:{value:H.cutF},
-    uTime:{value:0}, uLine:{value:.13}, uIsLine:{value:0}};
+    uTime:{value:0}, uLine:{value:.2}, uIsLine:{value:0}, uFocus:{value:5}, uDepthR:{value:1.5}};
   const mat = (isLine) => new THREE.ShaderMaterial({uniforms:{...U, uIsLine:{value:isLine ? 1 : 0}}, vertexShader:VS, fragmentShader:FS, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending});
   const pmat = mat(false), lmat = mat(true);
   const points = new THREE.Points(pg, pmat), lines = new THREE.LineSegments(lg, lmat);
@@ -209,6 +211,7 @@ export async function createHead(host, opts = {}){
     const C = centre(state.g > .5 ? 1 : 0), d = C.h * 2.55 / Math.min(1, cam.aspect) ;
     cam.position.set(C.x + Math.sin(yaw) * d * Math.cos(state.pitch), C.y + Math.sin(state.pitch) * d, C.z + Math.cos(yaw) * d * Math.cos(state.pitch));
     cam.lookAt(C.x, C.y, C.z);
+    U.uFocus.value = d - 1.05;   // the front of the face
   }
   const setAmt = a => { U.uAfter.value = a; };
   let raf = 0, t0 = performance.now(), alive = true, drag = null;
