@@ -18,6 +18,7 @@ const STEP_C = {foundation:'#E3B85C', contour:'#C9B3DD', refine:'#F49AC1'};
 
 const STR = {
   en:{
+    fx:{"cheeks": "Lifts and supports the midface so the cheeks look fuller.", "temples": "Fills the hollow at the side of the forehead.", "chin": "Brings the chin forward and lengthens it a little.", "jowls": "Sharpens the jawline and the angle of the jaw.", "forehead": "Rounds out a flat forehead.", "brows": "Supports the brows so they sit a little higher.", "orbit": "Fills the hollow beside the outer eye.", "tear": "Softens the shadow under the eyes.", "folds": "Softens the lines from the nose to the mouth.", "lips": "Adds volume and shape to the lips.", "corners": "Lifts the corners of the mouth.", "marionette": "Softens the lines below the corners of the mouth.", "nose": "Raises the bridge and lifts the tip without surgery."},
     change:'New photo', photo:'Photo', take:'Take photo', choose:'Choose photo', sample:'Sample face', privacy:'No photo uploaded.',
     hint:'Face the camera straight on, with your hair off your face.', emptyH:'Take or choose a front photo.',
     busy:'Finding your face', credit:'Sample photo: Unsplash', points:'Points',
@@ -54,6 +55,7 @@ const STR = {
          model:'The face model could not be loaded.', save:'The image could not be saved.', sample:'The sample photo could not be loaded.'},
   },
   th:{
+    fx:{"cheeks": "ยกและพยุงช่วงกลางใบหน้า แก้มดูเต็มขึ้น", "temples": "เติมร่องขมับด้านข้างหน้าผาก", "chin": "คางยื่นขึ้นและยาวขึ้นเล็กน้อย", "jowls": "กรอบหน้าและมุมกรามชัดขึ้น", "forehead": "หน้าผากโค้งมนขึ้น", "brows": "พยุงคิ้วให้ยกขึ้นเล็กน้อย", "orbit": "เติมร่องลึกข้างหางตา", "tear": "ลดเงาใต้ตา", "folds": "ร่องจากข้างจมูกถึงมุมปากตื้นขึ้น", "lips": "ริมฝีปากอิ่มและได้รูปขึ้น", "corners": "ยกมุมปากขึ้น", "marionette": "ร่องใต้มุมปากตื้นขึ้น", "nose": "เสริมสันจมูกและยกปลายจมูกโดยไม่ผ่าตัด"},
     change:'เปลี่ยนรูป', photo:'รูปภาพ', take:'ถ่ายรูป', choose:'เลือกรูป', sample:'ใบหน้าตัวอย่าง', privacy:'ไม่มีการอัปโหลดรูปภาพ',
     hint:'หันหน้าตรงเข้าหากล้อง และเก็บผมไม่ให้ปิดใบหน้า', emptyH:'ถ่ายหรือเลือกรูปหน้าตรง',
     busy:'กำลังหาใบหน้า', credit:'ภาพตัวอย่าง: Unsplash', points:'จุดฉีด',
@@ -283,10 +285,9 @@ const CSS = `
 .ff-area-h b{flex:1;font-size:15.5px;line-height:1.3}
 .ff-area-h span{font-weight:700;color:var(--ff-plum);font-variant-numeric:tabular-nums;white-space:nowrap}
 .ff-dot{width:10px;height:10px;border-radius:50%;flex:none;box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(31,10,48,.18)}
-.ff-codes{list-style:none;margin:0;padding:0;display:grid;gap:4px}
-.ff-codes li{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:baseline;font-size:13.5px;color:var(--ff-ink-2)}
-.ff-codes code{font-family:inherit;font-size:12px;font-weight:700;color:var(--ff-plum);background:var(--ff-lilac-1);border-radius:6px;padding:1px 6px}
-.ff-codes i{font-style:normal;font-variant-numeric:tabular-nums;color:var(--ff-ink);white-space:nowrap}
+.ff-fx{margin:0;font-size:14px;line-height:1.45;color:var(--ff-ink-2)}
+.ff-tags{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:5px}
+.ff-tags li{font-size:12.5px;line-height:1.3;padding:4px 10px;border-radius:999px;background:var(--ff-lilac-1);color:var(--ff-plum-7)}
 .ff-none{margin:0;padding:18px;border-radius:18px;border:1px dashed var(--ff-lilac-3);color:var(--ff-ink-2);font-size:15px;text-align:center}
 .ff-ref{display:flex;gap:10px;align-items:flex-start;margin:0;font-size:13px;line-height:1.5;color:var(--ff-ink-3)}
 .ff-ref .ff-i{color:var(--ff-plum);margin-top:2px}
@@ -576,7 +577,8 @@ export function mount(container, opts = {}){
     R('areas').innerHTML = P.list.length ? `<ul class="ff-list">${CONCERNS.filter(c => P.byConcern[c.k]).map(c => {
       const b = P.byConcern[c.k];
       return `<li class="ff-area"><div class="ff-area-h"><span class="ff-dot" style="background:${STEP_C[c.step]}"></span><b>${esc(S.c[c.k])}</b><span>${n2(b.total)} ${esc(S.ml)}</span></div>
-        <ul class="ff-codes">${b.codes.map(x => `<li><code>${x.k}</code><span>${esc(S.a[x.k])}</span><i>${x.mid ? `${n2(x.vol)} ${esc(S.ml)} · ${esc(S.mid)}` : lang === 'th' ? `${esc(S.each)} ${n2(x.vol)} ${esc(S.ml)}` : `${n2(x.vol)} ${esc(S.ml)} ${esc(S.each)}`}</i></li>`).join('')}</ul></li>`;
+        <p class="ff-fx">${esc(S.fx[c.k])}</p>
+        <ul class="ff-tags">${b.codes.map(x => `<li>${esc(S.a[x.k])}</li>`).join('')}</ul></li>`;
     }).join('')}</ul>` : `<p class="ff-none">${esc(S.none)}</p>`;
   }
   function sync(){
@@ -698,7 +700,7 @@ export function mount(container, opts = {}){
       for (const r of rows) {
         g.font = `700 24px ${font}`; g.fillStyle = '#fff'; g.fillText(S.c[r.k], pad, y);
         g.font = `400 22px ${font}`; g.fillStyle = '#CDB9DD';
-        const txt = `${P.byConcern[r.k].codes.map(x => x.k).join(' + ')}   ${n2(P.byConcern[r.k].total)} ${S.ml}`;
+        const txt = `${n2(P.byConcern[r.k].total)} ${S.ml}`;
         g.fillText(txt, W - pad - g.measureText(txt).width, y);
         y += 44;
       }

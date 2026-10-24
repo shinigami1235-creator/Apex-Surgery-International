@@ -384,6 +384,10 @@
             <span class="tc-art cal2" aria-hidden="true"><svg viewBox="0 0 150 144"><rect class="cl-card" x="1" y="8" width="148" height="134" rx="14"/><path class="cl-top" d="M1 22a14 14 0 0 1 14-14h120a14 14 0 0 1 14 14v18H1z"/><rect class="cl-ring" x="36" y="2" width="7" height="15" rx="3.5"/><rect class="cl-ring" x="107" y="2" width="7" height="15" rx="3.5"/><path class="cl-plane" transform="translate(64 13) scale(.92)" d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/><path class="cl-wd" d="M18 50h6M36 50h6M54 50h6M72 50h6M90 50h6M108 50h6M126 50h6"/><rect class="cl-stay" x="30" y="75" width="108" height="16" rx="8"/><rect class="cl-stay" x="12" y="92" width="90" height="16" rx="8"/><circle class="cl-op" cx="75" cy="83" r="8.5"/><text class="cl-n" x="21" y="69.2">1</text><text class="cl-n" x="39" y="69.2">2</text><text class="cl-n" x="57" y="69.2">3</text><text class="cl-n" x="75" y="69.2">4</text><text class="cl-n" x="93" y="69.2">5</text><text class="cl-n" x="111" y="69.2">6</text><text class="cl-n" x="129" y="69.2">7</text><text class="cl-n" x="21" y="86.2">8</text><text class="cl-n on" x="39" y="86.2">9</text><text class="cl-n on" x="57" y="86.2">10</text><text class="cl-n on" x="75" y="86.2">11</text><text class="cl-n on" x="93" y="86.2">12</text><text class="cl-n on" x="111" y="86.2">13</text><text class="cl-n on" x="129" y="86.2">14</text><text class="cl-n on" x="21" y="103.2">15</text><text class="cl-n on" x="39" y="103.2">16</text><text class="cl-n on" x="57" y="103.2">17</text><text class="cl-n on" x="75" y="103.2">18</text><text class="cl-n on" x="93" y="103.2">19</text><text class="cl-n" x="111" y="103.2">20</text><text class="cl-n" x="129" y="103.2">21</text><text class="cl-n" x="21" y="120.2">22</text><text class="cl-n" x="39" y="120.2">23</text><text class="cl-n" x="57" y="120.2">24</text><text class="cl-n" x="75" y="120.2">25</text><text class="cl-n" x="93" y="120.2">26</text><text class="cl-n" x="111" y="120.2">27</text><text class="cl-n" x="129" y="120.2">28</text></svg></span>
             <span class="tc-body"><span class="eyebrow on-night">${E(T('trip'))}</span><b class="h-m">${E(T('tripH'))}</b><span class="tc-p">${E(T('tripP'))}</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">${E(T('tripCta'))} ${I('arrow-right')}</span></span></span></a>
+          <a class="tool-card tool-fill rv" data-d="200" href="filler.html">
+            <span class="tc-art fill st-art" aria-hidden="true"><img src="${A.assets}img/stencil-front.svg" alt="" loading="lazy" decoding="async"><svg viewBox="90 60 420 620"><circle class="tf-f" cx="175" cy="365" r="12" style="--d:0ms"/><circle class="tf-f" cx="425" cy="365" r="12" style="--d:90ms"/><circle class="tf-f" cx="205" cy="385" r="12" style="--d:180ms"/><circle class="tf-f" cx="395" cy="385" r="12" style="--d:270ms"/><circle class="tf-f" cx="235" cy="410" r="12" style="--d:360ms"/><circle class="tf-f" cx="365" cy="410" r="12" style="--d:450ms"/><circle class="tf-c" cx="160" cy="255" r="12" style="--d:0ms"/><circle class="tf-c" cx="440" cy="255" r="12" style="--d:90ms"/><circle class="tf-c" cx="185" cy="525" r="12" style="--d:180ms"/><circle class="tf-c" cx="415" cy="525" r="12" style="--d:270ms"/><circle class="tf-c" cx="300" cy="592" r="12" style="--d:360ms"/><circle class="tf-r" cx="250" cy="362" r="12" style="--d:0ms"/><circle class="tf-r" cx="350" cy="362" r="12" style="--d:90ms"/><circle class="tf-r" cx="256" cy="470" r="12" style="--d:180ms"/><circle class="tf-r" cx="344" cy="470" r="12" style="--d:270ms"/><circle class="tf-r" cx="300" cy="497" r="12" style="--d:360ms"/><circle class="tf-r" cx="256" cy="532" r="12" style="--d:450ms"/><circle class="tf-r" cx="344" cy="532" r="12" style="--d:540ms"/></svg></span>
+            <span class="tc-body"><span class="eyebrow on-night">${E(T('fill'))}<span class="tc-new">${E(T('newTag'))}</span></span><b class="h-l">${E(T('fillH'))}</b><span class="tc-p">${E(T('fillPageP'))}</span>
+            <span class="tc-foot"><span class="btn btn-light btn-sm">${E(T('fillCta'))} ${I('arrow-right')}</span><small>${I('shield-check')}${E(T('noseNote'))}</small></span></span></a>
           <a class="tool-card tool-gold rv" data-d="240" href="proportions.html">
             <span class="tc-art gold st-art" aria-hidden="true"><img src="${A.assets}img/stencil-front.svg" alt="" loading="lazy" decoding="async"><svg viewBox="90 60 420 620"><path class="tg-l" d="M108 168h384M108 305h384M108 455h384M108 610h384M124 168v442"/><path class="tg-g" d="M262 305v150M338 305v150M236 505h128"/><circle class="tg-d" cx="300" cy="168" r="8"/><circle class="tg-d" cx="300" cy="305" r="8"/><circle class="tg-d" cx="300" cy="455" r="8"/><circle class="tg-d" cx="300" cy="610" r="8"/></svg></span>
             <span class="tc-body"><span class="eyebrow on-night">${E(T('prop'))}</span><b class="h-m">${E(T('propH'))}</b><span class="tc-p">${E(T('propPageP'))}</span>
@@ -400,7 +404,7 @@
       </div>
     </section>
 
-    <section class="section"><div class="wrap">${A.doctorCard(S)}</div></section>
+    <section class="section"><div class="wrap">${A.teamStrip(S, A.d('team'))}</div></section>
 
     <section class="section washed reviews-s">
       <div class="wrap">
@@ -459,14 +463,13 @@
       <section class="section"><div class="wrap">${A.svcCards(S)}</div></section>
       <section class="section washed"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(T('tools'))}</h2></div>
         <div class="mini-tools">
+          <a class="mini-tool rv mt-new" href="filler.html">${I('syringe')}<b>${E(T('fill'))}<span class="tc-new">${E(T('newTag'))}</span></b><span>${E(T('fillPageP'))}</span></a>
           <a class="mini-tool rv" href="nose.html">${I('scan-face')}<b>${E(T('nose'))}</b><span>${E(T('nosePageP'))}</span></a>
           <a class="mini-tool rv" data-d="20" href="analysis.html">${I('scan-line')}<b>${E(T('ana'))}</b><span>${E(T('anaPageP'))}</span></a>
           <a class="mini-tool rv" data-d="35" href="proportions.html">${I('gem')}<b>${E(T('prop'))}</b><span>${E(T('propPageP'))}</span></a>
-          <a class="mini-tool rv" data-d="45" href="filler.html">${I('syringe')}<b>${E(T('fill'))}</b><span>${E(T('fillPageP'))}</span></a>
           <a class="mini-tool rv" data-d="50" href="breast-implants.html">${I('ruler')}<b>${E(T('impl'))}</b><span>${E(T('implP'))}</span></a>
           <a class="mini-tool rv" data-d="70" href="trip.html">${I('calendar')}<b>${E(T('trip'))}</b><span>${E(T('tripP'))}</span></a>
           <a class="mini-tool rv" data-d="140" href="play.html">${I('sparkles')}<b>${E(T('games'))}</b><span>${E(T('gamesP'))}</span></a>
-          <a class="mini-tool rv" data-d="210" href="doctor.html">${I('stethoscope')}<b>${E(T('doctor'))}</b><span>${E((S.doctor && S.doctor.name) || '')}</span></a>
         </div></div></section>
       <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
   }
@@ -544,7 +547,7 @@
           <a class="btn btn-plum" href="${(S.line && S.line.h) || '#'}" target="_blank" rel="noopener">${I('line')}${E((S.cta && S.cta.free) || T('consult'))}</a>
           <a class="link-arrow" href="consult.html?p=${E(key)}">${E(T('consultBtn'))} ${I('arrow-right')}</a></aside></div></div></section>` : ''}
 
-    <section class="section washed"><div class="wrap">${A.doctorCard(S)}</div></section>
+    <section class="section washed"><div class="wrap">${A.teamStrip(S, A.d('team'))}</div></section>
     <section class="section"><div class="wrap">${A.branches(S)}</div></section>
     <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
 
@@ -597,7 +600,7 @@
       <section class="section night vision-s"><div class="wrap"><p class="eyebrow on-night rv">${E(D.visionH || T('visionH'))}</p><p class="vision rv" data-field="about.vision">${E(D.vision || '')}</p>
         <ul class="pillars on-night">${(D.pillars || []).map((p, i) => `<li class="rv" data-d="${i*90}"><span class="pl-ic">${I(['stethoscope', 'cpu', 'shield-check'][i % 3])}</span><b>${E(p.h)}</b><span>${E(p.x)}</span></li>`).join('')}</ul></div></section>
       ${F ? `<section class="section founder-s"><div class="wrap">${founderBlock(F, false)}</div></section>` : ''}
-      <section class="section washed"><div class="wrap">${A.doctorCard(S)}</div></section>
+      <section class="section washed"><div class="wrap">${A.teamStrip(S, A.d('team'))}</div></section>
       <section class="section"><div class="wrap">${A.branches(S, D.branches && D.branches.h, D.branches && D.branches.p)}</div></section>
       <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
   }

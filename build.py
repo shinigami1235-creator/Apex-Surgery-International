@@ -26,10 +26,10 @@ def _asset_version():
 ASSET_V = _asset_version()  # added to asset URLs so browsers fetch new files after each change
 
 PAGES = [
-    ('index.html',      'home',       ['home', 'about', 'founder', 'war'],        '',               'home'),
-    ('about.html',      'about',      ['about', 'founder'],                'about-us/',      'about'),
+    ('index.html',      'home',       ['home', 'about', 'founder', 'war', 'team'],        '',               'home'),
+    ('about.html',      'about',      ['about', 'founder', 'team'],                'about-us/',      'about'),
     ('services.html',   'services',   ['services'],             'surgery/',       'services'),
-    ('service.html',    'service',    ['posts'],                       'surgery/',       None),
+    ('service.html',    'service',    ['posts', 'team'],                       'surgery/',       None),
     ('doctor.html',     'doctor',     ['founder', 'team'],                       'doctor/',        None),
     ('promotions.html', 'promotions', ['promotions'],           'promotions/',    'promotions'),
     ('reviews.html',    'reviews',    ['reviews', 'posts', 'home'], 'reviews/',   'reviews'),

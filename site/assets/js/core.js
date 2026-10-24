@@ -135,7 +135,7 @@
   };
 
   /* ---------- header ---------- */
-  const NAV = [['index.html','home'],['about.html','about'],['services.html','services'],['promotions.html','promotions'],['reviews.html','reviews'],['surgery-wars.html','war'],['blog.html','articles'],['contact.html','contact']];
+  const NAV = [['index.html','home'],['about.html','about'],['services.html','services'],['doctor.html','doctor'],['promotions.html','promotions'],['reviews.html','reviews'],['surgery-wars.html','war'],['blog.html','articles'],['contact.html','contact']];
   function header(){
     const S = A.d('shared') || {}, page = document.body.dataset.page || '';
     let el = A.qs('header.hdr'), sh = A.qs('.sheet');
@@ -149,14 +149,14 @@
         return `<div class="has-mega"><button type="button" aria-expanded="false"${cur}>${A.esc(A.t('services'))}${A.ic('chevron-down')}</button>
           <div class="mega surg" role="menu"><div class="mega-svcs">${items}</div>
           <div class="mega-tools"><h4>${A.esc(A.t('tools'))}</h4>
+            <a class="mt-new" href="filler.html">${A.ic('syringe')}${A.esc(A.t('fill'))}<span class="tc-new">${A.esc(A.t('newTag'))}</span></a>
             <a href="nose.html">${A.ic('scan-face')}${A.esc(A.t('nose'))}</a>
             <a href="analysis.html">${A.ic('scan-line')}${A.esc(A.t('ana'))}</a>
             <a href="proportions.html">${A.ic('gem')}${A.esc(A.t('prop'))}</a>
-            <a href="filler.html">${A.ic('syringe')}${A.esc(A.t('fill'))}</a>
             <a href="breast-implants.html">${A.ic('ruler')}${A.esc(A.t('impl'))}</a>
             <a href="play.html">${A.ic('sparkles')}${A.esc(A.t('games'))}</a>
             <a href="trip.html">${A.ic('calendar')}${A.esc(A.t('trip'))}</a>
-            <a href="doctor.html">${A.ic('stethoscope')}${A.esc(A.t('doctor'))}</a></div>
+</div>
           <div class="mega-foot"><a class="link-arrow" href="services.html">${A.esc(A.t('allServices'))} ${A.ic('arrow-right')}</a></div></div></div>`;
       }
       return `<a href="${h}"${cur}>${A.esc(A.t(k))}</a>`;
@@ -199,7 +199,7 @@
     const subs = svcs.map(s => `<a href="${A.svcUrl(s.key)}">${A.esc(s.short || s.name)}</a>`).join('');
     sh.innerHTML = `<div class="sheet-top"><span class="logo-txt light">APEX<small>Surgery Hospital</small></span><button class="close" aria-label="${A.esc(A.t('close'))}">${A.ic('close')}</button></div>
       <nav>${NAV.map(([h, k]) => k === 'services' ? `<details><summary>${A.esc(A.t('services'))}${A.ic('chevron-down')}</summary><div class="sub"><a href="services.html">${A.esc(A.t('allServices'))}</a>${subs}</div></details>` : `<a href="${h}">${A.esc(A.t(k))}${A.ic('arrow-up-right')}</a>`).join('')}
-      <details><summary>${A.esc(A.t('tools'))}${A.ic('chevron-down')}</summary><div class="sub"><a href="nose.html">${A.esc(A.t('nose'))}</a><a href="analysis.html">${A.esc(A.t('ana'))}</a><a href="proportions.html">${A.esc(A.t('prop'))}</a><a href="filler.html">${A.esc(A.t('fill'))}</a><a href="breast-implants.html">${A.esc(A.t('impl'))}</a><a href="play.html">${A.esc(A.t('games'))}</a><a href="trip.html">${A.esc(A.t('trip'))}</a><a href="plan.html">${A.esc(A.t('plan'))}</a><a href="doctor.html">${A.esc(A.t('doctor'))}</a></div></details></nav>
+      <details><summary>${A.esc(A.t('tools'))}${A.ic('chevron-down')}</summary><div class="sub"><a href="filler.html">${A.esc(A.t('fill'))}</a><a href="nose.html">${A.esc(A.t('nose'))}</a><a href="analysis.html">${A.esc(A.t('ana'))}</a><a href="proportions.html">${A.esc(A.t('prop'))}</a><a href="breast-implants.html">${A.esc(A.t('impl'))}</a><a href="play.html">${A.esc(A.t('games'))}</a><a href="trip.html">${A.esc(A.t('trip'))}</a><a href="plan.html">${A.esc(A.t('plan'))}</a></div></details></nav>
       <div class="sheet-cta"><a class="btn btn-light" href="consult.html">${A.ic('message-circle')}${A.esc(A.t('consult'))}</a>
       <div class="lang" style="display:flex;justify-content:center;border-color:rgba(201,179,221,.3)">${langs}</div></div>`;
     document.body.append(sh);
@@ -397,6 +397,13 @@
         <div class="doc-cols"><div><h4>${A.esc(D.eduH || A.t('eduH'))}</h4><ul class="ticks">${(D.edu || []).map(x => `<li>${A.esc(x)}</li>`).join('')}</ul></div>
         <div><h4>${A.esc(D.moreH || A.t('moreH'))}</h4><ul class="ticks">${(D.more || []).map(x => `<li>${A.esc(x)}</li>`).join('')}</ul></div></div>
         <div class="doc-acts">${full ? '' : `<a class="btn btn-plum btn-sm" href="doctor.html">${A.esc(A.t('doctorCta'))} ${A.ic('arrow-right')}</a>`}<a class="btn btn-ghost on-light btn-sm" href="${(S.line && S.line.h) || '#'}" target="_blank" rel="noopener">${A.ic('line')}${A.esc(A.t('book'))}</a></div></div></div>`;
+  };
+  A.teamStrip = (S, TM) => {
+    const docs = (TM && TM.docs) || [];
+    if (!docs.length) return A.doctorCard(S);
+    return `<div class="team-strip"><div class="shead"><div><p class="eyebrow rv">${A.esc(A.t('doctorsH'))}</p><h2 class="h-xl rv">${A.esc(TM.h)}</h2></div><a class="link-arrow rv" href="doctor.html">${A.esc(A.t('teamAll'))} ${A.ic('arrow-right')}</a></div>
+      <ul class="ts-list">${docs.map((d, i) => `<li class="rv" data-d="${(i % 6) * 50}"><a class="ts-doc" href="doctor.html#dr-${A.esc(d.key)}"><span class="ts-ph ph-img"><img src="${A.img(d.photo)}" alt="${A.esc(d.name)}" loading="lazy" decoding="async" width="731" height="1024"></span>
+        <span class="ts-nick">${A.esc(d.nick || '')}</span><b>${A.esc(d.name)}</b><span class="ts-role">${A.esc(d.role || '')}</span></a></li>`).join('')}</ul></div>`;
   };
   A.branchesHtml = (S, h, p) => A.branches(S, h, p);
   A.consultBand = (S) => `<div class="consult-band rv">
