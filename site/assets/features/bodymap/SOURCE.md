@@ -119,6 +119,10 @@ Together the two files are 184,072 bytes. They replace `female.bin`, `male.bin` 
 
 `build/flatten_male_crown.py` runs once after both builds. Above a line 3 cm over the eyes it pulls the male head down by an amount that grows with height, so the top of the scalp comes down about 1 cm and the head reads rounder. The forehead and face stay where they are, the normals are corrected, and the female shapes are not touched. It edits `bodies.bin` and `heads.bin` in place, so rebuilding either file means running it again.
 
+## Male face depth
+
+`build/recede_male_face.py` runs once after the crown script. The male face sat too far in front of the ears, so everything in front of the ear plane is pulled back by an amount that grows with the distance from the ear: the sides of the head do not move, and the eyes come back about 2.3 cm and the nose and chin about 2.7 cm. It fades out over 5 cm below the chin, so the neck and body do not move. The normals and the male eye and face-front values in the `bodies.bin` header are corrected, and the female shapes are not touched. Rebuilding either file means running both scripts again, in order.
+
 ## three.js
 
 The module loads `three@0.160.0` from cdn.jsdelivr.net at runtime (MIT). `site/lab/vendor/three.module.js` is a local copy for offline testing only. The lab page maps to it when served from localhost, and it is not needed in production.
