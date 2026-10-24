@@ -355,7 +355,7 @@
           <a class="link-arrow rv" href="about.html">${E(T('aboutMore'))} ${I('arrow-right')}</a></div>
         <div class="intro-side">
           ${Fd ? `<a class="intro-fd rv-clip" href="about.html#founder">
-            <span class="ifd-ph"><img src="${IMG(Fd.portrait || Fd.photo)}" alt="${E(Fd.name)}" loading="lazy" decoding="async" data-par="14"></span>
+            <span class="ifd-ph"><img src="${IMG(Fd.wide || Fd.portrait || Fd.photo)}" alt="${E(Fd.name)}" loading="lazy" decoding="async" data-par="14"${Fd.wide ? ' style="object-position:38% 22%"' : ''}></span>
             ${Fd.aaci ? `<span class="ifd-badge"><img src="${IMG(Fd.aaci.src)}" alt="${E(Fd.aaci.alt || 'AACI')}" loading="lazy" decoding="async" decoding="async"></span>` : ''}
             <span class="ifd-cap"><small>${E(T('foundedBy'))}</small><b>${E(Fd.name)}</b><span>${E(Fd.specialty || Fd.role)}</span></span>
           </a>` : ''}
@@ -687,7 +687,7 @@
       <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
     bindTeam(main(), docs);
     docs.forEach(d => A.jsonld({'@context':'https://schema.org','@type':'Physician', name:d.name, alternateName:d.nameAlt, image:d.photo, identifier:d.license, description:d.role, medicalSpecialty:'PlasticSurgery', worksFor:{'@type':'Hospital', name:'Apex Surgery Hospital'}}));
-    if (F) A.jsonld({'@context':'https://schema.org','@type':'Physician', name:F.name, image:F.portrait, identifier:F.license, description:F.specialty, worksFor:{'@type':'Organization', name:'Apex Medical Center'}});
+    if (F) A.jsonld({'@context':'https://schema.org','@type':'Physician', name:F.name, image:new URL(IMG(F.portrait || F.photo), location.href).href, identifier:F.license, description:F.specialty, worksFor:{'@type':'Organization', name:'Apex Medical Center'}});
     if (location.hash === '#founder') setTimeout(() => { const f = A.qs('#founder'); f && f.scrollIntoView(); }, 60);
   }
 
