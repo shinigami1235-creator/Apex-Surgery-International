@@ -28,5 +28,14 @@ for (const pg of ['en/', 'en/about.html', 'en/service.html?p=facelift']) {
   const want = B + pg.slice(3);
   if (p.url() !== want) fails.push(`${pg} forwarded to ${p.url()} want ${want}`);
 }
+// The header links never run under the language switch: at desktop widths they fit, or the menu button replaces them
+for (const w of [1381, 1440, 1600, 1920]) {
+  await p.setViewportSize({width:w, height:900});
+  for (const pre of ['', 'th/']) {
+    await p.goto(B + pre + 'doctor.html'); await p.waitForSelector('.hdr-nav'); await p.waitForTimeout(300);
+    const o = await p.evaluate(() => { const n = document.querySelector('.hdr-nav'), h = document.querySelector('.hdr'); return {over: n.scrollWidth - n.clientWidth, tight: h.classList.contains('nav-tight'), shown: getComputedStyle(n).display !== 'none'}; });
+    if (o.shown && o.over > 1) fails.push(`${pre}doctor.html at ${w}px: header links overflow by ${o.over}px`);
+  }
+}
 await b.close();
 console.log(fails.length ? 'FAILED\n' + [...new Set(fails)].join('\n') : 'all passed');

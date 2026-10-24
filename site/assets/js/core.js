@@ -172,6 +172,14 @@
         <button class="burger" type="button" aria-label="${A.esc(A.t('menu'))}">${A.ic('menu')}</button></div></div>`;
     document.body.prepend(el);
     }
+    // The links never run into the language switch: when they don't fit, the menu button stands in for them.
+    const navEl = A.qs('.hdr-nav', el);
+    if (navEl) {
+      const fit = () => { el.classList.remove('nav-tight'); if (navEl.offsetWidth && navEl.scrollWidth > navEl.clientWidth + 1) el.classList.add('nav-tight'); };
+      let ft; addEventListener('resize', () => { cancelAnimationFrame(ft); ft = requestAnimationFrame(fit); });
+      fit();
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+    }
     const logo = A.qs('.hdr-logo img', el);
     logo.addEventListener('error', () => el.classList.add('no-logo'));
     if (!S.logo) el.classList.add('no-logo');
