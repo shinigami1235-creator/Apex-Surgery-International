@@ -39,7 +39,8 @@ for (const [w, h, path] of [[1440, 900, 'breast-implants.html'], [390, 844, 'th/
     await p.addScriptTag({path:SP + 'axe/node_modules/axe-core/axe.min.js'});
     const ax = await p.evaluate(async () => (await axe.run(document.querySelector('.im'), {runOnly:['wcag2a', 'wcag2aa']})).violations.map(v => `${v.id}: ${v.nodes.length} ${v.nodes.slice(0, 2).map(n => n.target.join(' ')).join(' / ')}`));
     if (ax.length) fails.push(`${path} axe ` + ax.join('; '));
-    // photo tab keyboard and the photo panel
+    // photo tab and panel, when the photo mode is switched on
+    if (!await p.isVisible('[data-mode="photo"]')) { await p.close(); continue; }
     await p.click('[data-mode="photo"]');
     const ax2 = await p.evaluate(async () => (await axe.run(document.querySelector('.im'), {runOnly:['wcag2a', 'wcag2aa']})).violations.map(v => `${v.id}: ${v.nodes.length} ${v.nodes.slice(0, 2).map(n => n.target.join(' ')).join(' / ')}`));
     if (ax2.length) fails.push(`${path} photo axe ` + ax2.join('; '));

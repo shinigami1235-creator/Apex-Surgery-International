@@ -124,7 +124,7 @@
       body = `<ol class="steps">${steps.map((s, j) => `<li class="step rv" data-d="${(j % 3) * 70}"><span class="step-n" aria-hidden="true">${String(j + 1).padStart(2, '0')}</span><div class="step-b"><h3>${E(s.h)}</h3>${s.p.map(p => `<p>${A.inl(p)}</p>`).join('')}</div></li>`).join('')}</ol>`;
     } else {
       const items = bl.filter(b => b.t === 'list').flatMap(b => (b.items || []).map(x => x.x || x));
-      const isAreas = items.length >= 4 && items.filter(x => areaFig(splitLabel(x)[0] || x)).length >= items.length - 1;
+      const isAreas = key === 'lipo' && items.length >= 4 && items.filter(x => areaFig(splitLabel(x)[0] || x)).length >= items.length - 1;
       body = `<ul class="who-grid${items.length % 3 === 1 && items.length > 3 ? ' odd' : ''}${isAreas ? ' areas' : ''}">${items.map((x, j) => {
         const [lab, txt] = splitLabel(x);
         const art = isAreas ? (areaFig(lab || x) || `<span class="wc-ic">${I(pickIcon(x, j))}</span>`) : `<span class="wc-ic">${I(pickIcon(lab || x, j))}</span>`;
@@ -476,7 +476,7 @@
   }
 
   /* =================== NON-SURGICAL TREATMENTS =================== */
-  const TX_IC = {inject:'syringe', lift:'layers', laser:'sun', 'hair-removal':'scan-line', body:'dumbbell', hair:'sparkles', wellness:'heart-pulse', weight:'weight', intimate:'heart'};
+  const TX_IC = {smile:'smile', inject:'syringe', lift:'layers', laser:'sun', 'hair-removal':'scan-line', body:'dumbbell', hair:'sparkles', wellness:'heart-pulse', weight:'weight', intimate:'heart'};
   async function treatments(){
     const S = A.d('shared') || {}, D = A.d('treatments') || {groups:[]}, G = D.groups || [];
     A.setMeta(D.title, D.desc);
@@ -484,7 +484,7 @@
     const card = (c, i) => `<article class="tx-card rv" data-d="${Math.min(i, 5) * 40}">
         <h3>${E(c.n)}</h3>${c.p ? `<p>${E(c.p)}</p>` : ''}
         ${c.items.length ? `<ul class="tx-items">${c.items.map(x => `<li>${E(x)}</li>`).join('')}</ul>` : ''}
-        ${c.link ? `<a class="link-arrow" href="${E(c.link)}">${E(T('txTry'))} ${I('arrow-right')}</a>` : ''}</article>`;
+        ${c.link ? `<a class="link-arrow" href="${E(c.lx ? A.href(c.link) : c.link)}">${E(c.lx ? T('txMore') : T('txTry'))} ${I('arrow-right')}</a>` : ''}</article>`;
     main().innerHTML = phead(D.h || T('treatments'), D.lead, [homeCrumb(), [T('services'), 'services.html'], [D.h || T('treatments')]],
       `<label class="tx-search rv" data-d="140">${I('search')}<span class="sr">${E(T('txSearch'))}</span><input type="search" placeholder="${E(T('txSearch'))}" autocomplete="off" data-r="q"></label>`) + `
       <section class="section tx"><div class="wrap tx-grid">
@@ -569,6 +569,7 @@
     </section>
 
     ${secs.map((sec, i) => svcSection(sec, i, key, i % 2 === 0)).join('')}
+    ${(D.sources || []).length ? `<div class="wrap svc-src"><p class="note">${E(T('sourcesH'))}: ${D.sources.map(u => `<a href="${E(u)}" target="_blank" rel="noopener">${E(u.replace(/^https?:\/\/(www\.)?/, '').split('/')[0])}</a>`).join(', ')}</p></div>` : ''}
 
     ${(D.ba || []).length ? `<section class="section night ba-s"><div class="wrap"><div class="shead"><div><p class="eyebrow on-night rv">${E(nm)}</p><h2 class="h-xl rv">${E(D.baH || T('baH'))}</h2></div><p class="note on-night rv">${E(T('resultsVary'))}</p></div>
       <div id="ba" class="ba-host">${baGrid(D.ba, D.baH)}</div></div></section>` : ''}

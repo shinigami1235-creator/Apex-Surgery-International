@@ -1393,3 +1393,5 @@ html:has(.tm-dlg[open]){overflow:hidden}
   .tx-cards{columns:1}
   .tx-gi{width:44px;height:44px;border-radius:14px}
 }
+
+.svc-src{padding:28px 0 0}.svc-src .note{font-size:13px;color:var(--ink-3)}.svc-src a{color:var(--plum);text-decoration:underline;text-underline-offset:2px}

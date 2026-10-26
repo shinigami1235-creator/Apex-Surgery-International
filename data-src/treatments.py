@@ -90,6 +90,26 @@ G = [
    ['Ultrabright', 'Perfect bright', 'Cryo (polar) bright', 'LED face', 'Plasma laser', 'Eye Refresh', 'Eye Bright & Glow',
     'Eye Smooth & Firm', 'Total Eye']),
  ]),
+ ('smile', 'Smile and bite', 'จัดฟันและการสบฟัน',
+  'Clear aligners and smile design with our partner dental team at TDH, and jaw surgery when the jaws themselves are out of place.',
+  'จัดฟันใสและออกแบบรอยยิ้มกับทีมทันตแพทย์พันธมิตร TDH และผ่าตัดขากรรไกรเมื่อขากรรไกรอยู่ผิดตำแหน่ง', [
+  ('invisalign', 'Invisalign clear aligners', 'จัดฟันใส Invisalign',
+   'Clear aligners, changed every week or two, move the teeth a little at a time. They come out to eat and brush. With orthodontist Dr. Ruangyot Onsa-ard, a Team Invisalign Red Diamond Provider.',
+   'ชุดจัดฟันใสที่เปลี่ยนทุก 1 ถึง 2 สัปดาห์ ค่อย ๆ เคลื่อนฟันทีละน้อย ถอดออกได้ตอนกินและแปรงฟัน ดูแลโดย ทพ.เรืองยศ อ่อนสอาด ทันตแพทย์จัดฟัน Team Invisalign Red Diamond Provider',
+   ['Invisalign', 'Brava']),
+  ('smiledesign', 'Smile design', 'ออกแบบรอยยิ้ม',
+   'The shape and colour of the front teeth planned on a digital mock-up of your face first, then made with veneers. With Dr. Apichaya Thongdee.',
+   'วางแผนรูปทรงและสีของฟันหน้าบนภาพจำลองใบหน้าแบบดิจิทัลก่อน แล้วทำด้วยวีเนียร์ ดูแลโดย ทพญ.อภิชญา ทองดี',
+   ['Digital smile design', 'Veneers']),
+  ('ogs', 'Jaw surgery (OGS)', 'ผ่าตัดขากรรไกร (OGS)',
+   'Surgery that moves the upper jaw, the lower jaw or both, with braces or Invisalign before and after, for an underbite, an open bite or a face that is set back or tilted.',
+   'ผ่าตัดเลื่อนขากรรไกรบน ขากรรไกรล่าง หรือทั้งสองข้าง ร่วมกับจัดฟันหรือ Invisalign ก่อนและหลังผ่าตัด สำหรับฟันล่างคร่อม ฟันสบเปิด หรือใบหน้าหลุบหรือเบี้ยว',
+   ['Le Fort I', 'BSSO', 'Genioplasty'], 'service.html?p=bone#sec-4', 'bone'),
+  ('vline', 'V-line chin', 'คาง V-Line',
+   'Your own chin bone moved and narrowed inside the mouth, for a short, long, set-back or off-centre chin.',
+   'เลื่อนและเหลากระดูกคางของตัวเองผ่านแผลในช่องปาก สำหรับคางสั้น คางยาว คางหลุบ หรือคางเบี้ยว',
+   ['Sliding genioplasty', 'V-line'], 'service.html?p=bone#sec-3', 'bone'),
+ ]),
  ('hair-removal', 'Laser hair removal', 'เลเซอร์กำจัดขน',
   'Booked by the minute, by area. Most areas need a course of sessions a few weeks apart.',
   'คิดตามนาทีและตำแหน่ง ส่วนใหญ่ต้องทำเป็นคอร์ส ห่างกันครั้งละไม่กี่สัปดาห์', [
@@ -196,6 +216,8 @@ PAGE = {
 
 def main():
     known = {i['name'] for i in json.load(open(os.path.join(HERE, 'procedures.json'), encoding='utf-8'))['items']}
+    # the smile and bite group comes from the Bone Surgery folder and the TDH doc, not the procedure list
+    known |= {'Invisalign', 'Brava', 'Digital smile design', 'Veneers', 'Le Fort I', 'BSSO', 'Genioplasty', 'Sliding genioplasty', 'V-line'}
     for lang in ('en', 'th'):
         groups = []
         for gk, gen, gth, pen, pth, cards in G:
@@ -210,6 +232,8 @@ def main():
                 card = {'k': k, 'n': nen if lang == 'en' else nth, 'p': len_ if lang == 'en' else lth, 'items': names}
                 if len(c) > 6:
                     card['link'] = c[6]
+                if len(c) > 7:
+                    card['lx'] = c[7]
                 out.append(card)
             groups.append({'k': gk, 'h': gen if lang == 'en' else gth, 'p': pen if lang == 'en' else pth, 'cards': out})
         data = dict(PAGE[lang], groups=groups)
