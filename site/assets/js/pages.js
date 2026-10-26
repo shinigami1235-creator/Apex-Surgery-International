@@ -167,7 +167,7 @@
     } catch (e) { /* keep the plain rail */ }
   };
   // How each procedure's before/after composites are split: lr = before left, after right; tb = before on top; single = a collage shown whole
-  const BA_LAYOUT = {facelift:'lr', rhinoplasty:'lr', lipo:'lr', bone:'lr', eyelid:'tb', breast:'tb', browlift:'single'};
+  const BA_LAYOUT = {facelift:'lr', rhinoplasty:'lr', lipo:'lr', bone:'single', eyelid:'tb', breast:'tb', browlift:'single'};
   const mountCompare = async (el, pairs, key) => {
     if (!el) return;
     try {
@@ -203,7 +203,7 @@
       const links = [];
       if (cat === 'rhinoplasty') links.push({x:T('noseTry'), url:'nose.html'});
       if (!opts.onService) links.push({x:T('seeService'), url:A.svcUrl(cat)});
-      return {src, cat, layout:BA_LAYOUT[cat] || 'single', procName, facts, story:post ? {title:post.title, url:A.postUrl(post.key)} : null,
+      return {src:/^img\//.test(src) ? IMG(src) : src, cat, layout:BA_LAYOUT[cat] || 'single', procName, facts, story:post ? {title:post.title, url:A.postUrl(post.key)} : null,
         ask:{line:`https://line.me/R/oaMessage/@apexsurgery/?${encodeURIComponent(msg)}`, wa:`${A.WA.h}?text=${encodeURIComponent(msg)}`}, links};
     });
     return cases.filter(c => c.story).concat(cases.filter(c => !c.story));
