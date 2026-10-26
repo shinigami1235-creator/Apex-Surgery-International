@@ -661,7 +661,8 @@
   const tmProfile = d => `<button type="button" class="tm-x" aria-label="${E(T('close'))}">${I('x')}</button>
       <div class="tm-dh"><span class="tm-dph ph-img"><img src="${IMG(d.photo)}" alt="" width="731" height="1024"></span>
         <div><p class="eyebrow">${E(d.nick || '')}</p><h2 class="h-l" id="tm-dlg-h">${E(d.name)}</h2>${d.nameAlt ? `<p class="tm-alt">${E(d.nameAlt)}</p>` : ''}
-        <p class="doc-meta"><span>${E(d.license || '')}</span></p>${d.role ? `<p class="tm-role2">${E(d.role)}</p>` : ''}</div></div>
+        ${d.license ? `<p class="doc-meta"><span>${E(d.license)}</span></p>` : ''}${d.role ? `<p class="tm-role2">${E(d.role)}</p>` : ''}</div></div>
+      ${d.quote ? pullQuote(d.quote, 'tm-q') : ''}
       ${TM_SECS.filter(([k]) => (d[k] || []).length).map(([k, h]) => `<section class="tm-sec"><h3 class="h-s">${E(T(h))}</h3><ul class="ticks">${d[k].map(x => `<li>${A.fmtLi(x)}</li>`).join('')}</ul></section>`).join('')}`;
   const bindTeam = (root, docs) => {
     const dlg = A.qs('#tm-dlg', root); if (!dlg) return;

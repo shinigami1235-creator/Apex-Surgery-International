@@ -3,8 +3,10 @@
    Breast: an implant is a height field over its base (round, or oval for a teardrop) with the
    catalogue's width, height and projection. The edge roll-off is solved per implant so the volume
    under the field equals the catalogue cc. Gel settles toward the lower pole when standing, more in
-   the softer implants. The field is blurred by the tissue over it, which keeps its volume, and added
-   to the skin along the implant's axis, so the breast grows by exactly the implant's volume.
+   the softer implants, so the fullest point sits below the centre and the upper pole runs straighter.
+   The field is blurred by the tissue over it, which keeps its volume. The breast's own depth spreads
+   over the implant and the implant's height goes on top, so the breast rounds out instead of pushing
+   its point forward, and it grows by exactly the implant's volume.
 
    Face: chin, forehead and dorsal nose implants are thickness maps in millimetres over the face,
    laid on the skin along its normal. Thicknesses come from catalogue sizes; the skin follows the
@@ -105,14 +107,18 @@ export function breastField(imp){
   const W = imp.width, H = imp.height || imp.width, P = imp.projection, sag = imp.sag || 0;
   const ext = Math.max(W, H) / 2 + 2.6;           // grid half-size in cm, room for the tissue blur
   const step = ext * 2 / (GRID - 1);
+  // standing, the gel settles: the point of most projection sits below the centre and the upper pole
+  // runs straighter. y0 is that point as a share of the half height (negative is down)
+  const y0 = -(.12 + .45 * sag), up = .5 + 1.1 * sag;
   const shape = n => {
     const g = new Float32Array(GRID * GRID); let mx = 0;
     for (let j = 0; j < GRID; j++) for (let i = 0; i < GRID; i++) {
       const x = -ext + i * step, y = -ext + j * step;
-      const r = Math.hypot(x / (W / 2), y / (H / 2));
-      if (r >= 1) continue;
-      // the lower pole fills as the gel settles: weight grows downward (y < 0 is down)
-      let v = Math.pow(1 - Math.pow(r, n), .5) * (1 - sag * clamp(y / (H / 2), -1, 1));
+      const yn = y / (H / 2), xn = x / (W / 2);
+      if (xn * xn + yn * yn >= 1) continue;
+      const yy = yn >= y0 ? (yn - y0) / (1 - y0) : (yn - y0) / (1 + y0);
+      const r = Math.min(1, Math.hypot(xn, yy));
+      let v = Math.pow(1 - Math.pow(r, n), yn >= y0 ? .5 + (up - .5) * clamp((yn - y0) / (1 - y0), 0, 1) : .5);
       if (imp.teardrop) v *= .55 + .45 * smooth(H / 2, -H * .15, y);
       g[j * GRID + i] = v; if (v > mx) mx = v;
     }
@@ -121,7 +127,7 @@ export function breastField(imp){
     return {g, vol:vol * step * step * P};
   };
   // solve the roll-off exponent so the volume matches the catalogue cc
-  let lo = .6, hi = 12, best = null;
+  let lo = .6, hi = 16, best = null;
   for (let it = 0; it < 34; it++) {
     const n = Math.sqrt(lo * hi), s = shape(n);
     best = {n, ...s};
@@ -166,13 +172,58 @@ export function breastFrames(M, P, implantHeightModel, lift = .08){
     return {c, n, eu, ev, nip};
   });
 }
+/* The base figure's breasts come to a point at the nipple. Natural breast tissue is rounder there, so a
+   share of the same spread is applied to the figure itself, near the nipple only. Keeps the volume
+   within a few cc since the blur moves depth around rather than adding it. */
+export function roundBreasts(M, P, Nrm, cmPerUnit, k = .5){
+  const s = tissueSpread(M, P, Nrm, cmPerUnit, 2.4), frames = breastFrames(M, P, 0), Q = new Float32Array(P);
+  for (let i = 0; i < M.N; i++) {
+    if (!s[i]) continue;
+    const p = at(P, i), f = frames[p[0] >= 0 ? 0 : 1], nip = f.nip;
+    const r = Math.hypot(p[0] - nip[0], p[1] - nip[1], p[2] - nip[2]) * cmPerUnit;
+    const d = s[i] * k * (1 - smooth(4, 8, r)) / cmPerUnit;
+    Q[i * 3] += f.n[0] * d; Q[i * 3 + 1] += f.n[1] * d; Q[i * 3 + 2] += f.n[2] * d;
+  }
+  return Q;
+}
 /* add the implants to a morphed body. F: blurred field in cm. cmPerUnit: cm in one model unit */
+/* How far the breast's own depth evens out over an implant, per vertex: a gaussian blur of the depth
+   along the implant axis minus the depth itself. It depends only on the body, so it is kept per body. */
+const SPREAD = new WeakMap();
+function tissueSpread(M, P, Nrm, cmPerUnit, sig){
+  const hit = SPREAD.get(P); if (hit && hit.sig === sig && hit.cm === cmPerUnit) return hit.s;
+  const frames = breastFrames(M, P, 0), N = M.N, s = new Float32Array(N), k2 = -.5 / (sig * sig);
+  for (let side = 0; side < 2; side++) {
+    const f = frames[side], ids = [], U = [], V = [], Tt = [];
+    for (let i = 0; i < N; i++) {
+      if (!M.fold[i]) continue;
+      const p = at(P, i); if ((p[0] >= 0 ? 0 : 1) !== side) continue;
+      if (dot([Nrm[i * 3], Nrm[i * 3 + 1], Nrm[i * 3 + 2]], f.n) <= -.15) continue;
+      const r = sub(p, f.c), u = dot(r, f.eu) * cmPerUnit, v = dot(r, f.ev) * cmPerUnit;
+      if (Math.hypot(u, v) > 18) continue;
+      ids.push(i); U.push(u); V.push(v); Tt.push(dot(r, f.n) * cmPerUnit);
+    }
+    const n = ids.length, lim = 9 * sig * sig;
+    for (let a = 0; a < n; a++) {
+      let sw = 0, st = 0;
+      for (let b = 0; b < n; b++) { const du = U[a] - U[b], dv = V[a] - V[b], d2 = du * du + dv * dv; if (d2 > lim) continue; const g = Math.exp(d2 * k2); sw += g; st += g * Tt[b]; }
+      s[ids[a]] = st / sw - Tt[a];
+    }
+  }
+  SPREAD.set(P, {sig, cm:cmPerUnit, s});
+  return s;
+}
+/* add the implants to a morphed body. F: blurred field in cm. cmPerUnit: cm in one model unit.
+   The implant lies under the breast, so the breast's own depth spreads out over it (the tissue is
+   stretched over a dome) and the implant's height is added on top: the breast rounds out rather than
+   pushing its own point forward */
 export function addBreasts(M, P, Nrm, F, cmPerUnit, out){
   const Q = out || new Float32Array(P.length);
   Q.set(P);
   if (!F) return Q;
   const frames = breastFrames(M, P, F.H / cmPerUnit);
-  const N = M.N, fold = M.fold, capStart = M.h.capStart;
+  const N = M.N, fold = M.fold, R = Math.max(F.W, F.H) / 2, reach = R + 3.5;
+  const spread = tissueSpread(M, P, Nrm, cmPerUnit, 2.4);
   for (let i = 0; i < N; i++) {
     const w = fold[i] / 255;
     if (w <= 0) continue;
@@ -181,11 +232,11 @@ export function addBreasts(M, P, Nrm, F, cmPerUnit, out){
     const front = smooth(-.15, .25, dot(nr, f.n));
     if (front <= 0) continue;
     const r = sub(p, f.c), u = dot(r, f.eu) * cmPerUnit * (side ? -1 : 1), v = dot(r, f.ev) * cmPerUnit;
-    const d = sample(F, u, v) / cmPerUnit * w * front;
+    const foot = 1 - smooth(R, reach, Math.hypot(u, v));
+    const d = (sample(F, u, v) + spread[i] * foot) / cmPerUnit * w * front;
     if (!d) continue;
     Q[i * 3] += f.n[0] * d; Q[i * 3 + 1] += f.n[1] * d; Q[i * 3 + 2] += f.n[2] * d;
   }
-  void capStart;
   return Q;
 }
 /* the same, scaled so each breast grows by exactly the field's volume: the mask at the fold and the

@@ -22,6 +22,8 @@ const LINKS = {breast:'breast-implants.html', chin:'chin-implants.html', forehea
 const SAMPLE = {src:'https://images.unsplash.com/photo-1736439538470-88b66bd307ce?w=1400&q=85', crop:[.38, 0, .98, 1], side:-1,
   pts:{NA:[.5805, .3931], TIP:[.5335, .526], SN:[.5605, .589]}};
 const GOLD = '#E3B85C';
+// the visitor's own photo is switched off: a photo can't show an implant accurately yet, so the viewers use the 3D model only
+const PHOTO = false;
 
 const STR = {
   en:{
@@ -116,6 +118,7 @@ const CSS = `
 @media (min-width:960px){.im-main{grid-template-columns:minmax(0,1fr) 360px;grid-template-areas:"stage panel" "sum panel";gap:24px;align-items:start}
   .im-stage{grid-area:stage}.im-sum{grid-area:sum}.im-panel{grid-area:panel}}
 .im-stage{position:relative;min-width:0;background:radial-gradient(120% 80% at 50% 0%,var(--im-night-2),var(--im-night) 70%);color:var(--im-on);border-radius:28px;padding:10px;display:grid;gap:10px}
+.im-tabs[hidden]{display:none}
 .im-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:999px;background:rgba(255,255,255,.07);justify-self:start;min-width:min(100%,320px)}
 .im-tabs button{min-height:40px;padding:0 14px;border-radius:999px;font-weight:700;font-size:14.5px;color:var(--im-on-2);display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:background-color .2s,color .2s}
 .im-tabs button[aria-selected=true]{background:#fff;color:var(--im-plum)}
@@ -306,7 +309,7 @@ export function mount(container, opts = {}){
   <nav class="im-areas" aria-label="${esc(T.areaNav)}">${AREAS.map(a => `<a href="${esc(links[a])}"${a === area ? ' aria-current="page"' : ''}>${esc(T.area[a])}</a>`).join('')}</nav>
   <div class="im-main">
     <section class="im-stage" aria-label="${esc(T.area[area])}">
-      <div class="im-tabs" role="tablist" aria-label="${esc(T.modes)}">
+      <div class="im-tabs" role="tablist" aria-label="${esc(T.modes)}"${PHOTO ? '' : ' hidden'}>
         <button role="tab" id="im-t3" aria-controls="im-p3" aria-selected="true" data-mode="3d">${ic('cube')}${esc(T.model)}</button>
         <button role="tab" id="im-tp" aria-controls="im-pp" aria-selected="false" data-mode="photo" tabindex="-1">${ic('camera')}${esc(T.photo)}</button>
       </div>
@@ -454,8 +457,12 @@ export function mount(container, opts = {}){
       setColors(0, G.base);
       G.face = {imp, T:TH};
     } else {
-      const bp = S.bodyParams(state.body), cm = 10 * bp.scale;
-      const P = S.morphTorso(M, bp), N0 = S.normals(P, M.tri, M.N);
+      const bp = S.bodyParams(state.body), cm = 10 * bp.scale, key = JSON.stringify(bp);
+      if (G.bodyKey !== key) {   // the rounded body is kept until the visitor changes their measurements
+        const P0 = S.morphTorso(M, bp), P1 = S.roundBreasts(M, P0, S.normals(P0, M.tri, M.N), cm);
+        G.bodyKey = key; G.body = {P:P1, N:S.normals(P1, M.tri, M.N)};
+      }
+      const P = G.body.P, N0 = G.body.N;
       const one = cc => {
         const imp = breastImp(cc), raw = S.breastField(imp), F = S.blurField(raw, 1.8);
         return {imp, raw, F, Q:S.fitBreasts(M, P, N0, F, cm)};
@@ -843,7 +850,7 @@ export function mount(container, opts = {}){
   root.addEventListener('click', onClick);
   root.addEventListener('keydown', e => {
     const tab = e.target.closest('[role=tab]'); if (!tab) return;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); state.mode = state.mode === '3d' ? 'photo' : '3d'; sync(); $(`[data-mode="${state.mode}"]`).focus(); }
+    if (PHOTO && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) { e.preventDefault(); state.mode = state.mode === '3d' ? 'photo' : '3d'; sync(); $(`[data-mode="${state.mode}"]`).focus(); }
   });
   root.addEventListener('input', e => {
     const el = e.target, k = el.dataset && el.dataset.r;

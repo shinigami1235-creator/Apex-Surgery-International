@@ -34,9 +34,11 @@ for (const [area, w, h, lang] of runs) {
     console.log('  compare', await p.evaluate(() => [...document.querySelectorAll('.im-tag')].map(t => t.textContent).join(' / ')));
     await p.locator('.im-stage').screenshot({path:`${OUT}/${area}-${w}-compare.png`});
   }
-  // photo
-  await p.click('[data-mode="photo"]');
-  if (area !== 'breast') {
+  // photo: switched off for now, so the tab must be hidden
+  const photoOn = await p.isVisible('[data-mode="photo"]');
+  if (photoOn) await p.click('[data-mode="photo"]');
+  else console.log('  photo tab hidden');
+  if (photoOn && area !== 'breast') {
     await p.click('.im-empty [data-act="sample"]');
     await p.waitForSelector('.im-fbox:not([hidden])', {timeout:20000});
     await p.waitForTimeout(300);
@@ -48,7 +50,7 @@ for (const [area, w, h, lang] of runs) {
   const ov2 = await p.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   if (ov2 > 0) fails.push(`${area} ${w} photo overflow ${ov2}`);
   // save
-  await p.click('[data-mode="3d"]');
+  if (photoOn) await p.click('[data-mode="3d"]');
   const dl = p.waitForEvent('download', {timeout:15000}).catch(() => null);
   await p.click('[data-act="save"]');
   const d = await dl; if (!d) fails.push(`${area} ${w} no download`); else await d.saveAs(`${OUT}/${area}-${w}-saved.jpg`);
