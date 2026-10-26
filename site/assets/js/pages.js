@@ -491,7 +491,8 @@
         <nav class="tx-nav" aria-label="${E(T('txGroups'))}">${G.map(g => `<a href="#tx-${E(g.k)}" data-k="${E(g.k)}">${I(TX_IC[g.k] || 'sparkles')}<span>${E(g.h)}</span><i>${n(g)}</i></a>`).join('')}</nav>
         <div class="tx-body">${G.map(g => `<section class="tx-g" id="tx-${E(g.k)}" data-k="${E(g.k)}">
           <div class="tx-gh rv"><span class="tx-gi">${I(TX_IC[g.k] || 'sparkles')}</span><div><h2 class="h-l">${E(g.h)}</h2><p>${E(g.p)}</p></div></div>
-          ${g.cards.length ? `<div class="tx-cards">${g.cards.map(card).join('')}</div>` : `<a class="btn btn-ghost rv" href="consult.html">${I('message-circle')}${E(T('consult'))}</a>`}</section>`).join('')}
+          ${g.cards.length ? `<div class="tx-cards">${g.cards.map(card).join('')}</div>` : `<a class="btn btn-ghost rv" href="consult.html">${I('message-circle')}${E(T('consult'))}</a>`}
+          ${(g.imgs || []).length ? (() => { const gl = A.gallery(g.imgs.map(x => ({src:IMG(x.src), alt:x.alt}))); return `<div class="tx-imgs rail">${g.imgs.map((x, k) => `<button type="button" class="tx-img ph-img" ${gl.attr(k)} aria-label="${E(x.alt)}"><img src="${IMG(x.src)}" alt="${E(x.alt)}" loading="lazy" decoding="async"></button>`).join('')}</div>`; })() : ''}</section>`).join('')}
           <p class="tx-none" hidden data-r="none">${E(T('txNone'))}</p>
           <p class="note tx-from">${E(D.from || '')}</p></div></div></section>
       <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;

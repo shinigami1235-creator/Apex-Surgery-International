@@ -7,7 +7,9 @@
 import { PROC_KEYS, t, procName } from '../plan/procedures.js';
 
 const SITE = 'https://www.apexsurgeryhospital.com/';
-const abs = u => (u && u.startsWith('~/') ? SITE + u.slice(2) : u);
+// '~/' is the client's media library; img/ and video/ are this site's own assets, under the assets base
+let ASSETS = '';
+const abs = u => (u && u.startsWith('~/') ? SITE + u.slice(2) : u && ASSETS && /^(img|video)\//.test(u) ? ASSETS + u : u);
 
 const T = {
   title: { en: 'Client review videos', th: 'วิดีโอรีวิวจากลูกค้า' },
@@ -232,6 +234,7 @@ export function mount(container, opts = {}) {
   const lang = opts.lang === 'th' ? 'th' : 'en';
   const L = o => t(o, lang);
   const base = opts.base || new URL('../../', import.meta.url).href;
+  ASSETS = base;
   const serviceUrl = typeof opts.serviceUrl === 'function' ? opts.serviceUrl : k => `service.html?p=${k}`;
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) { /* host handler error */ } };
   const pname = k => (k ? procName(k, lang) : L(T.general));

@@ -1,11 +1,11 @@
-/* The six Apex procedures with their recovery facts, shared by My Plan, the trip planner and the consultation form.
+/* The seven Apex procedures with their recovery facts, shared by My Plan, the trip planner and the consultation form.
    Every fact comes from the client's own service pages (see BRIEF.md, "Recovery facts").
    Day windows count from the surgery day (day 0). A month is counted as 30 days for planning.
      at:    the milestone falls between day a and day b
      until: the rule holds until somewhere between day a and day b
      rest:  this milestone marks the end of the rest period, used by the trip planner's fly-home rule */
 
-export const PROC_KEYS = ['facelift', 'browlift', 'rhinoplasty', 'eyelid', 'breast', 'lipo'];
+export const PROC_KEYS = ['facelift', 'browlift', 'rhinoplasty', 'eyelid', 'bone', 'breast', 'lipo'];
 
 export const PROCS = {
   facelift: {
@@ -51,6 +51,16 @@ export const PROCS = {
       { en: 'Soreness for 3 to 7 days.', th: 'ปวดตึงประมาณ 3 ถึง 7 วันแรก', until: [3, 7] },
       { en: 'Back to light work in weeks 2 to 4.', th: 'กลับไปทำงานที่ไม่ใช้แรงได้ในสัปดาห์ที่ 2 ถึง 4', at: [14, 28], rest: true },
       { en: 'Exercise after about 1 to 2 months.', th: 'ออกกำลังกายได้หลังประมาณ 1 ถึง 2 เดือน', at: [30, 60] }
+    ]
+  },
+  bone: {
+    name: { en: 'Facial bone surgery', th: 'ศัลยกรรมโครงหน้า' },
+    facts: [
+      { en: 'Swelling and bruising ease over 1 to 2 weeks.', th: 'อาการบวมช้ำลดลงใน 1 ถึง 2 สัปดาห์', at: [7, 14] },
+      { en: 'Back to work in weeks 2 to 4.', th: 'กลับไปทำงานได้ในสัปดาห์ที่ 2 ถึง 4', at: [14, 28], rest: true },
+      { en: 'Soft food for up to 4 weeks after jaw surgery.', th: 'อาหารอ่อนนานถึง 4 สัปดาห์หลังผ่าตัดขากรรไกร', until: [14, 28] },
+      { en: 'The face outline shows more clearly at 1 to 3 months.', th: 'กรอบหน้าเห็นชัดขึ้นใน 1 ถึง 3 เดือน', at: [30, 90] },
+      { en: 'The face settles at about 3 to 6 months.', th: 'โครงหน้าเข้าที่ในประมาณ 3 ถึง 6 เดือน', at: [90, 180] }
     ]
   },
   lipo: {

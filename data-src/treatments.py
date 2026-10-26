@@ -176,6 +176,11 @@ G = [
  ]),
 ]
 
+# photos under a group, from the Bone Surgery folder Gid shared (Invisalign subfolder)
+IMGS = {'smile': [('img/bone/apex-x-tdh.webp', 'APEX x TDH: Top Invisalign Provider in the Asia Pacific', 'APEX x TDH: ผู้ให้บริการ Invisalign ระดับท็อปในเอเชียแปซิฟิก'),
+                  ('img/bone/tdh-review.webp', 'Smile before and after at APEX x TDH', 'รีวิวรอยยิ้มก่อนและหลัง APEX x TDH'),
+                  ('img/bone/review-veneer.webp', 'Veneer review', 'รีวิววีเนียร์'),
+                  ('img/bone/smile-design.webp', 'Smile design with Invisalign', 'ออกแบบรอยยิ้ม ปรับโครงหน้า จัดฟันใส Invisalign')]}
 # names shown on the page when the sheet's SKU name reads badly outside the clinic
 SHOW = {'Ulthera 1.5': 'Ulthera', 'MPT 2.0': 'Ultraformer MPT', 'Linear Z 3': 'Linear Z', 'Thermage FLX 600': 'Thermage FLX',
         'Thermage CPT 900': 'Thermage CPT', 'Volnewmer face 3': 'Volnewmer', 'XTherma face': 'XTherma',
@@ -235,7 +240,10 @@ def main():
                 if len(c) > 7:
                     card['lx'] = c[7]
                 out.append(card)
-            groups.append({'k': gk, 'h': gen if lang == 'en' else gth, 'p': pen if lang == 'en' else pth, 'cards': out})
+            grp = {'k': gk, 'h': gen if lang == 'en' else gth, 'p': pen if lang == 'en' else pth, 'cards': out}
+            if gk in IMGS:
+                grp['imgs'] = [{'src': a, 'alt': b if lang == 'en' else c} for a, b, c in IMGS[gk]]
+            groups.append(grp)
         data = dict(PAGE[lang], groups=groups)
         p = os.path.join(ROOT, 'site', 'assets', 'data', lang, 'treatments.js')
         with open(p, 'w', encoding='utf-8') as f:

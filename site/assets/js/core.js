@@ -16,7 +16,7 @@
   A.assets = A.assets || A.root + 'assets/';
   A.dataBase = A.assets + 'data/' + A.lang + '/';
   A.media = A.media || SITE;
-  A.img = s => !s ? '' : (s.startsWith('~/') ? A.media + s.slice(2) : /^(img|fonts|css|js|features)\//.test(s) ? A.assets + s : s);
+  A.img = s => !s ? '' : (s.startsWith('~/') ? A.media + s.slice(2) : /^(img|video|fonts|css|js|features)\//.test(s) ? A.assets + s : s);
   A.esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   A.qs = (s, r=document) => r.querySelector(s);
   A.qsa = (s, r=document) => [...r.querySelectorAll(s)];
@@ -582,7 +582,9 @@
         <div class="br-photo ph-img">${B.map((b, i) => `<img src="${A.img(b.img)}" alt="${E(b.name)}" loading="lazy" decoding="async" data-i="${i}" class="${i ? '' : 'on'}">`).join('')}<span class="br-count" aria-hidden="true"><b>${B.length > 1 ? '1' : ''}</b>${B.length > 1 ? ' / ' + B.length : ''}</span></div>
         <div class="br-info">${B.map(card).join('')}</div>
         <div class="br-map"><div class="br-map-ph" aria-hidden="true">${A.ic('map')}</div>${B.map((b, i) => `<iframe data-src="${A.mapSrc(b)}" data-i="${i}" title="${E(T('mapTitle'))}: ${E(b.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer-when-downgrade"${i ? ' hidden' : ''}></iframe>`).join('')}</div>
-      </div></div>`;
+      </div>
+      ${B.some(b => (b.photos || []).length) ? B.map((b, i) => { const g = A.gallery((b.photos || []).map(x => ({src:A.img(x.src), alt:x.alt}))); return `<div class="br-gal rail" data-b="${i}"${i ? ' hidden' : ''}>${(b.photos || []).map((x, k) => `<button type="button" class="br-gp ph-img" ${g.attr(k)} aria-label="${E(x.alt)}"><img src="${A.img(x.src)}" alt="${E(x.alt)}" loading="lazy" decoding="async"></button>`).join('')}</div>`; }).join('') : ''}
+      </div>`;
   };
   A.bindBranches = (root=document) => A.qsa('[data-branches]:not([data-bound])', root).forEach(br => {
     br.dataset.bound = 1;
@@ -596,6 +598,7 @@
       tabs.forEach((t, j) => { t.setAttribute('aria-selected', j === i); t.tabIndex = j === i ? 0 : -1; });
       stage.setAttribute('aria-labelledby', tabs[i] ? tabs[i].id : '');
       A.qsa('.br-photo img', br).forEach(im => im.classList.toggle('on', +im.dataset.i === i));
+      A.qsa('.br-gal', br).forEach(g => g.hidden = +g.dataset.b !== i);
       A.qsa('.br-card', br).forEach(c => { const on = +c.dataset.i === i; c.hidden = !on; c.classList.toggle('on', on); });
       A.qsa('.br-map iframe', br).forEach(f => f.hidden = +f.dataset.i !== i);
       const n = A.qs('.br-count b', br); if (n) n.textContent = i + 1;
