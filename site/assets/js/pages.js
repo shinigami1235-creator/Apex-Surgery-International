@@ -201,7 +201,7 @@
       const procName = eyeBag ? (A.lang === 'th' ? 'ผ่าตัดถุงใต้ตา' : 'Eye bag surgery') : svcName(S, cat);
       const msg = A.lang === 'th' ? `สวัสดี ขอสอบถามเรื่อง${procName} จากเคสก่อนและหลังบนเว็บไซต์ Apex Surgery Hospital` : `Hello, I would like to ask about ${procName.toLowerCase()} after seeing a before and after case on the Apex Surgery Hospital website.`;
       const links = [];
-      if (cat === 'rhinoplasty') links.push({x:T('noseTry'), url:'nose.html'});
+      if (cat === 'rhinoplasty') links.push({x:T('noseTry'), url:'nose-implants.html'});
       if (!opts.onService) links.push({x:T('seeService'), url:A.svcUrl(cat)});
       return {src:/^img\//.test(src) ? IMG(src) : src, cat, layout:BA_LAYOUT[cat] || 'single', procName, facts, story:post ? {title:post.title, url:A.postUrl(post.key)} : null,
         ask:{line:`https://line.me/R/oaMessage/@apexsurgery/?${encodeURIComponent(msg)}`, wa:`${A.WA.h}?text=${encodeURIComponent(msg)}`}, links};
@@ -341,7 +341,7 @@
           <h1 class="hb-h1 rv" data-d="60" data-field="home.h1">${E(H.h1 || 'Apex Surgery Hospital')}</h1>
           <p class="hb-h2 rv" data-d="120" data-field="home.h2">${E(A.lang === 'en' ? (S.brandTh || H.h2 || '') : (H.h2 || S.brandTh || ''))}</p>
           <p class="hb-lead rv" data-d="180">${E(T('heroLead'))}</p>
-          <div class="hb-acts rv" data-d="240"><a class="btn btn-light" href="consult.html">${I('message-circle')}${E(T('consult'))}</a><a class="btn btn-ghost" href="nose.html">${I('scan-face')}${E(T('heroCta2'))}</a></div>
+          <div class="hb-acts rv" data-d="240"><a class="btn btn-light" href="consult.html">${I('message-circle')}${E(T('consult'))}</a><a class="btn btn-ghost" href="nose-implants.html">${I('scan-face')}${E(T('heroCta2'))}</a></div>
           <ul class="hb-svcs rv" data-d="300">${(S.services || []).map(s => `<li><a href="${A.svcUrl(s.key)}">${E(s.short || s.name)}</a></li>`).join('')}</ul>
         </div>
         <div class="hb-stage"><div id="bodymap" class="bodymap-host" aria-label="${E(T('bodyHint'))}"></div></div>
@@ -372,7 +372,7 @@
     <section class="section night tools-s">
       <div class="wrap">
         <div class="tools-grid">
-          <a class="tool-card tool-nose rv" href="nose.html">
+          <a class="tool-card tool-nose rv" href="nose-implants.html">
             <span class="tc-art st-art" aria-hidden="true"><img src="${A.assets}img/stencil-side.svg" alt="" loading="lazy" decoding="async"><svg viewBox="20 60 560 640"><path class="tc-prof2" d="M97.3 334C96.2 336.7 93.4 344.3 90.6 350C87.8 355.7 83.9 362 80.6 368C77.3 374 74 380 70.6 386C67.2 392 63.4 398.7 60.1 404C56.8 409.3 53.1 414.3 50.6 418C48.1 421.7 46.4 423.5 45.2 426C44 428.5 43.5 430.7 43.5 433C43.5 435.3 44.3 437.8 45.4 440C46.5 442.2 48.2 444.8 50 446.5C51.8 448.2 53.7 449 56 450C58.3 451 61.3 451.8 64 452.5C66.7 453.2 70.7 454.2 72 454.5"/></svg></span>
             <span class="tc-body"><span class="eyebrow on-night">${E(T('nose'))}</span><b class="h-l">${E(T('noseH'))}</b><span class="tc-p">${E(T('noseP'))}</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">${E(T('noseCta'))} ${I('arrow-right')}</span><small>${I('shield-check')}${E(T('noseNote'))}</small></span></span></a>
@@ -465,7 +465,6 @@
       <section class="section washed"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(T('tools'))}</h2></div>
         <div class="mini-tools">
           <a class="mini-tool rv mt-new" href="filler.html">${I('syringe')}<b>${E(T('fill'))}<span class="tc-new">${E(T('newTag'))}</span></b><span>${E(T('fillPageP'))}</span></a>
-          <a class="mini-tool rv" href="nose.html">${I('scan-face')}<b>${E(T('nose'))}</b><span>${E(T('nosePageP'))}</span></a>
           <a class="mini-tool rv" data-d="20" href="analysis.html">${I('scan-line')}<b>${E(T('ana'))}</b><span>${E(T('anaPageP'))}</span></a>
           <a class="mini-tool rv" data-d="35" href="proportions.html">${I('gem')}<b>${E(T('prop'))}</b><span>${E(T('propPageP'))}</span></a>
           <a class="mini-tool rv" data-d="50" href="breast-implants.html">${I('ruler')}<b>${E(T('impl'))}</b><span>${E(T('implP'))}</span></a>
@@ -547,7 +546,7 @@
             <p class="eyebrow on-night rv">${E(D.en || '')}</p>
             <h1 class="display-s rv" data-d="60" data-field="svc.name">${E(D.name)}</h1>
             ${D.byline ? `<p class="sh-by rv" data-d="120" data-field="svc.byline">${I('badge-check')}${E(D.byline)}</p>` : ''}
-            <div class="sh-acts rv" data-d="180"><a class="btn btn-light" href="consult.html?p=${E(key)}">${I('message-circle')}${E(T('consult'))}</a>${planBtn(key)}${key === 'rhinoplasty' ? `<a class="btn btn-ghost btn-sm" href="nose.html">${I('scan-face')}${E(T('noseTry'))}</a>` : ''}</div>
+            <div class="sh-acts rv" data-d="180"><a class="btn btn-light" href="consult.html?p=${E(key)}">${I('message-circle')}${E(T('consult'))}</a>${planBtn(key)}${key === 'rhinoplasty' ? `<a class="btn btn-ghost btn-sm" href="nose-implants.html">${I('scan-face')}${E(T('noseTry'))}</a>` : ''}</div>
           </div>
           ${recoveryCard(key, S)}
         </div>
@@ -990,7 +989,8 @@
     const ex = typeof extra === 'function' ? extra() : extra;
     await A.mount('#' + hostId, name, ex);
   };
-  const nose = featurePage('nose', 'nosePageH', 'nosePageP', 'nose', () => A.mpBase ? {mpBase:A.mpBase} : {}, 'night-s');
+  // the photo nose preview is retired (photos can't show a result accurately), so its address opens the 3D nose implant viewer
+  const nose = async () => { location.replace(A.href('nose-implants.html')); };
   const proportions = featurePage('proportions', 'propPageH', 'propPageP', 'proportions', () => A.mpBase ? {mpBase:A.mpBase} : {}, 'prop-s');
   const filler = featurePage('filler', 'fillPageH', 'fillPageP', 'filler', {}, 'prop-s');
   const analysis = featurePage('analysis', 'anaPageH', 'anaPageP', 'analysis', () => Object.assign(A.mpBase ? {mpBase:A.mpBase} : {}, {links:{consult:'consult.html', proportions:'proportions.html'}}), 'prop-s');
@@ -999,7 +999,7 @@
   const implPage = (area, h, p) => featurePage('implants', h, p, 'implants', () => ({area, links:IMPL_LINKS}), 'prop-s');
   const implBreast = implPage('breast', 'implBreastH', 'implBreastP'), implChin = implPage('chin', 'implChinH', 'implChinP');
   const implForehead = implPage('forehead', 'implForeheadH', 'implForeheadP'), implNose = implPage('nose', 'implNoseH', 'implNoseP');
-  const LINKS = {bodymap:'index.html#hero', nose:'nose.html', implants:'breast-implants.html', analysis:'analysis.html', proportions:'proportions.html', games:'play.html', trip:'trip.html', plan:'plan.html', consult:'consult.html'};
+  const LINKS = {bodymap:'index.html#hero', nose:'nose-implants.html', implants:'breast-implants.html', analysis:'analysis.html', proportions:'proportions.html', games:'play.html', trip:'trip.html', plan:'plan.html', consult:'consult.html'};
   const plan = featurePage('plan', 'planPageH', 'planPageP', 'plan', {links:LINKS});
   const trip = featurePage('trip', 'tripPageH', 'tripP', 'trip', () => Object.assign({links:LINKS}, A.param('p') ? {procedures:[A.param('p')]} : {}));
   const consult = featurePage('consult', 'consultPageH', 'consultPageP', 'consult', () => ({procedure:A.param('p') || undefined}));

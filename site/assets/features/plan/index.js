@@ -28,7 +28,7 @@ const T = {
   empty: { en: 'Your plan is empty.', th: 'ยังไม่มีรายการในแผนของคุณ' },
   emptyAdd: { en: 'Add a procedure from one of these pages.', th: 'เพิ่มหัตถการได้จากหน้าเหล่านี้' },
   bodymap: { en: 'Body map', th: 'แผนที่ร่างกาย' },
-  nose: { en: 'Nose preview', th: 'จำลองทรงจมูก' },
+  nose: { en: 'Nose implant viewer', th: 'จำลองซิลิโคนจมูก' },
   games: { en: 'Games', th: 'เกม' },
   noTrip: { en: 'No trip planned.', th: 'ยังไม่ได้วางแผนการเดินทาง' },
   planTrip: { en: 'Plan a trip', th: 'วางแผนการเดินทาง' },
@@ -220,7 +220,7 @@ export function mount(container, opts = {}) {
   const serviceUrl = typeof opts.serviceUrl === 'function' ? opts.serviceUrl : k => `service.html?p=${k}`;
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) { /* host handler error */ } };
   const site = new URL('../', base).href + (lang === 'th' ? 'th/' : '');
-  const links = { bodymap: site + 'bodymap.html', nose: site + 'nose.html', games: site + 'games.html', trip: site + 'trip.html', ...(opts.links || {}) };
+  const links = { bodymap: site + 'bodymap.html', nose: site + 'nose-implants.html', games: site + 'games.html', trip: site + 'trip.html', ...(opts.links || {}) };
 
   const root = h('div', { class: 'apxp', lang });
   const wrap = h('div', { class: 'p-wrap' });
