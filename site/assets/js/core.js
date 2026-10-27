@@ -135,7 +135,7 @@
   };
 
   /* ---------- header ---------- */
-  const NAV = [['index.html','home'],['about.html','about'],['services.html','services'],['doctor.html','doctor'],['promotions.html','promotions'],['reviews.html','reviews'],['surgery-wars.html','war'],['blog.html','articles'],['contact.html','contact']];
+  const NAV = [['index.html','home'],['about.html','about'],['services.html','services'],['doctor.html','doctor'],['promotions.html','promotions'],['reviews.html','reviews'],['transformations.html','shows'],['blog.html','articles'],['contact.html','contact']];
   function header(){
     const S = A.d('shared') || {}, page = document.body.dataset.page || '';
     let el = A.qs('header.hdr'), sh = A.qs('.sheet');

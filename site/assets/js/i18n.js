@@ -92,6 +92,7 @@ APEX.I18N = {
     featuredOffer: 'Featured offer', approx: 'Approximate', gameTie: 'Play and win an Apex voucher',
     war: 'Surgery Wars', warH: 'APEX on Surgery Wars', warLead: 'Our doctors took part in Surgery Wars, the plastic surgery reality show on Workpoint 23. Watch all 8 episodes here.',
     warStart: 'Start with EP.1', warWatch: 'Watch EP.{n}', warPhotos: 'Photos from this episode', warAll: 'All episodes',
+    shows: 'Transformations', showsLead: 'Real people, the plan made for each of them, and how it turned out. Every show and series the APEX team takes part in lives here.', showsEps: '{n} episodes', showsSeries: 'See the series', showsSoon: 'More series coming', showsSoonP: 'New series with the APEX team will be added here. Follow us to see them first.',
     warPrev: 'Previous episode', warNext: 'Next episode', warProcs: 'Procedures in this episode',
   },
   th: {
@@ -185,6 +186,7 @@ APEX.I18N = {
     featuredOffer: 'โปรโมชั่นแนะนำ', approx: 'โดยประมาณ', gameTie: 'เล่นเกมรับบัตรกำนัล Apex',
     war: 'Surgery Wars', warH: 'APEX ในรายการ Surgery Wars', warLead: 'ทีมแพทย์ APEX ร่วมรายการเรียลลิตี้ศัลยกรรม Surgery Wars ช่อง Workpoint 23 ดูครบทั้ง 8 ตอนได้ที่นี่',
     warStart: 'เริ่มดูตอนที่ 1', warWatch: 'ดู EP.{n}', warPhotos: 'ภาพจากตอนนี้', warAll: 'ทุกตอน',
+    shows: 'เปลี่ยนลุค', showsLead: 'เรื่องจริงของแต่ละคน แผนการรักษาที่วางให้เฉพาะตัว และผลลัพธ์ ทุกรายการและซีรีส์ที่ทีม APEX ร่วมจะรวมไว้ที่นี่', showsEps: '{n} ตอน', showsSeries: 'ดูซีรีส์นี้', showsSoon: 'ซีรีส์ใหม่กำลังจะมา', showsSoonP: 'ซีรีส์ใหม่กับทีม APEX จะเพิ่มไว้ที่นี่ ติดตามเราเพื่อดูก่อนใคร',
     warPrev: 'ตอนก่อนหน้า', warNext: 'ตอนถัดไป', warProcs: 'หัตถการในตอนนี้',
   }
 };

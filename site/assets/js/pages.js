@@ -425,10 +425,10 @@
     </section>
 
     ${(() => { const W = A.d('war'); const eps = (W && W.episodes) || []; return eps.length ? `<section class="section war-home">
-      <div class="wrap"><div class="shead"><div><p class="eyebrow rv">Workpoint 23</p><h2 class="h-xl rv">${E(T('warH'))}</h2><p class="reels-sub rv">${E(T('warLead'))}</p></div>
+      <div class="wrap"><div class="shead"><div><p class="eyebrow rv">${E(T('shows'))} · Workpoint 23</p><h2 class="h-xl rv">${E(T('warH'))}</h2><p class="reels-sub rv">${E(T('warLead'))}</p></div>
         <div class="rail-ctrl rv"><button type="button" id="war-prev" aria-label="${E(T('prev'))}">${I('chevron-left')}</button><button type="button" id="war-next" aria-label="${E(T('next'))}">${I('chevron-right')}</button></div></div>
       <div class="rail war-rail" id="war-rail">${eps.map((x, i) => warCard(x, i)).join('')}</div>
-      <a class="link-arrow rv" href="surgery-wars.html">${E(T('warAll'))} ${I('arrow-right')}</a></div></section>` : ''; })()}
+      <p class="war-links rv"><a class="link-arrow" href="surgery-wars.html">${E(T('warAll'))} ${I('arrow-right')}</a><a class="link-arrow" href="transformations.html">${E(T('shows'))} ${I('arrow-right')}</a></p></div></section>` : ''; })()}
 
     <section class="section promos-s">
       <div class="wrap"><div class="shead"><div><p class="eyebrow rv">${E(T('promotions'))}</p><h2 class="h-xl rv" data-field="home.promos.h">${E((H.promos && H.promos.h) || T('promosH'))}</h2></div><a class="link-arrow rv" href="promotions.html">${E(T('viewAll'))} ${I('arrow-right')}</a></div>
@@ -896,6 +896,30 @@
     ['eyelid', /ตาสองชั้น|ทำตา|ตาบน|หนังตา|eyelid/i], ['bone', /กระดูกคาง|ผ่าตัดขากรรไกร|genioplasty|jaw surgery/i], ['breast', /เสริมหน้าอก|ยกกระชับหน้าอก|breast (augmentation|lift)/i], ['lipo', /ดูดไขมัน|liposuction/i]];
   const warStage = (e, D) => `<div class="war-stage rv-clip"><button type="button" class="ws-poster" data-ytw="${E(D.yt || e.yt)}" aria-label="${E(T('warWatch').replace('{n}', e.n))}">
       <img src="${IMG(warSrc(e.img))}" alt="${E(D.title)}" width="1200" height="630" fetchpriority="high"><span class="ws-play">${I('play')}<span>${E(T('warWatch').replace('{n}', e.n))}</span></span></button></div>`;
+
+  /* Transformations (transformations.html): one section per show or series; data/<lang>/shows.js lists them, each series points at its own data file */
+  async function shows(){
+    const S = A.d('shared') || {}, D = A.d('shows') || {}, list = D.series || [];
+    const eps = x => ((A.d(x.data) || {}).episodes) || [];
+    const covers = list.flatMap(eps).filter(e => e.cover);
+    main().innerHTML = `
+      <section class="war-head night"><div class="hb-glow" aria-hidden="true"></div><div class="wrap wh-grid"><div class="wh-copy">
+        ${A.crumbs([homeCrumb(), [T('shows')]])}
+        <p class="eyebrow on-night rv">${E(list.map(x => x.name).join(' · '))}</p>
+        <h1 class="display-s sh-h1 rv" data-d="60">${nb(T('shows'))}</h1>
+        <p class="lead rv" data-d="120">${E(T('showsLead'))}</p></div>
+        <div class="wh-stack" aria-hidden="true">${[covers[7], covers[3], covers[0]].filter(Boolean).map((x, i) => `<img class="whs-${i}" src="${IMG(warSrc(x.cover))}" alt="" width="640" height="336">`).join('')}</div>
+      </div></section>
+      ${list.map((x, k) => { const e = eps(x); return `<section class="section sh-series${k % 2 ? ' washed' : ''}" id="${E(x.key)}"><div class="wrap">
+        <div class="shead"><div><p class="eyebrow rv">${E(x.channel || '')}${e.length ? ' · ' + E(T('showsEps').replace('{n}', e.length)) : ''}</p><h2 class="h-xl rv">${nb(x.name)}</h2><p class="reels-sub rv">${E(x.lead || '')}</p></div>
+          <div class="rail-ctrl rv"><button type="button" data-rp="${k}" aria-label="${E(T('prev'))}">${I('chevron-left')}</button><button type="button" data-rn="${k}" aria-label="${E(T('next'))}">${I('chevron-right')}</button></div></div>
+        <div class="rail war-rail" data-rail="${k}">${e.map((y, i) => warCard(y, i)).join('')}</div>
+        <a class="link-arrow rv" href="${E(x.href)}">${E(T('showsSeries'))} ${I('arrow-right')}</a></div></section>`; }).join('')}
+      <section class="section sh-soon-s"><div class="wrap"><div class="sh-soon rv"><span class="sh-soon-i">${I('play')}</span><div><h2 class="h-m">${E(T('showsSoon'))}</h2><p>${E(T('showsSoonP'))}</p></div></div></div></section>
+      <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
+    list.forEach((x, k) => A.railCtrl(A.qs(`[data-rail="${k}"]`), A.qs(`[data-rp="${k}"]`), A.qs(`[data-rn="${k}"]`)));
+    A.jsonld({'@context':'https://schema.org', '@type':'ItemList', itemListElement:list.map((x, i) => ({'@type':'ListItem', position:i + 1, url:new URL(x.href, location.href).href, name:x.name}))});
+  }
   async function war(){
     const S = A.d('shared') || {}, W = A.d('war') || {}, eps = W.episodes || [];
     const n = +A.param('ep');
@@ -903,7 +927,7 @@
     if (!e) {
       main().innerHTML = `
       <section class="war-head night"><div class="hb-glow" aria-hidden="true"></div><div class="wrap wh-grid"><div class="wh-copy">
-        ${A.crumbs([homeCrumb(), [T('war')]])}
+        ${A.crumbs([homeCrumb(), [T('shows'), 'transformations.html'], [T('war')]])}
         <p class="eyebrow on-night rv">Workpoint 23</p>
         <h1 class="display-s rv" data-d="60">${nb(T('warH'))}</h1>
         <p class="lead rv" data-d="120">${E(T('warLead'))}</p>
@@ -917,7 +941,7 @@
     }
     let D;
     try { D = await A.data('war/' + n, 'war:' + n); } catch (err) { D = null; }
-    if (!D) { main().innerHTML = phead(T('notFoundH'), T('loadError'), [homeCrumb(), [T('war'), 'surgery-wars.html']]); return; }
+    if (!D) { main().innerHTML = phead(T('notFoundH'), T('loadError'), [homeCrumb(), [T('shows'), 'transformations.html'], [T('war'), 'surgery-wars.html']]); return; }
     A.setMeta(`${D.title} | Apex Surgery Hospital`, D.desc);
     const blocks = (D.blocks || []).map(b => b.t === 'img' ? Object.assign({}, b, {src:warSrc(b.src)}) : b);
     const photos = blocks.filter(b => b.t === 'img');
@@ -928,7 +952,7 @@
     const procs = WAR_PROC.filter(([, r]) => r.test(text)).map(([k]) => k);
     const g = A.gallery(photos.map(p => ({src:p.src, alt:p.alt})));
     const i0 = eps.indexOf(e), prev = eps[i0 - 1], next = eps[i0 + 1];
-    const crumbs = [homeCrumb(), [T('war'), 'surgery-wars.html'], ['EP.' + n]];
+    const crumbs = [homeCrumb(), [T('shows'), 'transformations.html'], [T('war'), 'surgery-wars.html'], ['EP.' + n]];
     const hasToc = body.toc.length > 2;
     main().innerHTML = `
       <section class="art-head war-ep-head"><div class="phead-lines" aria-hidden="true"></div><div class="sh-glow" aria-hidden="true"></div><div class="wrap">${A.crumbs(crumbs)}
@@ -1028,6 +1052,6 @@
   }
 
   const page = async () => {};   // any other WordPress page: the server's text as it is
-  const PAGES = {home, services, treatments, service, about, doctor, promotions, reviews, blog, article, war, contact, nose, analysis, proportions, filler, implBreast, implChin, implForehead, implNose, play, plan, trip, consult, privacy, notfound, page};
+  const PAGES = {home, services, treatments, service, about, doctor, promotions, reviews, blog, article, shows, war, contact, nose, analysis, proportions, filler, implBreast, implChin, implForehead, implNose, play, plan, trip, consult, privacy, notfound, page};
   A.boot(() => (PAGES[document.body.dataset.page] || home)());
 })();

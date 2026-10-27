@@ -36,6 +36,7 @@ PAGES = [
     ('reviews.html',    'reviews',    ['reviews', 'posts', 'home'], 'reviews/',   'reviews'),
     ('blog.html',       'blog',       ['blogs', 'posts'],       'blogs/',         'blogs'),
     ('article.html',    'article',    ['posts'],                'blogs/',         None),
+    ('transformations.html', 'shows', ['shows', 'war'],       'transformations/', 'shows'),
     ('surgery-wars.html', 'war',      ['war'],                  'surgery-wars/',  None),
     ('contact.html',    'contact',    ['contact'],              'contact-us/',    'contact'),
     ('nose.html',       'nose',       [],                       'nose-preview/',  None),
