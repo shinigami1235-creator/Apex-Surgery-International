@@ -26,7 +26,7 @@ def _asset_version():
 ASSET_V = _asset_version()  # added to asset URLs so browsers fetch new files after each change
 
 PAGES = [
-    ('index.html',      'home',       ['home', 'about', 'founder', 'war', 'team'],        '',               'home'),
+    ('index.html',      'home',       ['home', 'about', 'founder', 'war', 'team', 'social'],        '',               'home'),
     ('about.html',      'about',      ['about', 'founder', 'team'],                'about-us/',      'about'),
     ('services.html',   'services',   ['services'],             'surgery/',       'services'),
     ('treatments.html', 'treatments', ['treatments'],          'non-surgical-treatments/', 'treatments'),
@@ -36,9 +36,9 @@ PAGES = [
     ('reviews.html',    'reviews',    ['reviews', 'posts', 'home'], 'reviews/',   'reviews'),
     ('blog.html',       'blog',       ['blogs', 'posts'],       'blogs/',         'blogs'),
     ('article.html',    'article',    ['posts'],                'blogs/',         None),
-    ('transformations.html', 'shows', ['shows', 'war'],       'transformations/', 'shows'),
+    ('transformations.html', 'shows', ['shows', 'war', 'social'],       'transformations/', 'shows'),
     ('surgery-wars.html', 'war',      ['war'],                  'surgery-wars/',  None),
-    ('contact.html',    'contact',    ['contact'],              'contact-us/',    'contact'),
+    ('contact.html',    'contact',    ['contact', 'social'],              'contact-us/',    'contact'),
     ('nose.html',       'nose',       [],                       'nose-preview/',  None),
     ('analysis.html',   'analysis',   [],                       'face-analysis/', None),
     ('proportions.html', 'proportions', [],                     'golden-proportions/', None),

@@ -1,0 +1,1 @@
+window.APEX=window.APEX||{};APEX._d=APEX._d||{};APEX._d["social"]={"note":"Filled by the WordPress stage from the Instagram API every hour: stories (live 24 hours) and the newest posts, each {src, href, cap, video}.","instagram":{"stories":[],"posts":[]}};

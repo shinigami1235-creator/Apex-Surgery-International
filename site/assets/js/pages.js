@@ -424,6 +424,8 @@
       </div>
     </section>
 
+    <section class="section social-s"><div class="wrap">${A.socialWall(S)}</div></section>
+
     ${(() => { const W = A.d('war'); const eps = (W && W.episodes) || []; return eps.length ? `<section class="section war-home">
       <div class="wrap"><div class="shead"><div><p class="eyebrow rv">${E(T('shows'))} · Workpoint 23</p><h2 class="h-xl rv">${E(T('warH'))}</h2><p class="reels-sub rv">${E(T('warLead'))}</p></div>
         <div class="rail-ctrl rv"><button type="button" id="war-prev" aria-label="${E(T('prev'))}">${I('chevron-left')}</button><button type="button" id="war-next" aria-label="${E(T('next'))}">${I('chevron-right')}</button></div></div>
@@ -450,7 +452,7 @@
     A.railCtrl(rail, A.qs('#rv-prev'), A.qs('#rv-next'));
     bindChips(A.qs('.reviews-s'), k => { A.qsa('.ba-card', rail).forEach(c => c.hidden = !(k === 'all' || c.dataset.cat === k)); rail.scrollTo({left:0}); });
     mountStories(A.qs('#stories'));
-    A.fbMount(main());
+    A.socialMount(main());
     bindOffers(A.qs('.promos-s'));
     A.railCtrl(A.qs('#war-rail'), A.qs('#war-prev'), A.qs('#war-next'));
   }
@@ -915,8 +917,10 @@
           <div class="rail-ctrl rv"><button type="button" data-rp="${k}" aria-label="${E(T('prev'))}">${I('chevron-left')}</button><button type="button" data-rn="${k}" aria-label="${E(T('next'))}">${I('chevron-right')}</button></div></div>
         <div class="rail war-rail" data-rail="${k}">${e.map((y, i) => warCard(y, i)).join('')}</div>
         <a class="link-arrow rv" href="${E(x.href)}">${E(T('showsSeries'))} ${I('arrow-right')}</a></div></section>`; }).join('')}
+      <section class="section washed social-s"><div class="wrap">${A.socialWall(S, {fb:true})}</div></section>
       <section class="section sh-soon-s"><div class="wrap"><div class="sh-soon rv"><span class="sh-soon-i">${I('play')}</span><div><h2 class="h-m">${E(T('showsSoon'))}</h2><p>${E(T('showsSoonP'))}</p></div></div></div></section>
       <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
+    A.socialMount(main());
     list.forEach((x, k) => A.railCtrl(A.qs(`[data-rail="${k}"]`), A.qs(`[data-rp="${k}"]`), A.qs(`[data-rn="${k}"]`)));
     A.jsonld({'@context':'https://schema.org', '@type':'ItemList', itemListElement:list.map((x, i) => ({'@type':'ListItem', position:i + 1, url:new URL(x.href, location.href).href, name:x.name}))});
   }
@@ -1001,7 +1005,9 @@
         </div>
         <div class="consult-col"><div id="consult" class="consult-host"><h2 class="h-l">${E(D.formH || T('consultPageH'))}</h2><p class="muted">${E(T('consultPageP'))}</p><a class="btn btn-plum" href="consult.html">${I('message-circle')}${E(T('consultBtn'))}</a></div></div>
       </div></section>
+      <section class="section social-s"><div class="wrap">${A.socialWall(S, {fb:true})}</div></section>
       <section class="section washed"><div class="wrap">${A.branchesHtml(S, D.branches && D.branches.h, D.branches && D.branches.p)}</div></section>`;
+    A.socialMount(main());
     A.mount('#consult', 'consult', {compact:true});
   }
 

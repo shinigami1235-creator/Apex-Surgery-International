@@ -535,6 +535,36 @@
   A.fbFrame = (f, h=640, tabs='timeline', also) => `<div class="fbframe rv"><div class="fbhead"><span class="fb-ic">${A.ic('facebook')}</span><span class="fb-name"><b>${A.esc(f.x)}</b><small>facebook.com/${A.esc(fbHandle(f))}</small></span><a class="fb-open" href="${f.h}" target="_blank" rel="noopener" aria-label="${A.esc(A.t('fbOpen'))}: ${A.esc(f.x)}" title="${A.esc(A.t('fbOpen'))}">${A.ic('arrow-up-right')}</a></div>
     <div class="fb-box" style="height:${h}px"><div class="fb-skel" aria-hidden="true"><i></i><i></i><i></i><i></i></div><iframe data-fb="${encodeURIComponent(f.h)}" data-h="${h}" data-tabs="${tabs}" height="${h}" title="${A.esc(f.x)} · Facebook" allow="encrypted-media"></iframe>
       <div class="fb-fallback" hidden><span class="fb-big">${A.ic('facebook')}</span><b class="h-s">${A.esc(A.t('fbH'))}</b>${A.fbLink(f)}${A.fbLink(also)}</div></div></div>`;
+  /* Latest from Apex: the Facebook page window, TikTok's own profile embed (its 10 newest videos, updated by TikTok)
+     and Instagram. Instagram has no embed for a whole profile, so its posts and live stories come from data/<lang>/social.js,
+     which the WordPress stage fills from the Instagram API every hour; until then the column is a link card. */
+  A.socialWall = (S, o={}) => {
+    const so = k => (S.socials || []).find(x => x.k === k);
+    const tt = so('tiktok'), ig = so('instagram'), IG = (A.d('social') || {}).instagram || {};
+    const igPosts = (IG.stories || []).map(x => ({...x, story:1})).concat(IG.posts || []).slice(0, 6);
+    const ttCol = tt ? `<div class="sw-col sw-tt rv"><div class="sw-h"><span class="sw-ic">${A.socIcon('tiktok')}</span><b>TikTok</b><a href="${tt.h}" target="_blank" rel="noopener">@${A.esc(tt.x)} ${A.ic('arrow-up-right')}</a></div>
+      <div class="tt-box"><blockquote class="tiktok-embed" cite="${tt.h}" data-unique-id="${A.esc(tt.x)}" data-embed-type="creator" style="max-width:780px;min-width:288px"><section><a target="_blank" rel="noopener" href="${tt.h}?refer=creator_embed">@${A.esc(tt.x)}</a></section></blockquote>
+      <div class="tt-fallback" hidden><a class="fb-link" href="${tt.h}" target="_blank" rel="noopener"><span class="fb-ic tt">${A.socIcon('tiktok')}</span><span class="fb-name"><b>@${A.esc(tt.x)}</b><small>tiktok.com/@${A.esc(tt.x)}</small></span>${A.ic('arrow-up-right')}</a></div></div></div>` : '';
+    const igCol = ig ? `<div class="sw-col sw-ig rv"><div class="sw-h"><span class="sw-ic">${A.socIcon('instagram')}</span><b>Instagram</b><a href="${ig.h}" target="_blank" rel="noopener">@${A.esc(ig.x)} ${A.ic('arrow-up-right')}</a></div>
+      ${igPosts.length ? `<div class="ig-grid">${igPosts.map(x => `<a class="ig-t ph-img${x.story ? ' story' : ''}" href="${A.esc(x.href || ig.h)}" target="_blank" rel="noopener"><img src="${A.esc(x.src)}" alt="${A.esc(x.cap || '')}" loading="lazy" decoding="async">${x.story ? `<span class="ig-st">${A.esc(A.t('igStory'))}</span>` : ''}${x.video ? `<span class="ig-v">${A.ic('play')}</span>` : ''}</a>`).join('')}</div>`
+        : `<a class="ig-card" href="${ig.h}" target="_blank" rel="noopener"><span class="ig-ring">${A.socIcon('instagram')}</span><b>@${A.esc(ig.x)}</b><span>${A.esc(A.t('igP'))}</span><span class="btn btn-ghost btn-sm">${A.esc(A.t('igOpen'))} ${A.ic('arrow-right')}</span></a>`}</div>` : '';
+    const fbCol = o.fb && S.facebook ? `<div class="sw-col sw-fb">${A.fbFrame(S.facebook, o.fbH || 640, 'timeline', S.facebookSurgery)}</div>` : '';
+    return `<div class="shead"><div><p class="eyebrow rv">${[fbCol && 'Facebook', ttCol && 'TikTok', igCol && 'Instagram'].filter(Boolean).join(' · ')}</p><h2 class="h-xl rv">${A.esc(A.t('socialH'))}</h2><p class="reels-sub rv">${A.esc(A.t('socialP'))}</p></div></div>
+      <div class="social-wall${fbCol ? ' has-fb' : ''}">${fbCol}${ttCol}${igCol}</div>`;
+  };
+  A.socialMount = root => {
+    A.fbMount(root);
+    const boxes = A.qsa('.tt-box', root);
+    if (!boxes.length) return;
+    const go = () => {
+      const s = document.querySelector('script[data-tt]');
+      if (s && window.tiktokEmbed && window.tiktokEmbed.lib && window.tiktokEmbed.lib.render) { try { window.tiktokEmbed.lib.render(A.qsa('.tiktok-embed', root)); } catch (e) { /* the script scans on its own */ } }
+      else if (!s) { const t = document.createElement('script'); t.async = true; t.src = 'https://www.tiktok.com/embed.js'; t.dataset.tt = 1; document.body.appendChild(t); }
+      setTimeout(() => boxes.forEach(b => { if (!A.qs('iframe', b)) { const q = A.qs('.tiktok-embed', b); if (q) q.remove(); const f = A.qs('.tt-fallback', b); if (f) f.hidden = false; A.emit('tiktok:fallback', {}); } }), 10000);
+    };
+    if ('IntersectionObserver' in window) { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); go(); } }, {rootMargin:'400px 0px'}); boxes.forEach(b => io.observe(b)); }
+    else go();
+  };
   A.fbMount = root => {
     const frs = A.qsa('iframe[data-fb]', root);
     const set = fr => {

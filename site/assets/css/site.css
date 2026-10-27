@@ -1415,3 +1415,33 @@ html:has(.tm-dlg[open]){overflow:hidden}
 .tx-img img{height:100%;width:auto;display:block}
 .tx-img:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
 .war-head .display-s.sh-h1{max-width:none;font-size:clamp(40px,6vw,88px)}
+/* Latest from Apex: Facebook window, TikTok profile embed, Instagram */
+.social-wall{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:clamp(18px,2.4vw,32px);align-items:start}
+.social-wall.has-fb{grid-template-columns:minmax(0,500px) minmax(0,1fr) minmax(0,.8fr)}
+.sw-col{min-width:0}
+.sw-tt,.sw-ig{border-radius:calc(var(--r-l) + 4px);background:#fff;box-shadow:var(--surf-shadow);padding:12px}
+.sw-h{display:flex;align-items:center;gap:10px;padding:4px 6px 12px}
+.sw-h b{font-size:16px}
+.sw-h a{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:13.5px;font-weight:700;color:var(--plum)}
+.sw-h a svg{width:14px;height:14px}
+.sw-ic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:#fff;flex:none}
+.sw-ig .sw-ic{background:linear-gradient(45deg,#f9a03f,#e1306c 50%,#833ab4)}
+.sw-ic svg{width:17px;height:17px}
+.tt-box{min-height:420px;border-radius:var(--r-m);overflow:hidden}
+.tt-box .tiktok-embed{margin:0!important;max-width:none!important}
+.tt-fallback[hidden]{display:none}
+.tt-fallback{padding:30px 10px}
+.fb-ic.tt{background:var(--ink)}
+.ig-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ig-t{position:relative;display:block;aspect-ratio:4/5;border-radius:12px;overflow:hidden}
+.ig-t.story{box-shadow:0 0 0 2px #fff,0 0 0 4px #e1306c}
+.ig-st,.ig-v{position:absolute;left:8px;top:8px;font-size:11.5px;font-weight:800;padding:3px 8px;border-radius:var(--pill);background:rgba(0,0,0,.55);color:#fff}
+.ig-v{left:auto;right:8px;display:grid;place-items:center;width:26px;height:26px;padding:0}
+.ig-v svg{width:13px;height:13px}
+.ig-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:34px 18px 28px;border-radius:var(--r-m);background:radial-gradient(90% 70% at 50% 0%,rgba(225,48,108,.12),transparent 70%);color:var(--ink)}
+.ig-card>span:not(.ig-ring):not(.btn){color:var(--ink-2);font-size:14.5px;max-width:30ch}
+.ig-ring{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;color:#fff;background:linear-gradient(45deg,#f9a03f,#e1306c 50%,#833ab4);box-shadow:0 0 0 4px #fff,0 0 0 6px #e1306c}
+.ig-ring svg{width:34px;height:34px}
+@media (max-width:1100px){.social-wall.has-fb{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.social-wall.has-fb .sw-ig{grid-column:1/-1}.social-wall.has-fb .ig-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:760px){.social-wall,.social-wall.has-fb{grid-template-columns:minmax(0,1fr)}.social-wall.has-fb .sw-ig{grid-column:auto}}
+.tt-box .tiktok-embed section{padding:180px 0;text-align:center;font-size:14px;color:var(--ink-3)}
