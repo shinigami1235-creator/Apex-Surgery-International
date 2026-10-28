@@ -14,6 +14,7 @@ This is Apex IT's list (October 2026) with the status of each item. Tier: full C
 | Draft, preview, scheduled publish, revisions | WordPress |
 | Roles, two-factor login for admins, activity log | WordPress |
 | Custom code fields, admin only | WordPress, WPCode |
+| Prices by country (raised by Apex IT on 28 Oct 2026) | WordPress, Apex settings › Prices by country, with a price, poster or hide per offer for each list. The price lists are Apex's to set |
 
 ## SEO
 

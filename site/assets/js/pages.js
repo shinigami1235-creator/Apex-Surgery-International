@@ -244,12 +244,14 @@
     const label = name + (words.length ? ' · ' + words.join(' · ') : '');
     const priceTxt = price ? `${A.fmtNum(price)} ${T('baht')}` : '';
     const msg = (A.lang === 'th' ? `สวัสดี ขอสอบถามโปรโมชั่น ${label}` : `Hello, I would like to ask about this offer: ${label}`) + (priceTxt ? ` (${priceTxt})` : '') + (A.lang === 'th' ? '' : '.');
-    return {src:p.src, alt:p.alt || label, cat, name, words, price, allIn, review, label,
+    return {key:file, src:p.src, alt:p.alt || label, cat, name, words, price, allIn, review, label,
       line:`https://line.me/R/oaMessage/@apexsurgery/?${encodeURIComponent(msg)}`, wa:`${A.WA.h}?text=${encodeURIComponent(msg)}`};
   };
   const fxSpan = thb => `<span class="apx-price op-fx" data-thb="${thb}" data-lang="${A.lang}"><span class="apx-fx" hidden></span><small>${E(T('approx'))}</small></span>`;
   const offerTags = o => `${o.allIn ? `<span class="o-tag hot">${E(T('allIn'))}</span>` : ''}${o.review ? `<span class="o-tag">${E(T('reviewCase'))}</span>` : ''}`;
-  const offerCard = (o, i, g) => `<article class="offer rv" data-d="${(i % 4) * 60}" data-cat="${E(o.cat || '')}">
+  /* data-offer and the rest let the country price lists find each offer (features/pricing) */
+  const offerData = o => `data-offer="${E(o.key)}" data-price="${o.price}" data-name="${E(o.name)}" data-label="${E(o.label)}"`;
+  const offerCard = (o, i, g) => `<article class="offer rv" data-d="${(i % 4) * 60}" data-cat="${E(o.cat || '')}" ${offerData(o)}>
       <button type="button" class="offer-img ph-img" ${g.attr(i)} aria-label="${E(T('image'))}: ${E(o.label)}"><img src="${IMG(o.src)}" alt="${E(o.alt)}" loading="lazy" decoding="async" decoding="async"><span class="o-zoom" aria-hidden="true">${I('arrow-up-right')}</span></button>
       <div class="offer-body">
         <div class="o-tags">${o.cat && o.words.length ? `<span class="o-proc">${E(o.name)}</span>` : ''}${offerTags(o)}</div>
@@ -270,7 +272,7 @@
   const offerSpot = (p, S) => {
     const o = offerOf(p, S);
     const g = A.gallery([{src:o.src, alt:o.alt}]);
-    return `<div class="offer-spot rv">
+    return `<div class="offer-spot rv" ${offerData(o)}>
       <div class="os-media"><button type="button" class="os-card ph-img" ${g.attr(0)} aria-label="${E(T('image'))}: ${E(o.label)}"><img src="${IMG(o.src)}" alt="${E(o.alt)}" loading="lazy" decoding="async" decoding="async"><span class="os-glare" aria-hidden="true"></span></button></div>
       <div class="os-body">
         <p class="os-kick">${E(T('featuredOffer'))}</p>
@@ -283,13 +285,15 @@
         <p class="note">${E(T('promosSub'))}</p>
       </div></div>`;
   };
-  /* currency, count-up and tilt for offers */
+  /* country prices, currency, count-up and tilt for offers */
   const bindOffers = async root => {
     if (!root) return;
     try {
       const C = await import(A.vurl(A.assets + 'features/currency/index.js'));
-      C.refresh(root);
       A.qsa('[data-cur-picker]', root).forEach(el => C.picker(el, {lang:A.lang, onEvent:(n, d) => A.emit(n, d)}));
+      C.refresh(root);
+      import(A.vurl(A.assets + 'features/pricing/index.js')).then(P => P.bind(root, {lang:A.lang, t:T, ic:I, fmtNum:A.fmtNum, img:IMG, gal:A._gal,
+        rest:A.ssr ? A.rest : '', multi:!!A.pricing, rates:C, emit:(n, d) => A.emit(n, d)})).catch(() => { /* Thailand's prices stay */ });
     } catch (e) { /* prices stay in baht */ }
     A.qsa('.os-n[data-count]', root).forEach(el => {
       const to = +el.dataset.count;

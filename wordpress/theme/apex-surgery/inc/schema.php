@@ -120,6 +120,13 @@ function apex_schema( string $type ): array {
 		apex_f( 'order', 'number', 'Order on the promotions page' ),
 		apex_f( 'onHome', 'bool', 'Show on the home page' ),
 		apex_f( 'homeOrder', 'number', 'Order on the home page' ),
+		apex_f( 'noPrice', 'bool', 'The poster has no price on it', [ 'h' => 'Leave unticked when the price is printed on the poster. Where a country price list shows a different price, the offer then shows a plain card with the right price instead of this poster.' ] ),
+		apex_f( 'regions', 'repeater', 'Prices by country', [ 'h' => 'Only for countries with their own price list, set under Apex settings › Prices by country. Fill in either language; the other follows unless it has its own rows.', 'f' => [
+			apex_f( 'region', 'select', 'Price list', [ 'o' => [ '' => '(choose)' ] + apex_pricing_region_options() ] ),
+			apex_f( 'price', 'number', 'Price', [ 'h' => 'In that list\'s currency. Empty uses the list\'s own rule.' ] ),
+			apex_f( 'poster', 'image', 'Poster for these countries', [ 'h' => 'Optional. A poster with this list\'s price on it.' ] ),
+			apex_f( 'show', 'select', 'Show', [ 'o' => [ 'auto' => 'As the list says', 'poster' => 'The poster', 'card' => 'A plain card with the price', 'hide' => 'Hide this offer' ] ] ),
+		] ] ),
 	];
 	$S['apex_case'] = [
 		apex_f( 'name', 'text', 'Case name', [ 'src' => 'title', 'h' => 'For the admin list only' ] ),

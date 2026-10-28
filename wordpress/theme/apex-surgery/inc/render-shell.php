@@ -252,6 +252,7 @@ function apex_boot_script( array $r ): string {
 		'media' => apex_media_base(),
 		'rest' => esc_url_raw( rest_url( 'apex/v1/' ) ),
 		'turnstile' => (string) get_option( 'apex_turnstile_site', '' ),
+		'pricing' => apex_pricing_multi() ? 1 : 0,
 	];
 	if ( $r['page'] === 'play' ) {
 		$cfg['games'] = apex_game_config();

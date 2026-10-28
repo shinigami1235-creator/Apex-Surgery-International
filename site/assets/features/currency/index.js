@@ -1,6 +1,7 @@
 /* Prices in baht with an approximate conversion to the visitor's currency.
    price(thb, {lang, currency?}) -> HTML string for one price; every price on the page updates on apex:currency.
    picker(el, {lang}) -> {destroy()} renders the currency selector.
+   A price element with data-cur is already in that currency, so no conversion shows when it is the chosen one.
    mount(container, {lang, prices?}) -> {destroy()} renders the picker with a list of prices (lab demo).
    The chosen currency is kept in localStorage under apex.currency and broadcast as
    window CustomEvent('apex:currency', {detail:{code}}). */
@@ -99,6 +100,14 @@ export function get() {
   try { const v = localStorage.getItem(KEY); if (v && CODES.includes(v)) return (mem = v); } catch (e) { /* storage blocked */ }
   return (mem = guess());
 }
+/* The page's own currency (a country price list in dollars, say) when the visitor has not picked one. */
+export function setDefault(code) {
+  if (!CODES.includes(code)) return;
+  try { if (localStorage.getItem(KEY)) return; } catch (e) { /* storage blocked */ }
+  if (mem === code) return;
+  mem = code;
+  try { window.dispatchEvent(new CustomEvent('apex:currency', { detail: { code } })); } catch (e) { /* no window */ }
+}
 export function set(code) {
   if (!CODES.includes(code)) return;
   mem = code;
@@ -109,6 +118,7 @@ export function set(code) {
 /* ---------- formatting ---------- */
 const nf = lang => new Intl.NumberFormat(lang === 'th' ? 'th-TH' : 'en-US', { maximumFractionDigits: 0 });
 export function convert(thb, code) { return thb / THB_PER[code]; }
+export function symbol(code) { return (CUR[code] || {}).sym || code + ' '; }
 function roundFx(v, code) {
   const step = code === 'KRW' ? 1000 : code === 'JPY' ? 100 : v >= 1000 ? 10 : 1;
   return Math.round(v / step) * step;
@@ -137,7 +147,8 @@ export function refresh(root = document) {
   root.querySelectorAll('.apx-price[data-thb]').forEach(el => {
     const fx = el.querySelector('.apx-fx');
     if (!fx) return;
-    const v = fxText(+el.dataset.thb, code, el.dataset.lang);
+    // a price already in the chosen currency needs no conversion beside it
+    const v = el.dataset.cur === code ? '' : fxText(+el.dataset.thb, code, el.dataset.lang);
     fx.textContent = v; fx.hidden = !v;
   });
 }

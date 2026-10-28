@@ -122,6 +122,40 @@ Each page is drawn in PHP from the same content structure the design used, with 
 - JPEG and PNG uploads are saved as WebP at quality 82, which loads faster. Settings › Media turns this off. Once a day the site also makes the phone-size copies of new wide photos; `wp apex webp` does it straight away.
 - One photo in the article "Brow Lift: Restore a Bright Face with Endotine" and its Thai version (`/wp-content/uploads/2025/05/image-13.png`) is missing on the live site too. Upload it again or take the image block out.
 
+## Prices by country
+
+Every offer has a price in baht, and that is the Thailand price. Countries that pay a different price get a price list under Apex settings › Prices by country. With no lists, every visitor sees the baht prices and the site never asks which country they are in.
+
+A list has:
+
+| Field | What it does |
+|---|---|
+| Name in English, Name in Thai | Shown in the "Prices for" list beside the currency switch |
+| Short code | Offers point to the list by it, for example `anz`. Keep it once offers use it |
+| Countries | Two-letter codes, for example `AU, NZ` |
+| Currency | The currency its prices are in |
+| Change on the baht price (%) | Used for any offer without its own price for this list. 15 shows each baht price 15% higher, converted into the list's currency at the rates in `assets/features/currency/index.js` |
+| Ask for the price | Shows "Ask for the price" on every offer without its own price for this list |
+| When a poster shows a different price | A plain card with the list's price, or hide the offer |
+
+Countries in no list get the baht prices, or one of the lists, as set under "Countries in no list". Untick "Visitors can pick a price list" to show each visitor only their own country's prices.
+
+On each offer, the "Prices by country" box takes one row per list: the price in that list's currency, a poster with that price on it, and whether to show the poster, a plain card or nothing. Rows set on the English offer also apply to the Thai one unless it has its own. Service pages show the same poster as an offer and follow that offer's rows.
+
+Most of Apex's posters have the baht price printed on them. Where a list shows a different price, such a poster gives way to a plain card in Apex's colours with the procedure name and the list's price, or the offer is hidden, as the list says. Tick "The poster has no price on it" on an offer whose poster shows no price, and it keeps its poster in every list. When a list hides every offer on a page, the page shows a line asking visitors to message Apex on LINE or WhatsApp for that month's offers. The message they send names the list, so the team knows which prices to quote.
+
+The visitor's country comes from the header the host or CDN adds: Cloudflare's `CF-IPCountry`, CloudFront's `CloudFront-Viewer-Country`, `X-Country-Code`, or nginx GeoIP's `GEOIP_COUNTRY_CODE`. Turn on IP Geolocation under Cloudflare › Network if the site sits behind Cloudflare. A host with another header name sets it in `wp-config.php`:
+
+```php
+define( 'APEX_COUNTRY_HEADER', 'HTTP_X_MY_COUNTRY' );
+```
+
+Without a header the site places visitors by their browser's time zone, which is right for most people and wrong for someone travelling. The top of Apex settings › Prices by country shows the country the site sees for you and where it came from.
+
+The page cache keeps working since every page is drawn with the baht prices. When at least one list exists the page asks `/wp-json/apex/v1/pricing`, which returns the visitor's list only, and the script changes the offers. Leave `/wp-json/` out of the page cache, as the server list at the top already asks. Search engines see the baht prices, and the structured data stays in baht.
+
+To check a list, open the promotions page with `?country=AU` (or any code) at the end of the address while visitors can pick a list.
+
 ## Who can see what
 
 | Role | Content | Enquiries and patient photos | Vouchers |
@@ -169,10 +203,11 @@ Then by hand:
 2. Open the enquiry as an Apex staff user and see the photo.
 3. Open `https://<site>/wp-content/uploads/apex-private/` in a private window. It must be refused.
 4. Claim a voucher in a game and check it under Vouchers › Check a code.
-5. Open five old addresses from Google Search Console and check each lands on its Thai page.
-6. Submit the new sitemap (`/wp-sitemap.xml`) in Search Console.
-7. Measure Core Web Vitals on staging with the cache on: PageSpeed Insights, mobile, on the home page, one service, one article and the breast implant viewer. Aim for LCP under 2.5 s, INP under 200 ms and CLS under 0.1. Search Console shows the figures from real visitors about 28 days after launch.
-8. Restore one backup to a spare copy, to know the backup works.
+5. If Apex has country price lists, check Apex settings › Prices by country shows your country from a header rather than the time zone, then open the promotions page with `?country=` set to one country from each list.
+6. Open five old addresses from Google Search Console and check each lands on its Thai page.
+7. Submit the new sitemap (`/wp-sitemap.xml`) in Search Console.
+8. Measure Core Web Vitals on staging with the cache on: PageSpeed Insights, mobile, on the home page, one service, one article and the breast implant viewer. Aim for LCP under 2.5 s, INP under 200 ms and CLS under 0.1. Search Console shows the figures from real visitors about 28 days after launch.
+9. Restore one backup to a spare copy, to know the backup works.
 
 ## Updating the design later
 

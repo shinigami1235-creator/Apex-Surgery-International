@@ -31,6 +31,7 @@ Redesign of apexsurgeryhospital.com for Apex. English is the main language since
 | Review stories | Service pages, reviews | Apex's own review videos in a swipe viewer |
 | Before/after | Service pages | Gallery with the Thai caption the advertising rules require |
 | Currency switch | Promotions, service pages | ECB rates of 20 Oct 2026, shown as approximate |
+| Prices by country | Every page with offers | Country price lists set in the backend: currency, a percentage on the baht price, an offer's own price or poster, or hidden. A poster with a different printed price gives way to a plain card. No lists yet, so everyone sees baht. `?pricing=demo` shows example lists |
 
 Score targets and prizes in `assets/features/games/config.js` are examples set from bot playtests. Apex replaces the prizes, and a short human playtest should confirm the targets.
 
@@ -50,6 +51,16 @@ Score targets and prizes in `assets/features/games/config.js` are examples set f
 | `wordpress/import/` | Both languages of content for `wp apex import` |
 | `wordpress/HANDOVER.md` | Install steps, addresses, roles, patient data, spam limits and the checks before launch |
 | `tests/wordpress/` | Tests for the theme: server pages against the scripts, every edit screen, the forms, accessibility |
+
+## Prices by country
+
+Apex's IT plans to price by country, and no price lists exist yet. The backend takes them as they come under Apex settings › Prices by country, and `wordpress/HANDOVER.md` explains each field.
+
+The offers arrive drawn with the baht prices, and `site/assets/features/pricing/index.js` changes them for the visitor's list after the page loads. Every offer carries the poster's file name as `data-offer`, and a list's rows are keyed by that name, so a poster shown on the promotions page, the home page and a service page follows the same rows. The page cache keeps working since the server always draws the baht prices.
+
+Most posters have the baht price printed on the art, and the art cannot be edited. Where a list's price differs, such a poster gives way to a plain card in Apex's colours with the procedure name and the list's price, or the offer is hidden, as the list says. An offer can take its own poster for a list, and an offer whose poster shows no price keeps it everywhere.
+
+On the design preview, `features/pricing/regions.js` stands in for the backend and the browser's time zone gives the country (`tz.js`, built from the IANA zone table by `build/pricing_tz.py`). `?pricing=demo` loads `regions-demo.js`: Australia and New Zealand in Australian dollars at 15% over the baht price with Motiva at its own price, and the Gulf countries in US dollars with "Ask for the price". The numbers are made up for review and show only with that address. `?country=AU` tries a country.
 
 ## Golden proportions
 

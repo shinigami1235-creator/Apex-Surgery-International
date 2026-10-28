@@ -365,14 +365,18 @@ function apex_offer_of( array $p, array $S, ?string $cat0 = null ): array {
 	$price_txt = $price ? apex_fmt_num( $price ) . ' ' . apex_t( 'baht' ) : '';
 	$msg = ( apex_L() === 'th' ? "สวัสดี ขอสอบถามโปรโมชั่น $label" : "Hello, I would like to ask about this offer: $label" ) . ( $price_txt ? " ($price_txt)" : '' ) . ( apex_L() === 'th' ? '' : '.' );
 	$WA = apex_wa();
-	return [ 'src' => $p['src'] ?? '', 'alt' => ( $p['alt'] ?? '' ) ?: $label, 'cat' => $cat, 'name' => $name, 'words' => $words, 'price' => $price, 'allIn' => $all_in, 'review' => $review, 'label' => $label,
+	return [ 'key' => $file, 'src' => $p['src'] ?? '', 'alt' => ( $p['alt'] ?? '' ) ?: $label, 'cat' => $cat, 'name' => $name, 'words' => $words, 'price' => $price, 'allIn' => $all_in, 'review' => $review, 'label' => $label,
 		'line' => 'https://line.me/R/oaMessage/@apexsurgery/?' . apex_jsuri( $msg ), 'wa' => $WA['h'] . '?text=' . apex_jsuri( $msg ) ];
 }
 function apex_fx_span( $thb ): string { return '<span class="apx-price op-fx" data-thb="' . apex_num_attr( $thb ) . '" data-lang="' . apex_L() . '"><span class="apx-fx" hidden></span><small>' . apex_e( apex_t( 'approx' ) ) . '</small></span>'; }
 function apex_num_attr( $n ): string { $n = (float) $n; return floor( $n ) == $n ? (string) (int) $n : (string) $n; }
 function apex_offer_tags( array $o ): string { return ( $o['allIn'] ? '<span class="o-tag hot">' . apex_e( apex_t( 'allIn' ) ) . '</span>' : '' ) . ( $o['review'] ? '<span class="o-tag">' . apex_e( apex_t( 'reviewCase' ) ) . '</span>' : '' ); }
+/** data-offer and the rest let the country price lists find each offer (assets/features/pricing). */
+function apex_offer_data( array $o ): string {
+	return 'data-offer="' . apex_e( $o['key'] ) . '" data-price="' . apex_num_attr( $o['price'] ) . '" data-name="' . apex_e( $o['name'] ) . '" data-label="' . apex_e( $o['label'] ) . '"';
+}
 function apex_offer_card( array $o, int $i, int $g ): string {
-	return '<article class="offer rv" data-d="' . ( ( $i % 4 ) * 60 ) . '" data-cat="' . apex_e( $o['cat'] ?? '' ) . '">
+	return '<article class="offer rv" data-d="' . ( ( $i % 4 ) * 60 ) . '" data-cat="' . apex_e( $o['cat'] ?? '' ) . '" ' . apex_offer_data( $o ) . '>
       <button type="button" class="offer-img ph-img" ' . apex_gattr( $g, $i ) . ' aria-label="' . apex_e( apex_t( 'image' ) ) . ': ' . apex_e( $o['label'] ) . '"><img src="' . esc_url( apex_img( $o['src'] ) ) . '" alt="' . apex_e( $o['alt'] ) . '" loading="lazy" decoding="async" decoding="async"><span class="o-zoom" aria-hidden="true">' . apex_ic( 'arrow-up-right' ) . '</span></button>
       <div class="offer-body">
         <div class="o-tags">' . ( $o['cat'] && $o['words'] ? '<span class="o-proc">' . apex_e( $o['name'] ) . '</span>' : '' ) . apex_offer_tags( $o ) . '</div>
@@ -398,7 +402,7 @@ function apex_promo_grid( array $items, array $S, array $opts = [] ): string {
 function apex_offer_spot( array $p, array $S ): string {
 	$o = apex_offer_of( $p, $S );
 	$g = apex_gallery();
-	return '<div class="offer-spot rv">
+	return '<div class="offer-spot rv" ' . apex_offer_data( $o ) . '>
       <div class="os-media"><button type="button" class="os-card ph-img" ' . apex_gattr( $g, 0 ) . ' aria-label="' . apex_e( apex_t( 'image' ) ) . ': ' . apex_e( $o['label'] ) . '"><img src="' . esc_url( apex_img( $o['src'] ) ) . '" alt="' . apex_e( $o['alt'] ) . '" loading="lazy" decoding="async" decoding="async"><span class="os-glare" aria-hidden="true"></span></button></div>
       <div class="os-body">
         <p class="os-kick">' . apex_e( apex_t( 'featuredOffer' ) ) . '</p>

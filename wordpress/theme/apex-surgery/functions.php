@@ -16,6 +16,7 @@
  * inc/seo.php       titles, descriptions, Open Graph, JSON-LD, hreflang when no SEO plugin is active
  * inc/redirects.php old URLs to new ones
  * inc/forms.php     online consultation, game vouchers, the reception voucher check
+ * inc/pricing.php   prices by country: the price lists, each visitor's list, Apex settings › Prices by country
  * inc/tracking.php  Google Tag Manager with Consent Mode v2 and the cookie banner
  * inc/media.php     uploads saved as WebP
  * inc/security.php  hardening
@@ -28,7 +29,7 @@ define( 'APEX_VERSION', '1.0.0' );
 define( 'APEX_DIR', __DIR__ );
 define( 'APEX_URI', get_template_directory_uri() );
 
-foreach ( [ 'helpers', 'schema', 'types', 'fields', 'blocks', 'data', 'render-shell', 'render-pages', 'seo', 'redirects', 'forms', 'tracking', 'media', 'security', 'admin' ] as $f ) {
+foreach ( [ 'helpers', 'schema', 'types', 'fields', 'blocks', 'data', 'render-shell', 'render-pages', 'seo', 'redirects', 'forms', 'pricing', 'tracking', 'media', 'security', 'admin' ] as $f ) {
 	require_once APEX_DIR . "/inc/$f.php";
 }
 if ( defined( 'WP_CLI' ) && WP_CLI ) {

@@ -19,7 +19,11 @@ add_action( 'manage_apex_offer_posts_custom_column', function ( $col, $id ) {
 	$o = apex_read_post( $id, 'apex_offer' );
 	if ( $col === 'apex_img' ) echo apex_thumb_html( $o['src'] );
 	if ( $col === 'apex_cat' ) echo esc_html( apex_service_keys()[ $o['cat'] ] ?? '—' );
-	if ( $col === 'apex_price' ) echo $o['price'] ? esc_html( number_format( (float) $o['price'] ) . ' ฿' ) : '—';
+	if ( $col === 'apex_price' ) {
+		echo $o['price'] ? esc_html( number_format( (float) $o['price'] ) . ' ฿' ) : '—';
+		$n = count( array_filter( (array) ( $o['regions'] ?? [] ), fn( $r ) => ! empty( $r['region'] ) ) );
+		if ( $n ) echo '<br><small>' . esc_html( sprintf( _n( '%d country price list', '%d country price lists', $n, 'apex' ), $n ) ) . '</small>';
+	}
 	if ( $col === 'apex_where' ) echo esc_html( implode( ', ', array_filter( [ $o['onHome'] ? __( 'Home', 'apex' ) . ( $o['homeOrder'] ? ' #' . $o['homeOrder'] : '' ) : '', $o['onPromotions'] ? __( 'Promotions', 'apex' ) . ( $o['order'] ? ' #' . $o['order'] : '' ) : '' ] ) ) ?: '—' );
 }, 10, 2 );
 add_filter( 'manage_apex_case_posts_columns', fn( $c ) => array_slice( $c, 0, 1 ) + [ 'apex_img' => '' ] + array_slice( $c, 1, 1 ) + [ 'apex_cat' => __( 'Procedure', 'apex' ) ] + array_slice( $c, 2 ) );
