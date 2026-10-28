@@ -169,6 +169,7 @@ function apex_build( string $id, string $lang ) {
 			$o['items'] = apex_offers( $lang, 'onPromotions', 'order' );
 			return $o;
 		case 'founder': return apex_founder( $lang );
+		case 'social': return apex_social_data();
 		case 'posts': return apex_post_list( $lang );
 		case 'post': return apex_post_obj( $key, $lang );
 		case 'svc': return apex_svc_obj( $key, $lang );

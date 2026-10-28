@@ -535,35 +535,37 @@
   A.fbFrame = (f, h=640, tabs='timeline', also) => `<div class="fbframe rv"><div class="fbhead"><span class="fb-ic">${A.ic('facebook')}</span><span class="fb-name"><b>${A.esc(f.x)}</b><small>facebook.com/${A.esc(fbHandle(f))}</small></span><a class="fb-open" href="${f.h}" target="_blank" rel="noopener" aria-label="${A.esc(A.t('fbOpen'))}: ${A.esc(f.x)}" title="${A.esc(A.t('fbOpen'))}">${A.ic('arrow-up-right')}</a></div>
     <div class="fb-box" style="height:${h}px"><div class="fb-skel" aria-hidden="true"><i></i><i></i><i></i><i></i></div><iframe data-fb="${encodeURIComponent(f.h)}" data-h="${h}" data-tabs="${tabs}" height="${h}" title="${A.esc(f.x)} · Facebook" allow="encrypted-media"></iframe>
       <div class="fb-fallback" hidden><span class="fb-big">${A.ic('facebook')}</span><b class="h-s">${A.esc(A.t('fbH'))}</b>${A.fbLink(f)}${A.fbLink(also)}</div></div></div>`;
-  /* Latest from Apex: the Facebook page window, TikTok's own profile embed (its 10 newest videos, updated by TikTok)
-     and Instagram. Instagram has no embed for a whole profile, so its posts and live stories come from data/<lang>/social.js,
-     which the WordPress stage fills from the Instagram API every hour; until then the column is a link card. */
+  /* Latest from Apex: Instagram and TikTok posts as square tiles, newest first, with a follow tile for each
+     account at the end, and the Facebook page window beside them where o.fb is set. The posts come from
+     data/<lang>/social.js, which the WordPress stage fills from the Instagram and TikTok APIs every hour and
+     stores on the site, so the section loads no outside script. Square tiles keep it apart from the upright
+     review reels. With no posts yet, only the follow tiles show. */
+  A.socialPosts = () => {
+    const D = A.d('social') || {}, IG = D.instagram || {}, TT = D.tiktok || {};
+    const tag = net => x => ({net, ...x});
+    const all = [...(D.posts || []), ...(IG.stories || []).map(x => ({...tag('instagram')(x), story:1})), ...(IG.posts || []).map(tag('instagram')), ...(TT.posts || []).map(tag('tiktok'))];
+    return all.filter(x => x.src && x.href).sort((a, b) => (b.story || 0) - (a.story || 0) || String(b.date || '').localeCompare(String(a.date || '')));
+  };
+  const NETS = {instagram:'Instagram', tiktok:'TikTok', facebook:'Facebook'};
+  const shortDate = d => { try { return new Date(d + 'T00:00:00').toLocaleDateString(A.lang === 'th' ? 'th-TH' : 'en-GB', {day:'numeric', month:'short'}); } catch (e) { return d; } };
+  A.feedTile = (x, i) => `<a class="feed-t ph-img rv${x.story ? ' story' : ''}" data-d="${(i % 6) * 50}" href="${A.esc(x.href)}" target="_blank" rel="noopener" aria-label="${A.esc(NETS[x.net] || '')}${x.date ? ', ' + A.esc(shortDate(x.date)) : ''}${x.cap ? ': ' + A.esc(x.cap) : ''}">
+      <img src="${A.esc(A.img(x.src))}" alt="" loading="lazy" decoding="async"><span class="feed-net n-${A.esc(x.net)}">${A.socIcon(x.net)}</span>${x.video ? `<span class="feed-v">${A.ic('play')}</span>` : ''}${x.story ? `<span class="feed-st">${A.esc(A.t('igStory'))}</span>` : x.date ? `<span class="feed-d">${A.esc(shortDate(x.date))}</span>` : ''}</a>`;
+  A.feedFollow = (k, x, h) => `<a class="feed-more rv n-${k}" href="${A.esc(h)}" target="_blank" rel="noopener"><span class="fm-ic">${A.socIcon(k)}</span><b>${A.esc(x)}</b><small>${A.esc(A.t('followOn').replace('{n}', NETS[k]))}</small></a>`;
   A.socialWall = (S, o={}) => {
     const so = k => (S.socials || []).find(x => x.k === k);
-    const tt = so('tiktok'), ig = so('instagram'), IG = (A.d('social') || {}).instagram || {};
-    const igPosts = (IG.stories || []).map(x => ({...x, story:1})).concat(IG.posts || []).slice(0, 6);
-    const ttCol = tt ? `<div class="sw-col sw-tt rv"><div class="sw-h"><span class="sw-ic">${A.socIcon('tiktok')}</span><b>TikTok</b><a href="${tt.h}" target="_blank" rel="noopener">@${A.esc(tt.x)} ${A.ic('arrow-up-right')}</a></div>
-      <div class="tt-box"><blockquote class="tiktok-embed" cite="${tt.h}" data-unique-id="${A.esc(tt.x)}" data-embed-type="creator" style="max-width:780px;min-width:288px"><section><a target="_blank" rel="noopener" href="${tt.h}?refer=creator_embed">@${A.esc(tt.x)}</a></section></blockquote>
-      <div class="tt-fallback" hidden><a class="fb-link" href="${tt.h}" target="_blank" rel="noopener"><span class="fb-ic tt">${A.socIcon('tiktok')}</span><span class="fb-name"><b>@${A.esc(tt.x)}</b><small>tiktok.com/@${A.esc(tt.x)}</small></span>${A.ic('arrow-up-right')}</a></div></div></div>` : '';
-    const igCol = ig ? `<div class="sw-col sw-ig rv"><div class="sw-h"><span class="sw-ic">${A.socIcon('instagram')}</span><b>Instagram</b><a href="${ig.h}" target="_blank" rel="noopener">@${A.esc(ig.x)} ${A.ic('arrow-up-right')}</a></div>
-      ${igPosts.length ? `<div class="ig-grid">${igPosts.map(x => `<a class="ig-t ph-img${x.story ? ' story' : ''}" href="${A.esc(x.href || ig.h)}" target="_blank" rel="noopener"><img src="${A.esc(x.src)}" alt="${A.esc(x.cap || '')}" loading="lazy" decoding="async">${x.story ? `<span class="ig-st">${A.esc(A.t('igStory'))}</span>` : ''}${x.video ? `<span class="ig-v">${A.ic('play')}</span>` : ''}</a>`).join('')}</div>`
-        : `<a class="ig-card" href="${ig.h}" target="_blank" rel="noopener"><span class="ig-ring">${A.socIcon('instagram')}</span><b>@${A.esc(ig.x)}</b><span>${A.esc(A.t('igP'))}</span><span class="btn btn-ghost btn-sm">${A.esc(A.t('igOpen'))} ${A.ic('arrow-right')}</span></a>`}</div>` : '';
-    const fbCol = o.fb && S.facebook ? `<div class="sw-col sw-fb">${A.fbFrame(S.facebook, o.fbH || 640, 'timeline', S.facebookSurgery)}</div>` : '';
-    return `<div class="shead"><div><p class="eyebrow rv">${[fbCol && 'Facebook', ttCol && 'TikTok', igCol && 'Instagram'].filter(Boolean).join(' · ')}</p><h2 class="h-xl rv">${A.esc(A.t('socialH'))}</h2><p class="reels-sub rv">${A.esc(A.t('socialP'))}</p></div></div>
-      <div class="social-wall${fbCol ? ' has-fb' : ''}">${fbCol}${ttCol}${igCol}</div>`;
+    const posts = A.socialPosts().slice(0, o.fb ? 6 : 12);
+    const follow = [['instagram', so('instagram')], ['tiktok', so('tiktok')], ['facebook', S.facebook || so('facebook')]].filter(([, x]) => x)
+      .map(([k, x]) => A.feedFollow(k, k === 'facebook' ? x.x : '@' + x.x, x.h));
+    const fbCol = o.fb && S.facebook ? `<div class="feed-fb">${A.fbFrame(S.facebook, o.fbH || 560, 'timeline', S.facebookSurgery)}</div>` : '';
+    const nets = posts.length ? [...new Set(posts.map(x => NETS[x.net]))] : ['Instagram', 'TikTok'];
+    const many = !fbCol && posts.length + follow.length > 6;
+    return `<div class="shead"><div><p class="eyebrow rv">${[...nets, fbCol && 'Facebook'].filter(Boolean).join(' · ')}</p><h2 class="h-xl rv">${A.esc(A.t('socialH'))}</h2><p class="reels-sub rv">${A.esc(A.t('socialP'))}</p></div>
+      ${many ? `<div class="rail-ctrl rv"><button type="button" class="feed-prev" aria-label="${A.esc(A.t('prev'))}">${A.ic('chevron-left')}</button><button type="button" class="feed-next" aria-label="${A.esc(A.t('next'))}">${A.ic('chevron-right')}</button></div>` : ''}</div>
+      <div class="feed${fbCol ? ' has-fb' : ''}">${fbCol}<div class="feed-rail${posts.length ? '' : ' only-follow'}">${posts.map(A.feedTile).join('')}${follow.join('')}</div></div>`;
   };
   A.socialMount = root => {
     A.fbMount(root);
-    const boxes = A.qsa('.tt-box', root);
-    if (!boxes.length) return;
-    const go = () => {
-      const s = document.querySelector('script[data-tt]');
-      if (s && window.tiktokEmbed && window.tiktokEmbed.lib && window.tiktokEmbed.lib.render) { try { window.tiktokEmbed.lib.render(A.qsa('.tiktok-embed', root)); } catch (e) { /* the script scans on its own */ } }
-      else if (!s) { const t = document.createElement('script'); t.async = true; t.src = 'https://www.tiktok.com/embed.js'; t.dataset.tt = 1; document.body.appendChild(t); }
-      setTimeout(() => boxes.forEach(b => { if (!A.qs('iframe', b)) { const q = A.qs('.tiktok-embed', b); if (q) q.remove(); const f = A.qs('.tt-fallback', b); if (f) f.hidden = false; A.emit('tiktok:fallback', {}); } }), 10000);
-    };
-    if ('IntersectionObserver' in window) { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); go(); } }, {rootMargin:'400px 0px'}); boxes.forEach(b => io.observe(b)); }
-    else go();
+    A.qsa('.feed', root).forEach(f => { const sec = f.closest('section') || root; A.railCtrl(A.qs('.feed-rail', f), A.qs('.feed-prev', sec), A.qs('.feed-next', sec)); });
   };
   A.fbMount = root => {
     const frs = A.qsa('iframe[data-fb]', root);

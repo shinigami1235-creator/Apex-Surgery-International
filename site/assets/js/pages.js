@@ -428,8 +428,6 @@
       </div>
     </section>
 
-    <section class="section social-s"><div class="wrap">${A.socialWall(S)}</div></section>
-
     ${(() => { const W = A.d('war'); const eps = (W && W.episodes) || []; return eps.length ? `<section class="section war-home">
       <div class="wrap"><div class="shead"><div><p class="eyebrow rv">${E(T('shows'))} · Workpoint 23</p><h2 class="h-xl rv">${E(T('warH'))}</h2><p class="reels-sub rv">${E(T('warLead'))}</p></div>
         <div class="rail-ctrl rv"><button type="button" id="war-prev" aria-label="${E(T('prev'))}">${I('chevron-left')}</button><button type="button" id="war-next" aria-label="${E(T('next'))}">${I('chevron-right')}</button></div></div>
@@ -442,6 +440,8 @@
     </section>
 
     <section class="section washed"><div class="wrap">${A.branchesHtml(S, H.branches && H.branches.h, H.branches && H.branches.p)}</div></section>
+
+    <section class="section social-s"><div class="wrap">${A.socialWall(S)}</div></section>
 
     <section class="section updates-s">
       <div class="wrap"><div class="shead"><h2 class="h-xl rv" data-field="home.news.h">${E((H.news && H.news.h) || T('newsH'))}</h2><a class="link-arrow rv" href="blog.html">${E(T('viewAll'))} ${I('arrow-right')}</a></div>

@@ -31,6 +31,7 @@ Redesign of apexsurgeryhospital.com for Apex. English is the main language since
 | Review stories | Service pages, reviews | Apex's own review videos in a swipe viewer |
 | Before/after | Service pages | Gallery with the Thai caption the advertising rules require |
 | Currency switch | Promotions, service pages | ECB rates of 20 Oct 2026, shown as approximate |
+| Latest from Apex | Home, contact, Transformations | Instagram and TikTok posts as square tiles with a follow tile per account, fetched by the WordPress site every hour. The preview shows a snapshot of 28 Oct 2026 |
 | Prices by country | Every page with offers | Country price lists set in the backend: currency, a percentage on the baht price, an offer's own price or poster, or hidden. A poster with a different printed price gives way to a plain card. No lists yet, so everyone sees baht. `?pricing=demo` shows example lists |
 
 Score targets and prizes in `assets/features/games/config.js` are examples set from bot playtests. Apex replaces the prizes, and a short human playtest should confirm the targets.
@@ -51,6 +52,14 @@ Score targets and prizes in `assets/features/games/config.js` are examples set f
 | `wordpress/import/` | Both languages of content for `wp apex import` |
 | `wordpress/HANDOVER.md` | Install steps, addresses, roles, patient data, spam limits and the checks before launch |
 | `tests/wordpress/` | Tests for the theme: server pages against the scripts, every edit screen, the forms, accessibility |
+
+## Latest from Apex
+
+The section sits on the home page between the branches and the news, away from the review reels, and uses square tiles so it reads as a social feed rather than more reels. Each tile shows the network, the date and a play mark for videos, and opens the post. A follow tile for Instagram, TikTok and Facebook ends the row.
+
+It used TikTok's profile embed and an Instagram link card until 28 Oct 2026. The TikTok embed loaded TikTok's own player, showed "overloaded" when TikTok rate-limited it, and Instagram has no embed for a whole profile. The WordPress theme now fetches both through their APIs every hour (`inc/social.php`) and keeps a copy of each cover, so the page draws its own tiles. `wordpress/HANDOVER.md` has the steps for the keys.
+
+On the preview the posts come from `assets/data/<lang>/social.js`, a snapshot of three posts saved from Apex's accounts on 28 Oct 2026 into `assets/img/social/`.
 
 ## Prices by country
 

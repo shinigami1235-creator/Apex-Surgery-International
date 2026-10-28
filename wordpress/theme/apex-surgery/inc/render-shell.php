@@ -53,7 +53,7 @@ function apex_page_data_ids( array $r ): array {
 	$ids = [ 'shared' ];
 	$p = $r['params'];
 	switch ( $r['page'] ) {
-		case 'home': array_push( $ids, 'home', 'about', 'founder', 'war' ); break;
+		case 'home': array_push( $ids, 'home', 'about', 'founder', 'war', 'social' ); break;
 		case 'about': array_push( $ids, 'about', 'founder' ); break;
 		case 'services': $ids[] = 'services'; break;
 		case 'service': array_push( $ids, 'posts', 'svc:' . ( $p['p'] ?? '' ) ); break;
@@ -66,7 +66,7 @@ function apex_page_data_ids( array $r ): array {
 		case 'blog': array_push( $ids, 'blogs', 'posts' ); break;
 		case 'article': array_push( $ids, 'posts', 'post:' . ( $p['p'] ?? '' ) ); break;
 		case 'war': $ids[] = 'war'; if ( ! empty( $p['ep'] ) ) $ids[] = 'war:' . $p['ep']; break;
-		case 'contact': $ids[] = 'contact'; break;
+		case 'contact': array_push( $ids, 'contact', 'social' ); break;
 		case 'privacy': $ids[] = 'privacy'; break;
 	}
 	return $ids;
@@ -269,7 +269,7 @@ add_action( 'template_redirect', function () {
 	$q = sanitize_text_field( wp_unslash( $_GET['apex_data'] ) );
 	if ( ! preg_match( '#^(en|th)/([a-z]+)(?:/([a-z0-9-]+))?$#', $q, $m ) ) { status_header( 404 ); exit; }
 	$id = $m[2] . ( isset( $m[3] ) && $m[3] !== '' ? ':' . $m[3] : '' );
-	if ( ! in_array( $m[2], [ 'shared', 'home', 'about', 'services', 'promotions', 'reviews', 'blogs', 'contact', 'founder', 'posts', 'post', 'svc', 'war' ], true ) ) { status_header( 404 ); exit; }
+	if ( ! in_array( $m[2], [ 'shared', 'home', 'about', 'services', 'promotions', 'reviews', 'blogs', 'contact', 'founder', 'posts', 'post', 'svc', 'war', 'social' ], true ) ) { status_header( 404 ); exit; }
 	$d = apex_data( $id, $m[1] );
 	header( 'Content-Type: application/javascript; charset=utf-8' );
 	header( 'Cache-Control: public, max-age=300' );

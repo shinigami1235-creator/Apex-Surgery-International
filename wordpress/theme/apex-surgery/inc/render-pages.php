@@ -568,6 +568,8 @@ function apex_page_home( array $r ): string {
 
     <section class="section washed"><div class="wrap">' . apex_branches( $S, $H['branches']['h'] ?? null, $H['branches']['p'] ?? null ) . '</div></section>
 
+    <section class="section social-s"><div class="wrap">' . apex_social_wall( $S ) . '</div></section>
+
     <section class="section updates-s">
       <div class="wrap"><div class="shead"><h2 class="h-xl rv" data-field="home.news.h">' . $E( ( $H['news']['h'] ?? '' ) ?: $T( 'newsH' ) ) . '</h2><a class="link-arrow rv" href="' . esc_url( apex_link( 'blog.html' ) ) . '">' . $E( $T( 'viewAll' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div>
       <div class="updates2">' . ( ! empty( $S['facebook'] ) ? '<div class="fb-col">' . apex_fb_link( $S['facebookSurgery'] ?? null, 'big' ) . apex_fb_frame( $S['facebook'], 600, 'timeline', $S['facebookSurgery'] ?? null ) . '</div>' : '' ) . '<div class="upd-list">' . implode( '', array_map( 'apex_post_card', array_slice( $news, 0, 4 ), array_keys( array_slice( $news, 0, 4 ) ) ) ) . '</div></div></div>
@@ -1080,6 +1082,7 @@ function apex_page_contact( array $r ): string {
         </div>
         <div class="consult-col"><div id="consult" class="consult-host"><h2 class="h-l">' . $E( ( $D['formH'] ?? '' ) ?: $T( 'consultPageH' ) ) . '</h2><p class="muted">' . $E( $T( 'consultPageP' ) ) . '</p><a class="btn btn-plum" href="' . esc_url( apex_link( 'consult.html' ) ) . '">' . $I( 'message-circle' ) . $E( $T( 'consultBtn' ) ) . '</a></div></div>
       </div></section>
+      <section class="section social-s"><div class="wrap">' . apex_social_wall( $S, [ 'fb' => true ] ) . '</div></section>
       <section class="section washed"><div class="wrap">' . apex_branches( $S, $D['branches']['h'] ?? null, $D['branches']['p'] ?? null ) . '</div></section>';
 }
 

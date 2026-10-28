@@ -156,6 +156,44 @@ The page cache keeps working since every page is drawn with the baht prices. Whe
 
 To check a list, open the promotions page with `?country=AU` (or any code) at the end of the address while visitors can pick a list.
 
+## Social feeds
+
+The "Latest from Apex" section on the home and contact pages shows Apex's newest Instagram and TikTok posts as square tiles. Every hour the site asks Instagram and TikTok for the newest posts and saves a 480 px copy of each cover in `wp-content/uploads/apex-social/`, so the pages load nothing from either network. Until the keys below are in, the section shows a follow tile for Instagram, TikTok and Facebook only. Apex settings › Social feeds shows when the last fetch ran, what it found and any error, and "Save and fetch now" runs one straight away.
+
+WordPress runs the hourly fetch when someone visits the site. On a quiet site, or to be exact about it, run it from the server's cron instead: `*/15 * * * * wp --path=/var/www/html cron event run --due-now`.
+
+### Instagram
+
+The apex_surgery account has to be a professional (business or creator) account.
+
+1. At developers.facebook.com, create an app of the Business type and add the Instagram product. Choose the API setup with Instagram login.
+2. Under "Generate access tokens", add the apex_surgery account, sign in with it and copy the token it gives.
+3. Paste it into Apex settings › Social feeds › Access token and press "Save and fetch now".
+
+The token lasts 60 days and the site renews it every week, so it keeps working as long as the fetch runs. If the account's password changes, make a new token the same way.
+
+### TikTok
+
+1. At developers.tiktok.com, create an app and add Login Kit with the scopes `user.info.basic` and `video.list`. Set a redirect address on Apex's own domain, for example `https://www.apexsurgeryhospital.com/`.
+2. Copy the client key and client secret into Apex settings › Social feeds.
+3. Open this address in a browser, with the client key and redirect address filled in, and sign in with the apex_surgery account:
+
+   ```
+   https://www.tiktok.com/v2/auth/authorize/?client_key=KEY&scope=user.info.basic,video.list&response_type=code&redirect_uri=REDIRECT&state=apex
+   ```
+
+4. The browser lands on the redirect address with `?code=` in it. Copy that code, decode it (`%2A` becomes `*`) and exchange it for the tokens within a few minutes:
+
+   ```bash
+   curl -X POST https://open.tiktokapis.com/v2/oauth/token/ \
+     -H "Content-Type: application/x-www-form-urlencoded" \
+     -d "client_key=KEY&client_secret=SECRET&code=CODE&grant_type=authorization_code&redirect_uri=REDIRECT"
+   ```
+
+5. Paste the `refresh_token` from the answer into Apex settings › Social feeds › Refresh token and press "Save and fetch now".
+
+The refresh token lasts a year and the site gets a new one on every fetch. TikTok has to approve the app before it can read videos from an account outside its sandbox, which takes a few days.
+
 ## Who can see what
 
 | Role | Content | Enquiries and patient photos | Vouchers |
