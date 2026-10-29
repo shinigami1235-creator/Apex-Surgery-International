@@ -9,7 +9,7 @@
    f scales every point's mL (1 = the paper's minimum). x is the wipe line, 0 to 1 across the view.
    points: [{v:vertex index, ml:mL at this point, color:'#hex'}] */
 
-const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+const THREE_URL = new URL('../../vendor/three/three.module.js', import.meta.url).href;   // three 0.160.0, served by the site (vendor/README.md)
 export const LIFT = 1;          // the lift is drawn true to size
 const RADIUS = .16;             // spread of one injection on the skin, decimetres (1.6 cm)
 

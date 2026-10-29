@@ -3,7 +3,7 @@
    Tapping the face swaps in a denser head mesh built from the same base mesh (heads.bin).
    Each area lists the client's own concerns and leads to its procedure. */
 
-const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+const THREE_URL = new URL('../../vendor/three/three.module.js', import.meta.url).href;   // three 0.160.0, served by the site (vendor/README.md)
 const HERE = new URL('./', import.meta.url);
 
 /* ---------------- strings ---------------- */

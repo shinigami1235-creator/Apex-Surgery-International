@@ -23,6 +23,7 @@ The theme in the repository has no `assets/` folder. Build it with `node wordpre
 - HTTPS.
 - WP-CLI for the content import. Most hosts have it. If yours does not, run the import on the Docker copy and move the database across.
 - Outgoing email that works. Install WP Mail SMTP or the host's own mailer, since enquiry alerts go out with `wp_mail`.
+- Two-step login for every Administrator and Apex staff account, since those accounts open patient photos: the Two Factor plugin or Wordfence Login Security. Print each person's backup codes when they set it up, and keep one Administrator's codes in the office safe, or a lost phone locks that person out.
 - Polylang (the free plugin) 3.9 or newer.
 - Rank Math (the free plugin). The theme writes titles, descriptions, canonicals and structured data by itself. Rank Math adds what editors need page by page: a focus keyword, a canonical or noindex for one page, extra schema, and editing robots.txt. The theme fills any Rank Math field an editor leaves empty.
 - A daily backup of the database and `wp-content/uploads/`, `apex-private/` included: the host's own backup, or UpdraftPlus sending to cloud storage. Keep 30 days.
@@ -36,7 +37,7 @@ Do this on staging first. When staging passes the checks at the end, repeat on t
 1. Back up the live database and the whole `wp-content/uploads/` folder.
 2. Start from a clean WordPress install with the live site's `wp-content/uploads/` copied in. The content refers to the same image files the live site uses, so the folder has to be there.
 3. Install and activate Polylang: `wp plugin install polylang --activate`.
-4. Upload the theme zip under Appearance › Themes, or copy `apex-surgery/` into `wp-content/themes/`, and activate it.
+4. Upload the theme zip under Appearance › Themes, or copy `apex-surgery/` into `wp-content/themes/`, and activate it. The zip is about 49 MB since it carries the face tracking and 3D libraries, so copy the folder over SFTP if the host's upload limit is smaller.
 5. Import the content: `wp apex import`. It takes about a minute and can be run again at any time. Each item is found by its key and language and updated in place. At the end it saves a WebP copy of each JPEG and PNG photo the pages show (the old site had ten, up to 1.2 MB each) and makes phone-size copies of wide photos, named `photo-w800.webp` and `photo-w1200.webp`, next to the originals. Phones download those instead of the full photo. The originals stay where they are.
 6. Check the import: `wp apex check`. It should end with `All 100 content objects match the design`.
 7. Add these lines to `wp-config.php`:
@@ -45,14 +46,44 @@ Do this on staging first. When staging passes the checks at the end, repeat on t
    define( 'DISALLOW_FILE_EDIT', true );
    // only when the site sits behind Cloudflare and cannot be reached any other way
    define( 'APEX_IP_HEADER', 'HTTP_CF_CONNECTING_IP' );
+   // the daily jobs (deleting old enquiries, the social feed) run from the server's clock rather than on visits
+   define( 'DISABLE_WP_CRON', true );
    ```
+
+   With `DISABLE_WP_CRON`, add a cron job on the server that runs every 15 minutes: `wp cron event run --due-now --path=/path/to/wordpress`. Without it, the daily deletion of old enquiries waits for visitors.
+
+   Two optional lines:
+
+   ```php
+   // patient photos outside the public web folder (recommended). Make the folder first, writable by PHP.
+   define( 'APEX_PRIVATE_DIR', '/home/apex/private-photos' );
+   // HTTPS only. Browsers remember it for this many seconds, so start with a day and raise it to a year after a week.
+   define( 'APEX_HSTS', 86400 );
+   ```
+
+   Set `APEX_PRIVATE_DIR` before the first enquiry arrives. If enquiries already exist, back up `wp-content/uploads/apex-private/` and the database first, then move the folder's contents into the new folder, keeping the year and month folders, since staff cannot open a photo whose file is missing. Set `APEX_HSTS` only once every address of the site works over HTTPS.
 
 8. On nginx, add the rules below. Apache reads the `.htaccess` files the theme writes, so it needs nothing.
 
    ```nginx
    location ^~ /wp-content/uploads/apex-private/ { deny all; }
    location ~* /wp-content/uploads/.*\.php$ { deny all; }
+   location = /xmlrpc.php { deny all; }
+   location ~* ^/(readme\.html|license\.txt)$ { deny all; }
    ```
+
+   On Apache the same three lines go in the site's `.htaccess`:
+
+   ```apache
+   <Files xmlrpc.php>
+     Require all denied
+   </Files>
+   <FilesMatch "^(readme\.html|license\.txt)$">
+     Require all denied
+   </FilesMatch>
+   ```
+
+   In `php.ini`, set `expose_php = Off`, so pages stop naming the PHP version. The face tracking files end in `.wasm`: check the server sends them as `application/wasm` (`curl -sI https://<site>/wp-content/themes/apex-surgery/assets/vendor/face_mesh/face_mesh_solution_wasm_bin.wasm`). Most servers do.
 
    Check compression and caching with `curl -sI -H "Accept-Encoding: gzip" https://<site>/wp-content/themes/apex-surgery/assets/css/site.css`. It should show `Content-Encoding: gzip` (or `br`) and a `Cache-Control` with a long `max-age`. If not, on nginx:
 
@@ -161,7 +192,7 @@ On each offer, the "Prices by country" box takes one row per list: the price in 
 
 Most of Apex's posters have the baht price printed on them. Where a list shows a different price, such a poster gives way to a plain card in Apex's colours with the procedure name and the list's price, or the offer is hidden, as the list says. Tick "The poster has no price on it" on an offer whose poster shows no price, and it keeps its poster in every list. When a list hides every offer on a page, the page shows a line asking visitors to message Apex on LINE or WhatsApp for that month's offers. The message they send names the list, so the team knows which prices to quote.
 
-The visitor's country comes from the header the host or CDN adds: Cloudflare's `CF-IPCountry`, CloudFront's `CloudFront-Viewer-Country`, `X-Country-Code`, or nginx GeoIP's `GEOIP_COUNTRY_CODE`. Turn on IP Geolocation under Cloudflare › Network if the site sits behind Cloudflare. A host with another header name sets it in `wp-config.php`:
+The visitor's country comes from the header the host or CDN adds: Cloudflare's `CF-IPCountry`, CloudFront's `CloudFront-Viewer-Country`, or nginx GeoIP's `GEOIP_COUNTRY_CODE`. Turn on IP Geolocation under Cloudflare › Network if the site sits behind Cloudflare. A host with another header name, `X-Country-Code` say, sets it in `wp-config.php` since a browser can send such a header itself:
 
 ```php
 define( 'APEX_COUNTRY_HEADER', 'HTTP_X_MY_COUNTRY' );
@@ -219,7 +250,9 @@ The refresh token lasts a year and the site gets a new one on every fetch. TikTo
 | Apex staff | None | Yes | Yes |
 | Editor | All | No | Check and mark as used |
 
-Give the front desk and the patient coordinators the Apex staff role. Give an outside agency Editor, which keeps patient photos away from them.
+Give the front desk and the patient coordinators the Apex staff role. Give an outside agency Editor, which keeps patient photos away from them. Editors can still change the phone, LINE and WhatsApp links under Site settings, and each change goes into the access log.
+
+Enquiries › Access log, for Administrators only, lists who opened an enquiry, viewed a photo, changed or deleted an enquiry, exported or erased personal data, changed a setting or a role, and when staff with access to enquiries logged in. It keeps the newest 3,000 entries from the last 400 days. Check it once a month and after anyone leaves.
 
 ## Enquiries and patient data
 
@@ -230,7 +263,9 @@ Give the front desk and the patient coordinators the Apex staff role. Give an ou
 - Tools › Erase Personal Data finds enquiries by email address. Enquiries that came in by WhatsApp or LINE have to be deleted by hand from the Enquiries list.
 - Backups copy `uploads/apex-private/` like any other folder. Keep backups encrypted and on the same retention period.
 - The cookie banner holds back analytics and advertising cookies until the visitor accepts (Google Consent Mode v2). Tags in the Tag Manager container must use Consent Mode for this to hold.
-- The events the site sends to Tag Manager (`apex_consult_submit`, `apex_plan_add`, `apex_contact_click` and others) carry the procedure, branch and button only.
+- The Facebook page window and the Google maps open by themselves only after the visitor accepts advertising cookies, since both set their own cookies. Until then each shows a button that opens it on a tap.
+- The face tracking (MediaPipe), the age guess (face-api) and the 3D viewers (three.js) load from the theme's own `assets/vendor/` folder rather than a CDN. `site/assets/vendor/README.md` in the repository lists the versions.
+- The events the site sends to Tag Manager (`apex_consult_submit`, `apex_plan_add`, `apex_contact_click` and others) carry the tool, button, branch and channel. They leave out the procedure since an ad tag in the container would pass a person's interest in a surgery on to Google, Meta or TikTok. Keep Google Ads, Meta and TikTok tags off the consultation page and the photo tools, and turn off Meta's automatic advanced matching, which reads email and phone boxes on the page.
 
 ## Spam and limits
 

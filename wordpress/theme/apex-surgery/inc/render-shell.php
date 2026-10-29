@@ -301,8 +301,6 @@ function apex_render(): void {
 <?php endif; ?>
 <?php if ( apex_media_base() !== trailingslashit( home_url() ) ) : ?><link rel="preconnect" href="<?php echo esc_url( untrailingslashit( apex_media_base() ) ); ?>">
 <?php endif; ?>
-<?php if ( defined( 'APEX_THREE_URL' ) ) : ?><script type="importmap"><?php echo wp_json_encode( [ 'imports' => [ 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js' => APEX_THREE_URL ] ], JSON_UNESCAPED_SLASHES ); ?></script>
-<?php endif; ?>
 <?php wp_head(); ?>
 <?php if ( is_admin_bar_showing() ) : ?><style>/* the WordPress toolbar for logged-in editors sits above the floating header */
 .hdr{top:46px}.sheet{top:32px}@media (max-width:782px){.hdr{top:56px}.sheet{top:46px}}@media (max-width:600px){#wpadminbar{position:fixed}}</style>

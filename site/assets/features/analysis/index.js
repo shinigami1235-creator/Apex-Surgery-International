@@ -8,7 +8,7 @@ import {workImage, read, readSide, quality, LINES_AT} from './skin.js';
 import {factors, skinAge, LEVELS} from './factors.js';
 import {measure, overall} from '../proportions/geometry.js';
 
-const FA_CDN = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/';
+const FA_CDN = new URL('../../vendor/face-api/', import.meta.url).href;   // @vladmandic/face-api 1.7.15, served by the site
 const SAMPLE = 'https://images.unsplash.com/photo-1774437895887-d1e801bae1a9?w=1600&q=85';
 const GOLD = '#E3B85C';
 const ORDER = ['lines', 'texture', 'spots', 'redness', 'under', 'sag', 'shine'];

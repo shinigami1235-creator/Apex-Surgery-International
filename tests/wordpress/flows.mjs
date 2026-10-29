@@ -53,6 +53,8 @@ for (const [path, lang] of [['/consultation/', 'en'], ['/th/consultation/', 'th'
   const head = await p.textContent('.apxc .c-done h3').catch(() => '');
   const ref = await p.textContent('.apxc .c-done-h p').catch(() => '');
   ok(/Enquiry sent|ส่งคำถามแล้ว/.test(head), `${lang} consult: "${head}" ${ref}`);
+  const tag = await p.evaluate(() => (window.dataLayer || []).find(x => x && x.event === 'apex_consult_submit'));
+  ok(tag && !JSON.stringify(tag).includes('rhinoplasty'), `${lang} consult: Tag Manager hears of the enquiry without the procedure (${JSON.stringify(tag && tag.apex)})`);
   const after = +wp('post list --post_type=apex_lead --post_status=any --format=count');
   ok(after === before + 1, `${lang} consult: one enquiry saved (${before} -> ${after})`);
   const id = wp('post list --post_type=apex_lead --post_status=any --orderby=ID --order=DESC --posts_per_page=1 --format=ids');
@@ -140,6 +142,11 @@ for (const [path, lang] of [['/consultation/', 'en'], ['/th/consultation/', 'th'
   const img = await s.$('#apex-lead img');
   const loaded = img ? await img.evaluate(i => i.complete && i.naturalWidth > 0) : false;
   ok(loaded, 'consult: staff see the photo on the enquiry');
+  const audit = JSON.parse(wp(`option get apex_audit --format=json`) || '[]');
+  const seenBy = audit.filter(e => +e.item === +id && e.name === 'apexadmin').map(e => e.what);
+  ok(seenBy.includes('lead_open') && seenBy.includes('photo_view'), `access log: opening enquiry A${id} and its photo is logged (${seenBy.join(', ')})`);
+  await s.goto(`${BASE}/wp-admin/edit.php?post_type=apex_lead&page=apex-audit`);
+  ok(/Viewed a patient photo/.test(await s.textContent('.wrap')), 'access log: Enquiries › Access log lists the photo view');
   // the toolbar does not cover the site's header for logged-in editors
   await s.goto(BASE + '/');
   const clash = await s.evaluate(() => { const a = document.getElementById('wpadminbar'), h = document.querySelector('.hdr-in'); if (!a || !h) return 0; const r1 = a.getBoundingClientRect(), r2 = h.getBoundingClientRect(); return Math.max(0, r1.bottom - r2.top); });
@@ -243,9 +250,11 @@ ok(await p.isVisible('.war-stage iframe'), 'episode: the video starts in place')
 await p.goto(BASE + '/play/');
 await p.waitForSelector('.apxg', {timeout:20000}).catch(() => {});
 ok(await p.isVisible('.apxg'), 'games: the hub loads');
+// the old nose preview address forwards to the nose implant viewer, which runs the same face tracking
 await p.goto(BASE + '/nose-preview/');
-await p.waitForSelector('#nose.feat-on, #nose.feat-off', {timeout:20000}).catch(() => {});
-ok(await p.$('#nose.feat-on'), 'nose preview: the tool loads');
+await p.waitForURL(/nose-implant-viewer/, {timeout:20000}).catch(() => {});
+await p.waitForSelector('.feat-on, .feat-off', {timeout:20000}).catch(() => {});
+ok(/nose-implant-viewer/.test(p.url()) && await p.$('.feat-on'), `nose preview: forwards to the nose implant viewer and the tool loads (${p.url()})`);
 
 /* 7. editor tools */
 {

@@ -128,6 +128,8 @@ function apex_social_fetch(): string {
 	usort( $got, fn( $a, $b ) => strcmp( $b['date'], $a['date'] ) );
 	$posts = [];
 	foreach ( $got as $p ) {
+		// only https links and covers: anything else from the API is dropped before it is fetched or shown
+		if ( ! preg_match( '#^https://#i', (string) $p['href'] ) || ! preg_match( '#^https://#i', (string) $p['img'] ) ) continue;
 		$src = apex_social_cover( $p );
 		if ( $src === '' ) continue;
 		$posts[] = [ 'net' => $p['net'], 'src' => $src, 'href' => $p['href'], 'date' => $p['date'], 'video' => (bool) $p['video'], 'cap' => $p['cap'] ];
@@ -172,6 +174,7 @@ function apex_social_page(): void {
 		if ( ! empty( $_POST['ig_clear'] ) ) $k['ig_token'] = '';
 		if ( ! empty( $_POST['tt_clear'] ) ) $k = array_merge( $k, [ 'tt_key' => '', 'tt_secret' => '', 'tt_refresh' => '', 'tt_access' => '' ] );
 		apex_social_save_keys( $k );
+		apex_audit( 'settings', 0, 'Social feeds' );
 		$msg = ! empty( $_POST['fetch'] ) ? apex_social_fetch() : __( 'Saved.', 'apex' );
 		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $msg ) . '</p></div>';
 		$k = apex_social_keys();
@@ -212,11 +215,11 @@ function apex_feed_tile( array $x, int $i ): string {
 	$E = 'apex_e';
 	$net = (string) ( $x['net'] ?? '' );
 	$d = (string) ( $x['date'] ?? '' );
-	return '<a class="feed-t ph-img rv' . ( ! empty( $x['story'] ) ? ' story' : '' ) . '" data-d="' . ( ( $i % 6 ) * 50 ) . '" href="' . $E( $x['href'] ) . '" target="_blank" rel="noopener" aria-label="' . $E( APEX_NETS[ $net ] ?? '' ) . ( $d !== '' ? ', ' . $E( apex_short_date( $d ) ) : '' ) . ( ! empty( $x['cap'] ) ? ': ' . $E( $x['cap'] ) : '' ) . '">
-      <img src="' . $E( apex_img( $x['src'] ) ) . '" alt="" loading="lazy" decoding="async"><span class="feed-net n-' . $E( $net ) . '">' . apex_soc_icon( $net ) . '</span>' . ( ! empty( $x['video'] ) ? '<span class="feed-v">' . apex_ic( 'play' ) . '</span>' : '' ) . ( ! empty( $x['story'] ) ? '<span class="feed-st">' . $E( apex_t( 'igStory' ) ) . '</span>' : ( $d !== '' ? '<span class="feed-d">' . $E( apex_short_date( $d ) ) . '</span>' : '' ) ) . '</a>';
+	return '<a class="feed-t ph-img rv' . ( ! empty( $x['story'] ) ? ' story' : '' ) . '" data-d="' . ( ( $i % 6 ) * 50 ) . '" href="' . esc_url( $x['href'] ) . '" target="_blank" rel="noopener" aria-label="' . $E( APEX_NETS[ $net ] ?? '' ) . ( $d !== '' ? ', ' . $E( apex_short_date( $d ) ) : '' ) . ( ! empty( $x['cap'] ) ? ': ' . $E( $x['cap'] ) : '' ) . '">
+      <img src="' . esc_url( apex_img( $x['src'] ) ) . '" alt="" loading="lazy" decoding="async"><span class="feed-net n-' . $E( $net ) . '">' . apex_soc_icon( $net ) . '</span>' . ( ! empty( $x['video'] ) ? '<span class="feed-v">' . apex_ic( 'play' ) . '</span>' : '' ) . ( ! empty( $x['story'] ) ? '<span class="feed-st">' . $E( apex_t( 'igStory' ) ) . '</span>' : ( $d !== '' ? '<span class="feed-d">' . $E( apex_short_date( $d ) ) . '</span>' : '' ) ) . '</a>';
 }
 function apex_feed_follow( string $k, string $x, string $h ): string {
-	return '<a class="feed-more rv n-' . $k . '" href="' . apex_e( $h ) . '" target="_blank" rel="noopener"><span class="fm-ic">' . apex_soc_icon( $k ) . '</span><b>' . apex_e( $x ) . '</b><small>' . apex_e( str_replace( '{n}', APEX_NETS[ $k ], apex_t( 'followOn' ) ) ) . '</small></a>';
+	return '<a class="feed-more rv n-' . $k . '" href="' . esc_url( $h ) . '" target="_blank" rel="noopener"><span class="fm-ic">' . apex_soc_icon( $k ) . '</span><b>' . apex_e( $x ) . '</b><small>' . apex_e( str_replace( '{n}', APEX_NETS[ $k ], apex_t( 'followOn' ) ) ) . '</small></a>';
 }
 function apex_social_wall( array $S, array $o = [] ): string {
 	$E = 'apex_e';

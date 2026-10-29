@@ -2,6 +2,7 @@
 (function(){
   const A = window.APEX;
   const E = A.esc, T = A.t, I = A.ic, IMG = A.img;
+  const ytIds = a => (a || []).filter(id => /^[\w-]{6,20}$/.test(String(id)));   // the same check as the PHP render
   const main = () => A.qs('#main');
 
   /* recovery facts, taken from the service pages' own Q&A and recovery text */
@@ -258,8 +259,8 @@
         <h3 class="o-title">${E(o.cat ? (o.words.join(' · ') || o.name) : o.label)}</h3>
         <div class="o-price">${o.price ? `<span class="op-row"><b class="op-n">${E(A.fmtNum(o.price))}</b><span class="op-u">${E(T('baht'))}</span></span>${fxSpan(o.price)}` : `<span class="op-ask">${I('message-circle')}${E(T('askPrice'))}</span>`}</div>
         <div class="o-acts"><span class="o-ask">${E(T('askOffer'))}</span>
-          <a class="o-btn ln" href="${o.line}" target="_blank" rel="noopener" aria-label="${E(T('askOffer'))}: LINE">${I('line')}<span>LINE</span></a>
-          <a class="o-btn wa" href="${o.wa}" target="_blank" rel="noopener" aria-label="${E(T('askOffer'))}: WhatsApp">${I('whatsapp')}<span>WhatsApp</span></a>
+          <a class="o-btn ln" href="${A.url(o.line)}" target="_blank" rel="noopener" aria-label="${E(T('askOffer'))}: LINE">${I('line')}<span>LINE</span></a>
+          <a class="o-btn wa" href="${A.url(o.wa)}" target="_blank" rel="noopener" aria-label="${E(T('askOffer'))}: WhatsApp">${I('whatsapp')}<span>WhatsApp</span></a>
           ${o.cat ? `<a class="o-more" href="${A.svcUrl(o.cat)}">${E(T('seeService'))} ${I('arrow-right')}</a>` : ''}</div>
       </div></article>`;
   const gameCard = () => `<a class="offer offer-game rv" href="play.html"><span class="og-art" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="og-ic">${I('sparkles')}</span><b class="h-s">${E(T('gameTie'))}</b><span class="og-p">${E(T('gamesP'))}</span><span class="btn btn-light btn-sm">${E(T('gamesCta'))} ${I('arrow-right')}</span></a>`;
@@ -281,7 +282,7 @@
         ${o.price ? `<div class="os-price"><span class="op-row"><b class="os-n" data-count="${o.price}">${E(A.fmtNum(o.price))}</b><span class="op-u">${E(T('baht'))}</span></span>${fxSpan(o.price)}</div>` : `<p class="os-ask">${I('message-circle')}${E(T('askPrice'))}</p>`}
         <div class="os-pick" data-cur-picker></div>
         <p class="os-ask-l">${E(T('askOffer'))}</p>
-        <div class="os-acts"><a class="o-btn ln lg" href="${o.line}" target="_blank" rel="noopener">${I('line')}<span>LINE</span></a><a class="o-btn wa lg" href="${o.wa}" target="_blank" rel="noopener">${I('whatsapp')}<span>WhatsApp</span></a>${o.cat ? `<a class="btn btn-ghost btn-sm os-more" href="${A.svcUrl(o.cat)}">${E(T('seeService'))} ${I('arrow-right')}</a>` : ''}</div>
+        <div class="os-acts"><a class="o-btn ln lg" href="${A.url(o.line)}" target="_blank" rel="noopener">${I('line')}<span>LINE</span></a><a class="o-btn wa lg" href="${A.url(o.wa)}" target="_blank" rel="noopener">${I('whatsapp')}<span>WhatsApp</span></a>${o.cat ? `<a class="btn btn-ghost btn-sm os-more" href="${A.svcUrl(o.cat)}">${E(T('seeService'))} ${I('arrow-right')}</a>` : ''}</div>
         <p class="note">${E(T('promosSub'))}</p>
       </div></div>`;
   };
@@ -425,7 +426,7 @@
       <div class="wrap">
         <div class="shead"><div><p class="eyebrow on-night rv">${E(T('reelsEb'))}</p><h2 class="h-xl rv" data-field="home.reviewsRealH">${E(H.reviewsRealH || T('storiesH'))}</h2><p class="reels-sub rv">${E(T('reelsSub'))}</p></div></div>
         ${storiesHost(H.videos || (H.tiktok && H.tiktok.videos), 'stories', H.reviewsRealH)}
-        ${H.tiktok && H.tiktok.link ? `<a class="tiktok-link" href="${E(H.tiktok.link.h)}" target="_blank" rel="noopener">${I('tiktok')}<span><b>${E(H.tiktok.h || '')}</b><small>@${E(H.tiktok.link.handle || 'apex_surgery')}</small></span>${I('arrow-up-right')}</a>` : ''}
+        ${H.tiktok && H.tiktok.link ? `<a class="tiktok-link" href="${A.url(H.tiktok.link.h)}" target="_blank" rel="noopener">${I('tiktok')}<span><b>${E(H.tiktok.h || '')}</b><small>@${E(H.tiktok.link.handle || 'apex_surgery')}</small></span>${I('arrow-up-right')}</a>` : ''}
       </div>
     </section>
 
@@ -491,7 +492,7 @@
     const card = (c, i) => `<article class="tx-card rv" data-d="${Math.min(i, 5) * 40}">
         <h3>${E(c.n)}</h3>${c.p ? `<p>${E(c.p)}</p>` : ''}
         ${c.items.length ? `<ul class="tx-items">${c.items.map(x => `<li>${E(x)}</li>`).join('')}</ul>` : ''}
-        ${c.link ? `<a class="link-arrow" href="${E(c.lx ? A.href(c.link) : c.link)}">${E(c.lx ? T('txMore') : T('txTry'))} ${I('arrow-right')}</a>` : ''}</article>`;
+        ${c.link ? `<a class="link-arrow" href="${A.url(c.lx ? A.href(c.link) : c.link)}">${E(c.lx ? T('txMore') : T('txTry'))} ${I('arrow-right')}</a>` : ''}</article>`;
     main().innerHTML = phead(D.h || T('treatments'), D.lead, [homeCrumb(), [T('services'), 'services.html'], [D.h || T('treatments')]],
       `<label class="tx-search rv" data-d="140">${I('search')}<span class="sr">${E(T('txSearch'))}</span><input type="search" placeholder="${E(T('txSearch'))}" autocomplete="off" data-r="q"></label>`) + `
       <section class="section tx"><div class="wrap tx-grid">
@@ -577,7 +578,7 @@
     </section>
 
     ${secs.map((sec, i) => svcSection(sec, i, key, i % 2 === 0)).join('')}
-    ${(D.sources || []).length ? `<div class="wrap svc-src"><p class="note">${E(T('sourcesH'))}: ${D.sources.map(u => `<a href="${E(u)}" target="_blank" rel="noopener">${E(u.replace(/^https?:\/\/(www\.)?/, '').split('/')[0])}</a>`).join(', ')}</p></div>` : ''}
+    ${(D.sources || []).length ? `<div class="wrap svc-src"><p class="note">${E(T('sourcesH'))}: ${D.sources.map(u => `<a href="${A.url(u)}" target="_blank" rel="noopener">${E(u.replace(/^https?:\/\/(www\.)?/, '').split('/')[0])}</a>`).join(', ')}</p></div>` : ''}
 
     ${(D.ba || []).length ? `<section class="section night ba-s"><div class="wrap"><div class="shead"><div><p class="eyebrow on-night rv">${E(nm)}</p><h2 class="h-xl rv">${E(D.baH || T('baH'))}</h2></div><p class="note on-night rv">${E(T('resultsVary'))}</p></div>
       <div id="ba" class="ba-host">${baGrid(D.ba, D.baH)}</div></div></section>` : ''}
@@ -587,8 +588,8 @@
         <div class="rail-ctrl rv"><button type="button" id="rv-prev" aria-label="${E(T('prev'))}">${I('chevron-left')}</button><button type="button" id="rv-next" aria-label="${E(T('next'))}">${I('chevron-right')}</button></div></div>
       ${reviewRail(D.reviewImgs || [], 'rv-rail')}
       <div class="stories-wrap"><div class="sw-head"><h3 class="h-m rv">${E(T('reelsEb'))}</h3><p class="reels-sub rv">${E(T('reelsTap'))}</p></div>${storiesHost(D.videos, 'stories', D.reviewsH)}</div>
-      ${(D.yt || []).length || D.tiktok ? `<div class="yt-row">${(D.yt || []).map(id => `<div class="ytbox rv"><button type="button" data-yt="${E(id)}" aria-label="${E(T('playVideo'))}"><img loading="lazy" decoding="async" src="${A.yt(id)}" alt=""><span class="pl">${I('play')}</span></button></div>`).join('')}
-        ${D.tiktok ? `<a class="tiktok-link rv" href="${E(D.tiktok.h)}" target="_blank" rel="noopener">${I('tiktok')}<span><b>${E(D.tiktok.x)}</b><small>@apex_surgery</small></span>${I('arrow-up-right')}</a>` : ''}</div>` : ''}
+      ${ytIds(D.yt).length || D.tiktok ? `<div class="yt-row">${ytIds(D.yt).map(id => `<div class="ytbox rv"><button type="button" data-yt="${E(id)}" aria-label="${E(T('playVideo'))}"><img loading="lazy" decoding="async" src="${A.yt(id)}" alt=""><span class="pl">${I('play')}</span></button></div>`).join('')}
+        ${D.tiktok ? `<a class="tiktok-link rv" href="${A.url(D.tiktok.h)}" target="_blank" rel="noopener">${I('tiktok')}<span><b>${E(D.tiktok.x)}</b><small>@apex_surgery</small></span>${I('arrow-up-right')}</a>` : ''}</div>` : ''}
       </div>
     </section>
 
@@ -598,7 +599,7 @@
       <h2 class="h-l faq-h rv" data-field="svc.faqH">${E(D.faqH || T('faqH'))}</h2>
       <div class="faq-grid2"><div data-field="svc.faqs">${A.faqHtml(D.faqs)}</div>
         <aside class="faq-cta rv"><span class="fc-ic">${I('line')}</span><b class="h-s">${E((S.cta && S.cta.consult) || T('consult'))}</b><p>${E(T('consultP'))}</p>
-          <a class="btn btn-plum" href="${(S.line && S.line.h) || '#'}" target="_blank" rel="noopener">${I('line')}${E((S.cta && S.cta.free) || T('consult'))}</a>
+          <a class="btn btn-plum" href="${A.url((S.line && S.line.h) || '#')}" target="_blank" rel="noopener">${I('line')}${E((S.cta && S.cta.free) || T('consult'))}</a>
           <a class="link-arrow" href="consult.html?p=${E(key)}">${E(T('consultBtn'))} ${I('arrow-right')}</a></aside></div></div></section>` : ''}
 
     <section class="section washed"><div class="wrap">${A.teamStrip(S, A.d('team'))}</div></section>
@@ -634,10 +635,10 @@
         ${full ? `<ul class="who-grid role-grid">${(F.roles || []).map((x, j) => { const [l, t] = splitLabel(x); return `<li class="who-card role-card rv" data-d="${(j % 2) * 60}"><span class="wc-ic">${I(pickIcon(l || x, j))}</span>${l ? `<h3>${E(l)}</h3><p>${E(t)}</p>` : `<p class="wc-solo">${E(t)}</p>`}</li>`; }).join('')}</ul>
           <div class="f2-edu rv"><h3 class="h-s">${E(F.eduH)}</h3><ul class="ticks">${(F.edu || []).map(x => `<li>${E(x)}</li>`).join('')}</ul></div>` : ''}
         <details class="f2-more rv"><summary><span>${E(T('readMore'))}</span>${I('chevron-down')}</summary><div class="f2-rest">${rest.map(x => `<p>${E(x)}</p>`).join('')}</div></details>
-        <div class="doc-acts rv">${full ? `<a class="btn btn-ghost on-light btn-sm" href="${F.check.h}" target="_blank" rel="noopener">${I('shield-check')}${E(F.checkX)}</a>` : `<a class="btn btn-plum btn-sm" href="doctor.html#founder">${E(T('founderCta'))} ${I('arrow-right')}</a>`}</div>
+        <div class="doc-acts rv">${full ? `<a class="btn btn-ghost on-light btn-sm" href="${A.url(F.check.h)}" target="_blank" rel="noopener">${I('shield-check')}${E(F.checkX)}</a>` : `<a class="btn btn-plum btn-sm" href="doctor.html#founder">${E(T('founderCta'))} ${I('arrow-right')}</a>`}</div>
       </div></div>`;
   };
-  const aaciCard = S => S.aaci ? `<a class="aaci-card rv" href="${S.aaci.h}" target="_blank" rel="noopener"><img src="${IMG(S.aaci.src)}" alt="${E(S.aaci.alt)}" loading="lazy" decoding="async" width="96" height="96"><span><b>${E(T('aaciH'))}</b><small>${E(T('aaciP'))}</small></span>${I('arrow-up-right')}</a>` : '';
+  const aaciCard = S => S.aaci ? `<a class="aaci-card rv" href="${A.url(S.aaci.h)}" target="_blank" rel="noopener"><img src="${IMG(S.aaci.src)}" alt="${E(S.aaci.alt)}" loading="lazy" decoding="async" width="96" height="96"><span><b>${E(T('aaciH'))}</b><small>${E(T('aaciP'))}</small></span>${I('arrow-up-right')}</a>` : '';
 
   /* =================== ABOUT =================== */
   async function about(){
@@ -850,10 +851,10 @@
           else if (run.length > 1) { const g = A.gallery(run.map(r => ({src:r.src, alt:r.alt || D.title}))); html += `<div class="art-gal n${Math.min(run.length, 3)} rv">${run.map((r, j) => `<button type="button" class="ag-i ph-img" ${g.attr(j)} aria-label="${E(T('image'))} ${j + 1}"><img src="${IMG(r.src)}" alt="${E(r.alt || D.title)}" loading="lazy" decoding="async" decoding="async"></button>`).join('')}</div>`; }
           break;
         }
-        case 'yt': html += `<div class="ytbox"><button type="button" data-yt="${b.id}" aria-label="${E(T('playVideo'))}"><img loading="lazy" decoding="async" src="${A.yt(b.id)}" alt=""><span class="pl">${I('play')}</span></button></div>`; break;
+        case 'yt': html += `<div class="ytbox"><button type="button" data-yt="${E(b.id)}" aria-label="${E(T('playVideo'))}"><img loading="lazy" decoding="async" src="${A.yt(b.id)}" alt=""><span class="pl">${I('play')}</span></button></div>`; break;
         case 'faqs': html += A.faqHtml((b.items || []).map(q => ({q:q.q, a:q.a}))); break;
         case 'table': html += `<div class="tbl"><table>${(b.rows || []).map((r, j) => `<tr>${r.map(c => j === 0 ? `<th>${A.inl(c)}</th>` : `<td>${A.inl(c)}</td>`).join('')}</tr>`).join('')}</table></div>`; break;
-        case 'btn': if (b.h) html += `<p><a class="btn btn-plum btn-sm" href="${b.h}" target="_blank" rel="noopener">${E(b.x)}</a></p>`; break;
+        case 'btn': if (b.h) html += `<p><a class="btn btn-plum btn-sm" href="${A.url(b.h)}" target="_blank" rel="noopener">${E(b.x)}</a></p>`; break;
       }
     }
     (ins[bl.length] || []).forEach(x => html += x);
@@ -922,7 +923,7 @@
         <div class="shead"><div><p class="eyebrow rv">${E(x.channel || '')}${e.length ? ' · ' + E(T('showsEps').replace('{n}', e.length)) : ''}</p><h2 class="h-xl rv">${nb(x.name)}</h2><p class="reels-sub rv">${E(x.lead || '')}</p></div>
           <div class="rail-ctrl rv"><button type="button" data-rp="${k}" aria-label="${E(T('prev'))}">${I('chevron-left')}</button><button type="button" data-rn="${k}" aria-label="${E(T('next'))}">${I('chevron-right')}</button></div></div>
         <div class="rail war-rail" data-rail="${k}">${e.map((y, i) => warCard(y, i)).join('')}</div>
-        <a class="link-arrow rv" href="${E(x.href)}">${E(T('showsSeries'))} ${I('arrow-right')}</a></div></section>`; }).join('')}
+        <a class="link-arrow rv" href="${A.url(x.href)}">${E(T('showsSeries'))} ${I('arrow-right')}</a></div></section>`; }).join('')}
       <section class="section washed social-s"><div class="wrap">${A.socialWall(S, {fb:true})}</div></section>
       <section class="section sh-soon-s"><div class="wrap"><div class="sh-soon rv"><span class="sh-soon-i">${I('play')}</span><div><h2 class="h-m">${E(T('showsSoon'))}</h2><p>${E(T('showsSoonP'))}</p></div></div></div></section>
       <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
@@ -1004,17 +1005,17 @@
     main().innerHTML = phead(D.h1 || T('contact'), null, [homeCrumb(), [T('contact')]]) + `
       <section class="section" style="padding-top:50px"><div class="wrap contact2">
         <div class="channels">
-          <a class="chan rv" href="${(S.line && S.line.h) || '#'}" target="_blank" rel="noopener"><span class="chan-ic ln">${I('line')}</span><span><b>LINE</b><small>${E((S.line && S.line.x) || '')}</small></span><img class="chan-qr" src="${IMG(S.line && S.line.qr)}" alt="LINE QR" loading="lazy" decoding="async" decoding="async"></a>
-          <a class="chan rv" data-d="60" href="${A.WA.h}" target="_blank" rel="noopener"><span class="chan-ic wa">${I('whatsapp')}</span><span><b>WhatsApp</b><small>${E(T('whatsappSub'))} · ${E(A.WA.x)}</small></span>${I('arrow-up-right')}</a>
-          ${(S.branches || []).map((b, i) => `<a class="chan rv" data-d="${120 + i*60}" href="${b.tel}"><span class="chan-ic">${I('phone')}</span><span><b>${E(b.phone)}</b><small>${E(b.short || b.name)}</small></span>${I('arrow-up-right')}</a>`).join('')}
-          ${(S.socials || []).filter(s => s.k !== 'line').map(s => `<a class="chan sm rv" href="${s.h}" target="_blank" rel="noopener"><span class="chan-ic">${A.socIcon(s.k)}</span><span><b>${E(s.x)}</b></span>${I('arrow-up-right')}</a>`).join('')}
+          <a class="chan rv" href="${A.url((S.line && S.line.h) || '#')}" target="_blank" rel="noopener"><span class="chan-ic ln">${I('line')}</span><span><b>LINE</b><small>${E((S.line && S.line.x) || '')}</small></span><img class="chan-qr" src="${IMG(S.line && S.line.qr)}" alt="LINE QR" loading="lazy" decoding="async" decoding="async"></a>
+          <a class="chan rv" data-d="60" href="${A.url(A.WA.h)}" target="_blank" rel="noopener"><span class="chan-ic wa">${I('whatsapp')}</span><span><b>WhatsApp</b><small>${E(T('whatsappSub'))} · ${E(A.WA.x)}</small></span>${I('arrow-up-right')}</a>
+          ${(S.branches || []).map((b, i) => `<a class="chan rv" data-d="${120 + i*60}" href="${A.url(b.tel)}"><span class="chan-ic">${I('phone')}</span><span><b>${E(b.phone)}</b><small>${E(b.short || b.name)}</small></span>${I('arrow-up-right')}</a>`).join('')}
+          ${(S.socials || []).filter(s => s.k !== 'line').map(s => `<a class="chan sm rv" href="${A.url(s.h)}" target="_blank" rel="noopener"><span class="chan-ic">${A.socIcon(s.k)}</span><span><b>${E(s.x)}</b></span>${I('arrow-up-right')}</a>`).join('')}
         </div>
         <div class="consult-col"><div id="consult" class="consult-host"><h2 class="h-l">${E(D.formH || T('consultPageH'))}</h2><p class="muted">${E(T('consultPageP'))}</p><a class="btn btn-plum" href="consult.html">${I('message-circle')}${E(T('consultBtn'))}</a></div></div>
       </div></section>
       <section class="section social-s"><div class="wrap">${A.socialWall(S, {fb:true})}</div></section>
       <section class="section washed"><div class="wrap">${A.branchesHtml(S, D.branches && D.branches.h, D.branches && D.branches.p)}</div></section>`;
     A.socialMount(main());
-    A.mount('#consult', 'consult', {compact:true});
+    A.mount('#consult', 'consult', {compact:true, links:{privacy:'privacy.html'}});
   }
 
   /* =================== FEATURE PAGES =================== */
@@ -1038,7 +1039,7 @@
   const LINKS = {bodymap:'index.html#hero', nose:'nose-implants.html', implants:'breast-implants.html', analysis:'analysis.html', proportions:'proportions.html', games:'play.html', trip:'trip.html', plan:'plan.html', consult:'consult.html'};
   const plan = featurePage('plan', 'planPageH', 'planPageP', 'plan', {links:LINKS});
   const trip = featurePage('trip', 'tripPageH', 'tripP', 'trip', () => Object.assign({links:LINKS}, A.param('p') ? {procedures:[A.param('p')]} : {}));
-  const consult = featurePage('consult', 'consultPageH', 'consultPageP', 'consult', () => ({procedure:A.param('p') || undefined}));
+  const consult = featurePage('consult', 'consultPageH', 'consultPageP', 'consult', () => ({procedure:A.param('p') || undefined, links:{privacy:'privacy.html'}}));
 
   async function notfound(){
     main().innerHTML = `<section class="phead nf"><div class="phead-lines" aria-hidden="true"></div><div class="wrap"><p class="nf-code rv">404</p><h1 class="display-s rv">${E(T('notFoundH'))}</h1><p class="lead rv" style="margin-top:18px">${E(T('notFoundP'))}</p>

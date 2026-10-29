@@ -53,6 +53,12 @@ function apex_turnstile_ok( string $token ): bool {
 
 /* ---------- private photo storage ---------- */
 function apex_private_dir(): string {
+	// wp-config.php can put the photos outside the public web folder: define( 'APEX_PRIVATE_DIR', '/home/apex/private-photos' );
+	if ( defined( 'APEX_PRIVATE_DIR' ) && APEX_PRIVATE_DIR ) {
+		$dir = untrailingslashit( (string) APEX_PRIVATE_DIR );
+		if ( ! is_dir( $dir ) ) wp_mkdir_p( $dir );
+		return $dir;
+	}
 	$u = wp_upload_dir( null, false );
 	$dir = trailingslashit( $u['basedir'] ) . 'apex-private';
 	if ( ! is_dir( $dir ) ) {
@@ -196,7 +202,8 @@ function apex_voucher_register( WP_REST_Request $req ) {
 	// the score has to reach the prize it claims, under the thresholds set in the admin today
 	if ( $score < $cfg['games'][ $game ][ $tier ] ) return new WP_Error( 'apex_score', 'Score below the prize', [ 'status' => 422 ] );
 	$run = (array) $req->get_param( 'run' );
-	// a real scored run lasts at least 20 seconds and has input; anything else did not come from the game
+	// a real scored run lasts at least 10 seconds and has input; the phone reports both, so this stops casual
+	// requests rather than a determined cheat (reception checks the person against a booking)
 	if ( (int) ( $run['durationMs'] ?? 0 ) < 10000 || (int) ( $run['inputs'] ?? 0 ) < 1 ) return new WP_Error( 'apex_run', 'No game run', [ 'status' => 422 ] );
 	if ( apex_voucher_find( $code ) ) return [ 'ok' => true, 'code' => $code, 'known' => true ];
 	if ( ! apex_rate_ok( 'voucher', (int) $cfg['perDay'], DAY_IN_SECONDS ) ) return new WP_Error( 'apex_rate', 'Daily voucher limit reached', [ 'status' => 429 ] );
@@ -231,6 +238,10 @@ add_action( 'add_meta_boxes_apex_lead', function () {
 	add_meta_box( 'apex-lead', __( 'Enquiry', 'apex' ), 'apex_lead_box', 'apex_lead', 'normal', 'high' );
 	add_meta_box( 'apex-lead-status', __( 'Follow-up', 'apex' ), 'apex_lead_status_box', 'apex_lead', 'side', 'high' );
 } );
+add_action( 'load-post.php', function () {
+	$id = absint( $_GET['post'] ?? 0 );
+	if ( $id && get_post_type( $id ) === 'apex_lead' && current_user_can( 'edit_post', $id ) ) apex_audit( 'lead_open', $id );
+} );
 function apex_lead_box( WP_Post $p ): void {
 	$v = (array) get_post_meta( $p->ID, 'apex_fields', true );
 	$c = (array) get_post_meta( $p->ID, 'apex_consent', true );
@@ -262,6 +273,7 @@ add_action( 'save_post_apex_lead', function ( $id ) {
 	$s = sanitize_key( $_POST['apex_status'] ?? 'new' );
 	update_post_meta( $id, 'apex_status', array_key_exists( $s, apex_lead_statuses() ) ? $s : 'new' );
 	update_post_meta( $id, 'apex_notes', sanitize_textarea_field( wp_unslash( $_POST['apex_notes'] ?? '' ) ) );
+	apex_audit( 'lead_save', (int) $id, 'status: ' . get_post_meta( $id, 'apex_status', true ) );
 } );
 /* searching enquiries looks in the name, contact and questions */
 add_action( 'pre_get_posts', function ( $q ) {
@@ -277,6 +289,7 @@ add_action( 'admin_post_apex_photo', function () {
 	$rel = $photos[ sanitize_key( $_GET['view'] ?? '' ) ] ?? '';
 	$path = $rel ? apex_photo_path( $rel ) : '';
 	if ( ! $path || ! is_file( $path ) ) wp_die( 'Not found', 404 );
+	apex_audit( 'photo_view', $id, sanitize_key( $_GET['view'] ?? '' ) );
 	nocache_headers();
 	header( 'Content-Type: image/jpeg' );
 	header( 'Content-Length: ' . filesize( $path ) );
@@ -287,6 +300,7 @@ add_action( 'admin_post_apex_photo', function () {
 /* deleting an enquiry deletes its photos */
 add_action( 'before_delete_post', function ( $id ) {
 	if ( get_post_type( $id ) !== 'apex_lead' ) return;
+	apex_audit( get_current_user_id() ? 'lead_delete' : 'lead_expire', (int) $id );
 	foreach ( (array) get_post_meta( $id, 'apex_photos', true ) as $rel ) { $p = apex_photo_path( (string) $rel ); if ( is_file( $p ) ) @unlink( $p ); }
 } );
 /* enquiries skip the bin: trashing one deletes it, photos included (one or many at a time) */
@@ -318,10 +332,17 @@ add_action( 'init', function () { if ( ! wp_next_scheduled( 'apex_daily' ) ) wp_
 add_filter( 'wp_privacy_personal_data_exporters', function ( $ex ) {
 	$ex['apex-leads'] = [ 'exporter_friendly_name' => 'Apex enquiries', 'callback' => function ( $email ) {
 		$items = [];
+		apex_audit( 'export', 0, count( apex_leads_by_email( $email ) ) . ' enquiries for ' . apex_mask( $email ) );
 		foreach ( apex_leads_by_email( $email ) as $id ) {
 			$v = (array) get_post_meta( $id, 'apex_fields', true );
 			$data = [];
 			foreach ( $v as $k => $x ) $data[] = [ 'name' => $k, 'value' => is_array( $x ) ? implode( ', ', $x ) : (string) $x ];
+			$c = (array) get_post_meta( $id, 'apex_consent', true );
+			$data[] = [ 'name' => 'received', 'value' => get_the_date( 'c', $id ) ];
+			$data[] = [ 'name' => 'consent', 'value' => trim( ( $c['at'] ?? '' ) . ' ' . ( $c['text'] ?? '' ) ) ];
+			$data[] = [ 'name' => 'status', 'value' => (string) get_post_meta( $id, 'apex_status', true ) ];
+			$n = count( (array) get_post_meta( $id, 'apex_photos', true ) );
+			$data[] = [ 'name' => 'photos', 'value' => $n ? sprintf( '%d on file. Staff send copies on request from the enquiry screen.', $n ) : 'none' ];
 			$items[] = [ 'group_id' => 'apex-leads', 'group_label' => 'Online consultations', 'item_id' => 'lead-' . $id, 'data' => $data ];
 		}
 		return [ 'data' => $items, 'done' => true ];
@@ -332,10 +353,16 @@ add_filter( 'wp_privacy_personal_data_erasers', function ( $er ) {
 	$er['apex-leads'] = [ 'eraser_friendly_name' => 'Apex enquiries', 'callback' => function ( $email ) {
 		$n = 0;
 		foreach ( apex_leads_by_email( $email ) as $id ) { wp_delete_post( $id, true ); $n++; }
+		apex_audit( 'erase', 0, $n . ' enquiries for ' . apex_mask( $email ) );
 		return [ 'items_removed' => $n, 'items_retained' => false, 'messages' => [], 'done' => true ];
 	} ];
 	return $er;
 } );
+/** a***@example.com or ******4321, for the access log */
+function apex_mask( string $who ): string {
+	if ( str_contains( $who, '@' ) ) { [ $a, $d ] = explode( '@', $who, 2 ); return mb_substr( $a, 0, 1 ) . '***@' . $d; }
+	return str_repeat( '*', max( 0, mb_strlen( $who ) - 4 ) ) . mb_substr( $who, -4 );
+}
 /** Enquiries whose contact matches: an email address exactly, a phone number by its digits, a LINE ID exactly. */
 function apex_leads_by_email( string $who ): array {
 	$out = [];
@@ -375,7 +402,7 @@ function apex_voucher_check_page(): void {
 	$msg = '';
 	if ( $code && isset( $_POST['apex_use'] ) && check_admin_referer( 'apex_use_' . $code ) ) {
 		$id = apex_voucher_find( $code );
-		if ( $id && ! get_post_meta( $id, 'apex_used', true ) ) { update_post_meta( $id, 'apex_used', [ 'at' => time(), 'by' => get_current_user_id() ] ); $msg = __( 'Marked as used.', 'apex' ); }
+		if ( $id && ! get_post_meta( $id, 'apex_used', true ) ) { update_post_meta( $id, 'apex_used', [ 'at' => time(), 'by' => get_current_user_id() ] ); apex_audit( 'voucher_use', $id ); $msg = __( 'Marked as used.', 'apex' ); }
 	}
 	echo '<div class="wrap"><h1>' . esc_html__( 'Check a voucher', 'apex' ) . '</h1><p>' . esc_html__( 'Type the code on the client\'s phone, or scan its QR code with the reception phone.', 'apex' ) . '</p>';
 	echo '<form method="get"><input type="hidden" name="post_type" value="apex_voucher"><input type="hidden" name="page" value="apex-voucher-check"><input name="code" class="regular-text" style="font-size:20px;letter-spacing:.06em;text-transform:uppercase" value="' . esc_attr( $code ) . '" placeholder="APX-XXXXXX" autocomplete="off" autofocus> ';
@@ -414,20 +441,27 @@ function apex_forms_page(): void {
 		update_option( 'apex_forms', [
 			'recipients' => $emails,
 			'turnstile_site' => sanitize_text_field( $in['turnstile_site'] ?? '' ),
-			'turnstile_secret' => sanitize_text_field( $in['turnstile_secret'] ?? '' ),
+			// an empty box keeps the saved secret; the tick box clears it
+			'turnstile_secret' => ! empty( $in['turnstile_clear'] ) ? '' : ( sanitize_text_field( $in['turnstile_secret'] ?? '' ) ?: (string) apex_forms_opt( 'turnstile_secret' ) ),
 			'keep_days' => max( 0, (int) ( $in['keep_days'] ?? 365 ) ),
 		], false );
 		update_option( 'apex_turnstile_site', sanitize_text_field( $in['turnstile_site'] ?? '' ), true );
+		apex_audit( 'settings', 0, 'Forms' );
 		echo '<div class="notice notice-success"><p>' . esc_html__( 'Saved.', 'apex' ) . '</p></div>';
 	}
 	$o = (array) get_option( 'apex_forms' );
-	echo '<div class="wrap"><h1>' . esc_html__( 'Forms', 'apex' ) . '</h1><form method="post"><table class="form-table">';
+	echo '<div class="wrap"><h1>' . esc_html__( 'Forms', 'apex' ) . '</h1>';
+	// behind Cloudflare without APEX_IP_HEADER every visitor shares Cloudflare's address and one limit
+	if ( ! empty( $_SERVER['HTTP_CF_CONNECTING_IP'] ) && ! defined( 'APEX_IP_HEADER' ) ) echo '<div class="notice notice-warning"><p>' . esc_html__( 'This site is behind Cloudflare and APEX_IP_HEADER is not set in wp-config.php, so the limit of 6 enquiries an hour applies to all visitors together. Add define( \'APEX_IP_HEADER\', \'HTTP_CF_CONNECTING_IP\' ); as the handover notes say.', 'apex' ) . '</p></div>';
+	if ( apex_forms_opt( 'turnstile_secret' ) === '' ) echo '<div class="notice notice-info"><p>' . esc_html__( 'Turnstile is off. Add both keys below to turn on the spam check.', 'apex' ) . '</p></div>';
+	echo '<form method="post"><table class="form-table">';
 	wp_nonce_field( 'apex_forms', 'apex_forms_nonce' );
 	$row = fn( $k, $l, $h, $type = 'text' ) => '<tr><th><label for="f-' . $k . '">' . esc_html( $l ) . '</label></th><td><input id="f-' . $k . '" type="' . $type . '" class="regular-text" name="f[' . $k . ']" value="' . esc_attr( (string) ( $o[ $k ] ?? ( $k === 'keep_days' ? 365 : '' ) ) ) . '"><p class="description">' . esc_html( $h ) . '</p></td></tr>';
 	echo $row( 'recipients', __( 'Send enquiries to', 'apex' ), __( 'Email addresses, separated by commas. Leave empty for the site admin address.', 'apex' ) );
 	echo $row( 'keep_days', __( 'Keep enquiries for (days)', 'apex' ), __( 'Older enquiries and their photos are deleted automatically. 0 keeps them until someone deletes them.', 'apex' ), 'number' );
 	echo $row( 'turnstile_site', __( 'Cloudflare Turnstile site key', 'apex' ), __( 'Optional spam check. Without it the form still uses a hidden trap field and a limit per connection.', 'apex' ) );
-	echo $row( 'turnstile_secret', __( 'Cloudflare Turnstile secret key', 'apex' ), '', 'password' );
+	$saved = (string) ( $o['turnstile_secret'] ?? '' );
+	echo '<tr><th><label for="f-turnstile_secret">' . esc_html__( 'Cloudflare Turnstile secret key', 'apex' ) . '</label></th><td><input id="f-turnstile_secret" type="password" autocomplete="off" class="regular-text" name="f[turnstile_secret]" value=""> ' . ( $saved !== '' ? '<span style="color:#2271b1">' . esc_html__( 'Saved', 'apex' ) . ' (…' . esc_html( substr( $saved, -4 ) ) . ')</span> <label><input type="checkbox" name="f[turnstile_clear]" value="1"> ' . esc_html__( 'Remove', 'apex' ) . '</label>' : '<span style="color:#b32d2e">' . esc_html__( 'Not set', 'apex' ) . '</span>' ) . '<p class="description">' . esc_html__( 'Leave empty to keep the saved key.', 'apex' ) . '</p></td></tr>';
 	echo '</table>';
 	submit_button();
 	echo '</form></div>';
@@ -440,6 +474,7 @@ function apex_games_page(): void {
 		foreach ( apex_game_config()['games'] as $g => $t ) foreach ( $t as $i => $x ) $o['games'][ $g ][ $i ] = max( 1, (int) ( $in['games'][ $g ][ $i ] ?? $x ) );
 		for ( $i = 0; $i < 3; $i++ ) foreach ( APEX_LANGS as $l ) $o['prizes'][ $i ][ $l ] = sanitize_text_field( $in['prizes'][ $i ][ $l ] ?? '' );
 		update_option( 'apex_games', $o, true );
+		apex_audit( 'settings', 0, 'Games and prizes' );
 		echo '<div class="notice notice-success"><p>' . esc_html__( 'Saved.', 'apex' ) . '</p></div>';
 	}
 	$c = apex_game_config();

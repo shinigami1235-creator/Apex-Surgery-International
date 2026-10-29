@@ -110,6 +110,7 @@ function apex_fresh_page(): void {
 	if ( isset( $_POST['apex_fresh_nonce'] ) && wp_verify_nonce( sanitize_key( $_POST['apex_fresh_nonce'] ), 'apex_fresh' ) ) {
 		update_option( 'apex_fresh_days', max( 1, min( 365, (int) ( $_POST['days'] ?? 30 ) ) ), true );
 		update_option( 'apex_fresh_keep', max( 1, min( 90, (int) ( $_POST['keep'] ?? 7 ) ) ), true );
+		apex_audit( 'settings', 0, "What's new" );
 		apex_data_bump();
 		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Saved.', 'apex' ) . '</p></div>';
 	}

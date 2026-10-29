@@ -53,7 +53,9 @@ const T = {
   itemsA: { en: '{n} items in My Plan', th: 'แผนของฉันมี {n} รายการ' },
   nProc: { en: ['{n} procedure', '{n} procedures'], th: 'หัตถการ {n} รายการ' },
   nVouch: { en: ['{n} voucher', '{n} vouchers'], th: 'บัตรกำนัล {n} ใบ' },
-  days: { en: '{n} days', th: '{n} วัน' }
+  days: { en: '{n} days', th: '{n} วัน' },
+  clearPlan: { en: 'Clear my plan', th: 'ล้างแผนของฉัน' },
+  clearAsk: { en: 'Remove every procedure, the trip and the notes from My Plan on this device? Vouchers stay.', th: 'ลบหัตถการ การเดินทาง และบันทึกทั้งหมดออกจากแผนในเครื่องนี้หรือไม่ บัตรกำนัลยังอยู่' }
 };
 
 /* Game titles from features/games/config.js, copied so the plan loads without the games bundle. */
@@ -102,6 +104,7 @@ const CSS = `
 .apxp a.p-link svg{width:16px;height:16px}
 .apxp .p-rm{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;border-radius:999px;border:1.5px solid var(--p-l2);background:#fff;color:var(--p-ink2);font-size:14px;font-weight:700;cursor:pointer;align-self:start}
 .apxp .p-rm:hover{border-color:var(--p-rose);color:var(--p-rose)}
+.apxp .p-clear{margin-top:14px}
 .apxp .p-rm svg{width:16px;height:16px}
 .apxp .p-v{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;align-items:center;background:#fff;border:1px solid var(--p-l2);border-radius:20px;padding:14px 16px;overflow:hidden;position:relative}
 .apxp .p-v::before{content:"";grid-row:1/4;width:10px;align-self:stretch;margin:-14px 0 -14px -16px;background:linear-gradient(135deg,rgba(255,255,255,.18) 25%,transparent 25%) 0 0/8px 8px,linear-gradient(var(--p-rose),var(--p-plum))}
@@ -302,7 +305,8 @@ export function mount(container, opts = {}) {
     side.append(h('div', { class: 'p-box p-send', hidden: !canSend },
       h('h3', null, L(T.send)),
       h('div', { class: 'p-acts' }, waBtn, lineBtn, pngBtn),
-      status));
+      status,
+      h('button', { type: 'button', class: 'p-rm p-clear', onclick: () => { if (window.confirm(L(T.clearAsk))) { store.clearPlan(); emit('plan:clear', {}); } } }, L(T.clearPlan))));
   }
 
   function procCard(p) {

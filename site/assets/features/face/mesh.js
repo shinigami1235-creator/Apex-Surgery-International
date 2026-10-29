@@ -1,6 +1,7 @@
 /* The face model shared by the face tools: loading MediaPipe Face Mesh (478 points), finding a face in a photo
    and cropping to it. The model loads once per page and photos are sent one at a time. */
-export const MP_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/';
+/* @mediapipe/face_mesh 0.4.1633559619, served by the site (vendor/README.md). The name stays MP_CDN for the modules that import it. */
+export const MP_CDN = new URL('../../vendor/face_mesh/', import.meta.url).href;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 let meshP = null, meshBase = '', queue = Promise.resolve();
 export function loadMesh(base){

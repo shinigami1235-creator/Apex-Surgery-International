@@ -83,6 +83,8 @@ export function removeProcedure(key, area) {
 export function setTrip(trip) { const s = load(); s.trip = trip && typeof trip === 'object' ? { ...trip, saved: Date.now() } : null; save(s); }
 export function setNotes(text) { const s = load(); s.notes = String(text || '').slice(0, 2000); save(s); }
 export function clear() { save(blank()); }
+/* Clear my plan: procedures, trip and notes go, while game vouchers stay since reception still needs them. */
+export function clearPlan() { const v = load().vouchers; save({ ...blank(), vouchers: v }); }
 
 /* Vouchers claimed in the games, merged with any that arrived only through plan:voucher. Expired ones are left out. */
 export function vouchers(now = Date.now()) {

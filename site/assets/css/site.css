@@ -630,10 +630,13 @@ section.night.sx-join{position:relative}
 .br-map{grid-column:2;grid-row:1/3;position:relative;margin-left:10px;border-radius:var(--r-l);overflow:hidden;min-height:420px;background:linear-gradient(160deg,#efe7f5,#e4d8ee);box-shadow:inset 0 0 0 1px rgba(106,56,140,.08)}
 .br-map iframe{position:absolute;inset:0;width:100%;height:100%;border:0;opacity:0;transition:opacity .6s var(--ease-out);filter:saturate(.85) hue-rotate(-8deg)}
 .br-map iframe.on{opacity:1}
+.br-map iframe:not(.on){pointer-events:none}
 .br-map iframe[hidden]{display:none}
 .br-map-ph{position:absolute;inset:0;display:grid;place-items:center;color:var(--lilac);background:
   repeating-linear-gradient(0deg,transparent 0 46px,rgba(106,56,140,.06) 46px 47px),repeating-linear-gradient(90deg,transparent 0 46px,rgba(106,56,140,.06) 46px 47px)}
 .br-map-ph .i{width:46px;height:46px;stroke-width:1.2}
+.br-map-ph{align-content:center;justify-items:center;gap:16px}
+.br-map.on .br-map-load{visibility:hidden}
 .washed .br-stage{background:radial-gradient(130% 90% at var(--mx,92%) var(--my,0%),rgba(201,179,221,.3),transparent 52%),linear-gradient(162deg,#fff,#fff 50%,#f8f2fb)}
 
 /* ---------- toast ---------- */
@@ -656,6 +659,10 @@ section.night.sx-join{position:relative}
 .fb-skel i:first-child{height:64px}
 @keyframes skel{to{background-position:-220% 0}}
 @media (prefers-reduced-motion:reduce){.fb-skel i{animation:none}}
+.fb-load{position:absolute;z-index:2;left:50%;top:132px;transform:translateX(-50%);white-space:nowrap}
+.fb-load .i{width:18px;height:18px}
+.fb-box:not(.wait) .fb-load,.fb-box.loaded .fb-load{display:none}
+.fb-box.wait .fb-skel i{animation:none}
 .updates2{display:grid;grid-template-columns:minmax(0,520px) minmax(0,1fr);gap:clamp(24px,4vw,64px);align-items:start}
 .upd-list{display:grid;gap:14px}
 .upd-list .post-card{display:grid;grid-template-columns:minmax(0,200px) minmax(0,1fr);gap:20px;align-items:center;padding:12px;border-radius:var(--r-l);transition:background-color .3s,box-shadow .3s}

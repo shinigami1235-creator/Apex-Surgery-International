@@ -19,7 +19,7 @@ services:
     restart: unless-stopped
     depends_on: [db]
     ports:
-      - "8080:80"
+      - "127.0.0.1:8080:80"   # this computer only; the database password here is for testing
     environment:
       WORDPRESS_DB_HOST: db
       WORDPRESS_DB_NAME: apex

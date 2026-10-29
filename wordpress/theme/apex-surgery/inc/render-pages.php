@@ -99,7 +99,7 @@ function apex_fb_link( $f, string $cls = '' ): string {
 }
 function apex_fb_frame( array $f, int $h = 640, string $tabs = 'timeline', $also = null ): string {
 	return '<div class="fbframe rv"><div class="fbhead"><span class="fb-ic">' . apex_ic( 'facebook' ) . '</span><span class="fb-name"><b>' . apex_e( $f['x'] ) . '</b><small>facebook.com/' . apex_e( apex_fb_handle( $f ) ) . '</small></span><a class="fb-open" href="' . esc_url( $f['h'] ) . '" target="_blank" rel="noopener" aria-label="' . apex_e( apex_t( 'fbOpen' ) ) . ': ' . apex_e( $f['x'] ) . '" title="' . apex_e( apex_t( 'fbOpen' ) ) . '">' . apex_ic( 'arrow-up-right' ) . '</a></div>
-    <div class="fb-box" style="height:' . $h . 'px"><div class="fb-skel" aria-hidden="true"><i></i><i></i><i></i><i></i></div><iframe data-fb="' . apex_jsuri( $f['h'] ) . '" data-h="' . $h . '" data-tabs="' . $tabs . '" height="' . $h . '" title="' . apex_e( $f['x'] ) . ' · Facebook" allow="encrypted-media"></iframe>
+    <div class="fb-box" style="height:' . $h . 'px"><div class="fb-skel" aria-hidden="true"><i></i><i></i><i></i><i></i></div><button type="button" class="fb-load btn btn-plum btn-sm">' . apex_ic( 'facebook' ) . apex_e( apex_t( 'fbShow' ) ) . '</button><iframe data-fb="' . apex_jsuri( $f['h'] ) . '" data-h="' . $h . '" data-tabs="' . $tabs . '" height="' . $h . '" title="' . apex_e( $f['x'] ) . ' · Facebook" allow="encrypted-media"></iframe>
       <div class="fb-fallback" hidden><span class="fb-big">' . apex_ic( 'facebook' ) . '</span><b class="h-s">' . apex_e( apex_t( 'fbH' ) ) . '</b>' . apex_fb_link( $f ) . apex_fb_link( $also ) . '</div></div></div>';
 }
 function apex_map_src( array $b ): string { return 'https://www.google.com/maps?q=' . apex_jsuri( $b['name'] . ', ' . ( $b['addr'] ?? '' ) ) . '&output=embed'; }
@@ -142,7 +142,7 @@ function apex_branches( array $S, ?string $h = null, ?string $p = null ): string
       <div class="br-stage rv" id="' . $id . '-p" role="tabpanel" aria-labelledby="' . $id . '-t0">
         <div class="br-photo ph-img">' . $imgs . $tours . '<span class="br-count" aria-hidden="true"><b>' . ( $n > 1 ? '1' : '' ) . '</b>' . ( $n > 1 ? ' / ' . $n : '' ) . '</span></div>
         <div class="br-info">' . $cards . '</div>
-        <div class="br-map"><div class="br-map-ph" aria-hidden="true">' . apex_ic( 'map' ) . '</div>' . $maps . '</div>
+        <div class="br-map"><div class="br-map-ph">' . apex_ic( 'map' ) . '<button type="button" class="br-map-load btn btn-ghost on-light btn-sm">' . $E( apex_t( 'mapShow' ) ) . '</button></div>' . $maps . '</div>
       </div></div>';
 }
 
@@ -689,7 +689,8 @@ function apex_page_service( array $r ): string {
       ' . apex_review_rail( $D['reviewImgs'] ?? [], 'rv-rail' ) . '
       <div class="stories-wrap"><div class="sw-head"><h3 class="h-m rv">' . $E( $T( 'reelsEb' ) ) . '</h3><p class="reels-sub rv">' . $E( $T( 'reelsTap' ) ) . '</p></div>' . apex_stories_host( $D['videos'] ?? null, 'stories', $D['reviewsH'] ?? null ) . '</div>
       ';
-	$yt = $D['yt'] ?? [];
+	// a YouTube id is letters, digits, - and _; anything else in the field is skipped
+	$yt = array_values( array_filter( (array) ( $D['yt'] ?? [] ), fn( $id ) => (bool) preg_match( '/^[\w-]{6,20}$/', (string) $id ) ) );
 	$tt = $D['tiktok'] ?? null;
 	if ( $yt || $tt ) {
 		$o .= '<div class="yt-row">' . implode( '', array_map( fn( $id ) => '<div class="ytbox rv"><button type="button" data-yt="' . $E( $id ) . '" aria-label="' . $E( $T( 'playVideo' ) ) . '"><img loading="lazy" decoding="async" src="' . esc_url( apex_yt( $id ) ) . '" alt=""><span class="pl">' . $I( 'play' ) . '</span></button></div>', $yt ) ) . '

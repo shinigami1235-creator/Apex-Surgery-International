@@ -85,7 +85,7 @@ Each interactive feature lives in `site/assets/features/<name>/`.
   - `onEvent(name, data)`: optional, used for analytics and My Plan, for example `onEvent('plan:add', {procedure:'rhinoplasty'})`.
 - All UI strings live in the module in both English and Thai.
 - Add a demo page `site/lab/<name>.html` that mounts the module full width with a TH/EN switch, for testing.
-- External libraries load at runtime only from cdn.jsdelivr.net or cdnjs.cloudflare.com, with exact pinned versions. The main site uses `three@0.160.0` and `@mediapipe/face_mesh@0.4.1633559619`.
+- External libraries are copied into `site/assets/vendor/` at exact pinned versions and served by the site, since code loaded from a CDN runs on pages with the camera open. The main site uses `three@0.160.0`, `@mediapipe/face_mesh@0.4.1633559619` and `@vladmandic/face-api@1.7.15` (see `site/assets/vendor/README.md`).
   - The container's shell cannot reach those CDNs. To test locally, `npm install` the same versions in a scratch folder and point the demo page at the local copy through an import map, or vendor small files into the feature folder.
 - Browser storage (localStorage) is allowed only for per-visitor conveniences. Wrap every read and write in try/catch so the feature works without it.
 - Testing: Playwright with the preinstalled Chromium (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`; do not run `playwright install`).

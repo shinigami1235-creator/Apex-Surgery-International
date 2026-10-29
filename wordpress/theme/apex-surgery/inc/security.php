@@ -19,6 +19,7 @@ add_filter( 'the_generator', '__return_empty_string' );
 
 /* no XML-RPC: nothing on this site uses it, and it is a common password-guessing route */
 add_filter( 'xmlrpc_enabled', '__return_false' );
+add_filter( 'xmlrpc_methods', '__return_empty_array' );   // pingback.ping and system.multicall go too
 add_filter( 'wp_headers', function ( $h ) { unset( $h['X-Pingback'] ); return $h; } );
 add_filter( 'pings_open', '__return_false', 20 );
 
@@ -67,6 +68,14 @@ add_action( 'send_headers', function () {
 	header( 'X-Frame-Options: SAMEORIGIN' );
 	// the nose preview, face analysis and proportion tools may use the camera on this site only
 	header( 'Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=(), usb=()' );
+	// HTTPS only, once every address works over HTTPS: define( 'APEX_HSTS', 31536000 ); in wp-config.php.
+	// Browsers remember it for that many seconds, so start with a day (86400) and raise it after a week.
+	if ( defined( 'APEX_HSTS' ) && (int) APEX_HSTS > 0 && is_ssl() ) header( 'Strict-Transport-Security: max-age=' . (int) APEX_HSTS );
+} );
+/* the REST answers (forms, prices) skip send_headers, so they get the same basics here */
+add_filter( 'rest_post_dispatch', function ( $res ) {
+	if ( $res instanceof WP_REST_Response ) { $res->header( 'X-Content-Type-Options', 'nosniff' ); $res->header( 'Referrer-Policy', 'strict-origin-when-cross-origin' ); }
+	return $res;
 } );
 
 /* uploads: images, video and PDF only (no SVG, which can carry script) */

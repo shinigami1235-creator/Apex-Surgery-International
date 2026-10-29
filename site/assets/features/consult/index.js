@@ -85,7 +85,8 @@ const T = {
   change: { en: 'Change', th: 'เปลี่ยน' },
   remove: { en: 'Remove', th: 'ลบ' },
   photoErr: { en: 'The photo could not be read.', th: 'อ่านไฟล์รูปไม่ได้' },
-  consent: { en: 'I agree to Apex Surgery Hospital using these details and photos to answer my enquiry.', th: 'ข้าพเจ้ายินยอมให้โรงพยาบาลศัลยกรรมตกแต่งเอเพ็กซ์ใช้ข้อมูลและรูปถ่ายนี้เพื่อตอบคำถามของข้าพเจ้า' },
+  consent: { en: 'I agree to Apex Surgery Hospital using these details, including my health questions and photos, to answer my enquiry.', th: 'ข้าพเจ้ายินยอมให้โรงพยาบาลศัลยกรรมตกแต่งเอเพ็กซ์ใช้ข้อมูลนี้ รวมถึงคำถามเรื่องสุขภาพและรูปถ่าย เพื่อตอบคำถามของข้าพเจ้า' },
+  privacy: { en: 'Privacy policy', th: 'นโยบายความเป็นส่วนตัว' },
   submit: { en: 'Send enquiry', th: 'ส่งคำถาม' },
   sending: { en: 'Sending', th: 'กำลังส่ง' },
   errs: { en: 'Check these fields:', th: 'ตรวจสอบช่องต่อไปนี้' },
@@ -226,6 +227,7 @@ const CSS = `
 .apxc .c-consent{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:12px;background:var(--c-l1);cursor:pointer}
 .apxc .c-consent input{width:22px;height:22px;margin:2px 0 0;flex:none;accent-color:var(--c-plum)}
 .apxc .c-consent span{font-size:15px}
+.apxc .c-priv{color:var(--c-plum);font-weight:700;white-space:nowrap}
 .apxc .c-sum{margin-top:22px;border:1.5px solid var(--c-err);background:#FFF5F8;border-radius:12px;padding:12px 14px}
 .apxc .c-sum p{font-weight:800;color:var(--c-err)}
 .apxc .c-sum ul{margin:4px 0 0;padding-left:20px}
@@ -408,7 +410,7 @@ export function mount(container, opts = {}) {
     h('p', { class: 'c-note', id: id('n-ph') }, L(opts.endpoint ? T.photoNoteLive : T.photoNote)));
 
   const consent = h('input', { type: 'checkbox', id: id('consent'), name: 'consent', 'aria-describedby': id('e-consent') });
-  const fConsent = h('div', { class: 'c-f' }, h('label', { class: 'c-consent', for: id('consent') }, consent, h('span', null, L(T.consent), req())), err('consent'));
+  const fConsent = h('div', { class: 'c-f' }, h('label', { class: 'c-consent', for: id('consent') }, consent, h('span', null, L(T.consent), ' ', h('a', { href: (opts.links && opts.links.privacy) || 'privacy.html', target: '_blank', rel: 'noopener', class: 'c-priv' }, L(T.privacy)), req())), err('consent'));
 
   const summary = h('div', { class: 'c-sum', hidden: true, tabindex: '-1', role: 'alert' });
   const submit = h('button', { type: 'submit', class: 'c-btn rose c-submit' }, L(T.submit));

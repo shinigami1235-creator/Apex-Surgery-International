@@ -1,6 +1,6 @@
 /* The 3D view for the implant viewers: one canvas drawing one or two panes of the same model side by
    side (before and after, or two implants), turned together by dragging. three.js loads at runtime. */
-const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+const THREE_URL = new URL('../../vendor/three/three.module.js', import.meta.url).href;   // three 0.160.0, served by the site (vendor/README.md)
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 export async function createScene(host, opts = {}){

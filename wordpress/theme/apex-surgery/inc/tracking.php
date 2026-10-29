@@ -81,6 +81,7 @@ add_action( 'wp_footer', function () {
     gtag('consent','update',{analytics_storage:a?'granted':'denied',ad_storage:m?'granted':'denied',ad_user_data:m?'granted':'denied',ad_personalization:m?'granted':'denied'});
     gtag('set','ads_data_redaction',!m);
     window.dataLayer.push({event:'apex_consent',apex:{analytics:!!a,ads:!!m}});
+    try{window.dispatchEvent(new CustomEvent('apex:consent',{detail:c}));}catch(e){}
     box.hidden=true;}
   function open(){var c=read();box.hidden=false;opts.hidden=true;save.hidden=true;set.hidden=false;
     box.querySelector('[name=analytics]').checked=!!(c&&c.analytics);box.querySelector('[name=ads]').checked=!!(c&&c.ads);}
@@ -121,7 +122,13 @@ add_action( 'admin_menu', function () {
 		if ( isset( $_POST['apex_gtm_nonce'] ) && wp_verify_nonce( sanitize_key( $_POST['apex_gtm_nonce'] ), 'apex_gtm' ) ) {
 			$v = strtoupper( sanitize_text_field( wp_unslash( $_POST['apex_gtm'] ?? '' ) ) );
 			update_option( 'apex_gtm', preg_match( '/^GTM-[A-Z0-9]{4,12}$/', $v ) ? $v : '', true );
-			if ( current_user_can( 'unfiltered_html' ) ) foreach ( APEX_CODE as $k ) update_option( 'apex_code_' . $k, (string) wp_unslash( $_POST[ 'apex_code_' . $k ] ?? '' ), true );
+			$changed = [];
+			if ( current_user_can( 'unfiltered_html' ) ) foreach ( APEX_CODE as $k ) {
+				$new = (string) wp_unslash( $_POST[ 'apex_code_' . $k ] ?? '' );
+				if ( $new !== apex_code( $k ) ) $changed[] = $k;
+				update_option( 'apex_code_' . $k, $new, true );
+			}
+			apex_audit( 'settings', 0, 'Tracking and code' . ( $changed ? ' (custom code: ' . implode( ', ', $changed ) . ')' : '' ) );
 			echo '<div class="notice notice-success"><p>' . esc_html__( 'Saved.', 'apex' ) . '</p></div>';
 		}
 		echo '<div class="wrap"><h1>' . esc_html__( 'Tracking and code', 'apex' ) . '</h1><form method="post"><table class="form-table"><tr><th><label for="apex-gtm">' . esc_html__( 'Google Tag Manager container', 'apex' ) . '</label></th><td><input id="apex-gtm" name="apex_gtm" class="regular-text" value="' . esc_attr( apex_gtm_id() ) . '" placeholder="GTM-XXXXXXX"><p class="description">' . esc_html__( 'Empty turns Tag Manager off. Analytics and ads tags in the container must use Consent Mode: they only store cookies after the visitor accepts in the cookie banner.', 'apex' ) . '</p></td></tr></table>';

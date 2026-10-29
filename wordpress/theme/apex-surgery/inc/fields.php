@@ -100,6 +100,8 @@ function apex_field_html( array $f, $v, string $name, string $lang, bool $in_row
 			break;
 		case 'select':
 			echo $label . '<select id="' . $id . '" name="' . esc_attr( $name ) . '">';
+			// a saved value that is not in the list stays selected, so saving the screen does not change it
+			if ( (string) $v !== '' && ! array_key_exists( (string) $v, $f['o'] ) ) echo '<option value="' . esc_attr( (string) $v ) . '" selected>' . esc_html( (string) $v ) . '</option>';
 			foreach ( $f['o'] as $k => $x ) echo '<option value="' . esc_attr( $k ) . '"' . selected( (string) $v, (string) $k, false ) . '>' . esc_html( $x ) . '</option>';
 			echo '</select>' . $help;
 			break;
@@ -159,7 +161,7 @@ function apex_clean( array $f, $v ) {
 		case 'number': $v = trim( (string) $v ); return is_numeric( $v ) ? $v + 0 : '';
 		case 'date': $v = trim( (string) $v ); return preg_match( '/^\d{4}-\d{2}-\d{2}$/', $v ) ? $v : '';
 		case 'bool': return ! empty( $v ) && $v !== '0';
-		case 'select': return array_key_exists( (string) $v, $f['o'] ) ? (string) $v : '';
+		case 'select': return array_key_exists( (string) $v, $f['o'] ) ? (string) $v : ( ! empty( $f['keep'] ) ? sanitize_key( (string) $v ) : '' );
 		case 'lines': return array_values( array_filter( array_map( 'apex_plain', preg_split( '/\r\n|\r|\n/', (string) $v ) ), 'strlen' ) );
 		case 'scalars': return array_values( array_filter( array_map( fn( $x ) => apex_img_store( apex_clean_link( $x ) ), preg_split( '/\r\n|\r|\n/', (string) $v ) ), 'strlen' ) );
 		case 'posts': return array_values( array_filter( array_map( 'sanitize_title', (array) $v ), 'strlen' ) );
@@ -220,6 +222,7 @@ function apex_settings_page(): void {
 		$vals = [];
 		foreach ( apex_schema( 'shared' ) as $f ) $vals[ $f['k'] ] = apex_clean( $f, $in[ $f['k'] ] ?? ( $f['t'] === 'repeater' ? [] : '' ) );
 		apex_write_option( $lang, $vals );
+		apex_audit( 'settings', 0, 'Site settings (' . $lang . ')' );
 		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Saved.', 'apex' ) . '</p></div>';
 	}
 	$v = apex_read_option( $lang );
@@ -243,6 +246,7 @@ function apex_wording_page(): void {
 			if ( $x !== '' && $x !== $def ) $over[ $k ] = $x;
 		}
 		update_option( 'apex_wording_' . $lang, $over, true );
+		apex_audit( 'settings', 0, 'Wording (' . $lang . ')' );
 		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Saved.', 'apex' ) . '</p></div>';
 	}
 	$over = get_option( 'apex_wording_' . $lang );

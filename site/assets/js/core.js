@@ -18,6 +18,8 @@
   A.media = A.media || SITE;
   A.img = s => !s ? '' : (s.startsWith('~/') ? A.media + s.slice(2) : /^(img|video|fonts|css|js|features)\//.test(s) ? A.assets + s : s);
   A.esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  /* a link from content for an href: escaped, and '#' when it would run script */
+  A.url = u => { const s = String(u == null ? '' : u); return /^(javascript|data|vbscript):/i.test(s.replace(/[\x00-\x20]/g, '')) ? '#' : A.esc(s); };
   A.qs = (s, r=document) => r.querySelector(s);
   A.qsa = (s, r=document) => [...r.querySelectorAll(s)];
   A.param = k => { const v = new URLSearchParams(location.search).get(k); return v != null ? v : ((A.params || {})[k] != null ? String(A.params[k]) : null); };
@@ -77,9 +79,11 @@
     try { window.dispatchEvent(new CustomEvent('apex:event', {detail:{name, data:data || {}, lang:A.lang, page:document.body.dataset.page}})); } catch (e) {}
     try { (window.dataLayer = window.dataLayer || []).push({event:'apex_' + name.replace(/[^a-z0-9]+/gi, '_'), apex:A.tagSafe(name, data || {})}); } catch (e) {}
   };
-  /* what analytics may see: the pages, procedures and buttons people used. Names, contacts, skin scores,
-     body measurements, concerns and voucher codes stay out. */
-  const TAG_KEYS = new Set(['procedure', 'procedures', 'branch', 'area', 'channel', 'method', 'photos', 'sent', 'sample', 'traced', 'view', 'views', 'preset', 'mode', 'factor', 'error', 'on', 'row', 'key', 'index', 'auto', 'ok', 'source', 'game', 'prize', 'fields', 'from', 'side', 'face', 'stayDays', 'correct', 'total', 'bonus', 'level', 'durationMs', 'code']);
+  /* what Tag Manager may see: the tool and button people used, the branch and the channel. The procedure,
+     treated area and nose preset stay out since ad tags in the container would pass a person's interest in a
+     surgery on to Google, Meta or TikTok, and so do names, contacts, skin scores, body measurements, concerns
+     and voucher codes. The page address still tells analytics which service page was open. */
+  const TAG_KEYS = new Set(['branch', 'channel', 'method', 'photos', 'sent', 'sample', 'traced', 'view', 'views', 'mode', 'factor', 'error', 'on', 'row', 'key', 'index', 'auto', 'ok', 'source', 'game', 'prize', 'fields', 'from', 'side', 'face', 'stayDays', 'correct', 'total', 'bonus', 'level', 'durationMs', 'code']);
   A.tagSafe = (name, d) => {
     const o = {};
     Object.keys(d).forEach(k => { if (TAG_KEYS.has(k) && !(k === 'code' && !/^currency/.test(name))) o[k] = d[k]; });
@@ -242,18 +246,18 @@
     const ext = ' target="_blank" rel="noopener"';
     const br = (S.branches || []).map(b => `<div class="ftr-br"><h2 class="ftr-h">${A.esc(b.short || b.name)}</h2><p>${A.esc(b.addr)}</p>
       <button type="button" class="ftr-copy" data-copy="${A.esc(b.name + ', ' + b.addr)}">${A.ic('copy')}${A.ic('check')}<span>${A.esc(A.t('copyAddr'))}</span></button>
-      <a href="${b.tel}">${A.ic('phone')}${A.esc(b.phone)}</a><a href="${b.map}"${ext}>${A.ic('navigation')}${A.esc(A.t('directions'))}</a></div>`).join('');
-    const aaci = S.aaci ? `<a class="ftr-aaci" href="${S.aaci.h}"${ext} aria-label="${A.esc(A.t('aaciH'))}"><img src="${A.img(S.aaci.src)}" alt="${A.esc(S.aaci.alt)}" loading="lazy" decoding="async" width="84" height="84"><span><b>${A.esc(A.t('aaciH'))}</b><small>APEX Surgery Hospital Ploenchit</small></span></a>` : '';
+      <a href="${A.url(b.tel)}">${A.ic('phone')}${A.esc(b.phone)}</a><a href="${A.url(b.map)}"${ext}>${A.ic('navigation')}${A.esc(A.t('directions'))}</a></div>`).join('');
+    const aaci = S.aaci ? `<a class="ftr-aaci" href="${A.url(S.aaci.h)}"${ext} aria-label="${A.esc(A.t('aaciH'))}"><img src="${A.img(S.aaci.src)}" alt="${A.esc(S.aaci.alt)}" loading="lazy" decoding="async" width="84" height="84"><span><b>${A.esc(A.t('aaciH'))}</b><small>APEX Surgery Hospital Ploenchit</small></span></a>` : '';
     const svcs = (S.services || []).map(s => `<a href="${A.svcUrl(s.key)}">${A.esc(s.short || s.name)}</a>`).join('');
     f.innerHTML = `<div class="wrap"><div class="ftr-top surg">
       <div class="brand"><span class="logo-txt light">APEX<small>Surgery Hospital</small></span>
         <p>${A.esc(A.lang === 'th' ? S.brandTh : (S.brandTh && S.brand ? S.brand : S.brand))}</p>
         <p class="ftr-lic">${A.esc(S.license || '')}</p>${aaci}
-        <div class="ftr-socials">${(S.socials || []).map(s => `<a href="${s.h}"${ext} aria-label="${A.esc(s.x || s.k)}">${A.socIcon(s.k)}</a>`).join('')}<a href="${A.WA.h}"${ext} aria-label="WhatsApp">${A.ic('whatsapp')}</a></div></div>
+        <div class="ftr-socials">${(S.socials || []).map(s => `<a href="${A.url(s.h)}"${ext} aria-label="${A.esc(s.x || s.k)}">${A.socIcon(s.k)}</a>`).join('')}<a href="${A.url(A.WA.h)}"${ext} aria-label="WhatsApp">${A.ic('whatsapp')}</a></div></div>
       <div><h2 class="ftr-h">${A.esc(A.t('ourServices'))}</h2>${svcs}<a href="treatments.html">${A.esc(A.t('treatments'))}</a><a href="analysis.html">${A.esc(A.t('ana'))}</a><a href="proportions.html">${A.esc(A.t('prop'))}</a><a href="filler.html">${A.esc(A.t('fill'))}</a><a href="breast-implants.html">${A.esc(A.t('impl'))}</a><a href="play.html">${A.esc(A.t('games'))}</a></div>
       ${br}
-      <div><h2 class="ftr-h">${A.esc(A.t('contactLine'))}</h2><a href="${S.line && S.line.h}"${ext} style="padding:0"><img class="qr" src="${A.img(S.line && S.line.qr)}" alt="LINE ${A.esc(S.line && S.line.x)}" loading="lazy" decoding="async" decoding="async"></a><p style="margin-top:10px">${A.esc(S.line && S.line.x)}</p>
-        <a href="${A.WA.h}"${ext}>${A.ic('whatsapp')}${A.esc(A.WA.x)}</a></div>
+      <div><h2 class="ftr-h">${A.esc(A.t('contactLine'))}</h2><a href="${A.url(S.line && S.line.h)}"${ext} style="padding:0"><img class="qr" src="${A.img(S.line && S.line.qr)}" alt="LINE ${A.esc(S.line && S.line.x)}" loading="lazy" decoding="async" decoding="async"></a><p style="margin-top:10px">${A.esc(S.line && S.line.x)}</p>
+        <a href="${A.url(A.WA.h)}"${ext}>${A.ic('whatsapp')}${A.esc(A.WA.x)}</a></div>
     </div>
     <div class="ftr-word" data-w="APEX" aria-hidden="true"></div>
     ${S.footerNote ? `<p class="ftr-note">${A.esc(S.footerNote)}</p>` : ''}
@@ -270,9 +274,9 @@
     d = document.createElement('div');
     d.className = 'fab';
     d.innerHTML = `<div class="fab-list">
-      <a class="wa" href="${A.WA.h}" target="_blank" rel="noopener">${A.ic('whatsapp')}<span>WhatsApp<small>${A.esc(A.t('whatsappSub'))}</small></span></a>
-      <a class="ln" href="${(S.line && S.line.h) || 'https://lin.ee/D2Ir4vJ'}" target="_blank" rel="noopener">${A.ic('line')}<span>LINE<small>${A.esc((S.line && S.line.x) || '@apexsurgery')}</small></span></a>
-      <a class="ph" href="${ph.tel}">${A.ic('phone')}<span>${A.esc(ph.phone)}<small>${A.esc(ph.short || '')}</small></span></a></div>
+      <a class="wa" href="${A.url(A.WA.h)}" target="_blank" rel="noopener">${A.ic('whatsapp')}<span>WhatsApp<small>${A.esc(A.t('whatsappSub'))}</small></span></a>
+      <a class="ln" href="${A.url((S.line && S.line.h) || 'https://lin.ee/D2Ir4vJ')}" target="_blank" rel="noopener">${A.ic('line')}<span>LINE<small>${A.esc((S.line && S.line.x) || '@apexsurgery')}</small></span></a>
+      <a class="ph" href="${A.url(ph.tel)}">${A.ic('phone')}<span>${A.esc(ph.phone)}<small>${A.esc(ph.short || '')}</small></span></a></div>
       <button class="fab-btn" type="button" aria-label="${A.esc(A.t('consult'))}" aria-expanded="false">${A.ic('message-circle')}</button>`;
     document.body.append(d);
     }
@@ -349,10 +353,10 @@
         case 'p': html += `<p${b.b ? ' class="b"' : ''}>${A.inl(b.x)}</p>`; break;
         case 'list': { const tag = b.o ? 'ol' : 'ul'; html += `<${tag}>${(b.items || []).map(li => `<li>${A.fmtLi(li.x || li)}</li>`).join('')}</${tag}>`; break; }
         case 'img': if (b.src) html += `<figure class="rv-clip ph-img"><img loading="lazy" decoding="async" src="${A.img(b.src)}" alt="${A.esc(b.alt || '')}"></figure>`; break;
-        case 'yt': html += `<div class="ytbox"><button type="button" data-yt="${b.id}" aria-label="${A.esc(A.t('playVideo'))}"><img loading="lazy" decoding="async" src="${A.yt(b.id)}" alt=""><span class="pl">${A.ic('play')}</span></button></div>`; break;
+        case 'yt': html += `<div class="ytbox"><button type="button" data-yt="${A.esc(b.id)}" aria-label="${A.esc(A.t('playVideo'))}"><img loading="lazy" decoding="async" src="${A.yt(b.id)}" alt=""><span class="pl">${A.ic('play')}</span></button></div>`; break;
         case 'faqs': html += A.faqHtml((b.items || []).map(q => ({q:q.q, a:q.a}))); break;
         case 'table': html += `<div class="tbl"><table>${(b.rows || []).map((r, i) => `<tr>${r.map(c => i === 0 ? `<th>${A.inl(c)}</th>` : `<td>${A.inl(c)}</td>`).join('')}</tr>`).join('')}</table></div>`; break;
-        case 'btn': if (b.h) html += `<p><a class="btn btn-plum btn-sm" href="${b.h}" target="_blank" rel="noopener">${A.esc(b.x)}</a></p>`; break;
+        case 'btn': if (b.h) html += `<p><a class="btn btn-plum btn-sm" href="${A.url(b.h)}" target="_blank" rel="noopener">${A.esc(b.x)}</a></p>`; break;
       }
     }
     el.innerHTML = html;
@@ -362,7 +366,7 @@
   A.bindMedia = el => {
     el.addEventListener('click', e => {
       const y = e.target.closest('[data-yt]');
-      if (y) { e.preventDefault(); y.parentElement.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${y.dataset.yt}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="YouTube"></iframe>`; }
+      if (y) { e.preventDefault(); if (!/^[\w-]{6,20}$/.test(y.dataset.yt)) return; y.parentElement.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(y.dataset.yt)}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="YouTube"></iframe>`; }
       const g = e.target.closest('[data-gal]');
       if (g) { e.preventDefault(); const items = A._gal[+g.dataset.gal]; A.lightbox.images(items, +g.dataset.i || 0); }
       const v = e.target.closest('[data-vid]');
@@ -382,7 +386,7 @@
     const f = () => { const h = document.documentElement.scrollHeight - innerHeight; b.style.transform = `scaleX(${h > 0 ? scrollY / h : 0})`; };
     addEventListener('scroll', f, {passive:true}); f();
   };
-  A.crumbs = items => `<nav class="crumbs" aria-label="Breadcrumb">${items.map((it,i) => i < items.length-1 ? `<a href="${it[1]}">${A.esc(it[0])}</a>${A.ic('chevron-right')}` : `<span aria-current="page">${A.esc(it[0])}</span>`).join('')}</nav>`;
+  A.crumbs = items => `<nav class="crumbs" aria-label="Breadcrumb">${items.map((it,i) => i < items.length-1 ? `<a href="${A.url(it[1])}">${A.esc(it[0])}</a>${A.ic('chevron-right')}` : `<span aria-current="page">${A.esc(it[0])}</span>`).join('')}</nav>`;
   A.breadcrumbLd = items => A.jsonld({'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:items.map((it, i) => ({'@type':'ListItem', position:i+1, name:it[0], item:new URL(it[1] || location.href, location.href).href}))});
   A.railCtrl = (rail, prev, next) => {
     const by = () => rail.clientWidth * .8;
@@ -403,7 +407,7 @@
         <p class="muted" data-field="doctor.specialty">${A.esc(D.specialty)}</p>
         <div class="doc-cols"><div><h4>${A.esc(D.eduH || A.t('eduH'))}</h4><ul class="ticks">${(D.edu || []).map(x => `<li>${A.esc(x)}</li>`).join('')}</ul></div>
         <div><h4>${A.esc(D.moreH || A.t('moreH'))}</h4><ul class="ticks">${(D.more || []).map(x => `<li>${A.esc(x)}</li>`).join('')}</ul></div></div>
-        <div class="doc-acts">${full ? '' : `<a class="btn btn-plum btn-sm" href="doctor.html">${A.esc(A.t('doctorCta'))} ${A.ic('arrow-right')}</a>`}<a class="btn btn-ghost on-light btn-sm" href="${(S.line && S.line.h) || '#'}" target="_blank" rel="noopener">${A.ic('line')}${A.esc(A.t('book'))}</a></div></div></div>`;
+        <div class="doc-acts">${full ? '' : `<a class="btn btn-plum btn-sm" href="doctor.html">${A.esc(A.t('doctorCta'))} ${A.ic('arrow-right')}</a>`}<a class="btn btn-ghost on-light btn-sm" href="${A.url((S.line && S.line.h) || '#')}" target="_blank" rel="noopener">${A.ic('line')}${A.esc(A.t('book'))}</a></div></div></div>`;
   };
   A.teamStrip = (S, TM) => {
     const docs = (TM && TM.docs) || [];
@@ -416,9 +420,9 @@
   A.consultBand = (S) => `<div class="consult-band rv">
     <div class="cb-copy"><p class="eyebrow">${A.esc(A.t('consultShort'))}</p><h2 class="h-xl">${A.esc(A.t('consultH'))}</h2><p class="lead">${A.esc(A.t('consultP'))}</p></div>
     <div class="cb-acts"><a class="cb-big" href="consult.html">${A.ic('message-circle')}<span><b>${A.esc(A.t('consultBtn'))}</b><small>${A.esc(A.t('consultPageH'))}</small></span>${A.ic('arrow-right')}</a>
-      <a class="cb-row" href="${(S.line && S.line.h) || '#'}" target="_blank" rel="noopener">${A.ic('line')}<span><b>${A.esc((S.cta && S.cta.line) || 'LINE')}</b><small>${A.esc((S.cta && S.cta.lineSub) || A.t('lineChat'))}</small></span></a>
-      <a class="cb-row" href="${A.WA.h}" target="_blank" rel="noopener">${A.ic('whatsapp')}<span><b>WhatsApp</b><small>${A.esc(A.t('whatsappSub'))} · ${A.esc(A.WA.x)}</small></span></a>
-      <a class="cb-row" href="${((S.branches||[])[0]||{}).tel || 'tel:0888700039'}">${A.ic('phone')}<span><b>${A.esc((S.cta && S.cta.call) || A.t('callUs'))}</b><small>${A.esc(((S.branches||[])[0]||{}).phone || '088-870-0039')}</small></span></a></div></div>`;
+      <a class="cb-row" href="${A.url((S.line && S.line.h) || '#')}" target="_blank" rel="noopener">${A.ic('line')}<span><b>${A.esc((S.cta && S.cta.line) || 'LINE')}</b><small>${A.esc((S.cta && S.cta.lineSub) || A.t('lineChat'))}</small></span></a>
+      <a class="cb-row" href="${A.url(A.WA.h)}" target="_blank" rel="noopener">${A.ic('whatsapp')}<span><b>WhatsApp</b><small>${A.esc(A.t('whatsappSub'))} · ${A.esc(A.WA.x)}</small></span></a>
+      <a class="cb-row" href="${A.url(((S.branches||[])[0]||{}).tel || 'tel:0888700039')}">${A.ic('phone')}<span><b>${A.esc((S.cta && S.cta.call) || A.t('callUs'))}</b><small>${A.esc(((S.branches||[])[0]||{}).phone || '088-870-0039')}</small></span></a></div></div>`;
   A.svcCards = (S, keys) => {
     const list = (S.services || []).filter(s => !keys || keys.includes(s.key));
     return `<div class="svc-grid">${list.map((s, i) => `<a class="svc-tile rv" data-d="${i*60}" href="${A.svcUrl(s.key)}" data-new="svc:${A.esc(s.key)}">
@@ -531,9 +535,9 @@
      The live feed is the group's international page; the surgery page gets its own link card.
      If the plugin has not loaded within 8 seconds, a follow card with both pages replaces the empty box. */
   const fbHandle = f => f.h.split('/').filter(Boolean).pop();
-  A.fbLink = (f, cls='') => f ? `<a class="fb-link ${cls}" href="${f.h}" target="_blank" rel="noopener"><span class="fb-ic">${A.ic('facebook')}</span><span class="fb-name"><b>${A.esc(f.x)}</b><small>facebook.com/${A.esc(fbHandle(f))}</small></span>${A.ic('arrow-up-right')}</a>` : '';
-  A.fbFrame = (f, h=640, tabs='timeline', also) => `<div class="fbframe rv"><div class="fbhead"><span class="fb-ic">${A.ic('facebook')}</span><span class="fb-name"><b>${A.esc(f.x)}</b><small>facebook.com/${A.esc(fbHandle(f))}</small></span><a class="fb-open" href="${f.h}" target="_blank" rel="noopener" aria-label="${A.esc(A.t('fbOpen'))}: ${A.esc(f.x)}" title="${A.esc(A.t('fbOpen'))}">${A.ic('arrow-up-right')}</a></div>
-    <div class="fb-box" style="height:${h}px"><div class="fb-skel" aria-hidden="true"><i></i><i></i><i></i><i></i></div><iframe data-fb="${encodeURIComponent(f.h)}" data-h="${h}" data-tabs="${tabs}" height="${h}" title="${A.esc(f.x)} · Facebook" allow="encrypted-media"></iframe>
+  A.fbLink = (f, cls='') => f ? `<a class="fb-link ${cls}" href="${A.url(f.h)}" target="_blank" rel="noopener"><span class="fb-ic">${A.ic('facebook')}</span><span class="fb-name"><b>${A.esc(f.x)}</b><small>facebook.com/${A.esc(fbHandle(f))}</small></span>${A.ic('arrow-up-right')}</a>` : '';
+  A.fbFrame = (f, h=640, tabs='timeline', also) => `<div class="fbframe rv"><div class="fbhead"><span class="fb-ic">${A.ic('facebook')}</span><span class="fb-name"><b>${A.esc(f.x)}</b><small>facebook.com/${A.esc(fbHandle(f))}</small></span><a class="fb-open" href="${A.url(f.h)}" target="_blank" rel="noopener" aria-label="${A.esc(A.t('fbOpen'))}: ${A.esc(f.x)}" title="${A.esc(A.t('fbOpen'))}">${A.ic('arrow-up-right')}</a></div>
+    <div class="fb-box" style="height:${h}px"><div class="fb-skel" aria-hidden="true"><i></i><i></i><i></i><i></i></div><button type="button" class="fb-load btn btn-plum btn-sm">${A.ic('facebook')}${A.esc(A.t('fbShow'))}</button><iframe data-fb="${encodeURIComponent(f.h)}" data-h="${h}" data-tabs="${tabs}" height="${h}" title="${A.esc(f.x)} · Facebook" allow="encrypted-media"></iframe>
       <div class="fb-fallback" hidden><span class="fb-big">${A.ic('facebook')}</span><b class="h-s">${A.esc(A.t('fbH'))}</b>${A.fbLink(f)}${A.fbLink(also)}</div></div></div>`;
   /* Latest from Apex: Instagram and TikTok posts as square tiles, newest first, with a follow tile for each
      account at the end, and the Facebook page window beside them where o.fb is set. The posts come from
@@ -548,9 +552,9 @@
   };
   const NETS = {instagram:'Instagram', tiktok:'TikTok', facebook:'Facebook'};
   const shortDate = d => { try { return new Date(d + 'T00:00:00').toLocaleDateString(A.lang === 'th' ? 'th-TH' : 'en-GB', {day:'numeric', month:'short'}); } catch (e) { return d; } };
-  A.feedTile = (x, i) => `<a class="feed-t ph-img rv${x.story ? ' story' : ''}" data-d="${(i % 6) * 50}" href="${A.esc(x.href)}" target="_blank" rel="noopener" aria-label="${A.esc(NETS[x.net] || '')}${x.date ? ', ' + A.esc(shortDate(x.date)) : ''}${x.cap ? ': ' + A.esc(x.cap) : ''}">
+  A.feedTile = (x, i) => `<a class="feed-t ph-img rv${x.story ? ' story' : ''}" data-d="${(i % 6) * 50}" href="${A.url(x.href)}" target="_blank" rel="noopener" aria-label="${A.esc(NETS[x.net] || '')}${x.date ? ', ' + A.esc(shortDate(x.date)) : ''}${x.cap ? ': ' + A.esc(x.cap) : ''}">
       <img src="${A.esc(A.img(x.src))}" alt="" loading="lazy" decoding="async"><span class="feed-net n-${A.esc(x.net)}">${A.socIcon(x.net)}</span>${x.video ? `<span class="feed-v">${A.ic('play')}</span>` : ''}${x.story ? `<span class="feed-st">${A.esc(A.t('igStory'))}</span>` : x.date ? `<span class="feed-d">${A.esc(shortDate(x.date))}</span>` : ''}</a>`;
-  A.feedFollow = (k, x, h) => `<a class="feed-more rv n-${k}" href="${A.esc(h)}" target="_blank" rel="noopener"><span class="fm-ic">${A.socIcon(k)}</span><b>${A.esc(x)}</b><small>${A.esc(A.t('followOn').replace('{n}', NETS[k]))}</small></a>`;
+  A.feedFollow = (k, x, h) => `<a class="feed-more rv n-${k}" href="${A.url(h)}" target="_blank" rel="noopener"><span class="fm-ic">${A.socIcon(k)}</span><b>${A.esc(x)}</b><small>${A.esc(A.t('followOn').replace('{n}', NETS[k]))}</small></a>`;
   A.socialWall = (S, o={}) => {
     const so = k => (S.socials || []).find(x => x.k === k);
     const posts = A.socialPosts().slice(0, o.fb ? 6 : 12);
@@ -580,7 +584,7 @@
   const newSave = s => { try { localStorage.setItem(NEW_KEY, JSON.stringify(s)); } catch (e) { /* storage blocked: tags show without memory */ } };
   A.freshCard = (x, i) => {
     let ext = false; try { ext = /^https?:\/\//.test(x.href || '') && new URL(x.href).host !== location.host; } catch (e) { /* not a full address */ }
-    return `<a class="fresh-c rv" data-d="${(i % 4) * 60}" href="${A.esc(x.href || '#whats-new')}" data-new="${A.esc(x.id)}" data-date="${A.esc(x.date)}"${ext ? ' target="_blank" rel="noopener"' : ''}>
+    return `<a class="fresh-c rv" data-d="${(i % 4) * 60}" href="${A.url(x.href || '#whats-new')}" data-new="${A.esc(x.id)}" data-date="${A.esc(x.date)}"${ext ? ' target="_blank" rel="noopener"' : ''}>
       <span class="fresh-ph ph-img${x.fit ? ' fit-' + A.esc(x.fit) : ''}">${x.img ? `<img src="${A.esc(A.img(x.img))}" alt="" loading="lazy" decoding="async">` : `<span class="fresh-ic">${A.ic('sparkles')}</span>`}</span>
       <span class="fresh-b"><span class="fresh-k">${A.esc(A.t('fk_' + x.kind))}</span><b class="fresh-t">${A.esc(x.title)}</b>${x.text ? `<span class="fresh-x">${A.esc(x.text)}</span>` : ''}<span class="fresh-d">${A.esc(A.t('freshAdded').replace('{d}', shortDate(x.date)))}</span></span></a>`;
   };
@@ -635,6 +639,10 @@
   };
   A.newBoot = () => { A.newSeen(pageEntry()); A.newTags(document); };
 
+  /* Facebook and Google Maps set their own cookies, so their windows open by themselves only after the visitor
+     accepts advertising cookies in the banner. Until then each shows a button that opens it on a tap. */
+  A.thirdOk = () => { try { const c = JSON.parse(localStorage.getItem('apex_consent') || 'null'); return !!(c && c.v === 1 && c.ads); } catch (e) { return false; } };
+  A.onThirdOk = fn => addEventListener('apex:consent', e => { if (e.detail && e.detail.ads) fn(); });
   A.fbMount = root => {
     const frs = A.qsa('iframe[data-fb]', root);
     const set = fr => {
@@ -652,10 +660,18 @@
       set(fr);
       setTimeout(() => { if (!fr.dataset.ok) { box.classList.add('fb-fail'); fr.remove(); const fb = A.qs('.fb-fallback', box); if (fb) fb.hidden = false; A.emit('facebook:fallback', {}); } }, 8000);
     };
-    if ('IntersectionObserver' in window) {
-      const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { io.unobserve(e.target); go(e.target); } }), {rootMargin:'300px 0px'});
-      frs.forEach(f => io.observe(f));
-    } else frs.forEach(go);
+    const watch = list => {
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { io.unobserve(e.target); if (!e.target.dataset.go) go(e.target); } }), {rootMargin:'300px 0px'});
+        list.forEach(f => io.observe(f));
+      } else list.forEach(f => { if (!f.dataset.go) go(f); });
+    };
+    frs.forEach(fr => {
+      const box = fr.parentElement, b = A.qs('.fb-load', box);
+      if (b) b.addEventListener('click', () => { box.classList.remove('wait'); if (!fr.dataset.go) go(fr); A.emit('facebook:load', {}); });
+    });
+    if (A.thirdOk()) watch(frs);
+    else { frs.forEach(fr => fr.parentElement.classList.add('wait')); A.onThirdOk(() => { frs.forEach(fr => fr.parentElement.classList.remove('wait')); watch(frs.filter(f => f.isConnected)); }); }
     let t; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => frs.filter(f => f.dataset.go && f.isConnected).forEach(set), 300); });
   };
 
@@ -670,9 +686,9 @@
         <div class="br-addr"><span class="br-pin">${A.ic('map-pin')}</span><p>${E(b.addr)}</p>
           <button type="button" class="br-copy" data-copy="${E(b.name + ', ' + b.addr)}" aria-label="${E(T('copyAddr'))}: ${E(b.short || b.name)}">${A.ic('copy')}${A.ic('check')}<span>${E(T('copyAddr'))}</span></button></div>
         <div class="br-acts">
-          <a class="br-act call" href="${b.tel}">${A.ic('phone')}<span><b>${E(T('callUs'))}</b><small>${E(b.phone)}</small></span></a>
-          <a class="br-act ln" href="${line}" target="_blank" rel="noopener">${A.ic('line')}<span><b>LINE</b><small>${E((S.line && S.line.x) || '@apexsurgery')}</small></span></a>
-          <a class="br-act map" href="${b.map}" target="_blank" rel="noopener">${A.ic('navigation')}<span><b>${E(T('directions'))}</b><small>Google Maps</small></span></a>
+          <a class="br-act call" href="${A.url(b.tel)}">${A.ic('phone')}<span><b>${E(T('callUs'))}</b><small>${E(b.phone)}</small></span></a>
+          <a class="br-act ln" href="${A.url(line)}" target="_blank" rel="noopener">${A.ic('line')}<span><b>LINE</b><small>${E((S.line && S.line.x) || '@apexsurgery')}</small></span></a>
+          <a class="br-act map" href="${A.url(b.map)}" target="_blank" rel="noopener">${A.ic('navigation')}<span><b>${E(T('directions'))}</b><small>Google Maps</small></span></a>
         </div></div>`;
     return `<div class="br" id="${id}" data-branches>
       <div class="shead br-head"><div><h2 class="h-xl rv">${E(h || S.branchesH || T('branchesH'))}</h2>${(p || S.branchesP) ? `<p class="lead rv" style="margin-top:18px;max-width:58ch">${E(p || S.branchesP)}</p>` : ''}</div>
@@ -680,7 +696,7 @@
       <div class="br-stage rv" id="${id}-p" role="tabpanel" aria-labelledby="${id}-t0">
         <div class="br-photo ph-img">${B.map((b, i) => `<img src="${A.img(b.img)}" alt="${E(b.name)}" loading="lazy" decoding="async" data-i="${i}" class="${i ? '' : 'on'}">`).join('')}${B.map((b, i) => b.tourVideo ? `<button type="button" class="br-tour" data-i="${i}" data-new="tour:${E(b.key)}" data-new-slot${i ? ' hidden' : ''}>${A.ic('play')}<span>${E(T('tourOpen'))}</span></button>` : '').join('')}<span class="br-count" aria-hidden="true"><b>${B.length > 1 ? '1' : ''}</b>${B.length > 1 ? ' / ' + B.length : ''}</span></div>
         <div class="br-info">${B.map(card).join('')}</div>
-        <div class="br-map"><div class="br-map-ph" aria-hidden="true">${A.ic('map')}</div>${B.map((b, i) => `<iframe data-src="${A.mapSrc(b)}" data-i="${i}" title="${E(T('mapTitle'))}: ${E(b.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer-when-downgrade"${i ? ' hidden' : ''}></iframe>`).join('')}</div>
+        <div class="br-map"><div class="br-map-ph">${A.ic('map')}<button type="button" class="br-map-load btn btn-ghost on-light btn-sm">${E(T('mapShow'))}</button></div>${B.map((b, i) => `<iframe data-src="${A.mapSrc(b)}" data-i="${i}" title="${E(T('mapTitle'))}: ${E(b.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer-when-downgrade"${i ? ' hidden' : ''}></iframe>`).join('')}</div>
       </div>
       ${B.some(b => (b.photos || []).length) ? B.map((b, i) => { const g = A.gallery((b.photos || []).map(x => ({src:A.img(x.src), alt:x.alt}))); return `<div class="br-gal rail" data-b="${i}"${i ? ' hidden' : ''}>${(b.photos || []).map((x, k) => `<button type="button" class="br-gp ph-img" ${g.attr(k)} aria-label="${E(x.alt)}"><img src="${A.img(x.src)}" alt="${E(x.alt)}" loading="lazy" decoding="async"></button>`).join('')}</div>`; }).join('') : ''}
       </div>`;
@@ -699,7 +715,11 @@
     br.dataset.bound = 1;
     const tabs = A.qsa('[role=tab]', br), stage = A.qs('.br-stage', br), ink = A.qs('.br-ink', br);
     let cur = 0, seen = false;
-    const loadMap = i => { const f = A.qs(`.br-map iframe[data-i="${i}"]`, br); if (f && !f.src) { f.src = f.dataset.src; f.addEventListener('load', () => f.classList.add('on'), {once:true}); } };
+    let mapsOk = A.thirdOk();
+    const loadMap = i => { if (!mapsOk) return; const f = A.qs(`.br-map iframe[data-i="${i}"]`, br); if (f && !f.src) { f.src = f.dataset.src; f.addEventListener('load', () => { f.classList.add('on'); A.qs('.br-map', br).classList.add('on'); }, {once:true}); } };
+    const mb = A.qs('.br-map-load', br);
+    if (mb) mb.addEventListener('click', () => { mapsOk = true; loadMap(cur); A.emit('map:load', {branch:cur}); });
+    A.onThirdOk(() => { mapsOk = true; if (seen) loadMap(cur); });
     const moveInk = () => { const t = tabs[cur]; if (!ink || !t) return; ink.style.width = t.offsetWidth + 'px'; ink.style.transform = `translateX(${t.offsetLeft}px)`; };
     const show = (i, focus) => {
       if (i === cur && !focus) return;

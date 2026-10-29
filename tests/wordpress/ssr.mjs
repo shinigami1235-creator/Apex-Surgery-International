@@ -19,7 +19,7 @@ if (FILTER) urls = urls.filter(u => u.includes(FILTER));
 // srcset and sizes: the server adds phone-size copies of wide photos made by `wp apex webp`; the scripts draw the plain src
 function canon(root, html) {
   const SKIP_CHILDREN = '#bodymap,.stories-host,#ba,#consult,.feat-page-host,[data-cur-picker],.apx-fx,.br-map';
-  const DROP_CLASS = new Set(['in', 'rv-now', 'img-x', 'no-logo', 'has-sx', 'has-curve', 'sx-join', 'feat-host', 'feat-on', 'feat-off', 'loaded', 'fb-fail', 'playing', 'done']);
+  const DROP_CLASS = new Set(['in', 'rv-now', 'img-x', 'no-logo', 'has-sx', 'has-curve', 'sx-join', 'feat-host', 'feat-on', 'feat-off', 'loaded', 'fb-fail', 'wait', 'playing', 'done']);
   const DROP_ATTR = new Set(['srcset', 'sizes', 'data-sheen', 'data-par-on', 'data-w', 'data-go', 'data-ok', 'data-bound', 'data-tone', 'data-fb-on']);
   const DROP_STYLE = /^(transition-delay|transform|--mx|--my|width)$/;
   const pick = html ? new DOMParser().parseFromString(html, 'text/html') : document;

@@ -17,7 +17,9 @@
 defined( 'ABSPATH' ) || exit;
 
 const APEX_PRICE_CURRENCIES = [ 'THB', 'USD', 'AUD', 'GBP', 'EUR', 'SGD', 'CNY', 'JPY', 'AED', 'HKD', 'KRW', 'PHP' ];
-const APEX_COUNTRY_HEADERS = [ 'HTTP_CF_IPCOUNTRY', 'HTTP_CLOUDFRONT_VIEWER_COUNTRY', 'HTTP_X_COUNTRY_CODE', 'HTTP_X_GEO_COUNTRY', 'GEOIP_COUNTRY_CODE', 'GEOIP2_COUNTRY_CODE' ];
+/* headers a CDN or the server sets. A host that names the country in another header (X-Country-Code, say) sets
+   APEX_COUNTRY_HEADER, since a browser can send such a header itself. */
+const APEX_COUNTRY_HEADERS = [ 'HTTP_CF_IPCOUNTRY', 'HTTP_CLOUDFRONT_VIEWER_COUNTRY', 'GEOIP_COUNTRY_CODE', 'GEOIP2_COUNTRY_CODE' ];
 
 /* ---------- the settings ---------- */
 function apex_pricing_schema(): array {
@@ -179,6 +181,7 @@ function apex_pricing_page(): void {
 		}
 		unset( $r );
 		update_option( 'apex_pricing', $v, true );
+		apex_audit( 'settings', 0, 'Prices by country' );
 		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Saved.', 'apex' ) . '</p></div>';
 		if ( $bad ) echo '<div class="notice notice-warning"><p>' . esc_html( sprintf( __( 'These are not two-letter country codes and were left out: %s', 'apex' ), implode( ', ', array_unique( $bad ) ) ) ) . '</p></div>';
 	}

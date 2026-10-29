@@ -72,6 +72,7 @@ add_action( 'admin_menu', function () {
 		if ( ! current_user_can( 'manage_options' ) ) return;
 		if ( isset( $_POST['apex_redirects_nonce'] ) && wp_verify_nonce( sanitize_key( $_POST['apex_redirects_nonce'] ), 'apex_redirects' ) ) {
 			update_option( 'apex_redirects', sanitize_textarea_field( wp_unslash( $_POST['apex_redirects'] ?? '' ) ), false );
+			apex_audit( 'settings', 0, 'Redirects' );
 			echo '<div class="notice notice-success"><p>' . esc_html__( 'Saved.', 'apex' ) . '</p></div>';
 		}
 		$test = isset( $_GET['test'] ) ? sanitize_text_field( wp_unslash( $_GET['test'] ) ) : '';

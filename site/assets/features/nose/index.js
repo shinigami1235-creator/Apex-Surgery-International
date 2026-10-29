@@ -58,7 +58,7 @@ const SAMPLES = {
     crop:[.38, 0, .98, 1],
     h:{N:[.5805, .3931], D:[.5665, .455], T:[.5335, .526], C:[.5565, .583], A:[.5863, .5307]}},
 };
-const MP_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/';
+const MP_CDN = new URL('../../vendor/face_mesh/', import.meta.url).href;   // @mediapipe/face_mesh 0.4.1633559619, served by the site
 
 /* one colour per point key, the same in every view. Each dot sits in a white ring with a dark
    shadow, so it reads on light skin, dark skin and the plum stage alike. */

@@ -20,7 +20,7 @@ function apex_seo_f(): array {
 	];
 }
 function apex_service_keys(): array {
-	return [ 'facelift' => 'Facelift', 'browlift' => 'Brow lift', 'rhinoplasty' => 'Rhinoplasty', 'eyelid' => 'Double eyelid surgery', 'breast' => 'Breast augmentation', 'lipo' => 'Liposuction' ];
+	return [ 'facelift' => 'Facelift', 'browlift' => 'Brow lift', 'rhinoplasty' => 'Rhinoplasty', 'eyelid' => 'Double eyelid surgery', 'breast' => 'Breast augmentation', 'lipo' => 'Liposuction', 'bone' => 'Facial bone surgery' ];
 }
 
 function apex_schema( string $type ): array {
@@ -58,7 +58,7 @@ function apex_schema( string $type ): array {
 	/* ---------- services ---------- */
 	$S['apex_service'] = [
 		apex_f( 'name', 'text', 'Page heading', [ 'src' => 'title' ] ),
-		apex_f( 'key', 'select', 'Procedure', [ 'o' => apex_service_keys(), 'h' => 'Links the page to its recovery facts, before and after cases, offers and My Plan' ] ),
+		apex_f( 'key', 'select', 'Procedure', [ 'o' => apex_service_keys(), 'keep' => true, 'h' => 'Links the page to its recovery facts, before and after cases, offers and My Plan' ] ),
 		apex_f( 'en', 'text', 'Small heading above the name' ),
 		apex_f( 'menu', 'group', 'In menus and service cards', [ 'f' => [ apex_f( 'name', 'text', 'Name' ), apex_f( 'short', 'text', 'Short name' ), apex_f( 'en', 'text', 'Second line' ), apex_f( 'icon', 'image', 'Icon' ), apex_f( 'nav', 'text', 'Menu label' ) ] ] ),
 		...apex_seo_f(),
