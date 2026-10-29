@@ -340,6 +340,8 @@ export function mount(container, opts = {}) {
   video.addEventListener('play', () => { setPP(true); if (!raf) raf = requestAnimationFrame(loop); });
   video.addEventListener('pause', () => setPP(false));
   video.addEventListener('seeked', paint);
+  // animation frames stop while the page is in the background, so the coarser time updates also catch the stops
+  video.addEventListener('timeupdate', () => { if (video.paused) return; paint(); if (target >= 0 && video.currentTime >= S[target].to - 0.03) arrive(target); });
   video.addEventListener('loadedmetadata', () => { ticks(); paint(); });
   video.addEventListener('ended', () => { if (S.length) arrive(last); });
   video.addEventListener('waiting', () => wait.classList.add('on'));
