@@ -111,7 +111,9 @@ function apex_branches( array $S, ?string $h = null, ?string $p = null ): string
 	}
 	$imgs = '';
 	$maps = '';
+	$tours = '';
 	foreach ( $B as $i => $b ) {
+		if ( ! empty( $b['tourVideo'] ) ) $tours .= '<button type="button" class="br-tour" data-i="' . $i . '"' . ( $i ? ' hidden' : '' ) . '>' . apex_ic( 'play' ) . '<span>' . $E( apex_t( 'tourOpen' ) ) . '</span></button>';
 		$imgs .= '<img src="' . esc_url( apex_img( $b['img'] ?? '' ) ) . '" alt="' . $E( $b['name'] ) . '" loading="lazy" decoding="async" data-i="' . $i . '" class="' . ( $i ? '' : 'on' ) . '">';
 		$maps .= '<iframe data-src="' . esc_url( apex_map_src( $b ) ) . '" data-i="' . $i . '" title="' . $E( apex_t( 'mapTitle' ) ) . ': ' . $E( $b['name'] ) . '" loading="lazy" decoding="async" referrerpolicy="no-referrer-when-downgrade"' . ( $i ? ' hidden' : '' ) . '></iframe>';
 	}
@@ -119,7 +121,7 @@ function apex_branches( array $S, ?string $h = null, ?string $p = null ): string
       <div class="shead br-head"><div><h2 class="h-xl rv">' . $E( $hh ) . '</h2>' . ( $pp ? '<p class="lead rv" style="margin-top:18px;max-width:58ch">' . $E( $pp ) . '</p>' : '' ) . '</div>
         ' . $tabs . '</div>
       <div class="br-stage rv" id="' . $id . '-p" role="tabpanel" aria-labelledby="' . $id . '-t0">
-        <div class="br-photo ph-img">' . $imgs . '<span class="br-count" aria-hidden="true"><b>' . ( $n > 1 ? '1' : '' ) . '</b>' . ( $n > 1 ? ' / ' . $n : '' ) . '</span></div>
+        <div class="br-photo ph-img">' . $imgs . $tours . '<span class="br-count" aria-hidden="true"><b>' . ( $n > 1 ? '1' : '' ) . '</b>' . ( $n > 1 ? ' / ' . $n : '' ) . '</span></div>
         <div class="br-info">' . $cards . '</div>
         <div class="br-map"><div class="br-map-ph" aria-hidden="true">' . apex_ic( 'map' ) . '</div>' . $maps . '</div>
       </div></div>';

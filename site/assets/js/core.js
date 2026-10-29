@@ -610,12 +610,22 @@
       <div class="shead br-head"><div><h2 class="h-xl rv">${E(h || S.branchesH || T('branchesH'))}</h2>${(p || S.branchesP) ? `<p class="lead rv" style="margin-top:18px;max-width:58ch">${E(p || S.branchesP)}</p>` : ''}</div>
         ${B.length > 1 ? `<div class="br-tabs rv" role="tablist" aria-label="${E(T('branchPick'))}">${B.map((b, i) => `<button type="button" role="tab" id="${id}-t${i}" aria-controls="${id}-p" aria-selected="${!i}" tabindex="${i ? -1 : 0}" data-i="${i}">${E(b.short || b.name)}</button>`).join('')}<span class="br-ink" aria-hidden="true"></span></div>` : ''}</div>
       <div class="br-stage rv" id="${id}-p" role="tabpanel" aria-labelledby="${id}-t0">
-        <div class="br-photo ph-img">${B.map((b, i) => `<img src="${A.img(b.img)}" alt="${E(b.name)}" loading="lazy" decoding="async" data-i="${i}" class="${i ? '' : 'on'}">`).join('')}<span class="br-count" aria-hidden="true"><b>${B.length > 1 ? '1' : ''}</b>${B.length > 1 ? ' / ' + B.length : ''}</span></div>
+        <div class="br-photo ph-img">${B.map((b, i) => `<img src="${A.img(b.img)}" alt="${E(b.name)}" loading="lazy" decoding="async" data-i="${i}" class="${i ? '' : 'on'}">`).join('')}${B.map((b, i) => b.tourVideo ? `<button type="button" class="br-tour" data-i="${i}"${i ? ' hidden' : ''}>${A.ic('play')}<span>${E(T('tourOpen'))}</span></button>` : '').join('')}<span class="br-count" aria-hidden="true"><b>${B.length > 1 ? '1' : ''}</b>${B.length > 1 ? ' / ' + B.length : ''}</span></div>
         <div class="br-info">${B.map(card).join('')}</div>
         <div class="br-map"><div class="br-map-ph" aria-hidden="true">${A.ic('map')}</div>${B.map((b, i) => `<iframe data-src="${A.mapSrc(b)}" data-i="${i}" title="${E(T('mapTitle'))}: ${E(b.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer-when-downgrade"${i ? ' hidden' : ''}></iframe>`).join('')}</div>
       </div>
       ${B.some(b => (b.photos || []).length) ? B.map((b, i) => { const g = A.gallery((b.photos || []).map(x => ({src:A.img(x.src), alt:x.alt}))); return `<div class="br-gal rail" data-b="${i}"${i ? ' hidden' : ''}>${(b.photos || []).map((x, k) => `<button type="button" class="br-gp ph-img" ${g.attr(k)} aria-label="${E(x.alt)}"><img src="${A.img(x.src)}" alt="${E(x.alt)}" loading="lazy" decoding="async"></button>`).join('')}</div>`; }).join('') : ''}
       </div>`;
+  };
+  /* the branch tour opens full screen over the page; its module loads on the first tap */
+  A.tour = async (i, opener) => {
+    const b = ((A.d('shared') || {}).branches || [])[i];
+    if (!b || !b.tourVideo) return;
+    A.emit('tour:open', {branch:i});
+    try {
+      const m = await import(A.vurl(A.assets + 'features/tour/index.js'));
+      m.open(A.featureOpts({branch:b, opener, links:{consult:'consult.html'}}));
+    } catch (e) { console.warn('[apex] tour', e); }
   };
   A.bindBranches = (root=document) => A.qsa('[data-branches]:not([data-bound])', root).forEach(br => {
     br.dataset.bound = 1;
@@ -632,6 +642,7 @@
       A.qsa('.br-gal', br).forEach(g => g.hidden = +g.dataset.b !== i);
       A.qsa('.br-card', br).forEach(c => { const on = +c.dataset.i === i; c.hidden = !on; c.classList.toggle('on', on); });
       A.qsa('.br-map iframe', br).forEach(f => f.hidden = +f.dataset.i !== i);
+      A.qsa('.br-tour', br).forEach(b => b.hidden = +b.dataset.i !== i);
       const n = A.qs('.br-count b', br); if (n) n.textContent = i + 1;
       if (seen) loadMap(i);
       moveInk();
@@ -643,6 +654,7 @@
       t.addEventListener('keydown', e => { const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (d) { e.preventDefault(); show((cur + d + tabs.length) % tabs.length, true); } });
     });
     A.qsa('.br-act', br).forEach(a => a.addEventListener('click', () => A.emit('contact:click', {channel:a.className.replace('br-act ', ''), from:'branches'})));
+    A.qsa('.br-tour', br).forEach(b => b.addEventListener('click', () => A.tour(+b.dataset.i, b)));
     requestAnimationFrame(moveInk);
     addEventListener('resize', moveInk);
     if ('IntersectionObserver' in window) {

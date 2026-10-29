@@ -143,6 +143,21 @@ function apex_schema( string $type ): array {
 		apex_f( 'tel', 'url', 'Phone link', [ 'h' => 'For example tel:0888700039' ] ),
 		apex_f( 'map', 'url', 'Google Maps link' ),
 		apex_f( 'img', 'image', 'Photo' ),
+		apex_f( 'tourVideo', 'url', 'Tour video', [ 'h' => 'The branch tour MP4. Upload it under Media and paste its link here. Leave empty to hide the "Take the tour" button.' ] ),
+		apex_f( 'tourPoster', 'image', 'Tour start picture', [ 'h' => 'Shown before the tour starts. The first frame of the video works well.' ] ),
+		apex_f( 'tourStops', 'repeater', 'Tour rooms', [ 'h' => 'One row per room, in the order of the video. Times are seconds in the video: the room plays from "Starts at" and stops at "Stops at". A new video needs new times.', 'f' => [
+			apex_f( 'name', 'text', 'Room name' ),
+			apex_f( 'from', 'number', 'Starts at (seconds)' ),
+			apex_f( 'to', 'number', 'Stops at (seconds)' ),
+			apex_f( 'img', 'image', 'Small picture', [ 'h' => 'The room as it looks where the video stops, 320 by 180 pixels.' ] ),
+		] ] ),
+		apex_f( 'tourNotes', 'repeater', 'Tour notes', [ 'h' => 'The gold dots shown while the tour is stopped in a room.', 'f' => [
+			apex_f( 'stop', 'number', 'Room number', [ 'h' => '1 for the first room in Tour rooms' ] ),
+			apex_f( 'x', 'number', 'Across (%)', [ 'h' => '0 is the left edge of the video, 100 the right' ] ),
+			apex_f( 'y', 'number', 'Down (%)', [ 'h' => '0 is the top edge, 100 the bottom' ] ),
+			apex_f( 'h', 'text', 'Title' ),
+			apex_f( 'p', 'textarea', 'Text' ),
+		] ] ),
 	];
 	$S['apex_doctor'] = [
 		apex_f( 'name', 'text', 'Name', [ 'src' => 'title' ] ),

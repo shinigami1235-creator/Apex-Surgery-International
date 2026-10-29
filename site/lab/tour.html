@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Branch tour lab</title>
+<link rel="icon" href="../assets/img/favicon.svg">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="_lab.css">
+<style>#tour{max-width:1100px;margin:24px auto;padding:0 16px}</style>
+</head>
+<body>
+<div class="lab-bar">
+  <b>Branch tour lab</b>
+  <div class="grp">
+    <button type="button" data-lang="th">TH</button>
+    <button type="button" data-lang="en">EN</button>
+    <button type="button" id="full">Full screen</button>
+  </div>
+</div>
+<div id="tour"></div>
+<div id="events"></div>
+<script src="../assets/data/en/shared.js"></script>
+<script>window.SHARED_EN = APEX._d.shared</script>
+<script src="../assets/data/th/shared.js"></script>
+<script type="module">
+  import { mount, open } from '../assets/features/tour/index.js';
+  import { lab } from './_lab.js';
+  const SH = { en: window.SHARED_EN, th: APEX._d.shared };
+  const branch = lang => SH[lang].branches.find(b => b.key === 'phuket');
+  const L = lab({ mountFn: mount, el: document.getElementById('tour'), extra: lang => ({ branch: branch(lang) }) });
+  document.getElementById('full').addEventListener('click', e => {
+    window.__inst && window.__inst.stop();
+    open({ lang: L.lang, base: new URL('../assets/', location.href).href, branch: branch(L.lang), links: { consult: 'consult.html' }, onEvent: L.onEvent, opener: e.currentTarget });
+  });
+</script>
+</body>
+</html>
