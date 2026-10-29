@@ -1304,7 +1304,7 @@ html:has(.tm-dlg[open]){overflow:hidden}
 .tm-dph{display:block;aspect-ratio:1;border-radius:var(--r-m);overflow:hidden;background:#f3eff7}
 .tm-dph img{width:100%;height:100%;object-fit:cover;object-position:50% 6%;display:block}
 .tm-dh .eyebrow{margin-bottom:6px}
-.tm-dh .h-l{margin:0}
+.tm-dh .h-l{margin:0;font-size:clamp(26px,3vw,40px);overflow-wrap:normal;text-wrap:balance}
 .tm-alt{color:var(--ink-3);margin:6px 0 10px}
 .tm-dh .doc-meta{margin:0}
 .tm-dh .tm-role2{color:var(--ink-2);margin:10px 0 0;line-height:1.45}
