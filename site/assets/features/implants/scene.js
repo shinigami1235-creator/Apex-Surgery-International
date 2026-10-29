@@ -30,7 +30,11 @@ export async function createScene(host, opts = {}){
        gl_FragColor.rgb += vec3(.55, .42, .78) * fr * .35;`);
   };
   const capMat = new THREE.MeshStandardMaterial({color:0x4a2a66, roughness:.85, metalness:0});
-  const ghostMat = new THREE.MeshBasicMaterial({color:0xE3B85C, transparent:true, opacity:.42, depthTest:false, depthWrite:false, side:THREE.DoubleSide});
+  // The implant shows through the skin: depth is cleared before it, a depth-only pass finds its nearest
+  // surface, and only that surface is tinted. Drawing every layer of the lens without depth doubled the
+  // tint where it overlapped itself, which read as cracks across it.
+  const ghostDepth = new THREE.MeshBasicMaterial({colorWrite:false, depthWrite:true, depthTest:true, side:THREE.DoubleSide});
+  const ghostMat = new THREE.MeshBasicMaterial({color:0xE3B85C, transparent:true, opacity:.42, depthTest:true, depthWrite:false, depthFunc:THREE.LessEqualDepth, side:THREE.DoubleSide});
   const ghostLine = new THREE.LineBasicMaterial({color:0xF6D58C, transparent:true, opacity:.9, depthTest:false});
 
   const panes = [];
@@ -68,14 +72,17 @@ export async function createScene(host, opts = {}){
   /* see-through implants: list of {pos, idx} lenses in model space */
   function setGhosts(k, list){
     const p = panes[k]; if (!p) return;
-    p.ghosts.forEach(g => { p.group.remove(g); g.geometry.dispose(); });
-    p.ghosts = (list || []).map(s => {
+    p.ghosts.forEach(g => { p.group.remove(g); if (g.userData.pre) p.group.remove(g.userData.pre); g.geometry.dispose(); });
+    p.ghosts = (list || []).map((s, gi) => {
       const g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.BufferAttribute(s.pos, 3));
       g.setIndex(new THREE.BufferAttribute(s.idx, 1));
-      const m = s.line ? new THREE.Line(g, ghostLine) : new THREE.Mesh(g, ghostMat);
-      m.renderOrder = 5;
-      p.group.add(m);
+      if (s.line) { const l = new THREE.Line(g, ghostLine); l.renderOrder = 7; p.group.add(l); return l; }
+      const pre = new THREE.Mesh(g, ghostDepth), m = new THREE.Mesh(g, ghostMat);
+      pre.renderOrder = 5; m.renderOrder = 6;
+      if (gi === 0) pre.onBeforeRender = r => r.clearDepth();   // once per pane: the skin's depth goes, so the implants show through it
+      p.group.add(pre); p.group.add(m);
+      m.userData.pre = pre;
       return m;
     });
   }

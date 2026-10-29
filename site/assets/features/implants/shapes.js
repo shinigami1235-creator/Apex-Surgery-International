@@ -224,17 +224,35 @@ export function addBreasts(M, P, Nrm, F, cmPerUnit, out){
   const frames = breastFrames(M, P, F.H / cmPerUnit);
   const N = M.N, fold = M.fold, R = Math.max(F.W, F.H) / 2, reach = R + 3.5;
   const spread = tissueSpread(M, P, Nrm, cmPerUnit, 2.4);
+  // how far each point moves along its side's axis
+  const D = new Float32Array(N);
   for (let i = 0; i < N; i++) {
     const w = fold[i] / 255;
     if (w <= 0) continue;
     const p = at(P, i), side = p[0] >= 0 ? 0 : 1, f = frames[side];
     const nr = [Nrm[i * 3], Nrm[i * 3 + 1], Nrm[i * 3 + 2]];
-    const front = smooth(-.15, .25, dot(nr, f.n));
+    const front = smooth(-.85, .25, dot(nr, f.n));
     if (front <= 0) continue;
     const r = sub(p, f.c), u = dot(r, f.eu) * cmPerUnit * (side ? -1 : 1), v = dot(r, f.ev) * cmPerUnit;
     const foot = 1 - smooth(R, reach, Math.hypot(u, v));
-    const d = (sample(F, u, v) + spread[i] * foot) / cmPerUnit * w * front;
-    if (!d) continue;
+    D[i] = (sample(F, u, v) + spread[i] * foot) / cmPerUnit * w * front;
+  }
+  // The move turns off where the skin faces down under the breast, and next to the fold that change
+  // happens within a couple of triangles: the skin there split open into a crack. Evening the move out
+  // over neighbouring points keeps the surface whole; fitBreasts puts back the volume this spreads.
+  const {off, nb} = adjacency(M), tmp = new Float32Array(N);
+  for (let it = 0; it < 14; it++) {
+    for (let i = 0; i < N; i++) {
+      const a = off[i], z = off[i + 1];
+      if (!fold[i] || z === a) { tmp[i] = D[i]; continue; }
+      let s = 0; for (let k = a; k < z; k++) s += D[nb[k]];
+      tmp[i] = D[i] * .5 + s / (z - a) * .5;
+    }
+    D.set(tmp);
+  }
+  for (let i = 0; i < N; i++) {
+    const d = D[i]; if (!d) continue;
+    const f = frames[P[i * 3] >= 0 ? 0 : 1];
     Q[i * 3] += f.n[0] * d; Q[i * 3 + 1] += f.n[1] * d; Q[i * 3 + 2] += f.n[2] * d;
   }
   return Q;
@@ -267,7 +285,8 @@ export function implantShell(F, frame, cmPerUnit, side, rings = 28, segs = 48){
   for (let r = 0; r <= rings; r++) for (let s = 0; s < segs; s++) {
     const t = r / rings, a = s / segs * Math.PI * 2;
     const u = Math.cos(a) * F.W / 2 * t, v = Math.sin(a) * F.H / 2 * t;
-    const z = sample(raw, u, v);
+    // the field's edge falls across grid cells, so sampling right on it gave a jagged rim
+    const z = r === rings ? 0 : sample(raw, u * .97, v * .97);
     pos.push(...pt(u, v, z));
   }
   const back = pos.length / 3;
