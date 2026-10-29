@@ -184,7 +184,7 @@ function apex_build_shared( string $lang ): array {
 	$S = apex_read_option( $lang );
 	$S['branches'] = array_map( function ( $id ) {
 		$b = apex_read_post( $id, 'apex_branch' );
-		return apex_drop_nulls( [ 'key' => $b['key'], 'name' => $b['name'], 'short' => $b['short'], 'addr' => $b['addr'], 'phone' => $b['phone'], 'tel' => $b['tel'], 'map' => $b['map'], 'img' => $b['img'], 'tourVideo' => ( $b['tourVideo'] ?? '' ) ?: null, 'tourPoster' => ( $b['tourPoster'] ?? '' ) ?: null, 'tourStops' => ( $b['tourStops'] ?? [] ) ?: null, 'tourNotes' => ( $b['tourNotes'] ?? [] ) ?: null ] );
+		return apex_drop_nulls( [ 'key' => $b['key'], 'name' => $b['name'], 'short' => $b['short'], 'addr' => $b['addr'], 'phone' => $b['phone'], 'tel' => $b['tel'], 'map' => $b['map'], 'img' => $b['img'], 'tourVideo' => ( $b['tourVideo'] ?? '' ) ?: null, 'tourPoster' => ( $b['tourPoster'] ?? '' ) ?: null, 'tourStops' => ( $b['tourStops'] ?? [] ) ?: null ] );
 	}, apex_posts( 'apex_branch', $lang ) );
 	$S['doctor'] = null;
 	foreach ( apex_posts( 'apex_doctor', $lang ) as $id ) {

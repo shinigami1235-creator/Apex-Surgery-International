@@ -151,13 +151,6 @@ function apex_schema( string $type ): array {
 			apex_f( 'to', 'number', 'Stops at (seconds)' ),
 			apex_f( 'img', 'image', 'Small picture', [ 'h' => 'The room as it looks where the video stops, 320 by 180 pixels.' ] ),
 		] ] ),
-		apex_f( 'tourNotes', 'repeater', 'Tour notes', [ 'h' => 'The gold dots shown while the tour is stopped in a room.', 'f' => [
-			apex_f( 'stop', 'number', 'Room number', [ 'h' => '1 for the first room in Tour rooms' ] ),
-			apex_f( 'x', 'number', 'Across (%)', [ 'h' => '0 is the left edge of the video, 100 the right' ] ),
-			apex_f( 'y', 'number', 'Down (%)', [ 'h' => '0 is the top edge, 100 the bottom' ] ),
-			apex_f( 'h', 'text', 'Title' ),
-			apex_f( 'p', 'textarea', 'Text' ),
-		] ] ),
 	];
 	$S['apex_doctor'] = [
 		apex_f( 'name', 'text', 'Name', [ 'src' => 'title' ] ),

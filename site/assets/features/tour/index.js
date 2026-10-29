@@ -1,11 +1,10 @@
-/* Branch tour: the 3D walk-through video of a branch. It stops in each room, where gold dots open a short note
-   about what is there, and the room strip jumps to any room.
+/* Branch tour: the 3D walk-through video of a branch. It stops in each room with the room's name on the picture,
+   and the room strip jumps to any room.
    mount(container, {lang, base, branch, links?, onEvent?, full?, onClose?}) -> {destroy(), el}
      branch: a branch from data/<lang>/shared.js with
        tourVideo, tourPoster   paths under assets/ ("features/...") or the media library ("~/...")
        tourStops [{name, from, to, img}]   seconds in the video: a room picked from the strip plays from "from"
                                           and stops at "to"; "Next" plays on from the current stop to the next "to"
-       tourNotes [{stop, x, y, h, p}]      stop is 1 for the first room; x and y are percent of the frame
    open(opts) shows the same player full screen over the page, with a close button and the back button closing it. */
 
 const SITE = 'https://www.apexsurgeryhospital.com/';
@@ -24,8 +23,6 @@ const T = {
   close: { en: 'Close', th: 'ปิด' },
   rooms: { en: 'Rooms', th: 'ห้อง' },
   room: { en: 'Room {n} of {m}: {r}', th: 'ห้องที่ {n} จาก {m}: {r}' },
-  hint: { en: 'Tap a gold dot for details', th: 'แตะจุดสีทองเพื่อดูรายละเอียด' },
-  closeNote: { en: 'Close note', th: 'ปิดข้อความ' },
   loading: { en: 'Loading the tour', th: 'กำลังโหลดทัวร์' },
   failed: { en: 'The tour video could not be loaded.', th: 'โหลดวิดีโอทัวร์ไม่สำเร็จ' },
   retry: { en: 'Try again', th: 'ลองอีกครั้ง' },
@@ -65,25 +62,6 @@ const CSS = `
 .apxt .t-label.on{opacity:1;transform:none}
 .apxt .t-label small{display:block;font-size:clamp(9px,1.4cqi,13px);letter-spacing:.16em;text-transform:uppercase;color:var(--t-gold);margin-bottom:4px}
 .apxt .t-label b{display:block;font-size:clamp(17px,4.2cqi,40px);font-weight:400;line-height:1.15;color:#fff;text-shadow:0 2px 18px rgba(0,0,0,.25)}
-.apxt .t-dots{position:absolute;inset:0;pointer-events:none}
-.apxt .t-dot{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border:0;padding:0;background:none;cursor:pointer;pointer-events:auto;display:grid;place-items:center;
-  opacity:0;transform:scale(.4);transition:opacity .35s var(--t-ease),transform .45s var(--t-ease)}
-.apxt .t-dots.on .t-dot{opacity:1;transform:none}
-.apxt .t-dot i{position:relative;width:16px;height:16px;border-radius:50%;background:var(--t-gold);box-shadow:0 0 0 3px rgba(255,255,255,.9),0 4px 14px rgba(0,0,0,.35)}
-.apxt .t-dot i::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:2px solid var(--t-gold);animation:apxt-ring 2.2s var(--t-ease) infinite}
-.apxt .t-dot[aria-expanded="true"] i{background:#fff;box-shadow:0 0 0 3px var(--t-gold),0 4px 14px rgba(0,0,0,.35)}
-@keyframes apxt-ring{0%{transform:scale(.6);opacity:.9}100%{transform:scale(1.5);opacity:0}}
-.apxt .t-card{position:absolute;z-index:3;width:min(280px,46cqi);padding:14px 16px 15px;border-radius:16px;background:rgba(255,255,255,.96);color:var(--ink,#2A1F33);
-  box-shadow:0 18px 48px -16px rgba(17,5,28,.6);transform-origin:var(--ox,left) top;animation:apxt-pop .32s var(--t-ease)}
-.apxt .t-card b{display:block;font-size:15px;font-weight:700;margin:0 26px 4px 0}
-.apxt .t-card p{margin:0;font-size:14px;line-height:1.5;color:var(--ink-2,#5A4A66)}
-.apxt .t-card button{position:absolute;top:6px;right:6px;width:32px;height:32px;border:0;border-radius:50%;background:none;color:var(--ink-2,#5A4A66);display:grid;place-items:center;cursor:pointer}
-.apxt .t-card button svg{width:16px;height:16px}
-@keyframes apxt-pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
-.apxt .t-stage.narrow .t-card{left:10px!important;right:10px!important;top:auto!important;bottom:10px;width:auto;transform-origin:center bottom}
-.apxt .t-hint{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:2;padding:7px 13px;border-radius:999px;background:rgba(17,5,28,.6);
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font-size:12.5px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .4s}
-.apxt .t-hint.on{opacity:1}
 .apxt .t-start{position:absolute;inset:0;z-index:4;border:0;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
   background:var(--t-night);color:#fff;transition:opacity .45s var(--t-ease)}
 .apxt .t-start img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
@@ -177,7 +155,6 @@ export function mount(container, opts = {}) {
   const base = opts.base || '';
   const abs = u => !u ? '' : u.startsWith('~/') ? SITE + u.slice(2) : /^(img|video|features)\//.test(u) ? base + u : u;
   const S = (B.tourStops || []).filter(s => isFinite(+s.from) && isFinite(+s.to)).map(s => ({...s, from:+s.from, to:+s.to})).sort((a, b) => a.to - b.to);
-  const N = (B.tourNotes || []).filter(n => +n.stop >= 1 && +n.stop <= S.length);
   const ev = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) {} };
   const short = B.short || B.name || '';
   const kicker = 'Apex Surgery Hospital · ' + short;
@@ -195,8 +172,6 @@ export function mount(container, opts = {}) {
     <div class="t-main"><div class="t-stage">
       <video playsinline muted preload="${opts.full ? 'auto' : 'metadata'}" disablepictureinpicture ${B.tourPoster ? `poster="${esc(abs(B.tourPoster))}"` : ''}></video>
       <div class="t-label" aria-hidden="true"><small>${esc(kicker)}</small><b></b></div>
-      <div class="t-dots"></div>
-      <div class="t-hint" aria-hidden="true">${esc(L('hint'))}</div>
       <div class="t-wait" role="status"><span class="sr">${esc(L('loading'))}</span></div>
       <div class="t-err" hidden><p>${esc(L('failed'))}</p><button type="button" class="t-btn">${esc(L('retry'))}</button></div>
       <button type="button" class="t-start">${B.tourPoster ? `<img src="${esc(abs(B.tourPoster))}" alt="">` : ''}<span class="t-big">${ICON.play}</span><b>${esc(L('start'))}</b><small class="t-len">${esc(L('length', {n:S.length, s:''}))}</small></button>
@@ -216,13 +191,13 @@ export function mount(container, opts = {}) {
   container.append(root);
 
   const $ = s => root.querySelector(s);
-  const video = $('video'), stage = $('.t-stage'), label = $('.t-label'), labelB = $('.t-label b'), dots = $('.t-dots'), hint = $('.t-hint');
+  const video = $('video'), stage = $('.t-stage'), label = $('.t-label'), labelB = $('.t-label b');
   const wait = $('.t-wait'), err = $('.t-err'), startB = $('.t-start'), pp = $('.t-pp'), bar = $('.t-bar'), barI = $('.t-bar > i'), pos = $('.t-pos');
   const nextB = $('.t-next'), nextT = $('.t-next span'), book = $('.t-book'), live = $('.t-main .sr[aria-live]');
   const rooms = [...root.querySelectorAll('.t-room')];
   if (consult) book.href = consult;
 
-  let target = -1, at = -1, shown = -2, raf = 0, card = null, hinted = false, begun = false, dead = false;
+  let target = -1, at = -1, shown = -2, raf = 0, begun = false, dead = false;
   const dur = () => video.duration || (S.length ? S[last].to : 0);
 
   // progress ticks at each stop, placed once the length is known
@@ -261,38 +236,6 @@ export function mount(container, opts = {}) {
     book.hidden = !(end && consult);
   };
 
-  /* dots and their note cards */
-  const closeCard = () => { if (!card) return; card.el.remove(); card.dot.setAttribute('aria-expanded', 'false'); card = null; };
-  const openCard = (dot, n) => {
-    const same = card && card.dot === dot;
-    closeCard(); if (same) return;
-    const el = document.createElement('div');
-    el.className = 't-card'; el.setAttribute('role', 'note');
-    el.innerHTML = `<b>${esc(n.h)}</b><p>${esc(n.p)}</p><button type="button" aria-label="${esc(L('closeNote'))}">${ICON.close}</button>`;
-    const x = +n.x, y = +n.y, right = x > 55;
-    if (right) { el.style.right = `calc(${100 - x}% + 26px)`; el.style.setProperty('--ox', 'right'); } else el.style.left = `calc(${x}% + 26px)`;
-    el.style.top = `clamp(10px, calc(${y}% - 30px), calc(100% - 150px))`;
-    el.querySelector('button').addEventListener('click', () => { const d = card && card.dot; closeCard(); if (d) d.focus(); });
-    stage.append(el);
-    dot.setAttribute('aria-expanded', 'true');
-    card = {el, dot};
-    ev('tour:note', {index:at});
-  };
-  const showDots = k => {
-    dots.innerHTML = '';
-    N.filter(n => +n.stop === k + 1).forEach(n => {
-      const b = document.createElement('button');
-      b.type = 'button'; b.className = 't-dot'; b.style.left = n.x + '%'; b.style.top = n.y + '%';
-      b.setAttribute('aria-label', n.h); b.setAttribute('aria-expanded', 'false');
-      b.innerHTML = '<i></i>';
-      b.addEventListener('click', e => { e.stopPropagation(); openCard(b, n); });
-      dots.append(b);
-    });
-    requestAnimationFrame(() => dots.classList.add('on'));
-    if (!hinted && dots.children.length) { hinted = true; hint.classList.add('on'); setTimeout(() => hint.classList.remove('on'), 3200); }
-  };
-  const hideDots = () => { closeCard(); dots.classList.remove('on'); dots.innerHTML = ''; hint.classList.remove('on'); };
-
   /* playing between stops */
   const loop = () => {
     raf = 0;
@@ -306,12 +249,11 @@ export function mount(container, opts = {}) {
     try { video.currentTime = S[k].to; } catch (e) {}
     at = k; target = -1;
     setPP(false); setNext(); paint(); setLabel(k);
-    showDots(k);
     live.textContent = L('room', {n:k + 1, m:S.length, r:S[k].name});
     ev(k === last ? 'tour:end' : 'tour:stop', {index:k});
   };
   const run = () => {
-    hideDots(); at = -1; setNext();
+    at = -1; setNext();
     const p = video.play();
     if (p && p.catch) p.catch(() => setPP(false));
   };
@@ -355,17 +297,13 @@ export function mount(container, opts = {}) {
   nextB.addEventListener('click', next);
   book.addEventListener('click', () => ev('tour:book', {}));
   rooms.forEach(r => r.addEventListener('click', () => go(+r.dataset.k)));
-  stage.addEventListener('click', e => { if (card && !card.el.contains(e.target)) closeCard(); });
   const onKey = e => {
     if (e.target.closest && e.target.closest('input,textarea,select')) return;
-    if (e.key === 'Escape' && card) { e.preventDefault(); e.stopPropagation(); const d = card.dot; closeCard(); d.focus(); return; }
     if (e.key === ' ' || e.key === 'k') { if (e.target.closest('button,a')) return; e.preventDefault(); toggle(); }
     else if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); const k = at >= 0 ? at : roomAt(video.currentTime); go(Math.max(0, k - (at >= 0 ? 1 : 0))); }
   };
   root.addEventListener('keydown', onKey);
-  const ro = 'ResizeObserver' in window ? new ResizeObserver(() => stage.classList.toggle('narrow', stage.clientWidth < 560)) : null;
-  if (ro) ro.observe(stage); else stage.classList.toggle('narrow', innerWidth < 600);
 
   target = 0; setNext(); setPP(false);
   if (!S.length || !B.tourVideo) { err.hidden = false; startB.hidden = true; }
@@ -373,7 +311,7 @@ export function mount(container, opts = {}) {
   return {
     el: root,
     stop() { video.pause(); },
-    destroy() { dead = true; if (raf) cancelAnimationFrame(raf); if (ro) ro.disconnect(); video.pause(); video.removeAttribute('src'); video.load(); root.remove(); }
+    destroy() { dead = true; if (raf) cancelAnimationFrame(raf); video.pause(); video.removeAttribute('src'); video.load(); root.remove(); }
   };
 }
 
@@ -402,7 +340,7 @@ export function open(opts = {}) {
   };
   const onPop = () => close(true);
   const onKey = e => {
-    if (e.key === 'Escape') { if (ov.querySelector('.t-card')) return; e.preventDefault(); close(); return; }   // an open note closes first
+    if (e.key === 'Escape') { e.preventDefault(); close(); return; }
     if (e.key !== 'Tab') return;
     const f = [...ov.querySelectorAll('button:not([disabled]):not([tabindex="-1"]),a[href]')].filter(x => x.offsetParent !== null && !x.hidden);
     if (!f.length) return;

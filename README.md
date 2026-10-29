@@ -31,7 +31,7 @@ Redesign of apexsurgeryhospital.com for Apex. English is the main language since
 | Review stories | Service pages, reviews | Apex's own review videos in a swipe viewer |
 | Before/after | Service pages | Gallery with the Thai caption the advertising rules require |
 | Currency switch | Promotions, service pages | ECB rates of 20 Oct 2026, shown as approximate |
-| Branch tour | Branch block on the home, about and contact pages | "Take the tour" on the Phuket photo opens the 3D walk-through full screen. It stops in each room, gold dots open a short note, and the room strip jumps to any room |
+| Branch tour | Branch block on the home, about and contact pages | "Take the tour" on the Phuket photo opens the 3D walk-through full screen. It stops in each room with the room's name on the picture, and the room strip jumps to any room |
 | Latest from Apex | Home, contact, Transformations | Instagram and TikTok posts as square tiles with a follow tile per account, fetched by the WordPress site every hour. The preview shows a snapshot of 28 Oct 2026 |
 | Prices by country | Every page with offers | Country price lists set in the backend: currency, a percentage on the baht price, an offer's own price or poster, or hidden. A poster with a different printed price gives way to a plain card. No lists yet, so everyone sees baht. `?pricing=demo` shows example lists |
 
@@ -111,12 +111,12 @@ The skin age comes from the age model in face-api (MIT licence, loaded from jsDe
 
 ## Branch tour
 
-`site/assets/features/tour/` plays a branch's walk-through video and stops in each room. The Phuket video (`media/phuket-tour.mp4`, 11 MB, 46 seconds) is the 3D model of the branch rendered in Blender from Apex's photos of it, with the room names drawn by the page instead of in the picture, so one video serves both languages. The player says it is a 3D model built from photos, since the rooms were rebuilt from one photo each.
+`site/assets/features/tour/` plays a branch's walk-through video and stops in each room with the room's name on the picture. The Phuket video (`media/phuket-tour.mp4`, 11 MB, 46 seconds) is the 3D model of the branch rendered in Blender from Apex's photos of it, with the room names drawn by the page instead of in the picture, so one video serves both languages. The player says it is a 3D model built from photos, since the rooms were rebuilt from one photo each.
 
-- **Data:** each branch can carry `tourVideo`, `tourPoster`, `tourStops` (room name, the second it starts, the second it stops, a small picture) and `tourNotes` (room number, position across and down in percent, title, text). In WordPress these are fields on the branch, and the button shows only on a branch that has a video.
+- **Data:** each branch can carry `tourVideo`, `tourPoster`, `tourStops` (room name, the second it starts, the second it stops, a small picture). In WordPress these are fields on the branch, and the button shows only on a branch that has a video.
 - **Times:** the stops sit at the last frame of each room before the cross-fade into the next. A new video needs new times, so change the video and the times together.
 - **Video:** H.264 with a key frame every second, so jumping to a room is quick. It is made from the room renders in `Videos/Phuket tour/layers/` with `tour_full_compose.py` and `-` in place of the labels folder, which leaves out the labels and the fade to black.
-- **To check with Apex:** the notes were written from what shows in each room, and the Thai room names and notes are drafts. Apex should confirm both, the nurse station and suite notes in particular.
+- **To check:** the Thai room names are drafts.
 
 ## Surgery Wars
 
@@ -173,7 +173,7 @@ The theme in `wordpress/theme/apex-surgery/` turns the design into the live site
    - generic rhinoplasty market prices.
 8. The Surgery Wars docs say the hospital and the channel still had to check the text and photos. Confirm the final wording with Apex before launch. The writer's notes also say the raw footage may not be published yet; only the YouTube episodes are used.
 
-9. Confirm the branch tour's room names and notes with Apex (see Branch tour).
+9. Confirm the Thai room names of the branch tour (see Branch tour).
 
 ## Credits
 
