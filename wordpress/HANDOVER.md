@@ -122,6 +122,23 @@ Each page is drawn in PHP from the same content structure the design used, with 
 - JPEG and PNG uploads are saved as WebP at quality 82, which loads faster. Settings › Media turns this off. Once a day the site also makes the phone-size copies of new wide photos; `wp apex webp` does it straight away.
 - One photo in the article "Brow Lift: Restore a Bright Face with Endotine" and its Thai version (`/wp-content/uploads/2025/05/image-13.png`) is missing on the live site too. Upload it again or take the image block out.
 
+## Doctors
+
+Doctors holds the surgical team. Each doctor is one post per language, shown as "Surgical team", and the Order box under Page attributes sets their place in the team strip and on the Doctors page. The card shows the photo, short name, name, role and the specialties on the card. The profile that opens from it adds the license line, the other-language name, a quote, and the education, training, expertise, work, memberships and talks lists, one item per line. A line written "2016: Workshop name" shows the year in bold.
+
+The heading and introduction above the team are on the Doctors page under Pages. The Shown as column tells the doctor posts apart: the founder has a biography of her own, and the "Lead surgeon card" shows only while the team is empty.
+
+## What's new
+
+The home page opens with What's new, the newest entries across the site, and a New tag marks each one on its cards anywhere on the site.
+
+- **What goes in.** Surgeries, promotions, articles, Surgery Wars episodes and surgical team doctors go in by themselves when first published, since each has a "New from" date that fills in on that first publish. Clear the date to leave one out, or set an earlier date to move it down the list. Content brought in by `wp apex import` has no date, so the site does not open with everything marked new.
+- **Launches with no page of their own.** A product, a package or an event goes under What's new › Add What's new item, with a kind, one line about it, a picture and the page it opens. Pick its language in the Languages box, since each language has its own list.
+- **How long.** What's new › Settings sets how many days an entry stays (30 by default) and how many days the New tag stays after a visitor first sees it (7 by default). The tag also goes as soon as the visitor opens the entry. The same page lists what the home page shows now in each language.
+- **Where the tags live.** Each visitor's browser remembers what they have seen, so every visitor gets the same cached page and the tags change only on their own screen.
+
+At most 12 entries show, newest first. With nothing new, the home page leaves the section out.
+
 ## Prices by country
 
 Every offer has a price in baht, and that is the Thailand price. Countries that pay a different price get a price list under Apex settings › Prices by country. With no lists, every visitor sees the baht prices and the site never asks which country they are in.

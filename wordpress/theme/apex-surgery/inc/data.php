@@ -169,6 +169,8 @@ function apex_build( string $id, string $lang ) {
 			$o['items'] = apex_offers( $lang, 'onPromotions', 'order' );
 			return $o;
 		case 'founder': return apex_founder( $lang );
+		case 'team': return apex_team( $lang );
+		case 'fresh': return apex_fresh_data( $lang );
 		case 'social': return apex_social_data();
 		case 'posts': return apex_post_list( $lang );
 		case 'post': return apex_post_obj( $key, $lang );
@@ -245,6 +247,24 @@ function apex_build_home( string $lang ): array {
 		return [ 'key' => $p['key'], 'img' => $p['img'], 'title' => $p['title'], 'date' => $p['date'], 'excerpt' => $ex !== '' ? $ex : $p['desc'] ];
 	}, $picked ) ];
 	return apex_drop_nulls( $H );
+}
+
+/** The surgical team: doctor posts shown as "Surgical team", in page order, with the Doctors page's heading. */
+function apex_team( string $lang ) {
+	$P = apex_page_obj( 'doctor', $lang );
+	$docs = [];
+	foreach ( apex_posts( 'apex_doctor', $lang ) as $id ) {
+		$d = apex_read_post( $id, 'apex_doctor' );
+		if ( $d['kind'] !== 'team' ) continue;
+		$key = (string) get_post_meta( $id, '_apex_key', true ) ?: (string) get_post_field( 'post_name', $id );
+		$o = [ 'key' => $key ];
+		foreach ( [ 'photo', 'name', 'nameAlt', 'nick', 'license', 'role', 'focus', 'edu', 'train', 'skills', 'work', 'member', 'talks', 'quote' ] as $k ) {
+			$v = $d[ $k ] ?? null;
+			if ( $v !== null && $v !== '' && $v !== [] ) $o[ $k ] = $v;
+		}
+		$docs[] = $o;
+	}
+	return [ 'h' => (string) ( $P['h'] ?? '' ), 'p' => (string) ( $P['p'] ?? '' ), 'docs' => $docs ];
 }
 
 function apex_founder( string $lang ) {

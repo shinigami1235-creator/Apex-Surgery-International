@@ -29,7 +29,7 @@ function canon(root, html) {
   const walk = (n, path) => {
     if (n.nodeType === 3) { const t = n.nodeValue.replace(/\s+/g, ' ').trim(); if (t) out.push(path + ' "' + t + '"'); return; }
     if (n.nodeType !== 1) return;
-    if (n.matches('.sx,.read-bar,.ck-wrap')) return;
+    if (n.matches('.sx,.read-bar,.ck-wrap,.new-tag')) return;   // New tags are per visitor, added by the script
     const tag = n.tagName.toLowerCase();
     const attrs = [];
     for (const a of n.attributes) {
@@ -50,7 +50,7 @@ function canon(root, html) {
     if (n.matches('.os-n,.plan-n')) return;   // counting up, and the plan count from this browser's storage
     let i = 0;
     for (const c of n.childNodes) {
-      if (c.nodeType === 1 && c.matches('.sx,.read-bar,.ck-wrap')) continue;
+      if (c.nodeType === 1 && c.matches('.sx,.read-bar,.ck-wrap,.new-tag')) continue;
       walk(c, path + '/' + tag + (c.nodeType === 1 ? ':' + (i++) : ''));
     }
   };

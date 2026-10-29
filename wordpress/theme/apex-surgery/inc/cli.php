@@ -120,6 +120,7 @@ class Apex_CLI {
 		}
 		pll_set_post_language( $id, $lang );
 		update_post_meta( $id, $type === 'page' ? '_apex_page' : '_apex_key', $key );
+		update_post_meta( $id, '_apex_new_set', 1 );   // imported content is not new; inc/fresh.php fills "New from" only on a first publish in the admin
 		if ( $schema ) apex_write_post( $id, $schema, $vals );
 		if ( $slug !== '' ) wp_update_post( [ 'ID' => $id, 'post_name' => $slug ] );
 		$this->made[ $type ][ $key ][ $lang ] = $id;
@@ -155,6 +156,11 @@ class Apex_CLI {
 			if ( $d ) $this->upsert( 'apex_doctor', 'surgeon-1', $l, [ 'menu_order' => 1 ], 'apex_doctor', [ 'kind' => 'doctor' ] + $this->pick( 'apex_doctor', $d ) );
 			$f = $this->D[ $l ]['founder'] ?? null;
 			if ( $f ) $this->upsert( 'apex_doctor', 'founder', $l, [ 'menu_order' => 0 ], 'apex_doctor', [ 'kind' => 'founder', 'nameAlt' => $f['nameTh'] ?? $f['nameEn'] ?? '' ] + $this->pick( 'apex_doctor', $f ) );
+			foreach ( $this->D[ $l ]['team']['docs'] ?? [] as $i => $d ) {
+				$vals = [ 'kind' => 'team' ] + $this->pick( 'apex_doctor', $d );
+				foreach ( [ 'specialty', 'title', 'eduH', 'moreH', 'more', 'portrait', 'rolesH', 'roles', 'years', 'bio', 'check' ] as $k ) $vals[ $k ] = $vals[ $k ] ?? null;
+				$this->upsert( 'apex_doctor', $d['key'], $l, [ 'menu_order' => 10 + $i ], 'apex_doctor', $vals, 'dr-' . $d['key'] );
+			}
 		}
 		WP_CLI::log( 'Doctors: ' . count( $this->made['apex_doctor'] ?? [] ) );
 	}
@@ -259,7 +265,7 @@ class Apex_CLI {
 		WP_CLI::log( 'Cases: ' . count( $this->made['apex_case'] ?? [] ) );
 	}
 	private function pages(): void {
-		$src = [ 'home' => 'home', 'about' => 'about', 'services' => 'services', 'promotions' => 'promotions', 'reviews' => 'reviews', 'blog' => 'blogs', 'contact' => 'contact', 'privacy' => 'privacy' ];
+		$src = [ 'home' => 'home', 'about' => 'about', 'doctor' => 'team', 'services' => 'services', 'promotions' => 'promotions', 'reviews' => 'reviews', 'blog' => 'blogs', 'contact' => 'contact', 'privacy' => 'privacy' ];
 		$i18n_title = [ 'about' => 'about', 'services' => 'services', 'doctor' => 'doctorsH', 'promotions' => 'promotions', 'reviews' => 'reviews', 'blog' => 'articles', 'war' => 'war', 'contact' => 'contact', 'nose' => 'nose', 'analysis' => 'ana', 'proportions' => 'prop', 'implBreast' => 'implBreastH', 'implChin' => 'implChinH', 'implForehead' => 'implForeheadH', 'implNose' => 'implNoseH', 'play' => 'games', 'plan' => 'plan', 'trip' => 'trip', 'consult' => 'consultPageH' ];
 		$order = 0;
 		foreach ( apex_page_types() as $key => [ $label, $en_slug, $th_slug ] ) {
@@ -302,6 +308,7 @@ class Apex_CLI {
 		foreach ( APEX_LANGS as $l ) {
 			$D = json_decode( file_get_contents( "$dir/content-$l.json" ), true );
 			foreach ( $D as $id => $want ) {
+				if ( in_array( $id, [ 'social', 'fresh' ], true ) ) continue;   // built on the live site (inc/social.php, inc/fresh.php); the design files are samples
 				$n++;
 				$got = apex_data( $id, $l );
 				$diff = [];
@@ -320,7 +327,7 @@ class Apex_CLI {
 				$p = $path === '' ? (string) $k : "$path.$k";
 				if ( ! $list ) {
 					$top = explode( ':', $id )[0];
-					if ( in_array( $k, [ 'path', 'more', 'btn', 'banner', 'cards', 'pages', 'baTabs', 'keys', 'book', 'consult', 'form' ], true ) ) continue;
+					if ( in_array( $k, [ 'path', 'more', 'btn', 'banner', 'cards', 'pages', 'baTabs', 'keys', 'book', 'consult', 'form', 'newFrom' ], true ) ) continue;
 					if ( $path === '' && $k === 'nav' && $top === 'shared' ) continue;
 					if ( $path === '' && in_array( $k, [ 'doctor', 'services', 'yt' ], true ) && in_array( $top, [ 'home', 'about' ], true ) ) continue;
 					if ( $path === '' && $k === 'items' && $top === 'blogs' ) continue;

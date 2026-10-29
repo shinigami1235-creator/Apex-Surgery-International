@@ -50,14 +50,14 @@ function apex_route(): array {
 
 /** The content objects a page reads, as pages.js asks for them. */
 function apex_page_data_ids( array $r ): array {
-	$ids = [ 'shared' ];
+	$ids = [ 'shared', 'fresh' ];   // fresh: what's new, read by the New tags on every page
 	$p = $r['params'];
 	switch ( $r['page'] ) {
-		case 'home': array_push( $ids, 'home', 'about', 'founder', 'war', 'social' ); break;
-		case 'about': array_push( $ids, 'about', 'founder' ); break;
+		case 'home': array_push( $ids, 'home', 'about', 'founder', 'war', 'team', 'social' ); break;
+		case 'about': array_push( $ids, 'about', 'founder', 'team' ); break;
 		case 'services': $ids[] = 'services'; break;
-		case 'service': array_push( $ids, 'posts', 'svc:' . ( $p['p'] ?? '' ) ); break;
-		case 'doctor': $ids[] = 'founder'; break;
+		case 'service': array_push( $ids, 'posts', 'team', 'svc:' . ( $p['p'] ?? '' ) ); break;
+		case 'doctor': array_push( $ids, 'founder', 'team' ); break;
 		case 'promotions': $ids[] = 'promotions'; break;
 		case 'reviews':
 			array_push( $ids, 'reviews', 'posts', 'home' );
@@ -269,7 +269,7 @@ add_action( 'template_redirect', function () {
 	$q = sanitize_text_field( wp_unslash( $_GET['apex_data'] ) );
 	if ( ! preg_match( '#^(en|th)/([a-z]+)(?:/([a-z0-9-]+))?$#', $q, $m ) ) { status_header( 404 ); exit; }
 	$id = $m[2] . ( isset( $m[3] ) && $m[3] !== '' ? ':' . $m[3] : '' );
-	if ( ! in_array( $m[2], [ 'shared', 'home', 'about', 'services', 'promotions', 'reviews', 'blogs', 'contact', 'founder', 'posts', 'post', 'svc', 'war', 'social' ], true ) ) { status_header( 404 ); exit; }
+	if ( ! in_array( $m[2], [ 'shared', 'home', 'about', 'services', 'promotions', 'reviews', 'blogs', 'contact', 'founder', 'posts', 'post', 'svc', 'war', 'social', 'team', 'fresh' ], true ) ) { status_header( 404 ); exit; }
 	$d = apex_data( $id, $m[1] );
 	header( 'Content-Type: application/javascript; charset=utf-8' );
 	header( 'Cache-Control: public, max-age=300' );

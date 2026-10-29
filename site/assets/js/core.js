@@ -149,7 +149,7 @@
         return `<div class="has-mega"><button type="button" aria-expanded="false"${cur}>${A.esc(A.t('services'))}${A.ic('chevron-down')}</button>
           <div class="mega surg" role="menu"><div class="mega-svcs">${items}</div>
           <div class="mega-tools"><h4>${A.esc(A.t('tools'))}</h4>
-            <a class="mt-new" href="filler.html">${A.ic('syringe')}${A.esc(A.t('fill'))}<span class="tc-new">${A.esc(A.t('newTag'))}</span></a>
+            <a class="mt-new" href="filler.html" data-new="page:filler" data-new-slot>${A.ic('syringe')}${A.esc(A.t('fill'))}</a>
             <a href="analysis.html">${A.ic('scan-line')}${A.esc(A.t('ana'))}</a>
             <a href="proportions.html">${A.ic('gem')}${A.esc(A.t('prop'))}</a>
             <a href="breast-implants.html">${A.ic('ruler')}${A.esc(A.t('impl'))}</a>
@@ -409,7 +409,7 @@
     const docs = (TM && TM.docs) || [];
     if (!docs.length) return A.doctorCard(S);
     return `<div class="team-strip"><div class="shead"><div><p class="eyebrow rv">${A.esc(A.t('doctorsH'))}</p><h2 class="h-xl rv">${A.esc(TM.h)}</h2></div><a class="link-arrow rv" href="doctor.html">${A.esc(A.t('teamAll'))} ${A.ic('arrow-right')}</a></div>
-      <ul class="ts-list">${docs.map((d, i) => `<li class="rv" data-d="${(i % 6) * 50}"><a class="ts-doc" href="doctor.html#dr-${A.esc(d.key)}"><span class="ts-ph ph-img"><img src="${A.img(d.photo)}" alt="${A.esc(d.name)}" loading="lazy" decoding="async" width="731" height="1024"></span>
+      <ul class="ts-list">${docs.map((d, i) => `<li class="rv" data-d="${(i % 6) * 50}"><a class="ts-doc" href="doctor.html#dr-${A.esc(d.key)}" data-new="doc:${A.esc(d.key)}"><span class="ts-ph ph-img"><img src="${A.img(d.photo)}" alt="${A.esc(d.name)}" loading="lazy" decoding="async" width="731" height="1024"></span>
         <span class="ts-nick">${A.esc(d.nick || '')}</span><b>${A.esc(d.name)}</b><span class="ts-role">${A.esc(d.role || '')}</span></a></li>`).join('')}</ul></div>`;
   };
   A.branchesHtml = (S, h, p) => A.branches(S, h, p);
@@ -421,7 +421,7 @@
       <a class="cb-row" href="${((S.branches||[])[0]||{}).tel || 'tel:0888700039'}">${A.ic('phone')}<span><b>${A.esc((S.cta && S.cta.call) || A.t('callUs'))}</b><small>${A.esc(((S.branches||[])[0]||{}).phone || '088-870-0039')}</small></span></a></div></div>`;
   A.svcCards = (S, keys) => {
     const list = (S.services || []).filter(s => !keys || keys.includes(s.key));
-    return `<div class="svc-grid">${list.map((s, i) => `<a class="svc-tile rv" data-d="${i*60}" href="${A.svcUrl(s.key)}">
+    return `<div class="svc-grid">${list.map((s, i) => `<a class="svc-tile rv" data-d="${i*60}" href="${A.svcUrl(s.key)}" data-new="svc:${A.esc(s.key)}">
       <span class="st-glow" aria-hidden="true"></span><span class="st-ic"><img src="${A.img(s.icon)}" alt="" loading="lazy" decoding="async" decoding="async"></span>
       <span class="st-name">${A.esc(s.short || s.name)}</span><span class="st-en">${A.esc(A.lang === 'en' ? (s.name !== s.short ? s.name : '') : s.en)}</span>
       <span class="st-go">${A.ic('arrow-up-right')}</span></a>`).join('')}</div>`;
@@ -567,6 +567,74 @@
     A.fbMount(root);
     A.qsa('.feed', root).forEach(f => { const sec = f.closest('section') || root; A.railCtrl(A.qs('.feed-rail', f), A.qs('.feed-prev', sec), A.qs('.feed-next', sec)); });
   };
+  /* ---------- What's new and the New tag ----------
+     data "fresh" (every page): {days, keep, items:[{id, kind, title, text, img, fit, href, date}]}, newest first.
+     On WordPress inc/fresh.php builds it from each entry's "New from" date; the design file is a sample.
+     A card anywhere on the site carries data-new="<id>" (post:, svc:, offer:, war:, doc:, item:). It gets a New tag
+     while its entry is within `days` of its date, until this visitor opens it or `keep` days after they first saw
+     it. That memory lives in this browser only (localStorage apex.new), so pages stay the same for everyone. */
+  const NEW_KEY = 'apex.new', DAY = 864e5;
+  const freshData = () => A.d('fresh') || {};
+  const freshLive = () => { const F = freshData(), now = Date.now(); return (F.items || []).filter(x => x.date && now - new Date(x.date + 'T00:00:00').getTime() < (F.days || 30) * DAY); };
+  const newState = () => { try { const s = JSON.parse(localStorage.getItem(NEW_KEY) || '{}'); return {f:s.f || {}, v:s.v || {}}; } catch (e) { return {f:{}, v:{}}; } };
+  const newSave = s => { try { localStorage.setItem(NEW_KEY, JSON.stringify(s)); } catch (e) { /* storage blocked: tags show without memory */ } };
+  A.freshCard = (x, i) => {
+    let ext = false; try { ext = /^https?:\/\//.test(x.href || '') && new URL(x.href).host !== location.host; } catch (e) { /* not a full address */ }
+    return `<a class="fresh-c rv" data-d="${(i % 4) * 60}" href="${A.esc(x.href || '#whats-new')}" data-new="${A.esc(x.id)}" data-date="${A.esc(x.date)}"${ext ? ' target="_blank" rel="noopener"' : ''}>
+      <span class="fresh-ph ph-img${x.fit ? ' fit-' + A.esc(x.fit) : ''}">${x.img ? `<img src="${A.esc(A.img(x.img))}" alt="" loading="lazy" decoding="async">` : `<span class="fresh-ic">${A.ic('sparkles')}</span>`}</span>
+      <span class="fresh-b"><span class="fresh-k">${A.esc(A.t('fk_' + x.kind))}</span><b class="fresh-t">${A.esc(x.title)}</b>${x.text ? `<span class="fresh-x">${A.esc(x.text)}</span>` : ''}<span class="fresh-d">${A.esc(A.t('freshAdded').replace('{d}', shortDate(x.date)))}</span></span></a>`;
+  };
+  A.freshSection = F => {
+    const items = (F && F.items) || [];
+    if (!items.length) return '';
+    const many = items.length > 3;
+    return `<section class="section fresh-s" id="whats-new"><div class="wrap"><div class="shead"><div><p class="eyebrow rv">${A.esc(A.t('freshEb'))}</p><h2 class="h-xl rv">${A.esc(A.t('freshH'))}</h2><p class="reels-sub rv">${A.esc(A.t('freshP'))}</p></div>
+      ${many ? `<div class="rail-ctrl rv"><button type="button" class="fresh-prev" aria-label="${A.esc(A.t('prev'))}">${A.ic('chevron-left')}</button><button type="button" class="fresh-next" aria-label="${A.esc(A.t('next'))}">${A.ic('chevron-right')}</button></div>` : ''}</div>
+      <div class="fresh-rail${many ? '' : ' few'}">${items.map(A.freshCard).join('')}</div></div></section>`;
+  };
+  /* this visitor opened the entry: its tag goes everywhere */
+  A.newSeen = id => {
+    if (!id) return;
+    const s = newState(); if (s.v[id]) return;
+    s.v[id] = 1; newSave(s);
+    A.qsa(`[data-new="${CSS.escape(id)}"] .new-tag`).forEach(t => t.remove());
+  };
+  A.newTags = (root = document) => {
+    const live = new Map(freshLive().map(x => [x.id, x]));
+    const keep = (freshData().keep || 7) * DAY, now = Date.now(), s = newState();
+    let dirty = false;
+    // entries past their days leave the section too, in case a cached page still lists them
+    A.qsa('.fresh-c[data-new]', root).forEach(c => { if (!live.has(c.dataset.new)) c.hidden = true; });
+    A.qsa('.fresh-s', root).forEach(sec => { if (!A.qs('.fresh-c:not([hidden])', sec)) sec.hidden = true; });
+    A.qsa('[data-new]', root).forEach(el => {
+      const id = el.dataset.new;
+      if (!live.has(id) || s.v[id] || el.querySelector('.new-tag')) return;
+      if (!s.f[id]) { s.f[id] = now; dirty = true; }
+      if (now - s.f[id] > keep) return;
+      const t = document.createElement('span');
+      t.className = 'new-tag'; t.textContent = A.t('newTag');
+      // a marked slot holds the tag in the text; a picture holds it in its corner; otherwise it follows the text
+      const slot = el.matches('[data-new-slot]') ? el : el.querySelector('[data-new-slot]'), ph = !slot && el.querySelector('.ph-img');
+      if (ph) ph.prepend(t); else { t.classList.add('inline'); (slot || el).append(t); }
+    });
+    // forget entries that are no longer new
+    Object.keys(s.f).forEach(id => { if (!live.has(id)) { delete s.f[id]; delete s.v[id]; dirty = true; } });
+    if (dirty) newSave(s);
+  };
+  /* the page itself is an entry: an article, a surgery, an episode */
+  const pageEntry = () => {
+    const pg = document.body.dataset.page, p = A.param('p');
+    if (pg === 'article' && p) return 'post:' + p;
+    if (pg === 'service' && p) return 'svc:' + p;
+    if (pg === 'war' && A.param('ep')) return 'war:' + A.param('ep');
+    return '';
+  };
+  document.addEventListener('click', e => { const el = e.target.closest && e.target.closest('[data-new]'); if (el) A.newSeen(el.dataset.new); });
+  A.freshMount = root => {
+    A.qsa('.fresh-s', root).forEach(sec => A.railCtrl(A.qs('.fresh-rail', sec), A.qs('.fresh-prev', sec), A.qs('.fresh-next', sec)));
+  };
+  A.newBoot = () => { A.newSeen(pageEntry()); A.newTags(document); };
+
   A.fbMount = root => {
     const frs = A.qsa('iframe[data-fb]', root);
     const set = fr => {
@@ -610,7 +678,7 @@
       <div class="shead br-head"><div><h2 class="h-xl rv">${E(h || S.branchesH || T('branchesH'))}</h2>${(p || S.branchesP) ? `<p class="lead rv" style="margin-top:18px;max-width:58ch">${E(p || S.branchesP)}</p>` : ''}</div>
         ${B.length > 1 ? `<div class="br-tabs rv" role="tablist" aria-label="${E(T('branchPick'))}">${B.map((b, i) => `<button type="button" role="tab" id="${id}-t${i}" aria-controls="${id}-p" aria-selected="${!i}" tabindex="${i ? -1 : 0}" data-i="${i}">${E(b.short || b.name)}</button>`).join('')}<span class="br-ink" aria-hidden="true"></span></div>` : ''}</div>
       <div class="br-stage rv" id="${id}-p" role="tabpanel" aria-labelledby="${id}-t0">
-        <div class="br-photo ph-img">${B.map((b, i) => `<img src="${A.img(b.img)}" alt="${E(b.name)}" loading="lazy" decoding="async" data-i="${i}" class="${i ? '' : 'on'}">`).join('')}${B.map((b, i) => b.tourVideo ? `<button type="button" class="br-tour" data-i="${i}"${i ? ' hidden' : ''}>${A.ic('play')}<span>${E(T('tourOpen'))}</span></button>` : '').join('')}<span class="br-count" aria-hidden="true"><b>${B.length > 1 ? '1' : ''}</b>${B.length > 1 ? ' / ' + B.length : ''}</span></div>
+        <div class="br-photo ph-img">${B.map((b, i) => `<img src="${A.img(b.img)}" alt="${E(b.name)}" loading="lazy" decoding="async" data-i="${i}" class="${i ? '' : 'on'}">`).join('')}${B.map((b, i) => b.tourVideo ? `<button type="button" class="br-tour" data-i="${i}" data-new="tour:${E(b.key)}" data-new-slot${i ? ' hidden' : ''}>${A.ic('play')}<span>${E(T('tourOpen'))}</span></button>` : '').join('')}<span class="br-count" aria-hidden="true"><b>${B.length > 1 ? '1' : ''}</b>${B.length > 1 ? ' / ' + B.length : ''}</span></div>
         <div class="br-info">${B.map(card).join('')}</div>
         <div class="br-map"><div class="br-map-ph" aria-hidden="true">${A.ic('map')}</div>${B.map((b, i) => `<iframe data-src="${A.mapSrc(b)}" data-i="${i}" title="${E(T('mapTitle'))}: ${E(b.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer-when-downgrade"${i ? ' hidden' : ''}></iframe>`).join('')}</div>
       </div>
@@ -696,6 +764,10 @@
       if (A._unskip) A._unskip();
       if (A.csr) A.relink(document.body);
       footer(); fab(); A.flow(); A.bindBranches(); A.sheen(); A.parallax(); A.imgFallback(); A.reveal();
+      try { A.newBoot(); } catch (e) { /* tags are extra */ }
+      // contact.html#tour-phuket and the like open that branch's 3D tour straight away
+      const tm = location.hash.match(/^#tour-([\w-]+)$/);
+      if (tm) { const i = ((A.d('shared') || {}).branches || []).findIndex(b => b.key === tm[1] && b.tourVideo); if (i >= 0) { A.newSeen('tour:' + tm[1]); A.tour(i, A.qs(`.br-tour[data-i="${i}"]`)); } }
       document.dispatchEvent(new Event('apex:ready'));
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();

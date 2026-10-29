@@ -64,6 +64,7 @@ function apex_schema( string $type ): array {
 		...apex_seo_f(),
 		apex_f( 'hero', 'image', 'Banner image' ),
 		apex_f( 'heroAlt', 'text', 'Banner alt text' ),
+apex_f( 'newFrom', 'date', 'New from', [ 'h' => "Shows it under What's new on the home page with a New tag, for the number of days set under What's new › Settings. Filled in when first published; empty leaves it out." ] ),
 		apex_f( 'byline', 'text', 'Surgeon line', [ 'h' => 'For example: Dr. Somboon Waiphrip, License no. 22713, Apex Surgery Hospital' ] ),
 		apex_f( 'atApex', 'group', 'Introduction', [ 'f' => [ apex_f( 'h', 'text', 'Heading' ), apex_f( 'img', 'image', 'Photo' ), apex_f( 'alt', 'text', 'Photo alt text' ) ] ] ),
 		apex_f( 'intro', 'lines', 'Introduction paragraphs', [ 'h' => 'One paragraph per line. Lines starting with ✔ become ticked points.' ] ),
@@ -93,6 +94,7 @@ function apex_schema( string $type ): array {
 		apex_f( 'desc', 'textarea', 'Summary', [ 'src' => 'excerpt', 'h' => 'Shown on article cards and as the description in Google' ] ),
 		apex_f( 'excerpt', 'textarea', 'Card text on the home page', [ 'h' => 'Leave empty to use the summary' ] ),
 		apex_f( 'tag', 'text', 'Procedure tag', [ 'h' => 'Optional. Words that name the procedure, used to pick the key facts box' ] ),
+		apex_f( 'newFrom', 'date', 'New from', [ 'h' => "Shows it under What's new on the home page with a New tag, for the number of days set under What's new › Settings. Filled in when first published; empty leaves it out." ] ),
 		apex_f( 'blocks', 'content', 'Article' ),
 	];
 
@@ -107,7 +109,19 @@ function apex_schema( string $type ): array {
 		apex_f( 'cover', 'image', 'Card image (640 × 336)' ),
 		apex_f( 'img', 'image', 'Video poster (1200 × 630)' ),
 		apex_f( 'photos', 'number', 'Number of photos' ),
+		apex_f( 'newFrom', 'date', 'New from', [ 'h' => "Shows it under What's new on the home page with a New tag, for the number of days set under What's new › Settings. Filled in when first published; empty leaves it out." ] ),
 		apex_f( 'blocks', 'content', 'Article' ),
+	];
+
+	/* ---------- What's new: launches with no page of their own (a product, a package, an event) ---------- */
+	$S['apex_fresh'] = [
+		apex_f( 'title', 'text', 'Title', [ 'src' => 'title', 'h' => 'For example: Motiva Ergonomix 2 now at Apex' ] ),
+		apex_f( 'kind', 'select', 'Kind', [ 'o' => [ 'product' => 'Product', 'package' => 'Package', 'surgery' => 'Surgery', 'treatment' => 'Treatment', 'promotion' => 'Promotion', 'event' => 'Event', 'branch' => 'Branch', 'tool' => 'Tool to try', 'other' => 'Update' ] ] ),
+		apex_f( 'text', 'textarea', 'One line about it', [ 'h' => 'Shown under the title. Keep it under 110 characters.' ] ),
+		apex_f( 'img', 'image', 'Picture', [ 'h' => 'At least 640 pixels wide' ] ),
+		apex_f( 'fit', 'select', 'Picture fit', [ 'o' => [ 'cover' => 'Fill the frame (photos)', 'contain' => 'Show it whole (posters with text)' ] ] ),
+		apex_f( 'link', 'url', 'Link', [ 'h' => 'The page it opens: a page on this site, a promotion, or another site' ] ),
+		apex_f( 'newFrom', 'date', 'New from', [ 'h' => "Shows it under What's new on the home page with a New tag, for the number of days set under What's new › Settings. Filled in when first published; empty leaves it out." ] ),
 	];
 
 	/* ---------- offers, before and after cases, branches, doctors ---------- */
@@ -120,6 +134,7 @@ function apex_schema( string $type ): array {
 		apex_f( 'order', 'number', 'Order on the promotions page' ),
 		apex_f( 'onHome', 'bool', 'Show on the home page' ),
 		apex_f( 'homeOrder', 'number', 'Order on the home page' ),
+		apex_f( 'newFrom', 'date', 'New from', [ 'h' => "Shows it under What's new on the home page with a New tag, for the number of days set under What's new › Settings. Filled in when first published; empty leaves it out." ] ),
 		apex_f( 'noPrice', 'bool', 'The poster has no price on it', [ 'h' => 'Leave unticked when the price is printed on the poster. Where a country price list shows a different price, the offer then shows a plain card with the right price instead of this poster.' ] ),
 		apex_f( 'regions', 'repeater', 'Prices by country', [ 'h' => 'Only for countries with their own price list, set under Apex settings › Prices by country. Fill in either language; the other follows unless it has its own rows.', 'f' => [
 			apex_f( 'region', 'select', 'Price list', [ 'o' => [ '' => '(choose)' ] + apex_pricing_region_options() ] ),
@@ -154,24 +169,31 @@ function apex_schema( string $type ): array {
 	];
 	$S['apex_doctor'] = [
 		apex_f( 'name', 'text', 'Name', [ 'src' => 'title' ] ),
-		apex_f( 'kind', 'select', 'Shown as', [ 'o' => [ 'doctor' => 'Surgeon (doctor card)', 'founder' => 'Founder (profile with biography)' ] ] ),
+		apex_f( 'kind', 'select', 'Shown as', [ 'o' => [ 'team' => 'Surgical team (card and profile)', 'doctor' => 'Lead surgeon card (shown only while the team is empty)', 'founder' => 'Founder (profile with biography)' ], 'h' => 'Surgical team doctors show in the team strip and on the Doctors page, in the order of the Order box under Page attributes.' ] ),
 		apex_f( 'nameAlt', 'text', 'Name in the other language', [ 'h' => 'The Thai name on the English page, the English name on the Thai page' ] ),
 		apex_f( 'nick', 'text', 'Short name' ),
 		apex_f( 'license', 'text', 'License line' ),
 		apex_f( 'title', 'text', 'Job title' ),
 		apex_f( 'role', 'text', 'Role' ),
 		apex_f( 'specialty', 'textarea', 'Specialty' ),
+		apex_f( 'focus', 'lines', 'Specialties on the card', [ 'h' => 'One per line, four or five at most. For example: Rhinoplasty' ] ),
 		apex_f( 'photo', 'image', 'Photo' ),
 		apex_f( 'portrait', 'image', 'Portrait (founder)' ),
 		apex_f( 'eduH', 'text', 'Education heading' ),
 		apex_f( 'edu', 'lines', 'Education', [ 'h' => 'One per line' ] ),
 		apex_f( 'moreH', 'text', 'Further education heading' ),
 		apex_f( 'more', 'lines', 'Further education and memberships', [ 'h' => 'One per line' ] ),
+		apex_f( 'train', 'lines', 'Training', [ 'h' => 'One per line. "2016: Workshop name" shows the year in bold.' ] ),
+		apex_f( 'skills', 'lines', 'Expertise', [ 'h' => 'One per line' ] ),
+		apex_f( 'work', 'lines', 'Work experience', [ 'h' => 'One per line. "2011 to now: Hospital" shows the years in bold.' ] ),
+		apex_f( 'member', 'lines', 'Memberships', [ 'h' => 'One per line' ] ),
+		apex_f( 'talks', 'lines', 'Talks and publications', [ 'h' => 'One per line' ] ),
 		apex_f( 'rolesH', 'text', 'Roles heading (founder)' ),
 		apex_f( 'roles', 'lines', 'Roles (founder)', [ 'h' => 'One per line. "Label: text" shows the label in bold.' ] ),
 		apex_f( 'years', 'repeater', 'Milestones (founder)', [ 'f' => [ apex_f( 'y', 'text', 'Year' ), apex_f( 'x', 'text', 'What happened' ) ] ] ),
 		apex_f( 'bio', 'lines', 'Biography (founder)', [ 'h' => 'One paragraph per line. The first shows in full, the rest under Read more.' ] ),
-		apex_f( 'quote', 'textarea', 'Quote (founder)' ),
+		apex_f( 'quote', 'textarea', 'Quote' ),
+		apex_f( 'newFrom', 'date', 'New from', [ 'h' => "Shows it under What's new on the home page with a New tag, for the number of days set under What's new › Settings. Filled in when first published; empty leaves it out." ] ),
 		apex_f( 'check', 'group', 'License check (founder)', [ 'f' => [ apex_f( 'h', 'url', 'Medical Council check link' ) ] ] ),
 		apex_f( 'checkX', 'text', 'License check button' ),
 		apex_f( 'aaci', 'group', 'Accreditation (founder)', [ 'f' => [ apex_f( 'src', 'image', 'Badge' ), apex_f( 'h', 'url', 'Link' ), apex_f( 'alt', 'text', 'Alt text' ) ] ] ),
@@ -210,7 +232,8 @@ function apex_schema( string $type ): array {
 	$S['page:blog'] = [ ...apex_seo_f(), apex_f( 'h1', 'text', 'Heading' ) ];
 	$S['page:privacy'] = [ ...apex_seo_f(), apex_f( 'h1', 'text', 'Heading' ), apex_f( 'blocks', 'content', 'Policy', [ 'h' => 'Written in the editor above: headings, paragraphs and lists.' ] ) ];
 	$S['page:contact'] = [ ...apex_seo_f(), apex_f( 'h1', 'text', 'Heading' ), apex_f( 'formH', 'text', 'Form heading' ), $branches ];
-	foreach ( [ 'doctor', 'war', 'nose', 'analysis', 'proportions', 'implBreast', 'implChin', 'implForehead', 'implNose', 'play', 'plan', 'trip', 'consult', 'notfound' ] as $k ) $S[ 'page:' . $k ] = apex_seo_f();
+	$S['page:doctor'] = [ ...apex_seo_f(), apex_f( 'h', 'text', 'Team heading', [ 'h' => 'For example: Our surgical team' ] ), apex_f( 'p', 'textarea', 'Team introduction', [ 'h' => 'One or two sentences under the page heading' ] ) ];
+	foreach ( [ 'war', 'nose', 'analysis', 'proportions', 'implBreast', 'implChin', 'implForehead', 'implNose', 'play', 'plan', 'trip', 'consult', 'notfound' ] as $k ) $S[ 'page:' . $k ] = apex_seo_f();
 	return $S[ $type ] ?? [];
 }
 

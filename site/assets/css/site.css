@@ -1332,9 +1332,9 @@ html:has(.tm-dlg[open]){overflow:hidden}
 @keyframes tf-pop{0%,100%{transform:scale(.7);opacity:.55}30%{transform:scale(1.15);opacity:1}60%{transform:scale(1);opacity:.9}}
 @media (max-width:640px){.tool-fill{grid-template-columns:1fr}.tool-fill .tc-art.fill{position:absolute;right:20px;top:20px}.tool-fill .tc-art.fill img,.tool-fill .tc-art.fill svg{width:80px}.tool-fill .tc-body{padding-right:86px}}
 @media (prefers-reduced-motion:reduce){.tc-art.fill circle{animation:none}}
-.mega-tools .mt-new .tc-new{height:19px;padding:0 7px;margin-left:8px;font-size:10px}
-.mini-tool.mt-new{position:relative;box-shadow:inset 0 0 0 2px #F49AC1}
-.mini-tool .tc-new{position:absolute;top:18px;right:18px;margin:0;height:20px;font-size:10px}
+.mega-tools .mt-new .new-tag.inline{height:19px;padding:0 7px;margin-left:8px;font-size:10px}
+.mini-tool.mt-new{position:relative}.mini-tool.mt-new:has(.new-tag){box-shadow:inset 0 0 0 2px #F49AC1}
+.mini-tool .new-tag.inline{position:absolute;top:18px;right:18px;margin:0;height:20px;font-size:10px}
 
 /* the surgical team strip on home, about and service pages */
 .ts-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:clamp(12px,1.6vw,22px)}
@@ -1348,9 +1348,9 @@ html:has(.tm-dlg[open]){overflow:hidden}
 .ts-role{font-size:14px;line-height:1.4;color:var(--ink-2)}
 @media (max-width:1100px){.ts-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:560px){.ts-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.mega-tools .mt-new .tc-new{height:19px;padding:0 7px;margin-left:8px;font-size:10px}
-.mini-tool.mt-new{position:relative;box-shadow:inset 0 0 0 2px #F49AC1}
-.mini-tool .tc-new{position:absolute;top:18px;right:18px;margin:0;height:20px;font-size:10px}
+.mega-tools .mt-new .new-tag.inline{height:19px;padding:0 7px;margin-left:8px;font-size:10px}
+.mini-tool.mt-new{position:relative}.mini-tool.mt-new:has(.new-tag){box-shadow:inset 0 0 0 2px #F49AC1}
+.mini-tool .new-tag.inline{position:absolute;top:18px;right:18px;margin:0;height:20px;font-size:10px}
 
 /* ---------- non-surgical treatments ---------- */
 .tx-search{display:flex;align-items:center;gap:10px;max-width:520px;margin-top:28px;height:54px;padding:0 20px;border-radius:var(--pill);background:#fff;box-shadow:var(--shadow-1),0 0 0 1px rgba(106,56,140,.08)}
@@ -1454,3 +1454,33 @@ html:has(.tm-dlg[open]){overflow:hidden}
 .washed .feed-more{background:#fff}
 @media (max-width:1100px){.feed-rail{grid-auto-columns:calc((100% - 3 * 14px) / 4)}.feed.has-fb{grid-template-columns:minmax(0,1fr)}.feed.has-fb .feed-rail{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:760px){.feed-rail{grid-auto-columns:42%;gap:10px}.feed.has-fb .feed-rail{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* What's new on the home page */
+.fresh-s .shead{margin-bottom:26px}
+.fresh-rail{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 3 * 18px) / 4);gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:6px 4px 34px;margin:-6px -4px -22px}
+.fresh-rail::-webkit-scrollbar{display:none}
+.fresh-rail.few{grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));grid-auto-columns:auto;overflow:visible}
+.fresh-c{display:flex;flex-direction:column;min-width:0;border-radius:var(--r-l);background:#fff;box-shadow:var(--surf-shadow);overflow:hidden;color:var(--ink);scroll-snap-align:start;transition:transform .4s var(--ease-out),box-shadow .4s var(--ease-out)}
+.fresh-c[hidden]{display:none}
+@media (hover:hover){.fresh-c:hover{transform:translateY(-4px);box-shadow:var(--shadow-2)}.fresh-c:hover .fresh-ph img{transform:scale(1.04)}}
+.fresh-c:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
+.fresh-ph{display:block;aspect-ratio:4/3;overflow:hidden}
+.fresh-ph img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s var(--ease-out)}
+.fresh-ph.fit-top img{object-position:50% 8%}
+.fresh-ph.fit-contain{background:radial-gradient(80% 80% at 50% 40%,#fff,var(--lilac-100))}
+.fresh-ph.fit-contain img{object-fit:contain;padding:10px}
+.fresh-ic{display:grid;place-items:center;height:100%;color:var(--plum)}
+.fresh-ic svg{width:44px;height:44px}
+.fresh-b{display:flex;flex-direction:column;gap:6px;padding:16px 18px 18px;flex:1}
+.fresh-k{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--plum)}
+.fresh-t{font-size:17px;line-height:1.3}
+.fresh-x{font-size:14px;line-height:1.5;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fresh-d{margin-top:auto;padding-top:6px;font-size:13px;color:var(--ink-3)}
+@media (max-width:1100px){.fresh-rail{grid-auto-columns:calc((100% - 2 * 18px) / 3)}}
+@media (max-width:760px){.fresh-rail{grid-auto-columns:78%;gap:12px}}
+/* the New tag: in a picture's corner, or after a line of text */
+.new-tag{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;background:#F49AC1;color:#2A0F40;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;pointer-events:none}
+.ph-img>.new-tag{position:absolute;left:10px;top:10px;z-index:2;box-shadow:0 4px 14px -4px rgba(42,15,64,.45)}
+.new-tag.inline{height:22px;padding:0 9px;margin-left:10px;font-size:11px;vertical-align:middle}
+.svc-tile>.new-tag.inline{position:absolute;right:20px;bottom:20px;margin:0}
+html[lang="th"] .fresh-k,html[lang="th"] .new-tag{letter-spacing:.02em}

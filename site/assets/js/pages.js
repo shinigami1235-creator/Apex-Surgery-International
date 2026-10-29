@@ -222,7 +222,7 @@
     const g = A.gallery(imgs.map(s => ({src:s})));
     return `<div class="ba-grid">${imgs.map((s, i) => `<button type="button" class="ba-tile ph-img rv" data-d="${(i%6)*50}" ${g.attr(i)}><img src="${IMG(s)}" alt="${E(cap || 'Before / After')} ${i+1}" loading="lazy" decoding="async" decoding="async"></button>`).join('')}</div>`;
   };
-  const postCard = (p, i=0, big) => `<a class="post-card rv${big ? ' big' : ''}" data-d="${(i%3)*70}" href="${A.postUrl(p.key)}" data-cat="${E(p.cat || '')}">
+  const postCard = (p, i=0, big) => `<a class="post-card rv${big ? ' big' : ''}" data-d="${(i%3)*70}" href="${A.postUrl(p.key)}" data-cat="${E(p.cat || '')}" data-new="post:${E(p.key)}">
     <span class="pc-ph ph-img"><img src="${IMG(p.img)}" alt="" loading="lazy" decoding="async" decoding="async"></span>
     <span class="pc-meta"><span class="pc-cat">${E(T({review:'catReview', blog:'catBlog', news:'catNews'}[p.cat] || 'articles'))}</span>${p.date ? `<time datetime="${E(p.date)}">${E(A.fmtDate(p.date))}</time>` : ''}</span>
     <span class="pc-title">${E(p.title)}</span>${p.excerpt || p.desc ? `<span class="pc-ex">${E(p.excerpt || p.desc)}</span>` : ''}</a>`;
@@ -250,7 +250,7 @@
   const fxSpan = thb => `<span class="apx-price op-fx" data-thb="${thb}" data-lang="${A.lang}"><span class="apx-fx" hidden></span><small>${E(T('approx'))}</small></span>`;
   const offerTags = o => `${o.allIn ? `<span class="o-tag hot">${E(T('allIn'))}</span>` : ''}${o.review ? `<span class="o-tag">${E(T('reviewCase'))}</span>` : ''}`;
   /* data-offer and the rest let the country price lists find each offer (features/pricing) */
-  const offerData = o => `data-offer="${E(o.key)}" data-price="${o.price}" data-name="${E(o.name)}" data-label="${E(o.label)}"`;
+  const offerData = o => `data-offer="${E(o.key)}" data-price="${o.price}" data-name="${E(o.name)}" data-label="${E(o.label)}" data-new="offer:${E(o.key)}"`;
   const offerCard = (o, i, g) => `<article class="offer rv" data-d="${(i % 4) * 60}" data-cat="${E(o.cat || '')}" ${offerData(o)}>
       <button type="button" class="offer-img ph-img" ${g.attr(i)} aria-label="${E(T('image'))}: ${E(o.label)}"><img src="${IMG(o.src)}" alt="${E(o.alt)}" loading="lazy" decoding="async" decoding="async"><span class="o-zoom" aria-hidden="true">${I('arrow-up-right')}</span></button>
       <div class="offer-body">
@@ -352,6 +352,7 @@
       </div>
     </section>
 
+    ${A.freshSection(A.d('fresh'))}
     <section class="section intro-s">
       <div class="wrap intro2">
         <div><p class="eyebrow rv">${E(T('introH'))}</p>
@@ -388,9 +389,9 @@
             <span class="tc-art cal2" aria-hidden="true"><svg viewBox="0 0 150 144"><rect class="cl-card" x="1" y="8" width="148" height="134" rx="14"/><path class="cl-top" d="M1 22a14 14 0 0 1 14-14h120a14 14 0 0 1 14 14v18H1z"/><rect class="cl-ring" x="36" y="2" width="7" height="15" rx="3.5"/><rect class="cl-ring" x="107" y="2" width="7" height="15" rx="3.5"/><path class="cl-plane" transform="translate(64 13) scale(.92)" d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/><path class="cl-wd" d="M18 50h6M36 50h6M54 50h6M72 50h6M90 50h6M108 50h6M126 50h6"/><rect class="cl-stay" x="30" y="75" width="108" height="16" rx="8"/><rect class="cl-stay" x="12" y="92" width="90" height="16" rx="8"/><circle class="cl-op" cx="75" cy="83" r="8.5"/><text class="cl-n" x="21" y="69.2">1</text><text class="cl-n" x="39" y="69.2">2</text><text class="cl-n" x="57" y="69.2">3</text><text class="cl-n" x="75" y="69.2">4</text><text class="cl-n" x="93" y="69.2">5</text><text class="cl-n" x="111" y="69.2">6</text><text class="cl-n" x="129" y="69.2">7</text><text class="cl-n" x="21" y="86.2">8</text><text class="cl-n on" x="39" y="86.2">9</text><text class="cl-n on" x="57" y="86.2">10</text><text class="cl-n on" x="75" y="86.2">11</text><text class="cl-n on" x="93" y="86.2">12</text><text class="cl-n on" x="111" y="86.2">13</text><text class="cl-n on" x="129" y="86.2">14</text><text class="cl-n on" x="21" y="103.2">15</text><text class="cl-n on" x="39" y="103.2">16</text><text class="cl-n on" x="57" y="103.2">17</text><text class="cl-n on" x="75" y="103.2">18</text><text class="cl-n on" x="93" y="103.2">19</text><text class="cl-n" x="111" y="103.2">20</text><text class="cl-n" x="129" y="103.2">21</text><text class="cl-n" x="21" y="120.2">22</text><text class="cl-n" x="39" y="120.2">23</text><text class="cl-n" x="57" y="120.2">24</text><text class="cl-n" x="75" y="120.2">25</text><text class="cl-n" x="93" y="120.2">26</text><text class="cl-n" x="111" y="120.2">27</text><text class="cl-n" x="129" y="120.2">28</text></svg></span>
             <span class="tc-body"><span class="eyebrow on-night">${E(T('trip'))}</span><b class="h-m">${E(T('tripH'))}</b><span class="tc-p">${E(T('tripP'))}</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">${E(T('tripCta'))} ${I('arrow-right')}</span></span></span></a>
-          <a class="tool-card tool-fill rv" data-d="200" href="filler.html">
+          <a class="tool-card tool-fill rv" data-d="200" href="filler.html" data-new="page:filler">
             <span class="tc-art fill st-art" aria-hidden="true"><img src="${A.assets}img/stencil-front.svg" alt="" loading="lazy" decoding="async"><svg viewBox="90 60 420 620"><circle class="tf-f" cx="175" cy="365" r="12" style="--d:0ms"/><circle class="tf-f" cx="425" cy="365" r="12" style="--d:90ms"/><circle class="tf-f" cx="205" cy="385" r="12" style="--d:180ms"/><circle class="tf-f" cx="395" cy="385" r="12" style="--d:270ms"/><circle class="tf-f" cx="235" cy="410" r="12" style="--d:360ms"/><circle class="tf-f" cx="365" cy="410" r="12" style="--d:450ms"/><circle class="tf-c" cx="160" cy="255" r="12" style="--d:0ms"/><circle class="tf-c" cx="440" cy="255" r="12" style="--d:90ms"/><circle class="tf-c" cx="185" cy="525" r="12" style="--d:180ms"/><circle class="tf-c" cx="415" cy="525" r="12" style="--d:270ms"/><circle class="tf-c" cx="300" cy="592" r="12" style="--d:360ms"/><circle class="tf-r" cx="250" cy="362" r="12" style="--d:0ms"/><circle class="tf-r" cx="350" cy="362" r="12" style="--d:90ms"/><circle class="tf-r" cx="256" cy="470" r="12" style="--d:180ms"/><circle class="tf-r" cx="344" cy="470" r="12" style="--d:270ms"/><circle class="tf-r" cx="300" cy="497" r="12" style="--d:360ms"/><circle class="tf-r" cx="256" cy="532" r="12" style="--d:450ms"/><circle class="tf-r" cx="344" cy="532" r="12" style="--d:540ms"/></svg></span>
-            <span class="tc-body"><span class="eyebrow on-night">${E(T('fill'))}<span class="tc-new">${E(T('newTag'))}</span></span><b class="h-l">${E(T('fillH'))}</b><span class="tc-p">${E(T('fillPageP'))}</span>
+            <span class="tc-body"><span class="eyebrow on-night" data-new-slot>${E(T('fill'))}</span><b class="h-l">${E(T('fillH'))}</b><span class="tc-p">${E(T('fillPageP'))}</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">${E(T('fillCta'))} ${I('arrow-right')}</span></span></span></a>
           <a class="tool-card tool-gold rv" data-d="240" href="proportions.html">
             <span class="tc-art gold st-art" aria-hidden="true"><img src="${A.assets}img/stencil-front.svg" alt="" loading="lazy" decoding="async"><svg viewBox="90 60 420 620"><path class="tg-l" d="M108 168h384M108 305h384M108 455h384M108 610h384M124 168v442"/><path class="tg-g" d="M262 305v150M338 305v150M236 505h128"/><circle class="tg-d" cx="300" cy="168" r="8"/><circle class="tg-d" cx="300" cy="305" r="8"/><circle class="tg-d" cx="300" cy="455" r="8"/><circle class="tg-d" cx="300" cy="610" r="8"/></svg></span>
@@ -457,6 +458,7 @@
     bindChips(A.qs('.reviews-s'), k => { A.qsa('.ba-card', rail).forEach(c => c.hidden = !(k === 'all' || c.dataset.cat === k)); rail.scrollTo({left:0}); });
     mountStories(A.qs('#stories'));
     A.socialMount(main());
+    A.freshMount(main());
     bindOffers(A.qs('.promos-s'));
     A.railCtrl(A.qs('#war-rail'), A.qs('#war-prev'), A.qs('#war-next'));
   }
@@ -470,7 +472,7 @@
         <a class="tx-band rv" href="treatments.html"><span class="tx-gi">${I('sparkles')}</span><span><b>${E(T('treatments'))}</b><span>${E(T('txBand'))}</span></span>${I('arrow-right')}</a></div></section>
       <section class="section washed"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(T('tools'))}</h2></div>
         <div class="mini-tools">
-          <a class="mini-tool rv mt-new" href="filler.html">${I('syringe')}<b>${E(T('fill'))}<span class="tc-new">${E(T('newTag'))}</span></b><span>${E(T('fillPageP'))}</span></a>
+          <a class="mini-tool rv mt-new" href="filler.html" data-new="page:filler">${I('syringe')}<b data-new-slot>${E(T('fill'))}</b><span>${E(T('fillPageP'))}</span></a>
           <a class="mini-tool rv" data-d="20" href="analysis.html">${I('scan-line')}<b>${E(T('ana'))}</b><span>${E(T('anaPageP'))}</span></a>
           <a class="mini-tool rv" data-d="35" href="proportions.html">${I('gem')}<b>${E(T('prop'))}</b><span>${E(T('propPageP'))}</span></a>
           <a class="mini-tool rv" data-d="50" href="breast-implants.html">${I('ruler')}<b>${E(T('impl'))}</b><span>${E(T('implP'))}</span></a>
@@ -660,7 +662,7 @@
   /* =================== DOCTOR =================== */
   /* the surgical team (data "team"): a card per doctor, the full profile opens in a side panel */
   const TM_SECS = [['edu', 'eduH'], ['train', 'trainH'], ['skills', 'skillsH'], ['work', 'workH'], ['member', 'memberH'], ['talks', 'talksH']];
-  const tmCard = (d, i) => `<li class="rv" data-d="${(i % 3) * 70}"><button type="button" class="tm-card" data-doc="${E(d.key)}" aria-haspopup="dialog">
+  const tmCard = (d, i) => `<li class="rv" data-d="${(i % 3) * 70}"><button type="button" class="tm-card" data-doc="${E(d.key)}" aria-haspopup="dialog" data-new="doc:${E(d.key)}">
       <span class="tm-ph ph-img"><img src="${IMG(d.photo)}" alt="${E(d.name)}" loading="lazy" decoding="async" width="731" height="1024"></span>
       <span class="tm-body"><span class="tm-nick">${E(d.nick || '')}</span><b class="tm-name">${E(d.name)}</b><span class="tm-role">${E(d.role || '')}</span>
         <span class="tm-focus">${(d.focus || []).map(f => `<span>${E(f)}</span>`).join('')}</span>
@@ -674,7 +676,7 @@
   const bindTeam = (root, docs) => {
     const dlg = A.qs('#tm-dlg', root); if (!dlg) return;
     const inner = dlg.firstElementChild;
-    const open = key => { const d = docs.find(x => x.key === key); if (!d) return; inner.innerHTML = tmProfile(d); inner.scrollTop = 0; if (!dlg.open) dlg.showModal(); history.replaceState(null, '', '#dr-' + key); };
+    const open = key => { const d = docs.find(x => x.key === key); if (!d) return; A.newSeen('doc:' + key); inner.innerHTML = tmProfile(d); inner.scrollTop = 0; if (!dlg.open) dlg.showModal(); history.replaceState(null, '', '#dr-' + key); };
     const shut = () => { dlg.close(); };
     dlg.addEventListener('close', () => { if (/^#dr-/.test(location.hash)) history.replaceState(null, '', location.pathname + location.search); });
     root.addEventListener('click', e => { const b = e.target.closest('.tm-card'); if (b) open(b.dataset.doc); });
@@ -895,7 +897,7 @@
   /* Thai has no spaces between words, and the browser's word list splits some loan words badly ("แมส|ก์"), so Thai headings only break at the spaces the writer put in */
   const nb = t => A.lang === 'th' ? String(t || '').split(/\s+/).filter(Boolean).map(w => `<span class="nw">${E(w)}</span>`).join(' ') : E(t);
   const warSrc = s => s && !/^(https?:|~\/)/.test(s) ? A.assets + s : s;
-  const warCard = (e, i=0) => `<a class="war-card rv" data-d="${(i % 4) * 60}" href="${warUrl(e.n)}">
+  const warCard = (e, i=0) => `<a class="war-card rv" data-d="${(i % 4) * 60}" href="${warUrl(e.n)}" data-new="war:${e.n}">
       <span class="wc-ph ph-img"><img src="${IMG(warSrc(e.cover))}" alt="" loading="lazy" decoding="async" width="640" height="336"><span class="wc-ep">EP.${e.n}</span><span class="wc-pl" aria-hidden="true">${I('play')}</span></span>
       <span class="wc-t">${nb(e.title)}</span></a>`;
   const WAR_PROC = [['facelift', /ดึงหน้า|ดึงคอ|face ?lift|neck lift/i], ['browlift', /ยกคิ้ว|ยกหน้าผาก|brow lift|forehead lift/i], ['rhinoplasty', /เสริมจมูก|แก้จมูก|rhinoplasty/i],

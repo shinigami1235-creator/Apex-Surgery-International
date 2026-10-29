@@ -192,7 +192,7 @@ def page_html(lang, fname, key, extras, prod_path, meta_id):
             {'@type': 'ListItem', 'position': 2, 'name': title.split('|')[0].strip(), 'item': canon}]})
     ld_html = '\n'.join(f'<script type="application/ld+json">{json.dumps(x, ensure_ascii=False)}</script>' for x in ld)
 
-    data_scripts = ''.join(f'<script defer src="{up}assets/data/{lang}/{n}.js?v={ASSET_V}"></script>\n' for n in ['shared'] + extras)
+    data_scripts = ''.join(f'<script defer src="{up}assets/data/{lang}/{n}.js?v={ASSET_V}"></script>\n' for n in ['shared', 'fresh'] + extras)
     # PREVIEW is True for the GitHub Pages review copy so search engines skip it. Set it to False for the live site.
     robots = '<meta name="robots" content="noindex">' if (PREVIEW or key in ('notfound', 'plan')) else ''
     return f'''<!doctype html>

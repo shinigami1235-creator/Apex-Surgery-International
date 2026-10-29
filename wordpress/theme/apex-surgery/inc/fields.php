@@ -12,7 +12,7 @@ function apex_schema_for( WP_Post $p ): string {
 		$k = (string) get_post_meta( $p->ID, '_apex_page', true );
 		return $k !== '' && apex_schema( 'page:' . $k ) ? 'page:' . $k : '';
 	}
-	return in_array( $p->post_type, [ 'apex_service', 'apex_episode', 'apex_offer', 'apex_case', 'apex_branch', 'apex_doctor', 'post' ], true ) ? $p->post_type : '';
+	return in_array( $p->post_type, [ 'apex_service', 'apex_episode', 'apex_offer', 'apex_case', 'apex_branch', 'apex_doctor', 'apex_fresh', 'post' ], true ) ? $p->post_type : '';
 }
 
 /* ---------- design pages: no block editor, their content is the form (unless the page has body text, like the privacy policy) ---------- */
@@ -71,6 +71,9 @@ function apex_field_html( array $f, $v, string $name, string $lang, bool $in_row
 	switch ( $t ) {
 		case 'text': case 'url':
 			echo $label . '<input type="text" class="widefat" id="' . $id . '" name="' . esc_attr( $name ) . '" value="' . esc_attr( (string) $v ) . '"' . ( $t === 'url' ? ' inputmode="url" spellcheck="false"' : '' ) . '>' . $help;
+			break;
+		case 'date':
+			echo $label . '<input type="date" id="' . $id . '" name="' . esc_attr( $name ) . '" value="' . esc_attr( (string) $v ) . '">' . $help;
 			break;
 		case 'number':
 			echo $label . '<input type="number" step="any" class="small-text" id="' . $id . '" name="' . esc_attr( $name ) . '" value="' . esc_attr( $v === null ? '' : (string) $v ) . '">' . $help;
@@ -154,6 +157,7 @@ function apex_clean( array $f, $v ) {
 		case 'url': return apex_clean_link( (string) $v );
 		case 'image': return apex_img_store( apex_clean_link( (string) $v ) );
 		case 'number': $v = trim( (string) $v ); return is_numeric( $v ) ? $v + 0 : '';
+		case 'date': $v = trim( (string) $v ); return preg_match( '/^\d{4}-\d{2}-\d{2}$/', $v ) ? $v : '';
 		case 'bool': return ! empty( $v ) && $v !== '0';
 		case 'select': return array_key_exists( (string) $v, $f['o'] ) ? (string) $v : '';
 		case 'lines': return array_values( array_filter( array_map( 'apex_plain', preg_split( '/\r\n|\r|\n/', (string) $v ) ), 'strlen' ) );

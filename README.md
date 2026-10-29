@@ -32,6 +32,7 @@ Redesign of apexsurgeryhospital.com for Apex. English is the main language since
 | Before/after | Service pages | Gallery with the Thai caption the advertising rules require |
 | Currency switch | Promotions, service pages | ECB rates of 20 Oct 2026, shown as approximate |
 | Branch tour | Branch block on the home, about and contact pages | "Take the tour" on the Phuket photo opens the 3D walk-through full screen. It stops in each room with the room's name on the picture, and the room strip jumps to any room |
+| What's new | Home, New tags on every page | The newest surgeries, promotions, articles, episodes, doctors and launches with a New tag that goes once a visitor opens the entry or 7 days after they first saw it. The preview shows a sample of what was added to the site in October 2026 |
 | Latest from Apex | Home, contact, Transformations | Instagram and TikTok posts as square tiles with a follow tile per account, fetched by the WordPress site every hour. The preview shows a snapshot of 28 Oct 2026 |
 | Prices by country | Every page with offers | Country price lists set in the backend: currency, a percentage on the baht price, an offer's own price or poster, or hidden. A poster with a different printed price gives way to a plain card. No lists yet, so everyone sees baht. `?pricing=demo` shows example lists |
 
@@ -53,6 +54,14 @@ Score targets and prizes in `assets/features/games/config.js` are examples set f
 | `wordpress/import/` | Both languages of content for `wp apex import` |
 | `wordpress/HANDOVER.md` | Install steps, addresses, roles, patient data, spam limits and the checks before launch |
 | `tests/wordpress/` | Tests for the theme: server pages against the scripts, every edit screen, the forms, accessibility |
+
+## What's new
+
+The section sits right under the home hero so new entries are the first thing a visitor sees. It draws from one list per language, `data/<lang>/fresh.js`: `{days, keep, items}`, each item `{id, kind, title, text, img, fit, href, date}`. On WordPress `inc/fresh.php` builds the list from each entry's "New from" date, and `wordpress/HANDOVER.md` explains what editors do.
+
+Cards across the site carry `data-new` with the entry's id: `post:<key>` on article cards, `svc:<key>` on surgery tiles, `offer:<poster file>` on promotions, `war:<n>` on episodes, `doc:<key>` on doctors, `tour:<branch>` on the branch tour button and `page:<name>` on a tool such as the filler simulator. `A.newTags` in `core.js` adds the tag while the entry is within `days` of its date. It removes the tag once this visitor opens the entry, by clicking any of its cards or visiting its page, or `keep` days after they first saw it. That memory is kept in the visitor's own browser under `apex.new`. The filler simulator's fixed "New" label moved onto this system, so it now clears too.
+
+The preview's list is real additions to the redesigned site in October 2026, dated by the day each was added. Its entries pass 30 days in late November 2026, and the section then leaves the preview. `contact.html#tour-phuket` opens the Phuket branch tour straight away, which is where its entry points.
 
 ## Latest from Apex
 

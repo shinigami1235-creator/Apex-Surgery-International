@@ -19,6 +19,7 @@ add_action( 'init', function () {
 	$cpt( 'apex_case', 'Before and after case', 'Before and after', $hidden + [ 'menu_icon' => 'dashicons-images-alt2', 'supports' => [ 'title', 'page-attributes' ] ] );
 	$cpt( 'apex_branch', 'Branch', 'Branches', $hidden + [ 'menu_icon' => 'dashicons-location', 'supports' => [ 'title', 'page-attributes' ] ] );
 	$cpt( 'apex_doctor', 'Doctor', 'Doctors', $hidden + [ 'menu_icon' => 'dashicons-businessperson', 'supports' => [ 'title', 'page-attributes', 'revisions' ] ] );
+	$cpt( 'apex_fresh', "What's new item", "What's new", $hidden + [ 'menu_icon' => 'dashicons-megaphone', 'supports' => [ 'title', 'revisions' ], 'menu_position' => 5 ] );
 	// enquiries and vouchers hold personal details: no REST, no search, editors and admins only
 	// their own capabilities: administrators and the "Apex staff" role see enquiries and patient photos;
 	// editors (an agency, say) do not. Editors and Apex staff can check vouchers at reception.
@@ -64,7 +65,7 @@ add_action( 'save_post_post', function ( $id, $p ) {
 
 /* Polylang translates these; enquiries and vouchers stay single-language records */
 add_filter( 'pll_get_post_types', function ( $types, $is_settings ) {
-	foreach ( [ 'apex_service', 'apex_episode', 'apex_offer', 'apex_case', 'apex_branch', 'apex_doctor' ] as $t ) $types[ $t ] = $t;
+	foreach ( [ 'apex_service', 'apex_episode', 'apex_offer', 'apex_case', 'apex_branch', 'apex_doctor', 'apex_fresh' ] as $t ) $types[ $t ] = $t;
 	unset( $types['apex_lead'], $types['apex_voucher'] );
 	return $types;
 }, 10, 2 );

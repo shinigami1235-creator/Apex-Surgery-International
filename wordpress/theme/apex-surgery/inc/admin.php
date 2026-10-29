@@ -14,6 +14,16 @@ add_action( 'init', function () {
 
 /* ---------- list columns ---------- */
 function apex_thumb_html( string $src ): string { return $src ? '<img src="' . esc_url( apex_img( $src ) ) . '" alt="" style="width:72px;height:54px;object-fit:cover;border-radius:6px;border:1px solid #ddd">' : ''; }
+/* doctors: what each one is shown as, in page order */
+add_filter( 'manage_apex_doctor_posts_columns', fn( $c ) => array_slice( $c, 0, 2 ) + [ 'apex_kind' => __( 'Shown as', 'apex' ), 'apex_role' => __( 'Role', 'apex' ) ] + array_slice( $c, 2 ) );
+add_action( 'manage_apex_doctor_posts_custom_column', function ( $col, $id ) {
+	$d = apex_read_post( $id, 'apex_doctor' );
+	if ( $col === 'apex_kind' ) echo esc_html( [ 'team' => __( 'Surgical team', 'apex' ), 'doctor' => __( 'Lead surgeon card', 'apex' ), 'founder' => __( 'Founder', 'apex' ) ][ $d['kind'] ?: 'doctor' ] ?? '' );
+	if ( $col === 'apex_role' ) echo esc_html( (string) ( ( $d['role'] ?? '' ) ?: ( $d['title'] ?? '' ) ) );
+}, 10, 2 );
+add_action( 'pre_get_posts', function ( $q ) {
+	if ( is_admin() && $q->is_main_query() && $q->get( 'post_type' ) === 'apex_doctor' && ! $q->get( 'orderby' ) ) { $q->set( 'orderby', 'menu_order' ); $q->set( 'order', 'ASC' ); }
+} );
 add_filter( 'manage_apex_offer_posts_columns', fn( $c ) => array_slice( $c, 0, 1 ) + [ 'apex_img' => '' ] + array_slice( $c, 1, 1 ) + [ 'apex_cat' => __( 'Procedure', 'apex' ), 'apex_price' => __( 'Price', 'apex' ), 'apex_where' => __( 'Shown on', 'apex' ) ] + array_slice( $c, 2 ) );
 add_action( 'manage_apex_offer_posts_custom_column', function ( $col, $id ) {
 	$o = apex_read_post( $id, 'apex_offer' );
