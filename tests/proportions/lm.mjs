@@ -1,9 +1,7 @@
 // Runs MediaPipe face mesh on every photo in faces/ and writes the landmarks to lm.json
-import {createRequire} from 'module';
 import fs from 'fs';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
-const MP = '/tmp/claude-0/-home-claude/b5460f3c-e75e-551e-b4ae-fc0088d5c4d9/scratchpad/mp/node_modules/@mediapipe/face_mesh/';
+import {chromium} from '../pw.mjs';
+const MP = new URL('../../site/assets/vendor/face_mesh/', import.meta.url).pathname;
 const DIR = new URL('./faces/', import.meta.url).pathname;
 const b = await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']});
 const p = await b.newPage();

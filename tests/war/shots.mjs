@@ -1,6 +1,4 @@
-import {createRequire} from 'module';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
+import {chromium} from '../pw.mjs';
 const OUT = process.argv[2];
 const b = await chromium.launch();
 const errs = [];

@@ -1,10 +1,8 @@
 // Opens every page in English (root) and Thai (/th/), checks for failed local files and script errors,
 // that the EN and TH links point at the same page in the other language, and that old /en/ links forward
-import {createRequire} from 'module';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
-const B = 'http://localhost:8765/';
-const PAGES = ['index.html','about.html','services.html','service.html?p=rhinoplasty','doctor.html','promotions.html','reviews.html','blog.html','surgery-wars.html','surgery-wars.html?ep=3','contact.html','nose.html','analysis.html','proportions.html','play.html','plan.html','trip.html','consult.html'];
+import {chromium, SITE as B} from '../pw.mjs';
+const PAGES = ['index.html','about.html','services.html','service.html?p=rhinoplasty','doctor.html','promotions.html','reviews.html','blog.html','surgery-wars.html','surgery-wars.html?ep=3','contact.html','analysis.html','proportions.html','play.html','plan.html','trip.html','consult.html',
+  'treatments.html','transformations.html','filler.html','breast-implants.html','nose-implants.html','privacy.html','service.html?p=bone','article.html?p=smas'];
 const b = await chromium.launch(), fails = [];
 const p = await (await b.newContext({viewport:{width:1280, height:900}})).newPage();
 p.on('pageerror', e => fails.push(`${p.url()} pageerror ${e.message}`));
@@ -23,9 +21,9 @@ for (const [pre, lang, other] of [['', 'en', 'th'], ['th/', 'th', 'en']]) {
     if (r.first !== 'EN') fails.push(`${pre}${pg} first lang ${r.first}`);
   }
 }
-for (const pg of ['en/', 'en/about.html', 'en/service.html?p=facelift']) {
+for (const [pg, to] of [['en/', ''], ['en/about.html', 'about.html'], ['en/service.html?p=facelift', 'service.html?p=facelift'], ['nose.html', 'nose-implants.html'], ['th/nose.html', 'th/nose-implants.html']]) {
   await p.goto(B + pg); await p.waitForLoadState('load'); await p.waitForTimeout(300);
-  const want = B + pg.slice(3);
+  const want = B + to;
   if (p.url() !== want) fails.push(`${pg} forwarded to ${p.url()} want ${want}`);
 }
 // The header links never run under the language switch: at desktop widths they fit, or the menu button replaces them
@@ -39,3 +37,4 @@ for (const w of [1381, 1440, 1600, 1920]) {
 }
 await b.close();
 console.log(fails.length ? 'FAILED\n' + [...new Set(fails)].join('\n') : 'all passed');
+process.exit(fails.length ? 1 : 0);

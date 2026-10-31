@@ -1,9 +1,7 @@
 // Time one full redraw and one quick (slider) redraw with the CPU slowed 4x, like a mid-range phone
-import {createRequire} from 'module';
 import fs from 'fs';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
-const MP = '/tmp/claude-0/-home-claude/b5460f3c-e75e-551e-b4ae-fc0088d5c4d9/scratchpad/mp/node_modules/@mediapipe/face_mesh/';
+import {chromium} from '../pw.mjs';
+const MP = new URL('../../site/assets/vendor/face_mesh/', import.meta.url).pathname;
 const DIR = new URL('./faces/', import.meta.url).pathname;
 const b = await chromium.launch();
 const ctx = await b.newContext({viewport:{width:390, height:844}});

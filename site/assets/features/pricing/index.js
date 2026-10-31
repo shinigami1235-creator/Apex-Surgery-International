@@ -190,6 +190,7 @@ function restore(el) {
     if (m.gal[0] !== null) { m.btn.setAttribute('data-gal', m.gal[0]); m.btn.setAttribute('data-i', m.gal[1]); m.btn.removeAttribute('aria-disabled'); }
   }
   if (m.img) { m.img.setAttribute('src', m.src); if (m.srcset !== null) m.img.setAttribute('srcset', m.srcset); }
+  if (m.galRef) { const [g, i, orig] = m.galRef; g[i] = orig; m.galRef = null; }   // the lightbox opens the original poster again
   setPrice(el, m.price);
   m.links.forEach(([a, h]) => a.setAttribute('href', h));
 }
@@ -229,7 +230,8 @@ function applyOne(el, R, ctx) {
     const src = ctx.img ? ctx.img(d.poster) : d.poster;
     m.img.setAttribute('src', src); m.img.removeAttribute('srcset');
     const g = ctx.gal && ctx.gal[+m.gal[0]];
-    if (g && g[+m.gal[1]]) g[+m.gal[1]] = { ...g[+m.gal[1]], src: d.poster };
+    const i = +m.gal[1];
+    if (g && g[i]) { if (!m.galRef) m.galRef = [g, i, g[i]]; g[i] = { ...m.galRef[2], src: d.poster }; }
   }
   setPrice(el, priceHtml(d, m.spot, ctx));
   const msg = message(el.dataset.label || el.dataset.name || '', d, R, ctx);

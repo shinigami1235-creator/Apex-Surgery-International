@@ -92,12 +92,18 @@
   };
   /* feature modules carry the build version so a new deploy is fetched fresh */
   A.vurl = path => { const u = new URL(path, location.href); if (window.APEX_V) u.searchParams.set('v', window.APEX_V); return u.href; };
+  /* WhatsApp and LINE from the WordPress settings, for the tools' send buttons */
+  A.contact = () => {
+    const S = A.d('shared') || {}, line = ((S.line && S.line.x) || '@apexsurgery').trim();
+    return {wa: (String(A.WA.h).match(/(\d{6,})/) || [, '66850002001'])[1], waX: A.WA.x, line: line[0] === '@' ? line : '@' + line};
+  };
   A.featureOpts = (extra={}) => {
     const o = Object.assign({
       lang: A.lang,
       base: new URL(A.assets, location.href).href,
       serviceUrl: k => A.svcUrl(k),
-      onEvent: (n, d) => A.emit(n, d)
+      onEvent: (n, d) => A.emit(n, d),
+      contact: A.contact()
     }, extra);
     if (A.links && o.links) o.links = Object.fromEntries(Object.entries(o.links).map(([k, v]) => [k, typeof v === 'string' ? A.href(v) : v]));
     return o;
@@ -227,7 +233,8 @@
     if (!n) return;
     const show = c => { n.textContent = c; n.hidden = !c; };
     try {
-      const m = await import(new URL(A.assets + 'features/plan/store.js', location.href).href);
+      // the same address the plan modules import: versioned in the WordPress build, plain in the design preview
+      const m = await import(A.ssr ? A.vurl(A.assets + 'features/plan/store.js') : new URL(A.assets + 'features/plan/store.js', location.href).href);
       const count = () => { try { if (typeof m.count === 'function') return m.count(); const p = (m.getPlan || m.get || m.load || (() => null))(); if (!p) return 0; return ['procedures','items','vouchers','noses','previews'].reduce((s, k) => s + (Array.isArray(p[k]) ? p[k].length : 0), 0); } catch (e) { return 0; } };
       show(count());
       if (typeof m.subscribe === 'function') m.subscribe(() => show(count()));
@@ -504,7 +511,6 @@
       A._parIO = A._parIO || new IntersectionObserver(es => { es.forEach(e => e.isIntersecting ? near.add(e.target) : near.delete(e.target)); kick(); }, {rootMargin:'150px 0px'});
       A.qsa('[data-par]:not([data-par-on])').forEach(el => { el.dataset.parOn = 1; A._parIO.observe(el); });
     };
-    A.parallaxWatch = watch;
     watch();
     addEventListener('scroll', kick, {passive:true});
     addEventListener('resize', kick);

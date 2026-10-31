@@ -1,9 +1,7 @@
 // Drives the lab page with the sample face at phone, tablet and desktop sizes and saves screenshots
-import {createRequire} from 'module';
 import fs from 'fs';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
-const MP = '/tmp/claude-0/-home-claude/b5460f3c-e75e-551e-b4ae-fc0088d5c4d9/scratchpad/mp/node_modules/@mediapipe/face_mesh/';
+import {chromium} from '../pw.mjs';
+const MP = new URL('../../site/assets/vendor/face_mesh/', import.meta.url).pathname;
 const DIR = new URL('./faces/', import.meta.url).pathname, OUT = process.argv[2];
 const route = async p => {
   await p.route(u => new URL(u).pathname.startsWith('/__mp/'), r => { const f = r.request().url().split('__mp/')[1].split('?')[0]; if (!f || !fs.existsSync(MP + f)) return r.abort(); const t = f.endsWith('.js') ? 'text/javascript' : f.endsWith('.wasm') ? 'application/wasm' : 'application/octet-stream'; return r.fulfill({status:200, contentType:t, body:fs.readFileSync(MP + f)}); });

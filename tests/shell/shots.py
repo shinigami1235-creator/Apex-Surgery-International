@@ -1,8 +1,8 @@
 import asyncio, sys, json, os
 from playwright.async_api import async_playwright
 BASE='http://localhost:8811/'
-OUT='/home/claude/apex-surgery/_shots/shell/'
-pages=sys.argv[1].split(',') if len(sys.argv)>1 else ['index.html','service.html?p=rhinoplasty','service.html?p=lipo','article.html?p=facelift-faq','promotions.html','contact.html','nose.html','play.html']
+OUT=os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../_shots/shell/')
+pages=sys.argv[1].split(',') if len(sys.argv)>1 else ['index.html','service.html?p=rhinoplasty','service.html?p=lipo','article.html?p=facelift-faq','promotions.html','contact.html','treatments.html','play.html']
 langs=sys.argv[2].split(',') if len(sys.argv)>2 else ['en']
 sizes=[(375,812),(1440,900)] if len(sys.argv)<=3 else [tuple(map(int,s.split('x'))) for s in sys.argv[3].split(',')]
 full = os.environ.get('FULL','1')=='1'

@@ -2,10 +2,8 @@
 // This test opens each address twice: once as the server sent it, once with the scripts drawing the page
 // themselves (window.APEX_CSR), and compares the two DOM trees section by section.
 //   node tests/wordpress/ssr.mjs [http://localhost:8080] [filter]
-import {createRequire} from 'module';
 import {execSync} from 'child_process';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
+import {chromium} from '../pw.mjs';
 
 const BASE = (process.argv[2] || 'http://localhost:8080').replace(/\/$/, '');
 const FILTER = process.argv[3] || '';
@@ -38,6 +36,7 @@ function canon(root, html) {
       if (a.name === 'class') { v = v.split(/\s+/).filter(c => c && !DROP_CLASS.has(c) && !(c === 'on' && n.matches('.hb-stage,.toc a'))).sort().join(' '); if (!v) continue; }
       if (a.name === 'style') { v = v.split(';').map(s => s.trim().replace(/\s*:\s*/, ':')).filter(s => s && !DROP_STYLE.test(s.split(':')[0])).sort().join(';'); if (!v) continue; }
       if (a.name === 'src' && tag === 'iframe') continue;
+      if (a.name === 'hidden' && n.matches('.apx-fx')) continue;   // the currency module shows the converted price once it loads
       if (a.name === 'data-fb' && tag === 'img') continue;
       if (a.name === 'href') v = v.replace(/^https?:\/\/[^/]+/, '');
       if (a.name === 'aria-expanded' && n.matches('.fab-btn,.has-mega>button')) continue;

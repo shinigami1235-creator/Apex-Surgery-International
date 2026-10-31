@@ -125,4 +125,4 @@ Together the two files are 184,072 bytes. They replace `female.bin`, `male.bin` 
 
 ## three.js
 
-The module loads `three@0.160.0` (MIT) from `site/assets/vendor/three/`, served by the site. `site/lab/vendor/three.module.js` is a local copy for offline testing only. The lab page maps to it when served from localhost, and it is not needed in production.
+The module loads `three@0.160.0` (MIT) from `site/assets/vendor/three/`, served by the site.

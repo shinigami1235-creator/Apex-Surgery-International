@@ -5,7 +5,7 @@ import { chromium } from 'playwright';
 import fs from 'node:fs';
 
 const BASE = 'http://localhost:8765/lab/';
-const OUT = '/home/claude/apex-surgery/_shots/features6/';
+const OUT = new URL('../../_shots/features6/', import.meta.url).pathname;
 let fails = 0;
 const ok = (cond, msg) => { console.log(`${cond ? 'PASS' : 'FAIL'} ${msg}`); if (!cond) fails++; };
 
@@ -114,7 +114,7 @@ await p.fill('input[name=contact]', 'sarah@example.com');
 await p.fill('input[name=from]', arrival);
 await p.fill('input[name=to]', plus(arrival, 12));
 await p.fill('textarea[name=questions]', 'Can the tip be revised?');
-await p.setInputFiles('input[type=file] >> nth=0', '/home/claude/apex-surgery/site/lab/compare-demo/before.svg');
+await p.setInputFiles('input[type=file] >> nth=0', new URL('../../site/lab/compare-demo/before.svg', import.meta.url).pathname);
 ok(await p.locator('.c-slot.has img').count() === 1, 'consult: photo previewed');
 await p.locator('label.c-consent').click();
 await p.click('button[type=submit]');

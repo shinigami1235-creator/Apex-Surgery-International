@@ -122,3 +122,46 @@ export const BRANCHES = {
   phuket: { en: 'Phuket', th: 'ภูเก็ต' }
 };
 export const BRANCH_KEYS = ['ploenchit', 'phuket'];
+
+/* WhatsApp and LINE for the send buttons. The site passes the numbers set in WordPress as opts.contact;
+   these are only used when a tool runs on its own, as on the lab pages. */
+export const contactOf = o => Object.assign({ wa: '66850002001', waX: '+66 85 000 2001', line: '@apexsurgery' }, o && o.contact);
+
+/* ---------- small DOM and data helpers the plan, trip, consultation and stories modules share ---------- */
+export function injectCSS(id, css) {
+  if (document.getElementById(id)) return;
+  const s = document.createElement('style'); s.id = id; s.textContent = css; document.head.append(s);
+}
+export function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  if (attrs) for (const k in attrs) {
+    const v = attrs[k];
+    if (v == null || v === false) continue;
+    if (k === 'html') el.innerHTML = v;
+    else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  kids.flat(Infinity).forEach(c => { if (c != null && c !== false) el.append(c.nodeType ? c : String(c)); });
+  return el;
+}
+export const fill = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => (o[k] ?? ''));
+
+/* ---------- data files (data/<lang>/<file>.js assign APEX._d[id]) ---------- */
+const dataCache = {};
+export function loadData(base, lang, id) {
+  const ck = lang + '|' + id;
+  if (dataCache[ck]) return dataCache[ck];
+  const file = id.includes(':') ? id.replace(':', '/') : id;
+  const P = window.APEX || {};
+  if (P._d && P._d[id] && (P.lang || lang) === lang) return Promise.resolve(JSON.parse(JSON.stringify(P._d[id])));
+  const one = l => new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = P.dataUrl ? `${P.dataUrl}${l}/${file}` : `${base}data/${l}/${file}.js`;
+    s.onload = () => { s.remove(); const d = window.APEX && APEX._d && APEX._d[id]; d ? res(JSON.parse(JSON.stringify(d))) : rej(new Error('empty ' + id)); };
+    s.onerror = () => { s.remove(); rej(new Error('missing ' + s.src)); };
+    document.head.append(s);
+  });
+  dataCache[ck] = one(lang).catch(e => (lang !== 'th' ? one('th') : Promise.reject(e)));
+  dataCache[ck].catch(() => { delete dataCache[ck]; });
+  return dataCache[ck];
+}

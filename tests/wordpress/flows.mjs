@@ -8,16 +8,15 @@
 //  7. editor tools: preview of a draft, inline formatting and tags, page templates, 302 redirects,
 //     custom code boxes, uploads saved as WebP
 //   WP_PASS_FILE=... node tests/wordpress/flows.mjs [http://localhost:8080]
-import {createRequire} from 'module';
 import {execSync} from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
+import {chromium} from '../pw.mjs';
 
 const BASE = (process.argv[2] || 'http://localhost:8080').replace(/\/$/, '');
 const WP = process.env.WP_PATH || '/home/claude/wp/site';
+const USER = process.env.WP_USER || 'apex-admin';
 const PASS = fs.readFileSync(process.env.WP_PASS_FILE, 'utf8').trim();
 const PHOTO = new URL('../implants/profile-female.jpg', import.meta.url).pathname;   // a render of the 3D head, not a person
 const wp = c => execSync(`wp --allow-root --path=${WP} ${c}`, {encoding:'utf8'}).trim();
@@ -128,7 +127,7 @@ for (const [path, lang] of [['/consultation/', 'en'], ['/th/consultation/', 'th'
   const staff = await b.newContext();
   const s = await staff.newPage();
   await s.goto(BASE + '/wp-login.php');
-  await s.fill('#user_login', 'apexadmin'); await s.fill('#user_pass', PASS);
+  await s.fill('#user_login', USER); await s.fill('#user_pass', PASS);
   await Promise.all([s.waitForNavigation(), s.click('#wp-submit')]);
   await s.goto(`${BASE}/wp-admin/edit.php?post_type=apex_voucher&page=apex-voucher-check&code=${code}`);
   ok(/Valid/.test(await s.textContent('.wrap')), 'voucher: reception sees it as valid');
@@ -143,7 +142,7 @@ for (const [path, lang] of [['/consultation/', 'en'], ['/th/consultation/', 'th'
   const loaded = img ? await img.evaluate(i => i.complete && i.naturalWidth > 0) : false;
   ok(loaded, 'consult: staff see the photo on the enquiry');
   const audit = JSON.parse(wp(`option get apex_audit --format=json`) || '[]');
-  const seenBy = audit.filter(e => +e.item === +id && e.name === 'apexadmin').map(e => e.what);
+  const seenBy = audit.filter(e => +e.item === +id && e.name === USER).map(e => e.what);
   ok(seenBy.includes('lead_open') && seenBy.includes('photo_view'), `access log: opening enquiry A${id} and its photo is logged (${seenBy.join(', ')})`);
   await s.goto(`${BASE}/wp-admin/edit.php?post_type=apex_lead&page=apex-audit`);
   ok(/Viewed a patient photo/.test(await s.textContent('.wrap')), 'access log: Enquiries › Access log lists the photo view');
@@ -275,7 +274,7 @@ ok(/nose-implant-viewer/.test(p.url()) && await p.$('.feat-on'), `nose preview: 
   const s = await staff.newPage();
   try {
     await s.goto(BASE + '/wp-login.php');
-    await s.fill('#user_login', 'apexadmin'); await s.fill('#user_pass', PASS);
+    await s.fill('#user_login', USER); await s.fill('#user_pass', PASS);
     await Promise.all([s.waitForNavigation(), s.click('#wp-submit')]);
     await s.goto(`${BASE}/?p=${draft}&preview=true`);
     const h = await s.content();
@@ -303,6 +302,20 @@ ok(/nose-implant-viewer/.test(p.url()) && await p.$('.feat-on'), `nose preview: 
     wp('option delete apex_code_head apex_code_js');
     fs.rmSync(tmp, {force:true});
   }
+}
+
+/* a patient asks for their data, then for it to be deleted (Tools › Export / Erase Personal Data) */
+{
+  const who = 'visitor-en@example.test';
+  const run = kind => JSON.parse(wp(`eval 'foreach (apply_filters("wp_privacy_personal_data_${kind}s", []) as $k => $x) if ($k === "apex-leads") echo wp_json_encode(call_user_func($x["callback"], "${who}", 1));'`));
+  const ex = run('exporter');
+  const fields = ex.data.length ? ex.data[0].data.map(d => d.name) : [];
+  ok(ex.data.length > 0 && ['contact', 'consent', 'photos'].every(k => fields.includes(k)), `privacy: the export has ${ex.data.length} enquiries with contact, consent and photos (${fields.join(', ')})`);
+  const er = run('eraser');
+  ok(er.items_removed === ex.data.length, `privacy: erasing removes them all (${er.items_removed})`);
+  ok(run('exporter').data.length === 0, 'privacy: nothing is left to export');
+  const log = JSON.parse(wp(`eval 'echo wp_json_encode(get_option("apex_audit"));'`) || '[]');
+  ok(log.some(e => e.what === 'erase'), 'privacy: the erase is in the access log');
 }
 
 errors.forEach(e => console.log('ERROR ' + e));

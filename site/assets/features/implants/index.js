@@ -1,34 +1,27 @@
 /* Implant Viewer
    One viewer per implant area: breast, chin, forehead and nose. Each opens on a 3D model with the
-   implant in place beside the model without it, turned together by dragging, and offers the
-   visitor's own photo as a second view. Breast implants come from Motiva's and Mentor's size tables
+   implant in place beside the model without it, turned together by dragging. Breast implants come
+   from Motiva's and Mentor's size tables
    and are added at their true volume on a body of the visitor's height, weight and current size.
    Face implants come from published silicone implant sizes and are laid on in millimetres.
-   Everything runs in the browser. No photo leaves the device.
+   Everything runs in the browser.
 
    mount(container, opts) -> {destroy()}
    opts: lang 'en' | 'th', area 'breast' | 'chin' | 'forehead' | 'nose', links {breast, chin, forehead, nose, consult},
          serviceUrl(key), onEvent(name, data)
-   Testing only: threeUrl, sample (side photo URL) */
+   Testing only: threeUrl */
 import * as S from './shapes.js';
 import {BREAST, CHIN, FOREHEAD, NOSE} from './catalog.js';
 import {createScene} from './scene.js';
-import {POINTS, autoPoints, defaultPoints, controls} from './photo.js';
-import {warpInto} from '../proportions/warp.js';
 
 const AREAS = ['breast', 'chin', 'forehead', 'nose'];
-const LINKS = {breast:'breast-implants.html', chin:'chin-implants.html', forehead:'forehead-implants.html', nose:'nose-implants.html', consult:'consult.html'};
-// a side photo with its points placed by hand (the nose preview's profile sample)
-const SAMPLE = {src:'https://images.unsplash.com/photo-1736439538470-88b66bd307ce?w=1400&q=85', crop:[.38, 0, .98, 1], side:-1,
-  pts:{NA:[.5805, .3931], TIP:[.5335, .526], SN:[.5605, .589]}};
 const GOLD = '#E3B85C';
-// the visitor's own photo is switched off: a photo can't show an implant accurately yet, so the viewers use the 3D model only
-const PHOTO = false;
+const LINKS = {breast:'breast-implants.html', chin:'chin-implants.html', forehead:'forehead-implants.html', nose:'nose-implants.html', consult:'consult.html'};
 
 const STR = {
   en:{
     area:{breast:'Breast', chin:'Chin', forehead:'Forehead', nose:'Nose'},
-    areaNav:'Implant viewers', model:'3D model', photo:'Your photo', modes:'View',
+    areaNav:'Implant viewers',
     now:'Now', after:'With implant', front:'Front', angle:'45°', side:'Side', views:'Turn the model',
     xray:'See the implant', change:'Show the change', split:'Side by side', drag:'Drag to turn, pinch to zoom.',
     you:'You', height:'Height', weight:'Weight', cup:'Current cup size', sex:'Face', women:'Women', men:'Men',
@@ -39,15 +32,9 @@ const STR = {
     cc:'cc', each:'each side', wide:'wide', proj:'projection', tall:'tall', mm:'mm', cm:'cm', kg:'kg',
     adds:'Adds', cupNow:'Cup size', cupAbout:'about', forward:'further forward', raised:'Bridge raised', tipLift:'Tip forward about',
     fuller:'Forehead comes forward', chinFwd:'Chin comes forward', across:'across', taper:'At the centre, tapering to the edges', fit:'This implant is wider than your breast base of about {b} cm. Surgeons usually choose one at or under it.',
-    photoH:{breast:'Take or choose a front photo of your chest.', face:'Take or choose a side photo of your face.'},
-    photoP:{breast:'Stand straight in a bra or fitted top, arms by your sides.', face:'Turn fully to the side, look straight ahead with your lips closed, against a plain wall.'},
-    take:'Take photo', choose:'Choose photo', sampleBtn:'Sample face', privacy:'No photo uploaded.',
     modelCredit:['The men\'s 3D head is adapted from', 'by lKutts,'],
-    points:'Adjust points', done:'See result', pointsHint:'Drag each point onto the place named below.',
-    before:'Before', camHint:'Line up with the outline.', shutter:'Take photo', cancel:'Cancel', newPhoto:'New photo',
-    credit:'Sample photo: Unsplash', photoNote:'A front photo shows the width and the upper chest. Turn the 3D model to the side to see the projection.', estimate:'Tip lift is an estimate. No maker publishes one.',
-    err:{camera:'The camera could not be opened.', read:'The photo could not be read.', sample:'The sample photo could not be loaded.',
-         model:'The 3D model could not be loaded.', save:'The image could not be saved.', trace:'The outline could not be found, so the points start in a default place. Drag them onto your face.'},
+    estimate:'Tip lift is an estimate. No maker publishes one.',
+    err:{model:'The 3D model could not be loaded.', save:'The image could not be saved.'},
     note:{breast:'Sizes and shapes come from the Motiva and Mentor size tables. The implant is added at its full volume on a body of your height and weight.',
           chin:'Sizes from the Implantech chin catalogue. The chin moves forward a little less than the implant is thick, as the skin over it takes up some.',
           forehead:'Thickness as used for silicone forehead implants, 3 to 6 mm at the centre and tapering to the edges.',
@@ -56,7 +43,7 @@ const STR = {
   },
   th:{
     area:{breast:'หน้าอก', chin:'คาง', forehead:'หน้าผาก', nose:'จมูก'},
-    areaNav:'จำลองซิลิโคน', model:'โมเดล 3 มิติ', photo:'รูปของคุณ', modes:'มุมมอง',
+    areaNav:'จำลองซิลิโคน',
     now:'ตอนนี้', after:'หลังเสริม', front:'ด้านหน้า', angle:'45°', side:'ด้านข้าง', views:'หมุนโมเดล',
     xray:'ดูซิลิโคน', change:'แสดงส่วนที่เปลี่ยน', split:'เทียบสองภาพ', drag:'ลากเพื่อหมุน ใช้สองนิ้วเพื่อซูม',
     you:'ข้อมูลของคุณ', height:'ส่วนสูง', weight:'น้ำหนัก', cup:'คัพปัจจุบัน', sex:'ใบหน้า', women:'ผู้หญิง', men:'ผู้ชาย',
@@ -67,15 +54,9 @@ const STR = {
     cc:'ซีซี', each:'ต่อข้าง', wide:'กว้าง', proj:'ความสูงฐานถึงยอด', tall:'สูง', mm:'มม.', cm:'ซม.', kg:'กก.',
     adds:'เพิ่ม', cupNow:'คัพ', cupAbout:'ประมาณ', forward:'ยื่นออกมา', raised:'สันจมูกสูงขึ้น', tipLift:'ปลายจมูกยื่นขึ้นประมาณ',
     fuller:'หน้าผากนูนขึ้น', chinFwd:'คางยื่นออกมา', across:'ความยาว', taper:'หนาสุดตรงกลาง บางลงที่ขอบ', fit:'ซิลิโคนนี้กว้างกว่าฐานหน้าอกของคุณซึ่งประมาณ {b} ซม. ศัลยแพทย์มักเลือกขนาดที่ไม่เกินฐานหน้าอก',
-    photoH:{breast:'ถ่ายหรือเลือกรูปหน้าอกด้านหน้า', face:'ถ่ายหรือเลือกรูปใบหน้าด้านข้าง'},
-    photoP:{breast:'ยืนตรง ใส่บราหรือเสื้อรัดรูป แขนแนบลำตัว', face:'หันข้างให้สุด มองตรง ปิดปาก ถ่ายหน้าผนังสีเรียบ'},
-    take:'ถ่ายรูป', choose:'เลือกรูป', sampleBtn:'ใบหน้าตัวอย่าง', privacy:'ไม่มีการอัปโหลดรูปภาพ',
     modelCredit:['ศีรษะ 3D ของผู้ชายดัดแปลงจาก', 'โดย lKutts ภายใต้'],
-    points:'ปรับจุด', done:'ดูผลลัพธ์', pointsHint:'ลากแต่ละจุดไปยังตำแหน่งตามรายการด้านล่าง',
-    before:'ก่อน', camHint:'จัดตัวให้อยู่ในเส้น', shutter:'ถ่ายรูป', cancel:'ยกเลิก', newPhoto:'เปลี่ยนรูป',
-    credit:'ภาพตัวอย่าง: Unsplash', photoNote:'รูปด้านหน้าแสดงความกว้างและช่วงบนของหน้าอก หมุนโมเดล 3 มิติไปด้านข้างเพื่อดูความยื่น', estimate:'ระยะปลายจมูกที่ยื่นขึ้นเป็นค่าประมาณ ผู้ผลิตไม่ได้ระบุไว้',
-    err:{camera:'เปิดกล้องไม่ได้', read:'อ่านรูปไม่ได้', sample:'โหลดรูปตัวอย่างไม่ได้',
-         model:'โหลดโมเดล 3 มิติไม่ได้', save:'บันทึกรูปไม่ได้', trace:'หาเส้นขอบใบหน้าไม่พบ จุดจึงอยู่ในตำแหน่งเริ่มต้น ลากจุดไปวางบนใบหน้าของคุณ'},
+    estimate:'ระยะปลายจมูกที่ยื่นขึ้นเป็นค่าประมาณ ผู้ผลิตไม่ได้ระบุไว้',
+    err:{model:'โหลดโมเดล 3 มิติไม่ได้', save:'บันทึกรูปไม่ได้'},
     note:{breast:'ขนาดและทรงจากตารางขนาดของ Motiva และ Mentor ซิลิโคนถูกเพิ่มเต็มปริมาตรบนร่างกายตามส่วนสูงและน้ำหนักของคุณ',
           chin:'ขนาดจากแคตตาล็อกซิลิโคนคางของ Implantech คางยื่นออกน้อยกว่าความหนาของซิลิโคนเล็กน้อย เพราะผิวที่คลุมอยู่รับไว้บางส่วน',
           forehead:'ความหนาตามที่ใช้กับซิลิโคนหน้าผาก 3 ถึง 6 มม. ตรงกลาง และบางลงที่ขอบ',
@@ -85,16 +66,11 @@ const STR = {
 };
 
 const ICON = {
-  camera:'<path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"/><circle cx="12" cy="13" r="3"/>',
-  upload:'<path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>',
-  image:'<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
   download:'<path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/>',
   plus:'<path d="M5 12h14"/><path d="M12 5v14"/>', check:'<path d="M20 6 9 17l-5-5"/>',
   arrow:'<path d="M7 7h10v10"/><path d="M7 17 17 7"/>', move:'<path d="m18 8 4 4-4 4"/><path d="M2 12h20"/><path d="m6 8-4 4 4 4"/>',
-  shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
   alert:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>', msg:'<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
   cube:'<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
-  pin:'<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
   rotate:'<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>',
 };
 const ic = k => `<svg class="im-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
@@ -118,11 +94,7 @@ const CSS = `
 @media (min-width:960px){.im-main{grid-template-columns:minmax(0,1fr) 360px;grid-template-areas:"stage panel" "sum panel";gap:24px;align-items:start}
   .im-stage{grid-area:stage}.im-sum{grid-area:sum}.im-panel{grid-area:panel}}
 .im-stage{position:relative;min-width:0;background:radial-gradient(120% 80% at 50% 0%,var(--im-night-2),var(--im-night) 70%);color:var(--im-on);border-radius:28px;padding:10px;display:grid;gap:10px}
-.im-tabs[hidden]{display:none}
-.im-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:999px;background:rgba(255,255,255,.07);justify-self:start;min-width:min(100%,320px)}
-.im-tabs button{min-height:40px;padding:0 14px;border-radius:999px;font-weight:700;font-size:14.5px;color:var(--im-on-2);display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:background-color .2s,color .2s}
-.im-tabs button[aria-selected=true]{background:#fff;color:var(--im-plum)}
-.im-tabs button:focus-visible,.im-v button:focus-visible,.im-sw-b:focus-visible{outline:2px solid var(--im-lilac);outline-offset:2px}
+.im-v button:focus-visible,.im-sw-b:focus-visible{outline:2px solid var(--im-lilac);outline-offset:2px}
 .im-view{position:relative;border-radius:20px;overflow:hidden;min-height:min(66vh,480px);display:grid}
 @media (min-width:960px){.im-view{min-height:min(74vh,660px)}}
 .im-3d{position:absolute;inset:0}
@@ -152,37 +124,7 @@ const CSS = `
 [aria-checked=true]>.im-sw{background:var(--im-gold-d)}
 [aria-checked=true]>.im-sw::after{transform:translateX(12px)}
 .im-credit{margin:0;padding:0 8px 4px;font-size:12px;line-height:1.4;color:var(--im-on-2)}
-/* photo */
-.im-ph{position:absolute;inset:0;display:grid;place-items:center}
-.im-empty{display:grid;justify-items:center;text-align:center;gap:12px;padding:28px 18px;max-width:460px}
 .im-big{width:64px;height:64px;border-radius:20px;display:grid;place-items:center;background:rgba(255,255,255,.07);border:1px solid rgba(201,179,221,.22);color:var(--im-gold);font-size:30px}
-.im-empty h3{margin:0;font-size:20px;font-weight:700;color:#fff;line-height:1.35}
-.im-empty p{margin:0;color:var(--im-on-2);font-size:15px}
-.im-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-.im-perr{margin:0;color:#FFB4C8;font-size:14px}
-.im-fbox{position:relative;width:min(100%,calc(var(--mh,70vh) * var(--ar,.8)));aspect-ratio:var(--ar,.8)}
-.im-frame{--x:50%;position:absolute;inset:0;border-radius:18px;overflow:hidden;background:#12051d;touch-action:pan-y;user-select:none;-webkit-user-select:none}
-.im-frame canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.im-frame .im-aft{clip-path:inset(0 0 0 var(--x))}
-.im-frame.edit .im-aft,.im-frame.edit .im-line,.im-frame.edit .im-knob,.im-frame.edit .im-tag{display:none}
-.im-line{position:absolute;top:0;bottom:0;left:var(--x);width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 0 1px rgba(31,10,48,.18)}
-.im-knob{position:absolute;top:50%;left:var(--x);width:42px;height:42px;margin:-21px 0 0 -21px;border-radius:50%;background:#fff;color:var(--im-plum);display:grid;place-items:center;box-shadow:0 10px 24px -8px rgba(20,6,31,.6);font-size:20px;cursor:ew-resize;touch-action:none}
-.im-frame .im-tag.r{left:auto;right:10px}
-.im-pts{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
-.im-frame.edit .im-pts{pointer-events:auto}
-.im-pts circle.h{fill:transparent;cursor:grab;touch-action:none}
-.im-pts circle.d{stroke:#fff;stroke-width:2;vector-effect:non-scaling-stroke;pointer-events:none}
-.im-pts path{fill:none;stroke:rgba(255,255,255,.65);stroke-width:1.2;stroke-dasharray:4 4;vector-effect:non-scaling-stroke;pointer-events:none}
-.im-frame:not(.edit) .im-pts{display:none}
-.im-cam{position:absolute;inset:0;background:#000;display:grid;z-index:4}
-.im-cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.im-cam p{position:absolute;top:12px;left:12px;right:12px;margin:0;text-align:center;font-size:14px;font-weight:700;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.6)}
-.im-cambar{position:absolute;left:0;right:0;bottom:16px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:0 16px}
-.im-cambar>:first-child{justify-self:end}
-.im-shutter{width:68px;height:68px;border-radius:50%;background:#fff;color:var(--im-plum);display:grid;place-items:center;font-size:26px;box-shadow:0 0 0 4px rgba(255,255,255,.35)}
-.im-legend{list-style:none;margin:0;padding:0 6px;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;color:var(--im-on)}
-.im-legend li{display:inline-flex;align-items:center;gap:7px}
-.im-legend i{width:12px;height:12px;border-radius:50%;border:2px solid #fff;flex:none}
 /* buttons */
 .im .im-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5em;height:44px;padding:0 18px;border-radius:999px;font-size:15px;font-weight:700;white-space:nowrap;transition:transform .16s var(--im-ease),background-color .2s,color .2s,border-color .2s;text-decoration:none}
 .im .im-btn:active{transform:scale(.97)}
@@ -230,8 +172,6 @@ const CSS = `
 .im-tg .im-sw{background:var(--im-lilac-2)}
 .im-tg[aria-checked=true] .im-sw{background:var(--im-plum)}
 .im-tg:focus-visible{outline:2px solid var(--im-lilac);outline-offset:2px;border-radius:10px}
-.im-priv{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--im-ink-2);margin:0}
-.im-priv .im-i{color:var(--im-plum)}
 .im-err{margin:0;font-size:14px;color:#CC3366}
 .im-note{margin:0;font-size:13px;line-height:1.45;color:var(--im-ink-3)}
 .im-mcredit{margin:8px 0 0;font-size:11.5px;line-height:1.45;color:var(--im-ink-3)}
@@ -259,7 +199,7 @@ export function mount(container, opts = {}){
     body:{height:160, weight:52, cup:'A'}, sex:'female',
     line:'motiva-ergonomix', profile:'demi', cc:300, compare:false, cc2:375,
     chin:{style:'extended', size:1}, forehead:{size:1}, nose:{shape:'i', size:1},
-    photo:null, err:null, edit:false, stream:null};
+  };
   const KEY = 'apex.implants';
   try {
     const p = JSON.parse(localStorage.getItem(KEY) || 'null');
@@ -309,42 +249,12 @@ export function mount(container, opts = {}){
   <nav class="im-areas" aria-label="${esc(T.areaNav)}">${AREAS.map(a => `<a href="${esc(links[a])}"${a === area ? ' aria-current="page"' : ''}>${esc(T.area[a])}</a>`).join('')}</nav>
   <div class="im-main">
     <section class="im-stage" aria-label="${esc(T.area[area])}">
-      <div class="im-tabs" role="tablist" aria-label="${esc(T.modes)}"${PHOTO ? '' : ' hidden'}>
-        <button role="tab" id="im-t3" aria-controls="im-p3" aria-selected="true" data-mode="3d">${ic('cube')}${esc(T.model)}</button>
-        <button role="tab" id="im-tp" aria-controls="im-pp" aria-selected="false" data-mode="photo" tabindex="-1">${ic('camera')}${esc(T.photo)}</button>
-      </div>
       <div class="im-view">
-        <div class="im-3d" id="im-p3" role="tabpanel" aria-labelledby="im-t3">
+        <div class="im-3d" id="im-p3">
           <div class="im-panes" aria-hidden="true"></div>
           <p class="im-hint">${esc(T.drag)}</p>
           <span class="im-tag sim">${esc(T.sim)}</span>
           <div class="im-busy" data-r="busy3"><span class="im-spin"></span><span>${esc(T.loading)}</span></div>
-        </div>
-        <div class="im-ph" id="im-pp" role="tabpanel" aria-labelledby="im-tp" hidden>
-          <div class="im-empty">
-            <span class="im-big">${ic(face ? 'image' : 'camera')}</span>
-            <h3>${esc(T.photoH[face ? 'face' : 'breast'])}</h3><p>${esc(T.photoP[face ? 'face' : 'breast'])}</p>
-            <div class="im-row">
-              <button class="im-btn lt" data-act="take">${ic('camera')}${esc(T.take)}</button>
-              <button class="im-btn gh" data-act="choose">${ic('upload')}${esc(T.choose)}</button>
-              ${face ? `<button class="im-btn gh" data-act="sample">${ic('image')}${esc(T.sampleBtn)}</button>` : ''}
-            </div>
-            <p class="im-perr" data-r="perr" hidden></p>
-          </div>
-          <div class="im-fbox" hidden>
-            <div class="im-frame" tabindex="0" role="slider" aria-label="${esc(T.before + ' / ' + T.after)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
-              <canvas class="im-bef"></canvas><canvas class="im-aft"></canvas>
-              <svg class="im-pts" aria-hidden="true"></svg>
-              <span class="im-line"></span><span class="im-knob">${ic('move')}</span>
-              <span class="im-tag">${esc(T.before)}</span><span class="im-tag r gold">${esc(T.after)}</span>
-            </div>
-          </div>
-          <div class="im-cam" hidden>
-            <video playsinline muted autoplay></video><p>${esc(T.camHint)}</p>
-            <div class="im-cambar"><button class="im-btn gh sm" data-act="camcancel">${esc(T.cancel)}</button>
-              <button class="im-shutter" data-act="shutter" aria-label="${esc(T.shutter)}">${ic('camera')}</button><span></span></div>
-          </div>
-          <div class="im-busy" data-r="busyp" hidden><span class="im-spin"></span></div>
         </div>
       </div>
       <div class="im-bar" data-r="bar3">
@@ -356,15 +266,6 @@ export function mount(container, opts = {}){
           <button class="im-sw-b" type="button" role="switch" aria-checked="true" data-act="split">${esc(T.split)}<span class="im-sw" aria-hidden="true"></span></button>
         </div>
       </div>
-      <div class="im-bar" data-r="barp" hidden>
-        <ul class="im-legend" data-r="legend"></ul>
-        <div class="im-bar-r">
-          <button class="im-btn gh sm" data-act="edit">${ic('pin')}<span data-r="editt">${esc(T.points)}</span></button>
-          <button class="im-btn gh sm" data-act="choose">${ic('upload')}${esc(T.newPhoto)}</button>
-        </div>
-      </div>
-      <p class="im-credit" data-r="credit" hidden>${esc(T.credit)}</p>
-      ${face ? '' : `<p class="im-credit" data-r="pnote" hidden>${esc(T.photoNote)}</p>`}
     </section>
     <section class="im-sum" aria-live="polite" data-r="sum"></section>
     <aside class="im-panel">
@@ -374,14 +275,12 @@ export function mount(container, opts = {}){
         <button class="im-btn pri wide" data-act="save">${ic('download')}${esc(T.saveBtn)}</button>
         ${planOk ? `<button class="im-btn ol wide" data-act="plan">${ic('plus')}<span>${esc(T.plan)}</span></button>` : ''}
         <a class="im-btn ol wide" href="${esc(links.consult)}">${ic('msg')}${esc(T.consult)}</a>
-        <p class="im-priv">${ic('shield')}${esc(T.privacy)}</p>
         <p class="im-err" data-r="saveerr" hidden></p>
         ${face ? `<p class="im-mcredit">${esc(T.modelCredit[0])} <a href="https://sketchfab.com/3d-models/male-head-sculpt-deb721f8d38e4b00b17abadd5ace9cc1" target="_blank" rel="noopener">Male Head Sculpt</a> ${esc(T.modelCredit[1])} <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></p>` : ''}
       </div>
     </aside>
   </div>
-  <div class="im-foot"><p>${esc(T.vary)}</p></div>
-  <input type="file" accept="image/*" hidden>`;
+  <div class="im-foot"><p>${esc(T.vary)}</p></div>`;
   container.append(root);
   const $ = s => root.querySelector(s), $$ = s => [...root.querySelectorAll(s)], R = k => root.querySelector(`[data-r="${k}"]`);
 
@@ -601,150 +500,10 @@ export function mount(container, opts = {}){
     sw.setAttribute('aria-checked', String(face ? state.change : state.xray));
     const pl = $('[data-act="plan"]');
     if (pl) pl.innerHTML = (state.planned ? ic('check') : ic('plus')) + `<span>${esc(state.planned ? T.planned : T.plan)}</span>`;
-    // tabs
-    $$('[data-mode]').forEach(b => { const on = b.dataset.mode === state.mode; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; });
-    $('#im-p3').hidden = state.mode !== '3d';
-    $('#im-pp').hidden = state.mode !== 'photo';
-    R('bar3').hidden = state.mode !== '3d';
-    R('barp').hidden = !(state.mode === 'photo' && state.photo && !state.stream);
-    syncPhoto();
     if (sc) { sc.setSplit(state.split, 2); }
   }
   let rq = 0;
-  const later = () => { if (rq) return; rq = requestAnimationFrame(() => { rq = 0; update(); drawPhoto(); }); };
-
-  /* ---------- photo ---------- */
-  const fbox = $('.im-fbox'), frameEl = $('.im-frame'), cvB = $('.im-bef'), cvA = $('.im-aft'), svg = $('.im-pts'), cam = $('.im-cam'), video = $('video'), file = $('input[type=file]');
-  function syncPhoto(){
-    const ph = state.photo, camOn = !!state.stream;
-    cam.hidden = !camOn;
-    $('.im-empty').hidden = camOn || !!ph;
-    fbox.hidden = camOn || !ph;
-    R('perr').hidden = !state.err; R('perr').textContent = state.err ? T.err[state.err] || '' : '';
-    R('credit').hidden = !(state.mode === 'photo' && ph && ph.sample);
-    if (R('pnote')) R('pnote').hidden = !(state.mode === 'photo' && ph);
-    frameEl.classList.toggle('edit', !!state.edit);
-    R('editt').textContent = state.edit ? T.done : T.points;
-    R('legend').innerHTML = state.edit ? POINTS[area].map(p => `<li><i style="background:${p.c}"></i>${esc(p[lang] || p.en)}</li>`).join('') : '';
-    $('.im-view').style.setProperty('--mh', '70vh');
-  }
-  async function loadImage(src){
-    return new Promise((res, rej) => { const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => res(im); im.onerror = rej; im.src = src; });
-  }
-  function toCanvas(im, crop, max = 1100){
-    const W = im.naturalWidth || im.width, H = im.naturalHeight || im.height, [a, b, c, d] = crop || [0, 0, 1, 1];
-    const cw = (c - a) * W, ch = (d - b) * H, r = Math.min(1, max / Math.max(cw, ch));
-    const o = document.createElement('canvas'); o.width = Math.round(cw * r); o.height = Math.round(ch * r);
-    o.getContext('2d').drawImage(im, a * W, b * H, cw, ch, 0, 0, o.width, o.height);
-    return {canvas:o, map:(x, y) => ({x:(x * W - a * W) * r, y:(y * H - b * H) * r})};
-  }
-  function usePhoto(canvas, sample, preset){
-    stopCam();
-    const data = canvas.getContext('2d', {willReadFrequently:true}).getImageData(0, 0, canvas.width, canvas.height);
-    let pts = null, side = -1, traced = false;
-    if (face) {
-      const a = autoPoints(area, data);
-      if (a) { pts = a.pts; side = a.side; traced = true; }
-    }
-    if (preset) {
-      // hand-placed points win over traced ones; the rest are set from them
-      side = preset.side;
-      const base = pts || defaultPoints(area, canvas.width, canvas.height, side).pts;
-      pts = Object.assign({}, base, preset.pts);
-      traced = true;
-    }
-    if (!pts) { const d = defaultPoints(area, canvas.width, canvas.height, side); pts = d.pts; side = d.side; }
-    state.photo = {canvas, data, pts, side, sample:!!sample};
-    state.err = face && !traced ? 'trace' : null;
-    state.edit = !traced || !face;
-    cvB.width = cvA.width = canvas.width; cvB.height = cvA.height = canvas.height;
-    cvB.getContext('2d').drawImage(canvas, 0, 0);
-    fbox.style.setProperty('--ar', (canvas.width / canvas.height).toFixed(4));
-    svg.setAttribute('viewBox', `0 0 ${canvas.width} ${canvas.height}`);
-    setX(50); drawPoints(); sync(); drawPhoto();
-    emit('implants:photo', {area, sample:!!sample, traced});
-  }
-  function drawPhoto(){
-    const ph = state.photo; if (!ph) return;
-    const g = cvA.getContext('2d'); g.drawImage(ph.canvas, 0, 0);
-    const imp = face ? faceImp() : breastImp(state.cc);
-    const C = controls(area, ph.pts, ph.side, imp, {...state.body, sex:state.sex});
-    if (C.pts.length) warpInto(ph.data, cvA, C, 3);
-  }
-  function drawPoints(){
-    const ph = state.photo; if (!ph) return;
-    const r = Math.max(ph.canvas.width, ph.canvas.height) * .012, hit = r * 3.2;
-    const order = POINTS[area].map(p => p.k), line = order.filter(k => ph.pts[k]).map((k, i) => `${i ? 'L' : 'M'}${ph.pts[k].x.toFixed(1)} ${ph.pts[k].y.toFixed(1)}`).join('');
-    svg.innerHTML = (area === 'breast' ? '' : `<path d="${line}"/>`) + POINTS[area].map(p => {
-      const q = ph.pts[p.k];
-      return `<g data-k="${p.k}"><circle class="d" cx="${q.x}" cy="${q.y}" r="${r}" fill="${p.c}"/><circle class="h" cx="${q.x}" cy="${q.y}" r="${hit}"><title>${esc(p[lang] || p.en)}</title></circle></g>`;
-    }).join('');
-  }
-  let drag = null;
-  svg.addEventListener('pointerdown', e => {
-    const g = e.target.closest('g[data-k]'); if (!g || !state.edit) return;
-    e.preventDefault(); drag = {k:g.dataset.k, id:e.pointerId};
-    try { svg.setPointerCapture(e.pointerId); } catch (er) {}
-  });
-  svg.addEventListener('pointermove', e => {
-    if (!drag || e.pointerId !== drag.id) return;
-    const r = svg.getBoundingClientRect(), ph = state.photo;
-    ph.pts[drag.k] = {x:S.clamp((e.clientX - r.left) / r.width, 0, 1) * ph.canvas.width, y:S.clamp((e.clientY - r.top) / r.height, 0, 1) * ph.canvas.height};
-    drawPoints();
-  });
-  const endDrag = e => { if (drag && e.pointerId === drag.id) { drag = null; drawPhoto(); emit('implants:points', {area}); } };
-  svg.addEventListener('pointerup', endDrag); svg.addEventListener('pointercancel', endDrag);
-  // before / after slider
-  let sx = 50, gest = null;
-  const setX = x => { sx = S.clamp(x, 0, 100); frameEl.style.setProperty('--x', sx + '%'); frameEl.setAttribute('aria-valuenow', Math.round(sx)); };
-  frameEl.addEventListener('pointerdown', e => {
-    if (state.edit || (e.pointerType === 'mouse' && e.button !== 0)) return;
-    const r = frameEl.getBoundingClientRect(), x = (e.clientX - r.left) / r.width;
-    gest = {id:e.pointerId, x:e.clientX, y:e.clientY, on:e.pointerType === 'mouse' || Math.abs(x * 100 - sx) * r.width / 100 < 44};
-    if (gest.on) { try { frameEl.setPointerCapture(e.pointerId); } catch (er) {} setX(x * 100); }
-  });
-  frameEl.addEventListener('pointermove', e => {
-    if (!gest || e.pointerId !== gest.id) return;
-    if (!gest.on) { const dx = Math.abs(e.clientX - gest.x), dy = Math.abs(e.clientY - gest.y); if (dx > 4 && dx >= dy * .75) gest.on = true; else if (dy > 12) { gest = null; return; } else return; }
-    const r = frameEl.getBoundingClientRect(); setX((e.clientX - r.left) / r.width * 100);
-  });
-  const endG = () => { gest = null; };
-  frameEl.addEventListener('pointerup', endG); frameEl.addEventListener('pointercancel', endG);
-  frameEl.addEventListener('keydown', e => { const d = {ArrowLeft:-5, ArrowRight:5}[e.key]; if (d && !state.edit) { e.preventDefault(); setX(sx + d); } });
-
-  async function useFile(f){
-    if (!f) return;
-    if (!/^image\//.test(f.type)) { state.err = 'read'; sync(); return; }
-    const url = URL.createObjectURL(f);
-    try { const im = await loadImage(url); usePhoto(toCanvas(im).canvas, false); }
-    catch (e) { state.err = 'read'; sync(); }
-    URL.revokeObjectURL(url);
-  }
-  async function useSample(){
-    R('busyp').hidden = false;
-    try {
-      const im = await loadImage(opts.sample || SAMPLE.src), c = toCanvas(im, SAMPLE.crop), pts = {};
-      for (const k in SAMPLE.pts) pts[k] = c.map(...SAMPLE.pts[k]);
-      usePhoto(c.canvas, true, {pts, side:SAMPLE.side});
-      emit('implants:sample', {area});
-    } catch (e) { state.err = 'sample'; sync(); }
-    R('busyp').hidden = true;
-  }
-  async function startCam(){
-    try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('no camera');
-      state.stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:face ? 'user' : 'environment', width:{ideal:1280}, height:{ideal:1280}}, audio:false});
-      video.srcObject = state.stream; state.err = null; sync();
-      await video.play().catch(() => {});
-    } catch (e) { stopCam(); state.err = 'camera'; sync(); }
-  }
-  function stopCam(){ if (state.stream) { state.stream.getTracks().forEach(t => t.stop()); state.stream = null; } video.srcObject = null; }
-  function shoot(){
-    if (!video.videoWidth) return;
-    const c = document.createElement('canvas'); c.width = video.videoWidth; c.height = video.videoHeight;
-    c.getContext('2d').drawImage(video, 0, 0);
-    usePhoto(toCanvas(c).canvas, false);
-  }
+  const later = () => { if (rq) return; rq = requestAnimationFrame(() => { rq = 0; update(); }); };
 
   /* ---------- save ---------- */
   async function save(){
@@ -753,11 +512,7 @@ export function mount(container, opts = {}){
       const font = getComputedStyle(root).fontFamily;
       try { await document.fonts.load(`700 20px ${font}`); } catch (e) {}
       let pic;
-      if (state.mode === 'photo' && state.photo) {
-        const ph = state.photo, h = 760, w = Math.round(ph.canvas.width * h / ph.canvas.height);
-        pic = document.createElement('canvas'); pic.width = w * 2 + 12; pic.height = h;
-        const g = pic.getContext('2d'); g.drawImage(ph.canvas, 0, 0, w, h); g.drawImage(cvA, w + 12, 0, w, h);
-      } else if (sc) pic = sc.snapshot(state.split ? 1200 : 760, 900);
+      if (sc) pic = sc.snapshot(state.split ? 1200 : 760, 900);
       if (!pic) return;
       const pad = 32, lines = summaryLines(), W = Math.max(pic.width + pad * 2, 900), H = pad + pic.height + 40 + lines.length * 40 + 70;
       const c = document.createElement('canvas'); c.width = W; c.height = H;
@@ -780,7 +535,7 @@ export function mount(container, opts = {}){
         catch (e) { if (e && e.name === 'AbortError') shared = true; }
       }
       if (!shared) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
-      emit('implants:saved', {area, mode:state.mode});
+      emit('implants:saved', {area, mode:'3d'});
     } catch (e) { err.textContent = T.err.save; err.hidden = false; }
   }
   function summaryLines(){
@@ -801,8 +556,6 @@ export function mount(container, opts = {}){
 
   /* ---------- events ---------- */
   function onClick(e){
-    const tab = e.target.closest('[data-mode]');
-    if (tab) { state.mode = tab.dataset.mode; sync(); if (state.mode === '3d' && sc) sc.render(); emit('implants:mode', {area, mode:state.mode}); return; }
     const yb = e.target.closest('[data-yaw]');
     if (yb && sc) { animateYaw(+yb.dataset.yaw * (sc.view.yaw < 0 ? -1 : 1)); return; }
     const sb = e.target.closest('[data-seg] [data-v]');
@@ -822,13 +575,7 @@ export function mount(container, opts = {}){
     }
     const b = e.target.closest('[data-act]'); if (!b) return;
     const a = b.dataset.act;
-    if (a === 'take') startCam();
-    else if (a === 'choose') file.click();
-    else if (a === 'sample') useSample();
-    else if (a === 'camcancel') { stopCam(); sync(); }
-    else if (a === 'shutter') shoot();
-    else if (a === 'edit') { state.edit = !state.edit; if (!state.edit) { state.err = null; drawPhoto(); } sync(); }
-    else if (a === 'xray') { state.xray = !state.xray; sync(); ghosts(); }
+    if (a === 'xray') { state.xray = !state.xray; sync(); ghosts(); }
     else if (a === 'change') { state.change = !state.change; sync(); later(); }
     else if (a === 'split') { state.split = !state.split; sync(); tags(); }
     else if (a === 'compare') { state.compare = !state.compare; if (state.compare) { const s = prof().sizes, i = s.indexOf(nearest(state.cc)); state.cc2 = s[Math.min(s.length - 1, i + 2)][0]; } sync(); later(); }
@@ -848,10 +595,6 @@ export function mount(container, opts = {}){
     anim = requestAnimationFrame(step);
   }
   root.addEventListener('click', onClick);
-  root.addEventListener('keydown', e => {
-    const tab = e.target.closest('[role=tab]'); if (!tab) return;
-    if (PHOTO && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) { e.preventDefault(); state.mode = state.mode === '3d' ? 'photo' : '3d'; sync(); $(`[data-mode="${state.mode}"]`).focus(); }
-  });
   root.addEventListener('input', e => {
     const el = e.target, k = el.dataset && el.dataset.r;
     if (k === 'height' || k === 'weight') { state.body[k] = +el.value; sync(); later(); }
@@ -863,13 +606,12 @@ export function mount(container, opts = {}){
     else if (k === 'profsel') { state.profile = el.value; sync(); later(); }
     if (k) { remember(); emit('implants:change', {area, key:k, value:el.value}); }
   });
-  file.addEventListener('change', () => { const f = file.files[0]; file.value = ''; useFile(f); });
 
   sync();
   start3d();
   return {
     destroy(){
-      dead = true; stopCam(); cancelAnimationFrame(rq); cancelAnimationFrame(anim);
+      dead = true; cancelAnimationFrame(rq); cancelAnimationFrame(anim);
       sc && sc.destroy(); root.removeEventListener('click', onClick); root.remove();
       if (!--styleRefs && styleEl) { styleEl.remove(); styleEl = null; }
     },

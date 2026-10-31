@@ -1,7 +1,7 @@
 /* node shot.mjs <labpage> [query] [setupJS]  -> screenshots at 375x812 and 1440x900 */
 import { chromium } from 'playwright';
 const [page0, query = '', setup = ''] = process.argv.slice(2);
-const OUT = '/home/claude/apex-surgery/_shots/features6';
+const OUT = new URL('../../_shots/features6', import.meta.url).pathname;
 const b = await chromium.launch();
 for (const [w, hgt] of [[375, 812], [1440, 900]]) {
   const ctx = await b.newContext({ viewport: { width: w, height: hgt }, deviceScaleFactor: 1 });

@@ -1,4 +1,5 @@
-import json
+import json, os
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..")
 data = json.load(open('subs.json'))  
 def cls_front(sp):
     x0,y0,x1,y1 = sp['bb']; cx=(x0+x1)/2; cy=(y0+y1)/2; w=x1-x0; h=y1-y0
@@ -43,5 +44,5 @@ for key, v in out.items():
         js += f'      {g}: {{ bb: {json.dumps(G["bb"])}, d: "{G["d"]}" }},\n'
     js += '    }\n  },\n'
 js += '};\n'
-open('/home/claude/apex-surgery/site/assets/features/games/stencil.js','w').write(js)
+open(os.path.join(ROOT, 'site/assets/features/games/stencil.js'),'w').write(js)
 print(len(js))

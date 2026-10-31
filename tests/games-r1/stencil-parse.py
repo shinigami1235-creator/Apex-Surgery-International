@@ -1,5 +1,5 @@
-import re, json, sys
-s = open('/home/claude/apex-surgery/_ref/stencils/cygnus-face.js').read()
+import re, json, sys, os
+s = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../_ref/stencils/cygnus-face.js')).read()
 def grab(name):
     i = s.index('const '+name)
     j = s.index('`', i); k = s.index('`', j+1)

@@ -1,10 +1,9 @@
 // The real implant viewer pages with three.js served locally: each area on desktop and phone, both languages,
 // plus the home card, menu and footer links and an accessibility check
-import {createRequire} from 'module';
 import fs from 'fs';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
-const SP = '/tmp/claude-0/-home-claude/b5460f3c-e75e-551e-b4ae-fc0088d5c4d9/scratchpad/', OUT = process.argv[2] || SP + 'im';
+import os from 'os';
+import {chromium} from '../pw.mjs';
+const OUT = process.argv[2] || fs.mkdtempSync(os.tmpdir() + '/apex-implants-');   // screenshots
 fs.mkdirSync(OUT, {recursive:true});
 async function routes(p){
   await p.route(/cdn\.jsdelivr\.net\/npm\/three@0\.160\.0\/build\/three\.module\.js/, r => r.fulfill({status:200, contentType:'text/javascript', headers:{'access-control-allow-origin':'*'}, body:fs.readFileSync('site/lab/vendor/three.module.js')}));
@@ -35,8 +34,8 @@ for (const [w, h, path] of [[1440, 900, 'breast-implants.html'], [390, 844, 'th/
     const planned = await p.evaluate(() => Object.keys(localStorage).filter(k => /plan/i.test(k)).map(k => localStorage.getItem(k)).join(''));
     if (!/breast|rhinoplasty/.test(planned)) fails.push(`${path} plan not stored`);
   }
-  if (w === 1440) {
-    await p.addScriptTag({path:SP + 'axe/node_modules/axe-core/axe.min.js'});
+  if (w === 1440 && process.env.AXE_PATH) {   // accessibility check with axe-core: AXE_PATH=<folder>/axe.min.js
+    await p.addScriptTag({path:process.env.AXE_PATH});
     const ax = await p.evaluate(async () => (await axe.run(document.querySelector('.im'), {runOnly:['wcag2a', 'wcag2aa']})).violations.map(v => `${v.id}: ${v.nodes.length} ${v.nodes.slice(0, 2).map(n => n.target.join(' ')).join(' / ')}`));
     if (ax.length) fails.push(`${path} axe ` + ax.join('; '));
     // photo tab and panel, when the photo mode is switched on

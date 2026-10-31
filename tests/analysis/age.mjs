@@ -1,10 +1,8 @@
 // Prints the face model's age guess for every test photo, at three crop sizes
-import {createRequire} from 'module';
 import fs from 'fs';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
-const MP = '/tmp/claude-0/-home-claude/b5460f3c-e75e-551e-b4ae-fc0088d5c4d9/scratchpad/mp/node_modules/@mediapipe/face_mesh/';
-const FA = '/tmp/claude-0/-home-claude/b5460f3c-e75e-551e-b4ae-fc0088d5c4d9/scratchpad/fa/node_modules/@vladmandic/face-api/';
+import {chromium} from '../pw.mjs';
+const MP = new URL('../../site/assets/vendor/face_mesh/', import.meta.url).pathname;
+const FA = new URL('../../site/assets/vendor/face-api/', import.meta.url).pathname;
 const b = await chromium.launch({args:['--use-gl=swiftshader', '--enable-unsafe-swiftshader']});
 const p = await (await b.newContext({viewport:{width:900, height:900}})).newPage();
 p.on('pageerror', e => console.log('pageerror', e.message));

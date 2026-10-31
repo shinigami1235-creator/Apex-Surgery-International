@@ -27,7 +27,6 @@ export function shuffle(arr, rng) {
   }
   return a;
 }
-export const pick = (arr, rng) => arr[Math.floor(rng() * arr.length)];
 
 /* ---------- DOM ---------- */
 export function css(id, text) {
@@ -51,7 +50,6 @@ export function h(tag, attrs, ...kids) {
   for (const c of kids.flat()) if (c != null && c !== false) el.append(c.nodeType ? c : document.createTextNode(String(c)));
   return el;
 }
-export const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 export const tx = (obj, lang) => obj == null ? '' : (typeof obj === 'string' ? obj : (obj[lang] ?? obj.en ?? ''));
 export const fmt = (n, lang) => Math.round(n || 0).toLocaleString(lang === 'th' ? 'th-TH' : 'en-US');
 
@@ -171,13 +169,6 @@ export function drag(el, cb) {
     el.removeEventListener('pointercancel', up);
   };
 }
-
-/* Shared stage colours, usable inside any game's own CSS. Each falls back to the brief's value. */
-export const COLORS = {
-  plum: 'var(--plum,#6A388C)', plum700: 'var(--plum-700,#55286F)', night: 'var(--night,#1F0A30)', night2: 'var(--night-2,#2A0F40)',
-  lilac: 'var(--lilac,#A886CD)', lilac300: 'var(--lilac-300,#C9B3DD)', lilac100: 'var(--lilac-100,#F1EAF7)', wash: 'var(--wash,#FBF3FB)',
-  ink: 'var(--ink,#2A1F33)', ink2: 'var(--ink-2,#5A4A66)', onNight: 'var(--on-night,#F6EEFB)', onNight2: 'var(--on-night-2,#CDB9DD)', rose: '#CC3366'
-};
 
 /* ---------- textures (no image files): film grain, a diamond lattice and a fine silk weave ---------- */
 const svgUrl = s => `url("data:image/svg+xml,${encodeURIComponent(s)}")`;

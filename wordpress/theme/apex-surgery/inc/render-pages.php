@@ -136,6 +136,11 @@ function apex_branches( array $S, ?string $h = null, ?string $p = null ): string
 		$imgs .= '<img src="' . esc_url( apex_img( $b['img'] ?? '' ) ) . '" alt="' . $E( $b['name'] ) . '" loading="lazy" decoding="async" data-i="' . $i . '" class="' . ( $i ? '' : 'on' ) . '">';
 		$maps .= '<iframe data-src="' . esc_url( apex_map_src( $b ) ) . '" data-i="' . $i . '" title="' . $E( apex_t( 'mapTitle' ) ) . ': ' . $E( $b['name'] ) . '" loading="lazy" decoding="async" referrerpolicy="no-referrer-when-downgrade"' . ( $i ? ' hidden' : '' ) . '></iframe>';
 	}
+	$gal = '';
+	if ( array_filter( $B, fn( $b ) => ! empty( $b['photos'] ) ) ) foreach ( $B as $i => $b ) {
+		$g = apex_gallery();
+		$gal .= '<div class="br-gal rail" data-b="' . $i . '"' . ( $i ? ' hidden' : '' ) . '>' . implode( '', array_map( fn( $x, $k ) => '<button type="button" class="br-gp ph-img" ' . apex_gattr( $g, $k ) . ' aria-label="' . $E( $x['alt'] ?? '' ) . '"><img src="' . esc_url( apex_img( $x['src'] ) ) . '" alt="' . $E( $x['alt'] ?? '' ) . '" loading="lazy" decoding="async"></button>', $b['photos'] ?? [], array_keys( $b['photos'] ?? [] ) ) ) . '</div>';
+	}
 	return '<div class="br" id="' . $id . '" data-branches>
       <div class="shead br-head"><div><h2 class="h-xl rv">' . $E( $hh ) . '</h2>' . ( $pp ? '<p class="lead rv" style="margin-top:18px;max-width:58ch">' . $E( $pp ) . '</p>' : '' ) . '</div>
         ' . $tabs . '</div>
@@ -143,7 +148,9 @@ function apex_branches( array $S, ?string $h = null, ?string $p = null ): string
         <div class="br-photo ph-img">' . $imgs . $tours . '<span class="br-count" aria-hidden="true"><b>' . ( $n > 1 ? '1' : '' ) . '</b>' . ( $n > 1 ? ' / ' . $n : '' ) . '</span></div>
         <div class="br-info">' . $cards . '</div>
         <div class="br-map"><div class="br-map-ph">' . apex_ic( 'map' ) . '<button type="button" class="br-map-load btn btn-ghost on-light btn-sm">' . $E( apex_t( 'mapShow' ) ) . '</button></div>' . $maps . '</div>
-      </div></div>';
+      </div>
+      ' . $gal . '
+      </div>';
 }
 
 /* ---------- pages.js: shared tables ---------- */
@@ -196,7 +203,7 @@ function apex_ph( ?string $k, int $w = 1400 ): ?array {
 	$p = $k ? ( APEX_PH[ $k ] ?? null ) : null;
 	return $p ? [ 'src' => "https://images.unsplash.com/photo-{$p[0]}?auto=format&fit=crop&w=$w&q=80", 'alt' => apex_L() === 'th' ? $p[2] : $p[1], 'un' => true ] : null;
 }
-const APEX_SVC_PHOTOS = [ 'facelift' => [ 'mature', 'or2' ], 'browlift' => [ 'face4', 'consult3' ], 'rhinoplasty' => [ 'profile', 'or1' ], 'eyelid' => [ 'eye', 'consult2' ], 'breast' => [ 'dress', 'or2' ], 'lipo' => [ 'tape', 'consult3' ] ];
+const APEX_SVC_PHOTOS = [ 'facelift' => [ 'mature', 'or2' ], 'browlift' => [ 'face4', 'consult3' ], 'rhinoplasty' => [ 'profile', 'or1' ], 'eyelid' => [ 'eye', 'consult2' ], 'bone' => [ 'face1', 'consult1' ], 'breast' => [ 'dress', 'or2' ], 'lipo' => [ 'tape', 'consult3' ] ];
 const APEX_POST_PHOTOS = [
 	'smas' => [ 'mature', 'or1', 'face1' ], 'deep-plane-face-lift' => [ 'mature', 'or2' ], 'rhinoplasty-faq-questions' => [ 'profile', 'consult1' ],
 	'double-eyelid-surgery-facts' => [ 'eye', 'face3' ], 'facelift-faq' => [ 'mature', 'consult2', 'face2' ], 'endotine-browlift-fact' => [ 'face4', 'consult3' ],
@@ -205,11 +212,12 @@ const APEX_POST_PHOTOS = [
 ];
 function apex_proc_of( $s ): ?string {
 	$s = (string) $s;
-	if ( preg_match( '/lipo|ดูดไขมัน/iu', $s ) ) return 'lipo';
+	if ( preg_match( '/lipo|ดูดไขมัน|เหนียง|double chin/iu', $s ) ) return 'lipo';
 	if ( preg_match( '/breast|หน้าอก|motiva|mentor/iu', $s ) ) return 'breast';
 	if ( preg_match( '/brow|forehead|endotine|คิ้ว|หน้าผาก/iu', $s ) ) return 'browlift';
 	if ( preg_match( '/rhino|nose|จมูก/iu', $s ) ) return 'rhinoplasty';
-	if ( preg_match( '/eyelid|double eye|ตาสองชั้น|ทำตา/iu', $s ) ) return 'eyelid';
+	if ( preg_match( '/eyelid|double eye|eye bag|ptosis|ตาสองชั้น|ทำตา|ถุงใต้ตา/iu', $s ) ) return 'eyelid';
+	if ( preg_match( '/facial bone|genioplasty|jaw (reduction|surgery)|v-line|โครงหน้า|กระดูกคาง|ตัดกราม|ขากรรไกร/iu', $s ) ) return 'bone';
 	if ( preg_match( '/face ?lift|smas|deep plane|ดึงหน้า|ยกกระชับ/iu', $s ) ) return 'facelift';
 	return null;
 }
@@ -308,7 +316,7 @@ function apex_svc_section( array $sec, int $i, string $key, bool $alt ): string 
 		$n = count( $items );
 		$fig = 0;
 		foreach ( $items as $x ) if ( apex_area_fig( apex_split_label( $x )[0] ?? $x ) ) $fig++;
-		$is_areas = $n >= 4 && $fig >= $n - 1;
+		$is_areas = $key === 'lipo' && $n >= 4 && $fig >= $n - 1;
 		$lis = '';
 		foreach ( $items as $j => $x ) {
 			[ $lab, $txt ] = apex_split_label( $x );
@@ -457,7 +465,7 @@ function apex_render_page( array $r ): string {
 		$GLOBALS['apex_unlocked'] = array_filter( [ $r['page'] === 'service' ? 'svc:' . ( $r['params']['p'] ?? '' ) : '', $r['page'] === 'article' ? 'post:' . ( $r['params']['p'] ?? '' ) : '', $r['page'] === 'war' && ! empty( $r['params']['ep'] ) ? 'war:' . $r['params']['ep'] : '' ] );
 	}
 	$fn = 'apex_page_' . strtolower( preg_replace( '/[^a-zA-Z]/', '', $r['page'] ) );
-	if ( in_array( $r['page'], [ 'nose', 'analysis', 'proportions', 'implBreast', 'implChin', 'implForehead', 'implNose', 'play', 'plan', 'trip', 'consult' ], true ) ) return apex_page_feature( $r['page'] );
+	if ( in_array( $r['page'], [ 'filler', 'analysis', 'proportions', 'implBreast', 'implChin', 'implForehead', 'implNose', 'play', 'plan', 'trip', 'consult' ], true ) ) return apex_page_feature( $r['page'] );
 	return function_exists( $fn ) ? $fn( $r ) : apex_page_notfound( $r );
 }
 
@@ -470,7 +478,7 @@ function apex_page_home( array $r ): string {
 	$E = 'apex_e'; $T = 'apex_t'; $I = 'apex_ic';
 	$svcs = implode( '', array_map( fn( $s ) => '<li><a href="' . esc_url( apex_svc_url( $s['key'] ) ) . '">' . $E( $s['short'] ?: $s['name'] ) . '</a></li>', $S['services'] ?? [] ) );
 	$fd = $Fd ? '<a class="intro-fd rv-clip" href="' . esc_url( apex_link( 'about.html#founder' ) ) . '">
-            <span class="ifd-ph"><img src="' . esc_url( apex_img( ( $Fd['portrait'] ?? '' ) ?: ( $Fd['photo'] ?? '' ) ) ) . '" alt="' . $E( $Fd['name'] ) . '" loading="lazy" decoding="async" data-par="14"></span>
+            <span class="ifd-ph"><img src="' . esc_url( apex_img( ( $Fd['wide'] ?? '' ) ?: ( ( $Fd['portrait'] ?? '' ) ?: ( $Fd['photo'] ?? '' ) ) ) ) . '" alt="' . $E( $Fd['name'] ) . '" loading="lazy" decoding="async" data-par="14"' . ( ! empty( $Fd['wide'] ) ? ' style="object-position:38% 22%"' : '' ) . '></span>
             ' . ( ! empty( $Fd['aaci'] ) ? '<span class="ifd-badge"><img src="' . esc_url( apex_img( $Fd['aaci']['src'] ) ) . '" alt="' . $E( ( $Fd['aaci']['alt'] ?? '' ) ?: 'AACI' ) . '" loading="lazy" decoding="async" decoding="async"></span>' : '' ) . '
             <span class="ifd-cap"><small>' . $E( $T( 'foundedBy' ) ) . '</small><b>' . $E( $Fd['name'] ) . '</b><span>' . $E( ( $Fd['specialty'] ?? '' ) ?: ( $Fd['role'] ?? '' ) ) . '</span></span>
           </a>' : '';
@@ -489,7 +497,7 @@ function apex_page_home( array $r ): string {
           <h1 class="hb-h1 rv" data-d="60" data-field="home.h1">' . $E( ( $H['h1'] ?? '' ) ?: 'Apex Surgery Hospital' ) . '</h1>
           <p class="hb-h2 rv" data-d="120" data-field="home.h2">' . $E( apex_L() === 'en' ? ( ( $S['brandTh'] ?? '' ) ?: ( ( $H['h2'] ?? '' ) ?: '' ) ) : ( ( $H['h2'] ?? '' ) ?: ( ( $S['brandTh'] ?? '' ) ?: '' ) ) ) . '</p>
           <p class="hb-lead rv" data-d="180">' . $E( $T( 'heroLead' ) ) . '</p>
-          <div class="hb-acts rv" data-d="240"><a class="btn btn-light" href="' . esc_url( apex_link( 'consult.html' ) ) . '">' . $I( 'message-circle' ) . $E( $T( 'consult' ) ) . '</a><a class="btn btn-ghost" href="' . esc_url( apex_link( 'nose.html' ) ) . '">' . $I( 'scan-face' ) . $E( $T( 'heroCta2' ) ) . '</a></div>
+          <div class="hb-acts rv" data-d="240"><a class="btn btn-light" href="' . esc_url( apex_link( 'consult.html' ) ) . '">' . $I( 'message-circle' ) . $E( $T( 'consult' ) ) . '</a><a class="btn btn-ghost" href="' . esc_url( apex_link( 'nose-implants.html' ) ) . '">' . $I( 'scan-face' ) . $E( $T( 'heroCta2' ) ) . '</a></div>
           <ul class="hb-svcs rv" data-d="300">' . $svcs . '</ul>
         </div>
         <div class="hb-stage"><div id="bodymap" class="bodymap-host" aria-label="' . $E( $T( 'bodyHint' ) ) . '"></div></div>
@@ -517,7 +525,7 @@ function apex_page_home( array $r ): string {
     <section class="section night tools-s">
       <div class="wrap">
         <div class="tools-grid">
-          <a class="tool-card tool-nose rv" href="' . esc_url( apex_link( 'nose.html' ) ) . '">
+          <a class="tool-card tool-nose rv" href="' . esc_url( apex_link( 'nose-implants.html' ) ) . '">
             <span class="tc-art st-art" aria-hidden="true"><img src="' . esc_url( apex_asset( 'img/stencil-side.svg' ) ) . '" alt="" loading="lazy" decoding="async"><svg viewBox="20 60 560 640"><path class="tc-prof2" d="M97.3 334C96.2 336.7 93.4 344.3 90.6 350C87.8 355.7 83.9 362 80.6 368C77.3 374 74 380 70.6 386C67.2 392 63.4 398.7 60.1 404C56.8 409.3 53.1 414.3 50.6 418C48.1 421.7 46.4 423.5 45.2 426C44 428.5 43.5 430.7 43.5 433C43.5 435.3 44.3 437.8 45.4 440C46.5 442.2 48.2 444.8 50 446.5C51.8 448.2 53.7 449 56 450C58.3 451 61.3 451.8 64 452.5C66.7 453.2 70.7 454.2 72 454.5"/></svg></span>
             <span class="tc-body"><span class="eyebrow on-night">' . $E( $T( 'nose' ) ) . '</span><b class="h-l">' . $E( $T( 'noseH' ) ) . '</b><span class="tc-p">' . $E( $T( 'noseP' ) ) . '</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">' . $E( $T( 'noseCta' ) ) . ' ' . $I( 'arrow-right' ) . '</span><small>' . $I( 'shield-check' ) . $E( $T( 'noseNote' ) ) . '</small></span></span></a>
@@ -529,6 +537,10 @@ function apex_page_home( array $r ): string {
             <span class="tc-art cal2" aria-hidden="true"><svg viewBox="0 0 150 144"><rect class="cl-card" x="1" y="8" width="148" height="134" rx="14"/><path class="cl-top" d="M1 22a14 14 0 0 1 14-14h120a14 14 0 0 1 14 14v18H1z"/><rect class="cl-ring" x="36" y="2" width="7" height="15" rx="3.5"/><rect class="cl-ring" x="107" y="2" width="7" height="15" rx="3.5"/><path class="cl-plane" transform="translate(64 13) scale(.92)" d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/><path class="cl-wd" d="M18 50h6M36 50h6M54 50h6M72 50h6M90 50h6M108 50h6M126 50h6"/><rect class="cl-stay" x="30" y="75" width="108" height="16" rx="8"/><rect class="cl-stay" x="12" y="92" width="90" height="16" rx="8"/><circle class="cl-op" cx="75" cy="83" r="8.5"/><text class="cl-n" x="21" y="69.2">1</text><text class="cl-n" x="39" y="69.2">2</text><text class="cl-n" x="57" y="69.2">3</text><text class="cl-n" x="75" y="69.2">4</text><text class="cl-n" x="93" y="69.2">5</text><text class="cl-n" x="111" y="69.2">6</text><text class="cl-n" x="129" y="69.2">7</text><text class="cl-n" x="21" y="86.2">8</text><text class="cl-n on" x="39" y="86.2">9</text><text class="cl-n on" x="57" y="86.2">10</text><text class="cl-n on" x="75" y="86.2">11</text><text class="cl-n on" x="93" y="86.2">12</text><text class="cl-n on" x="111" y="86.2">13</text><text class="cl-n on" x="129" y="86.2">14</text><text class="cl-n on" x="21" y="103.2">15</text><text class="cl-n on" x="39" y="103.2">16</text><text class="cl-n on" x="57" y="103.2">17</text><text class="cl-n on" x="75" y="103.2">18</text><text class="cl-n on" x="93" y="103.2">19</text><text class="cl-n" x="111" y="103.2">20</text><text class="cl-n" x="129" y="103.2">21</text><text class="cl-n" x="21" y="120.2">22</text><text class="cl-n" x="39" y="120.2">23</text><text class="cl-n" x="57" y="120.2">24</text><text class="cl-n" x="75" y="120.2">25</text><text class="cl-n" x="93" y="120.2">26</text><text class="cl-n" x="111" y="120.2">27</text><text class="cl-n" x="129" y="120.2">28</text></svg></span>
             <span class="tc-body"><span class="eyebrow on-night">' . $E( $T( 'trip' ) ) . '</span><b class="h-m">' . $E( $T( 'tripH' ) ) . '</b><span class="tc-p">' . $E( $T( 'tripP' ) ) . '</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">' . $E( $T( 'tripCta' ) ) . ' ' . $I( 'arrow-right' ) . '</span></span></span></a>
+          <a class="tool-card tool-fill rv" data-d="200" href="' . esc_url( apex_link( 'filler.html' ) ) . '" data-new="page:filler">
+            <span class="tc-art fill st-art" aria-hidden="true"><img src="' . esc_url( apex_asset( 'img/stencil-front.svg' ) ) . '" alt="" loading="lazy" decoding="async"><svg viewBox="90 60 420 620"><circle class="tf-f" cx="175" cy="365" r="12" style="--d:0ms"/><circle class="tf-f" cx="425" cy="365" r="12" style="--d:90ms"/><circle class="tf-f" cx="205" cy="385" r="12" style="--d:180ms"/><circle class="tf-f" cx="395" cy="385" r="12" style="--d:270ms"/><circle class="tf-f" cx="235" cy="410" r="12" style="--d:360ms"/><circle class="tf-f" cx="365" cy="410" r="12" style="--d:450ms"/><circle class="tf-c" cx="160" cy="255" r="12" style="--d:0ms"/><circle class="tf-c" cx="440" cy="255" r="12" style="--d:90ms"/><circle class="tf-c" cx="185" cy="525" r="12" style="--d:180ms"/><circle class="tf-c" cx="415" cy="525" r="12" style="--d:270ms"/><circle class="tf-c" cx="300" cy="592" r="12" style="--d:360ms"/><circle class="tf-r" cx="250" cy="362" r="12" style="--d:0ms"/><circle class="tf-r" cx="350" cy="362" r="12" style="--d:90ms"/><circle class="tf-r" cx="256" cy="470" r="12" style="--d:180ms"/><circle class="tf-r" cx="344" cy="470" r="12" style="--d:270ms"/><circle class="tf-r" cx="300" cy="497" r="12" style="--d:360ms"/><circle class="tf-r" cx="256" cy="532" r="12" style="--d:450ms"/><circle class="tf-r" cx="344" cy="532" r="12" style="--d:540ms"/></svg></span>
+            <span class="tc-body"><span class="eyebrow on-night" data-new-slot>' . $E( $T( 'fill' ) ) . '</span><b class="h-l">' . $E( $T( 'fillH' ) ) . '</b><span class="tc-p">' . $E( $T( 'fillPageP' ) ) . '</span>
+            <span class="tc-foot"><span class="btn btn-light btn-sm">' . $E( $T( 'fillCta' ) ) . ' ' . $I( 'arrow-right' ) . '</span></span></span></a>
           <a class="tool-card tool-gold rv" data-d="240" href="' . esc_url( apex_link( 'proportions.html' ) ) . '">
             <span class="tc-art gold st-art" aria-hidden="true"><img src="' . esc_url( apex_asset( 'img/stencil-front.svg' ) ) . '" alt="" loading="lazy" decoding="async"><svg viewBox="90 60 420 620"><path class="tg-l" d="M108 168h384M108 305h384M108 455h384M108 610h384M124 168v442"/><path class="tg-g" d="M262 305v150M338 305v150M236 505h128"/><circle class="tg-d" cx="300" cy="168" r="8"/><circle class="tg-d" cx="300" cy="305" r="8"/><circle class="tg-d" cx="300" cy="455" r="8"/><circle class="tg-d" cx="300" cy="610" r="8"/></svg></span>
             <span class="tc-body"><span class="eyebrow on-night">' . $E( $T( 'prop' ) ) . '</span><b class="h-m">' . $E( $T( 'propH' ) ) . '</b><span class="tc-p">' . $E( $T( 'propPageP' ) ) . '</span>
@@ -569,10 +581,10 @@ function apex_page_home( array $r ): string {
 	$W = apex_data( 'war' );
 	$eps = $W['episodes'] ?? [];
 	$o .= $eps ? '<section class="section war-home">
-      <div class="wrap"><div class="shead"><div><p class="eyebrow rv">Workpoint 23</p><h2 class="h-xl rv">' . $E( $T( 'warH' ) ) . '</h2><p class="reels-sub rv">' . $E( $T( 'warLead' ) ) . '</p></div>
+      <div class="wrap"><div class="shead"><div><p class="eyebrow rv">' . $E( $T( 'shows' ) ) . ' · Workpoint 23</p><h2 class="h-xl rv">' . $E( $T( 'warH' ) ) . '</h2><p class="reels-sub rv">' . $E( $T( 'warLead' ) ) . '</p></div>
         <div class="rail-ctrl rv"><button type="button" id="war-prev" aria-label="' . $E( $T( 'prev' ) ) . '">' . $I( 'chevron-left' ) . '</button><button type="button" id="war-next" aria-label="' . $E( $T( 'next' ) ) . '">' . $I( 'chevron-right' ) . '</button></div></div>
       <div class="rail war-rail" id="war-rail">' . implode( '', array_map( 'apex_war_card', $eps, array_keys( $eps ) ) ) . '</div>
-      <a class="link-arrow rv" href="' . esc_url( apex_link( 'surgery-wars.html' ) ) . '">' . $E( $T( 'warAll' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div></section>' : '';
+      <p class="war-links rv"><a class="link-arrow" href="' . esc_url( apex_link( 'surgery-wars.html' ) ) . '">' . $E( $T( 'warAll' ) ) . ' ' . $I( 'arrow-right' ) . '</a><a class="link-arrow" href="' . esc_url( apex_link( 'transformations.html' ) ) . '">' . $E( $T( 'shows' ) ) . ' ' . $I( 'arrow-right' ) . '</a></p></div></section>' : '';
 	$spot = '';
 	if ( $promos ) {
 		$si = 0;
@@ -606,21 +618,57 @@ function apex_page_services( array $r ): string {
 	$S = apex_data( 'shared' ) ?: []; $D = apex_data( 'services' ) ?: [];
 	$E = 'apex_e'; $T = 'apex_t'; $I = 'apex_ic';
 	return apex_phead( ( $D['h'] ?? '' ) ?: $T( 'services' ), $T( 'servicesSub' ), [ apex_home_crumb(), [ $T( 'services' ) ] ] ) . '
-      <section class="section"><div class="wrap">' . apex_svc_cards( $S ) . '</div></section>
+      <section class="section"><div class="wrap">' . apex_svc_cards( $S ) . '
+        <a class="tx-band rv" href="' . esc_url( apex_link( 'treatments.html' ) ) . '"><span class="tx-gi">' . $I( 'sparkles' ) . '</span><span><b>' . $E( $T( 'treatments' ) ) . '</b><span>' . $E( $T( 'txBand' ) ) . '</span></span>' . $I( 'arrow-right' ) . '</a></div></section>
       <section class="section washed"><div class="wrap"><div class="shead"><h2 class="h-xl rv">' . $E( $T( 'tools' ) ) . '</h2></div>
         <div class="mini-tools">
-          <a class="mini-tool rv" href="' . esc_url( apex_link( 'nose.html' ) ) . '">' . $I( 'scan-face' ) . '<b>' . $E( $T( 'nose' ) ) . '</b><span>' . $E( $T( 'nosePageP' ) ) . '</span></a>
+          <a class="mini-tool rv mt-new" href="' . esc_url( apex_link( 'filler.html' ) ) . '" data-new="page:filler">' . $I( 'syringe' ) . '<b data-new-slot>' . $E( $T( 'fill' ) ) . '</b><span>' . $E( $T( 'fillPageP' ) ) . '</span></a>
           <a class="mini-tool rv" data-d="20" href="' . esc_url( apex_link( 'analysis.html' ) ) . '">' . $I( 'scan-line' ) . '<b>' . $E( $T( 'ana' ) ) . '</b><span>' . $E( $T( 'anaPageP' ) ) . '</span></a>
           <a class="mini-tool rv" data-d="35" href="' . esc_url( apex_link( 'proportions.html' ) ) . '">' . $I( 'gem' ) . '<b>' . $E( $T( 'prop' ) ) . '</b><span>' . $E( $T( 'propPageP' ) ) . '</span></a>
           <a class="mini-tool rv" data-d="50" href="' . esc_url( apex_link( 'breast-implants.html' ) ) . '">' . $I( 'ruler' ) . '<b>' . $E( $T( 'impl' ) ) . '</b><span>' . $E( $T( 'implP' ) ) . '</span></a>
           <a class="mini-tool rv" data-d="70" href="' . esc_url( apex_link( 'trip.html' ) ) . '">' . $I( 'calendar' ) . '<b>' . $E( $T( 'trip' ) ) . '</b><span>' . $E( $T( 'tripP' ) ) . '</span></a>
           <a class="mini-tool rv" data-d="140" href="' . esc_url( apex_link( 'play.html' ) ) . '">' . $I( 'sparkles' ) . '<b>' . $E( $T( 'games' ) ) . '</b><span>' . $E( $T( 'gamesP' ) ) . '</span></a>
-          <a class="mini-tool rv" data-d="210" href="' . esc_url( apex_link( 'doctor.html' ) ) . '">' . $I( 'stethoscope' ) . '<b>' . $E( $T( 'doctor' ) ) . '</b><span>' . $E( $S['doctor']['name'] ?? '' ) . '</span></a>
         </div></div></section>
       <section class="section night"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>';
 }
 
 /* SERVICE */
+/* NON-SURGICAL TREATMENTS (pages.js treatments) */
+const APEX_TX_IC = [ 'smile' => 'smile', 'inject' => 'syringe', 'lift' => 'layers', 'laser' => 'sun', 'hair-removal' => 'scan-line', 'body' => 'dumbbell', 'hair' => 'sparkles', 'wellness' => 'heart-pulse', 'weight' => 'weight', 'intimate' => 'heart' ];
+function apex_page_treatments( array $r ): string {
+	$S = apex_data( 'shared' ) ?: []; $D = apex_data( 'treatments' ) ?: []; $G = $D['groups'] ?? [];
+	$E = 'apex_e'; $T = 'apex_t'; $I = 'apex_ic';
+	$h = ( $D['h'] ?? '' ) ?: $T( 'treatments' );
+	$n = fn( $g ) => max( 1, array_sum( array_map( fn( $c ) => max( 1, count( $c['items'] ?? [] ) ), $g['cards'] ?? [] ) ) );
+	$ic = fn( $k ) => $I( APEX_TX_IC[ $k ] ?? 'sparkles' );
+	$card = fn( $c, $i ) => '<article class="tx-card rv" data-d="' . ( min( $i, 5 ) * 40 ) . '">
+        <h3>' . $E( $c['n'] ?? '' ) . '</h3>' . ( ! empty( $c['p'] ) ? '<p>' . $E( $c['p'] ) . '</p>' : '' ) . '
+        ' . ( ! empty( $c['items'] ) ? '<ul class="tx-items">' . implode( '', array_map( fn( $x ) => '<li>' . $E( $x ) . '</li>', $c['items'] ) ) . '</ul>' : '' ) . '
+        ' . ( ! empty( $c['link'] ) ? '<a class="link-arrow" href="' . esc_url( apex_link( $c['link'] ) ) . '">' . $E( ! empty( $c['lx'] ) ? $T( 'txMore' ) : $T( 'txTry' ) ) . ' ' . $I( 'arrow-right' ) . '</a>' : '' ) . '</article>';
+	$nav = implode( '', array_map( fn( $g ) => '<a href="#tx-' . $E( $g['k'] ) . '" data-k="' . $E( $g['k'] ) . '">' . $ic( $g['k'] ) . '<span>' . $E( $g['h'] ?? '' ) . '</span><i>' . $n( $g ) . '</i></a>', $G ) );
+	$body = '';
+	foreach ( $G as $g ) {
+		$cards = $g['cards'] ?? [];
+		$imgs = '';
+		if ( ! empty( $g['imgs'] ) ) {
+			$gl = apex_gallery();
+			$imgs = '<div class="tx-imgs rail">' . implode( '', array_map( fn( $x, $k ) => '<button type="button" class="tx-img ph-img" ' . apex_gattr( $gl, $k ) . ' aria-label="' . $E( $x['alt'] ?? '' ) . '"><img src="' . esc_url( apex_img( $x['src'] ) ) . '" alt="' . $E( $x['alt'] ?? '' ) . '" loading="lazy" decoding="async"></button>', $g['imgs'], array_keys( $g['imgs'] ) ) ) . '</div>';
+		}
+		$body .= '<section class="tx-g" id="tx-' . $E( $g['k'] ) . '" data-k="' . $E( $g['k'] ) . '">
+          <div class="tx-gh rv"><span class="tx-gi">' . $ic( $g['k'] ) . '</span><div><h2 class="h-l">' . $E( $g['h'] ?? '' ) . '</h2><p>' . $E( $g['p'] ?? '' ) . '</p></div></div>
+          ' . ( $cards ? '<div class="tx-cards">' . implode( '', array_map( $card, $cards, array_keys( $cards ) ) ) . '</div>' : '<a class="btn btn-ghost rv" href="' . esc_url( apex_link( 'consult.html' ) ) . '">' . $I( 'message-circle' ) . $E( $T( 'consult' ) ) . '</a>' ) . '
+          ' . $imgs . '</section>';
+	}
+	return apex_phead( $h, $D['lead'] ?? null, [ apex_home_crumb(), [ $T( 'services' ), 'services.html' ], [ $h ] ],
+		'<label class="tx-search rv" data-d="140">' . $I( 'search' ) . '<span class="sr">' . $E( $T( 'txSearch' ) ) . '</span><input type="search" placeholder="' . $E( $T( 'txSearch' ) ) . '" autocomplete="off" data-r="q"></label>' ) . '
+      <section class="section tx"><div class="wrap tx-grid">
+        <nav class="tx-nav" aria-label="' . $E( $T( 'txGroups' ) ) . '">' . $nav . '</nav>
+        <div class="tx-body">' . $body . '
+          <p class="tx-none" hidden data-r="none">' . $E( $T( 'txNone' ) ) . '</p>
+          <p class="note tx-from">' . $E( $D['from'] ?? '' ) . '</p></div></div></section>
+      <section class="section night"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>';
+}
+
 function apex_page_service( array $r ): string {
 	$S = apex_data( 'shared' ) ?: [];
 	$key = $r['params']['p'] ?? 'facelift';
@@ -647,7 +695,7 @@ function apex_page_service( array $r ): string {
             <p class="eyebrow on-night rv">' . $E( $D['en'] ?? '' ) . '</p>
             <h1 class="display-s rv" data-d="60" data-field="svc.name">' . $E( $D['name'] ?? '' ) . '</h1>
             ' . ( ! empty( $D['byline'] ) ? '<p class="sh-by rv" data-d="120" data-field="svc.byline">' . $I( 'badge-check' ) . $E( $D['byline'] ) . '</p>' : '' ) . '
-            <div class="sh-acts rv" data-d="180"><a class="btn btn-light" href="' . esc_url( apex_link( 'consult.html?p=' . $key ) ) . '">' . $I( 'message-circle' ) . $E( $T( 'consult' ) ) . '</a>' . apex_plan_btn( $key ) . ( $key === 'rhinoplasty' ? '<a class="btn btn-ghost btn-sm" href="' . esc_url( apex_link( 'nose.html' ) ) . '">' . $I( 'scan-face' ) . $E( $T( 'noseTry' ) ) . '</a>' : '' ) . '</div>
+            <div class="sh-acts rv" data-d="180"><a class="btn btn-light" href="' . esc_url( apex_link( 'consult.html?p=' . $key ) ) . '">' . $I( 'message-circle' ) . $E( $T( 'consult' ) ) . '</a>' . apex_plan_btn( $key ) . ( $key === 'rhinoplasty' ? '<a class="btn btn-ghost btn-sm" href="' . esc_url( apex_link( 'nose-implants.html' ) ) . '">' . $I( 'scan-face' ) . $E( $T( 'noseTry' ) ) . '</a>' : '' ) . '</div>
           </div>
           ' . apex_recovery_card( $key ) . '
         </div>
@@ -678,6 +726,8 @@ function apex_page_service( array $r ): string {
 
     ';
 	foreach ( $secs as $i => $sec ) $o .= apex_svc_section( $sec, $i, $key, $i % 2 === 0 );
+	if ( ! empty( $D['sources'] ) ) $o .= '
+    <div class="wrap svc-src"><p class="note">' . $E( $T( 'sourcesH' ) ) . ': ' . implode( ', ', array_map( fn( $u ) => '<a href="' . esc_url( $u ) . '" target="_blank" rel="noopener">' . $E( explode( '/', preg_replace( '#^https?://(www\.)?#', '', $u ) )[0] ) . '</a>', $D['sources'] ) ) . '</p></div>';
 	$o .= '
 
     ' . ( ! empty( $D['ba'] ) ? '<section class="section night ba-s"><div class="wrap"><div class="shead"><div><p class="eyebrow on-night rv">' . $E( $nm ) . '</p><h2 class="h-xl rv">' . $E( ( $D['baH'] ?? '' ) ?: $T( 'baH' ) ) . '</h2></div><p class="note on-night rv">' . $E( $T( 'resultsVary' ) ) . '</p></div>
@@ -813,7 +863,7 @@ function apex_page_promotions( array $r ): string {
         <p class="note" style="margin-top:30px">' . $E( $S['footerNote'] ?? '' ) . '</p></div></section>
       <section class="section night"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>';
 	// the script hides the cards outside the chosen procedure; do the same so the page arrives filtered
-	if ( $start !== 'all' ) $o = preg_replace_callback( '/<article class="offer rv"([^>]*) data-cat="([^"]*)">/', fn( $m ) => $m[2] === $start ? $m[0] : '<article class="offer rv"' . $m[1] . ' data-cat="' . $m[2] . '" hidden>', $o );
+	if ( $start !== 'all' ) $o = preg_replace_callback( '/<article class="offer rv"[^>]*>/', fn( $m ) => preg_match( '/ data-cat="' . preg_quote( $start, '/' ) . '"/', $m[0] ) ? $m[0] : substr( $m[0], 0, -1 ) . ' hidden>', $o );
 	return $o;
 }
 
@@ -1031,7 +1081,7 @@ function apex_war_card( array $e, int $i = 0 ): string {
       <span class="wc-t">' . apex_nb( $e['title'] ?? '' ) . '</span></a>';
 }
 const APEX_WAR_PROC = [ [ 'facelift', '/ดึงหน้า|ดึงคอ|face ?lift|neck lift/iu' ], [ 'browlift', '/ยกคิ้ว|ยกหน้าผาก|brow lift|forehead lift/iu' ], [ 'rhinoplasty', '/เสริมจมูก|แก้จมูก|rhinoplasty/iu' ],
-	[ 'eyelid', '/ตาสองชั้น|ทำตา|ตาบน|หนังตา|eyelid/iu' ], [ 'breast', '/เสริมหน้าอก|ยกกระชับหน้าอก|breast (augmentation|lift)/iu' ], [ 'lipo', '/ดูดไขมัน|liposuction/iu' ] ];
+	[ 'eyelid', '/ตาสองชั้น|ทำตา|ตาบน|หนังตา|eyelid/iu' ], [ 'bone', '/กระดูกคาง|ผ่าตัดขากรรไกร|genioplasty|jaw surgery/iu' ], [ 'breast', '/เสริมหน้าอก|ยกกระชับหน้าอก|breast (augmentation|lift)/iu' ], [ 'lipo', '/ดูดไขมัน|liposuction/iu' ] ];
 function apex_war_stage( array $e, array $D ): string {
 	$w = str_replace( '{n}', (string) $e['n'], apex_t( 'warWatch' ) );
 	return '<div class="war-stage rv-clip"><button type="button" class="ws-poster" data-ytw="' . apex_e( ( $D['yt'] ?? '' ) ?: ( $e['yt'] ?? '' ) ) . '" aria-label="' . apex_e( $w ) . '">
@@ -1048,7 +1098,7 @@ function apex_page_war( array $r ): string {
 		foreach ( array_values( array_filter( [ $eps[7] ?? null, $eps[3] ?? null, $eps[0] ?? null ] ) ) as $i => $x ) $stack .= '<img class="whs-' . $i . '" src="' . esc_url( apex_img( apex_war_src( $x['cover'] ?? '' ) ) ) . '" alt="" width="640" height="336">';
 		return '
       <section class="war-head night"><div class="hb-glow" aria-hidden="true"></div><div class="wrap wh-grid"><div class="wh-copy">
-        ' . apex_crumbs( [ apex_home_crumb(), [ $T( 'war' ) ] ] ) . '
+        ' . apex_crumbs( [ apex_home_crumb(), [ $T( 'shows' ), 'transformations.html' ], [ $T( 'war' ) ] ] ) . '
         <p class="eyebrow on-night rv">Workpoint 23</p>
         <h1 class="display-s rv" data-d="60">' . apex_nb( $T( 'warH' ) ) . '</h1>
         <p class="lead rv" data-d="120">' . $E( $T( 'warLead' ) ) . '</p>
@@ -1059,7 +1109,7 @@ function apex_page_war( array $r ): string {
       <section class="section night"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>';
 	}
 	$D = apex_data( 'war:' . $n );
-	if ( ! $D ) return apex_phead( $T( 'notFoundH' ), $T( 'loadError' ), [ apex_home_crumb(), [ $T( 'war' ), 'surgery-wars.html' ] ] );
+	if ( ! $D ) return apex_phead( $T( 'notFoundH' ), $T( 'loadError' ), [ apex_home_crumb(), [ $T( 'shows' ), 'transformations.html' ], [ $T( 'war' ), 'surgery-wars.html' ] ] );
 	$blocks = array_map( fn( $b ) => $b['t'] === 'img' ? array_merge( $b, [ 'src' => apex_war_src( $b['src'] ?? '' ) ] ) : $b, $D['blocks'] ?? [] );
 	$photos = array_values( array_filter( $blocks, fn( $b ) => $b['t'] === 'img' ) );
 	$bodyBlocks = ( $blocks[0]['t'] ?? '' ) === 'img' ? array_slice( $blocks, 1 ) : $blocks;
@@ -1069,7 +1119,7 @@ function apex_page_war( array $r ): string {
 	foreach ( APEX_WAR_PROC as [ $k, $re ] ) if ( preg_match( $re, $text ) ) $procs[] = $k;
 	$g = apex_gallery();
 	$prev = $eps[ $i0 - 1 ] ?? null; $next = $eps[ $i0 + 1 ] ?? null;
-	$crumbs = [ apex_home_crumb(), [ $T( 'war' ), 'surgery-wars.html' ], [ 'EP.' . $n ] ];
+	$crumbs = [ apex_home_crumb(), [ $T( 'shows' ), 'transformations.html' ], [ $T( 'war' ), 'surgery-wars.html' ], [ 'EP.' . $n ] ];
 	$hasToc = count( $body['toc'] ) > 2;
 	$epsNav = implode( '', array_map( fn( $x ) => '<a href="' . esc_url( apex_war_url( $x['n'] ) ) . '"' . ( $x['n'] === $n ? ' aria-current="page"' : '' ) . '>EP.' . $x['n'] . '</a>', $eps ) );
 	$ph = implode( '', array_map( fn( $p, $j ) => '<button type="button" class="wp-th ph-img" ' . apex_gattr( $g, $j ) . ' aria-label="' . apex_e( apex_t( 'image' ) ) . ' ' . ( $j + 1 ) . '"><img src="' . esc_url( apex_img( $p['src'] ) ) . '" alt="' . apex_e( $p['alt'] ?? '' ) . '" loading="lazy" decoding="async" width="1200" height="630"></button>', $photos, array_keys( $photos ) ) );
@@ -1089,6 +1139,37 @@ function apex_page_war( array $r ): string {
         <div class="war-pn">' . ( $prev ? '<a class="wpn prev" href="' . esc_url( apex_war_url( $prev['n'] ) ) . '"><small>' . $I( 'arrow-left' ) . $E( $T( 'warPrev' ) ) . '</small><b>EP.' . $prev['n'] . ' ' . $E( $prev['title'] ) . '</b></a>' : '<span></span>' ) . ( $next ? '<a class="wpn next" href="' . esc_url( apex_war_url( $next['n'] ) ) . '"><small>' . $E( $T( 'warNext' ) ) . $I( 'arrow-right' ) . '</small><b>EP.' . $next['n'] . ' ' . $E( $next['title'] ) . '</b></a>' : '' ) . '</div>
         <div class="shead"><h2 class="h-l rv">' . $E( $T( 'warAll' ) ) . '</h2><a class="link-arrow rv" href="' . esc_url( apex_link( 'surgery-wars.html' ) ) . '">' . $E( $T( 'warH' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div>
         <div class="war-grid sm">' . implode( '', array_map( 'apex_war_card', $others, array_keys( $others ) ) ) . '</div></div></section>
+      <section class="section night"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>';
+}
+
+/* TRANSFORMATIONS (pages.js shows): one section per show or series */
+function apex_page_shows( array $r ): string {
+	$S = apex_data( 'shared' ) ?: []; $D = apex_data( 'shows' ) ?: []; $list = $D['series'] ?? [];
+	$E = 'apex_e'; $T = 'apex_t'; $I = 'apex_ic';
+	$eps = fn( $x ) => ( apex_data( (string) ( $x['data'] ?? '' ) ) ?: [] )['episodes'] ?? [];
+	$covers = array_values( array_filter( array_merge( [], ...array_map( $eps, $list ) ), fn( $e ) => ! empty( $e['cover'] ) ) );
+	$stack = '';
+	foreach ( array_values( array_filter( [ $covers[7] ?? null, $covers[3] ?? null, $covers[0] ?? null ] ) ) as $i => $x ) $stack .= '<img class="whs-' . $i . '" src="' . esc_url( apex_img( apex_war_src( $x['cover'] ) ) ) . '" alt="" width="640" height="336">';
+	$secs = '';
+	foreach ( $list as $k => $x ) {
+		$e = $eps( $x );
+		$secs .= '<section class="section sh-series' . ( $k % 2 ? ' washed' : '' ) . '" id="' . $E( $x['key'] ?? '' ) . '"><div class="wrap">
+        <div class="shead"><div><p class="eyebrow rv">' . $E( $x['channel'] ?? '' ) . ( $e ? ' · ' . $E( str_replace( '{n}', (string) count( $e ), $T( 'showsEps' ) ) ) : '' ) . '</p><h2 class="h-xl rv">' . apex_nb( $x['name'] ?? '' ) . '</h2><p class="reels-sub rv">' . $E( $x['lead'] ?? '' ) . '</p></div>
+          <div class="rail-ctrl rv"><button type="button" data-rp="' . $k . '" aria-label="' . $E( $T( 'prev' ) ) . '">' . $I( 'chevron-left' ) . '</button><button type="button" data-rn="' . $k . '" aria-label="' . $E( $T( 'next' ) ) . '">' . $I( 'chevron-right' ) . '</button></div></div>
+        <div class="rail war-rail" data-rail="' . $k . '">' . implode( '', array_map( 'apex_war_card', $e, array_keys( $e ) ) ) . '</div>
+        <a class="link-arrow rv" href="' . esc_url( apex_link( $x['href'] ?? '' ) ) . '">' . $E( $T( 'showsSeries' ) ) . ' ' . $I( 'arrow-right' ) . '</a></div></section>';
+	}
+	return '
+      <section class="war-head night"><div class="hb-glow" aria-hidden="true"></div><div class="wrap wh-grid"><div class="wh-copy">
+        ' . apex_crumbs( [ apex_home_crumb(), [ $T( 'shows' ) ] ] ) . '
+        <p class="eyebrow on-night rv">' . $E( implode( ' · ', array_column( $list, 'name' ) ) ) . '</p>
+        <h1 class="display-s sh-h1 rv" data-d="60">' . apex_nb( $T( 'shows' ) ) . '</h1>
+        <p class="lead rv" data-d="120">' . $E( $T( 'showsLead' ) ) . '</p></div>
+        <div class="wh-stack" aria-hidden="true">' . $stack . '</div>
+      </div></section>
+      ' . $secs . '
+      <section class="section washed social-s"><div class="wrap">' . apex_social_wall( $S, [ 'fb' => true ] ) . '</div></section>
+      <section class="section sh-soon-s"><div class="wrap"><div class="sh-soon rv"><span class="sh-soon-i">' . $I( 'play' ) . '</span><div><h2 class="h-m">' . $E( $T( 'showsSoon' ) ) . '</h2><p>' . $E( $T( 'showsSoonP' ) ) . '</p></div></div></div></section>
       <section class="section night"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>';
 }
 
@@ -1117,7 +1198,7 @@ function apex_page_contact( array $r ): string {
 
 /* FEATURE PAGES: a heading and an empty host the module fills in the browser */
 const APEX_FEATURES = [
-	'nose' => [ 'nose', 'nosePageH', 'nosePageP', 'nose', 'night-s' ],
+	'filler' => [ 'filler', 'fillPageH', 'fillPageP', 'filler', 'prop-s' ],
 	'proportions' => [ 'proportions', 'propPageH', 'propPageP', 'proportions', 'prop-s' ],
 	'analysis' => [ 'analysis', 'anaPageH', 'anaPageP', 'analysis', 'prop-s' ],
 	'play' => [ 'games', 'playPageH', 'playPageP', 'games', 'play-s' ],

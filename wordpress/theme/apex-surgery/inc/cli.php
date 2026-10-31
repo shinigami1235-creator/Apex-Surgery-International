@@ -30,7 +30,7 @@ class Apex_CLI {
 	 */
 	public function import( $args, $assoc ) {
 		if ( ! function_exists( 'pll_set_post_language' ) ) WP_CLI::error( 'Polylang is not active. Run: wp plugin activate polylang' );
-		$this->dir = rtrim( $assoc['dir'] ?? ( is_dir( APEX_DIR . '/import' ) ? APEX_DIR . '/import' : dirname( APEX_DIR, 2 ) . '/import' ), '/' );
+		$this->dir = rtrim( $assoc['dir'] ?? APEX_DIR . '/import', '/' );
 		foreach ( APEX_LANGS as $l ) {
 			$f = "{$this->dir}/content-$l.json";
 			if ( ! is_readable( $f ) ) WP_CLI::error( "Missing $f" );
@@ -265,8 +265,8 @@ class Apex_CLI {
 		WP_CLI::log( 'Cases: ' . count( $this->made['apex_case'] ?? [] ) );
 	}
 	private function pages(): void {
-		$src = [ 'home' => 'home', 'about' => 'about', 'doctor' => 'team', 'services' => 'services', 'promotions' => 'promotions', 'reviews' => 'reviews', 'blog' => 'blogs', 'contact' => 'contact', 'privacy' => 'privacy' ];
-		$i18n_title = [ 'about' => 'about', 'services' => 'services', 'doctor' => 'doctorsH', 'promotions' => 'promotions', 'reviews' => 'reviews', 'blog' => 'articles', 'war' => 'war', 'contact' => 'contact', 'nose' => 'nose', 'analysis' => 'ana', 'proportions' => 'prop', 'implBreast' => 'implBreastH', 'implChin' => 'implChinH', 'implForehead' => 'implForeheadH', 'implNose' => 'implNoseH', 'play' => 'games', 'plan' => 'plan', 'trip' => 'trip', 'consult' => 'consultPageH' ];
+		$src = [ 'home' => 'home', 'about' => 'about', 'doctor' => 'team', 'services' => 'services', 'promotions' => 'promotions', 'reviews' => 'reviews', 'blog' => 'blogs', 'contact' => 'contact', 'privacy' => 'privacy', 'treatments' => 'treatments', 'shows' => 'shows' ];
+		$i18n_title = [ 'about' => 'about', 'services' => 'services', 'doctor' => 'doctorsH', 'promotions' => 'promotions', 'reviews' => 'reviews', 'blog' => 'articles', 'war' => 'war', 'contact' => 'contact', 'treatments' => 'treatments', 'shows' => 'shows', 'filler' => 'fill', 'analysis' => 'ana', 'proportions' => 'prop', 'implBreast' => 'implBreastH', 'implChin' => 'implChinH', 'implForehead' => 'implForeheadH', 'implNose' => 'implNoseH', 'play' => 'games', 'plan' => 'plan', 'trip' => 'trip', 'consult' => 'consultPageH' ];
 		$order = 0;
 		foreach ( apex_page_types() as $key => [ $label, $en_slug, $th_slug ] ) {
 			$order++;
@@ -302,7 +302,7 @@ class Apex_CLI {
 	 * : Folder with content-<lang>.json.
 	 */
 	public function check( $args, $assoc ) {
-		$dir = rtrim( $assoc['dir'] ?? ( is_dir( APEX_DIR . '/import' ) ? APEX_DIR . '/import' : dirname( APEX_DIR, 2 ) . '/import' ), '/' );
+		$dir = rtrim( $assoc['dir'] ?? APEX_DIR . '/import', '/' );
 		if ( ! defined( 'APEX_NO_CACHE' ) ) define( 'APEX_NO_CACHE', true );
 		$bad = 0; $n = 0;
 		foreach ( APEX_LANGS as $l ) {

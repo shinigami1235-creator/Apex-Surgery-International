@@ -2,16 +2,14 @@
 // with `wp apex check` that the content is still exactly the design's. Also reports blocks the block
 // editor considers invalid (it would show "This block contains unexpected content").
 //   WP_PASS_FILE=... node tests/wordpress/admin.mjs [http://localhost:8080] [only-type]
-import {createRequire} from 'module';
 import {execSync} from 'child_process';
 import fs from 'fs';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
+import {chromium} from '../pw.mjs';
 
 const BASE = (process.argv[2] || 'http://localhost:8080').replace(/\/$/, '');
 const ONLY = process.argv[3] || '';
 const WP = process.env.WP_PATH || '/home/claude/wp/site';
-const USER = process.env.WP_USER || 'apexadmin';
+const USER = process.env.WP_USER || 'apex-admin';
 const PASS = fs.readFileSync(process.env.WP_PASS_FILE, 'utf8').trim();
 const wp = c => execSync(`wp --allow-root --path=${WP} ${c}`, {encoding:'utf8'});
 

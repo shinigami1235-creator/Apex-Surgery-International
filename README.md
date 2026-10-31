@@ -20,7 +20,8 @@ Redesign of apexsurgeryhospital.com for Apex. English is the main language since
 | Feature | Page | Notes |
 |---|---|---|
 | Body map | Home | Male and female particle bodies from the MakeHuman base mesh (CC0). Tap an area to zoom in and see its procedures, concerns and recovery |
-| Nose preview | `nose.html` | Front, 45 degree and profile photos, preset noses, drag handles, save to phone. Runs in the browser |
+| Filler simulator | `filler.html` | Filler points on a 3D face by area, with the products Apex uses |
+| Non-surgical treatments | `treatments.html` | Apex's treatment list by group, with a search. `nose.html` forwards to the nose implant viewer |
 | Golden proportions | `proportions.html` | A front photo is measured on five ratios and warped toward them: chin length (middle and lower face equal), nose width (equal to the gap between the eyes), lip balance (lower lip 1.6 times the upper), jawline (against the cheekbones, with a women and men ideal) and the golden ratio of mouth to nose. Only what treatment can change moves. Each change can be switched off, an amount slider sets the strength, and the saved image lists the ratios before and after. A golden spiral can be shown on the face and the saved image. Runs in the browser |
 | Face analysis | `analysis.html` | A front photo, with two optional side photos at 45°, is read for fine lines, texture and pores, spots and evenness, redness, under the eyes, sagging and folds, shine, the upper lid fold and balance. Each gets a level and the area where it shows most, and the photo marks where it was found. A skin score, a skin age and the golden match sit above. Runs in the browser |
 | Implant viewers | `breast-implants.html`, `chin-implants.html`, `forehead-implants.html`, `nose-implants.html` | One page per area, each with a 3D model beside the same model with the implant in, turned together by dragging, and the visitor's own photo as a second view. Breast: Motiva and Mentor sizes on a body of the visitor's height, weight and cup size. Chin, forehead and nose: silicone implant sizes in millimetres on a female or male face. Runs in the browser |
@@ -51,7 +52,7 @@ Score targets and prizes in `assets/features/games/config.js` are examples set f
 | `BRIEF.md` | Design tokens and writing rules |
 | `REQUIREMENTS.md` | Apex IT's checklist and the status of each item |
 | `wordpress/theme/apex-surgery/` | The WordPress theme. PHP draws every page with the same markup as the design |
-| `wordpress/import/` | Both languages of content for `wp apex import` |
+| `wordpress/theme/apex-surgery/import/` | Both languages of content for `wp apex import`, written by `build-theme.mjs` |
 | `wordpress/HANDOVER.md` | Install steps, addresses, roles, patient data, spam limits and the checks before launch |
 | `tests/wordpress/` | Tests for the theme: server pages against the scripts, every edit screen, the forms, accessibility |
 
@@ -104,11 +105,11 @@ The golden spiral is decoration and has no score, since a spiral can be scaled a
 
 The ranges in `factors.js` were first set on 28 stock photos of people from their twenties to their eighties (`tests/analysis/faces/`, `tests/proportions/faces/`), then tightened on 22 October 2026 against 25 captures from Gid's Trica skin scanner, which scores each face itself, and against phone selfies. On the scanner set the skin score ranks faces in close agreement with the scanner's wrinkle score (Spearman 0.82), and the age read from the skin alone is within 5 years of the scanner's skin age on average. The scanner photos are patient photos, so they were used in the working session only and are not in this repository. A soft phone photo has its thresholds lowered to match, since phone smoothing flattens lines and pores. Apex's doctors should still check the levels against their own patients before launch.
 
-The skin age comes from the age model in face-api (MIT licence, loaded from jsDelivr), weighed 60/40 with an age read from the skin readings and kept at 18 or over. The model reads young Asian women several years young, which is why it is not shown alone. The photo checks warn when the face is small, smoothed by a beauty mode, blurred, dimly or unevenly lit, or turned.
+The skin age comes from the age model in face-api (MIT licence, served from `site/assets/vendor/face-api/`), weighed 60/40 with an age read from the skin readings and kept at 18 or over. The model reads young Asian women several years young, which is why it is not shown alone. The photo checks warn when the face is small, smoothed by a beauty mode, blurred, dimly or unevenly lit, or turned.
 
 ## Implant viewers
 
-`site/assets/features/implants/` holds the four viewers. `index.js` is the page and takes the area from the page. `shapes.js` does the geometry, `scene.js` draws the 3D view with three.js, `photo.js` does the photo view and `catalog.js` holds the sizes.
+`site/assets/features/implants/` holds the four viewers. `index.js` is the page and takes the area from the page. `shapes.js` does the geometry, `scene.js` draws the 3D view with three.js and `catalog.js` holds the sizes.
 
 - **Breast:** each implant is built as a height field with the catalogue's width, projection and height. Its edge is shaped so the volume matches the catalogue cc exactly, and soft-gel lines settle toward the lower pole. The tissue over it blurs the edge, and the result is added to the body along the chest wall, so each breast grows by the implant's volume (`tests/implants/volumes.mjs` checks this to within 2%). The body is scaled to the visitor's height and morphed for weight and current cup. A warning shows when the implant is wider than the breast base. "See the implant" shows the implant through the skin.
 - **Chin, forehead and nose:** the implant is a thickness map in millimetres laid on the skin along its normal. The face is set to an average nasion-to-chin length (112 mm for women, 122 mm for men), so millimetres are true to an average face. The skin follows the implant at 90 to 95%.
@@ -170,8 +171,8 @@ The theme in `wordpress/theme/apex-surgery/` turns the design into the live site
 
 ## Before launch
 
-1. Ask Apex whether the English pages, the nose preview, the face analysis (its skin score and skin age in particular), the implant viewers (they name Motiva, Mentor and Implantech) and the game prizes need สบส. approval. The footer carries permit number ฆสพ.สบส.866/2569, which was issued for the Thai content.
-2. Get Apex's own nose shapes and names to replace the placeholder presets.
+1. Ask Apex whether the English pages, the filler simulator, the face analysis (its skin score and skin age in particular), the implant viewers (they name Motiva, Mentor and Implantech) and the game prizes need สบส. approval. The footer carries permit number ฆสพ.สบส.866/2569, which was issued for the Thai content.
+2. Confirm the facial bone surgery stay of 14 days in the trip planner (`site/assets/features/trip/index.js`, `STAY_DAYS`).
 3. Get Apex's prize list and confirm the score targets with a human playtest.
 4. Confirm WhatsApp +66 85 000 2001 (the Apex group's international line) is the right number for this hospital.
 5. Check the composite before/after images and set their layout.

@@ -8,12 +8,10 @@ This is the new apexsurgeryhospital.com as a WordPress theme, in English and Tha
 |---|---|
 | `theme/apex-surgery/` | The theme. Every page of the site is drawn by it. |
 | `theme/apex-surgery/inc/` | The PHP, one file per job. `functions.php` lists them. |
-| `import/` | The site's content in both languages, read by `wp apex import`. |
-| `tools/build-theme.mjs` | Copies the styles, scripts, fonts and 3D files into the theme and refreshes `import/`. |
+| `tools/build-theme.mjs` | Copies the styles, scripts, fonts and 3D files into the theme, writes the site's content in both languages to `theme/apex-surgery/import/` for `wp apex import`, and builds `dist/apex-surgery-theme.zip`. |
 | `docker/` | A local copy of the site for testing. |
-| `dist/apex-surgery-theme.zip` | The finished theme, ready to upload. |
 
-The theme in the repository has no `assets/` folder. Build it with `node wordpress/tools/build-theme.mjs` from the repository root, or upload the zip in `dist/`, which already has everything.
+The theme in the repository has no `assets/` or `import/` folder. Build it with `node wordpress/tools/build-theme.mjs` from the repository root, or download `apex-surgery-theme.zip` from the repository's latest release on GitHub (Releases, on the right of the repository page), which already has everything.
 
 ## What the server needs
 
@@ -103,7 +101,7 @@ Do this on staging first. When staging passes the checks at the end, repeat on t
    ExpiresByType image/webp "access plus 1 year"
    ```
 
-   A year is safe since the theme adds a version to its file addresses and changes it whenever a file changes.
+   A year is safe since every file the pages load carries the build's version in its address, including the files each tool loads in turn, and the version changes whenever a file does.
 
 9. Fill in Apex settings in the admin:
    - **Forms:** the email addresses that get enquiry alerts. Leave it empty and the alerts go to the WordPress admin address, so check that address first.
@@ -270,7 +268,7 @@ Enquiries › Access log, for Administrators only, lists who opened an enquiry, 
 ## Spam and limits
 
 - The consultation form has a hidden trap field and allows 6 enquiries an hour from one connection. Apex settings › Forms takes a Cloudflare Turnstile key for a visible check as well.
-- Vouchers need a scored game of at least 10 seconds and are limited to 3 a day from one connection. The game runs on the visitor's phone, so a determined person can still fake a score. The reception check shows the code, name, prize and date, and marks the voucher used so it works once.
+- Vouchers need a scored game of at least 10 seconds and are limited to 4 a day from one connection, the 3 daily runs plus the one a Learn set adds. The game runs on the visitor's phone, so a determined person can still fake a score. The reception check shows the code, name, prize and date, and marks the voucher used so it works once.
 - After 8 wrong passwords for one username from one connection, that login waits 15 minutes.
 - Behind Cloudflare or a load balancer every visitor arrives from the proxy's address. Set `APEX_IP_HEADER` (step 7) or the limits apply to everyone at once.
 

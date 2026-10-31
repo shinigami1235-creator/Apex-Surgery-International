@@ -1039,19 +1039,26 @@ export function mount(container, opts = {}) {
         code: makeCode(taken), game: run.id, prize: tier.prize, tier: tier.index, score: run.score, level: run.level,
         name: nameIn.value.trim().slice(0, 60), issued: now, expires: now + voucherDays * 86400e3, seed: run.seed,
         run: { durationMs: run.durationMs, inputs: run.inputs, logLength: run.log.length },
-        consent: true, remind: remind.checked ? { channel: 'line', when: f ? f.value : 'reset' } : null, preview: !opts.voucherEndpoint
+        consent: true, remind: remind.checked ? { channel: 'line', when: f ? f.value : 'reset' } : null, preview: true
       };
       const all = vouchers(); all.push(v); store.set(K.vouchers, all);
-      if (opts.voucherEndpoint) {
-        // recorded on the clinic's site so reception can see it is real; the voucher works on the phone either way
-        fetch(opts.voucherEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
-          body: JSON.stringify({ code: v.code, game: v.game, tier: v.tier, score: v.score, name: v.name, lang, run: v.run }) })
-          .then(r => r.ok ? r.json() : null).then(j => { if (j && j.ok) { const a = vouchers(); const x = a.find(y => y.code === v.code); if (x) { x.registered = true; delete x.preview; store.set(K.vouchers, a); } } })
-          .catch(() => { /* offline: reception checks the screen */ });
-      }
-      onEvent('games:voucher', { code: v.code, game: v.game, score: v.score, prize: v.prize, remind: v.remind });
-      sfx.play('prize');
-      showVoucherStep(o, v, run);
+      const shown = () => {
+        onEvent('games:voucher', { code: v.code, game: v.game, score: v.score, prize: v.prize, remind: v.remind });
+        sfx.play('prize');
+        showVoucherStep(o, v, run);
+      };
+      if (!opts.voucherEndpoint) return shown();
+      /* recorded on the clinic's site so reception can find it. A voucher the server refuses (daily limit) or
+         never receives (offline) keeps the Preview tag; a late success still clears it in storage. */
+      create.disabled = true;
+      const reg = fetch(opts.voucherEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
+        body: JSON.stringify({ code: v.code, game: v.game, tier: v.tier, score: v.score, name: v.name, lang, run: v.run }) })
+        .then(r => r.ok ? r.json() : null).then(j => {
+          if (!(j && j.ok)) return;
+          v.registered = true; delete v.preview;
+          const a = vouchers(); const x = a.find(y => y.code === v.code); if (x) { x.registered = true; delete x.preview; store.set(K.vouchers, a); }
+        }).catch(() => {});
+      Promise.race([reg, new Promise(r => setTimeout(r, 6000))]).then(shown);
     });
     const sheet = h('div', { class: 'g-sheet', 'data-step': 'details' },
       resultHead(run.id, L(tier.prize), true),

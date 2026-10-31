@@ -1,11 +1,10 @@
 // The real Face analysis page with the models and photos served locally: desktop, phone and tablet, both languages,
 // plus the home card, the services tool and an accessibility check
-import {createRequire} from 'module';
 import fs from 'fs';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
-const SP = '/tmp/claude-0/-home-claude/b5460f3c-e75e-551e-b4ae-fc0088d5c4d9/scratchpad/';
-const MP = SP + 'mp/node_modules/@mediapipe/face_mesh/', FA = SP + 'fa/node_modules/@vladmandic/face-api/', OUT = process.argv[2] || SP + 'sp';
+import os from 'os';
+import {chromium} from '../pw.mjs';
+const SP = fs.mkdtempSync(os.tmpdir() + '/apex-');   // screenshots
+const MP = new URL('../../site/assets/vendor/face_mesh/', import.meta.url).pathname, FA = new URL('../../site/assets/vendor/face-api/', import.meta.url).pathname, OUT = process.argv[2] || SP;
 const DIRS = ['tests/proportions/faces/', 'tests/analysis/faces/'];
 const findFace = id => { for (const d of DIRS) { const f = fs.readdirSync(d).find(x => x.startsWith(id)); if (f) return d + f; } return null; };
 const type = f => f.endsWith('.js') ? 'text/javascript' : f.endsWith('.wasm') ? 'application/wasm' : f.endsWith('.json') ? 'application/json' : 'application/octet-stream';
@@ -36,8 +35,8 @@ for (const [w, h, path] of [[1440, 900, 'analysis.html'], [390, 844, 'th/analysi
   await p.click('[data-act="plan"]');
   const planned = await p.evaluate(() => { try { return localStorage.getItem('apex.plan') || Object.keys(localStorage).join(','); } catch (e) { return ''; } });
   if (!planned) fails.push(`${w} nothing in plan storage`);
-  if (w === 1440) {
-    await p.addScriptTag({path:SP + 'axe/node_modules/axe-core/axe.min.js'});
+  if (w === 1440 && process.env.AXE_PATH) {   // accessibility check with axe-core: AXE_PATH=<folder>/axe.min.js
+    await p.addScriptTag({path:process.env.AXE_PATH});
     const ax = await p.evaluate(async () => (await axe.run(document.querySelector('.fa'), {runOnly:['wcag2a', 'wcag2aa']})).violations.map(v => `${v.id}: ${v.nodes.length} ${v.nodes.slice(0, 2).map(n => n.target.join(' ')).join(' / ')}`));
     if (ax.length) fails.push('axe ' + ax.join('; '));
   }

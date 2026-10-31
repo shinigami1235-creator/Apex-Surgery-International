@@ -178,7 +178,7 @@ function apex_game_config(): array {
 			[ 'en' => 'Skincare kit', 'th' => 'ชุดผลิตภัณฑ์ดูแลผิว' ],
 			[ 'en' => 'Airport pickup (international clients)', 'th' => 'บริการรับจากสนามบิน (ลูกค้าต่างประเทศ)' ],
 		],
-		'perDay' => 3,
+		'perDay' => 4,   // 3 scored runs a day plus 1 for finishing a Learn set, as the games allow
 	];
 	$o = get_option( 'apex_games' );
 	if ( ! is_array( $o ) ) return $def;
@@ -470,7 +470,7 @@ function apex_games_page(): void {
 	if ( ! current_user_can( 'manage_options' ) ) return;
 	if ( isset( $_POST['apex_games_nonce'] ) && wp_verify_nonce( sanitize_key( $_POST['apex_games_nonce'] ), 'apex_games' ) ) {
 		$in = wp_unslash( $_POST['g'] ?? [] );
-		$o = [ 'days' => max( 1, (int) ( $in['days'] ?? 60 ) ), 'perDay' => max( 1, (int) ( $in['perDay'] ?? 3 ) ), 'games' => [], 'prizes' => [] ];
+		$o = [ 'days' => max( 1, (int) ( $in['days'] ?? 60 ) ), 'perDay' => max( 1, (int) ( $in['perDay'] ?? 4 ) ), 'games' => [], 'prizes' => [] ];
 		foreach ( apex_game_config()['games'] as $g => $t ) foreach ( $t as $i => $x ) $o['games'][ $g ][ $i ] = max( 1, (int) ( $in['games'][ $g ][ $i ] ?? $x ) );
 		for ( $i = 0; $i < 3; $i++ ) foreach ( APEX_LANGS as $l ) $o['prizes'][ $i ][ $l ] = sanitize_text_field( $in['prizes'][ $i ][ $l ] ?? '' );
 		update_option( 'apex_games', $o, true );

@@ -5,10 +5,8 @@
    summary with WhatsApp and LINE buttons. Either way it emits consult:submit. */
 
 import * as store from '../plan/store.js';
-import { PROC_KEYS, BRANCHES, BRANCH_KEYS, t, procName } from '../plan/procedures.js';
+import { PROC_KEYS, BRANCHES, BRANCH_KEYS, t, procName, contactOf, injectCSS, h } from '../plan/procedures.js';
 
-const WHATSAPP = '66850002001';
-const LINE_OA = '@apexsurgery';
 
 /* ------------------------------------------------------------------------------------------
    send(payload): the one place a real backend plugs in.
@@ -28,12 +26,31 @@ export async function send(payload) {
   return { sent: false, preview: true, fields: payload.fields };
 }
 
+/* Re-draws a photo as a JPEG no larger than 2400 px, the size the server keeps. A 50-megapixel or HEIC photo
+   then fits under the server's 12 MB limit, uploads faster on mobile data, and leaves the camera's location
+   data on the phone. A photo the browser can't draw is sent as it is. */
+export async function shrink(file, max = 2400) {
+  try {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(url);
+    const b = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.88));
+    return b || file;
+  } catch (e) { return file; }
+}
+
 /* Posts the enquiry to the clinic's endpoint as multipart form data: the fields as JSON in "enquiry",
    each photo as photo_<view>, the hidden trap field and, when the site uses it, the Turnstile token. */
 export async function post(endpoint, payload, extra = {}) {
   const fd = new FormData();
   fd.append('enquiry', JSON.stringify(payload.fields));
-  payload.photos.forEach(p => fd.append('photo_' + p.view, p.file, p.file.name || p.view + '.jpg'));
+  for (const p of payload.photos) fd.append('photo_' + p.view, await shrink(p.file), p.view + '.jpg');
   Object.entries(extra).forEach(([k, v]) => { if (v != null) fd.append(k, v); });
   const r = await fetch(endpoint, { method: 'POST', body: fd, credentials: 'same-origin' });
   let j = {};
@@ -267,27 +284,12 @@ const ICON = {
   line: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.6 2 11c0 4 3.6 7.3 8.4 7.9.3.1.8.2.9.5.1.3.1.7 0 1l-.1.9c0 .3-.2 1 .9.6 1.1-.5 6-3.5 8.2-6A7.5 7.5 0 0 0 22 11c0-4.4-4.5-8-10-8z"/></svg>'
 };
 
-function injectCSS() {
-  if (document.getElementById('apxc-css')) return;
-  const s = document.createElement('style'); s.id = 'apxc-css'; s.textContent = CSS; document.head.append(s);
-}
-function h(tag, attrs, ...kids) {
-  const el = document.createElement(tag);
-  if (attrs) for (const k in attrs) {
-    const v = attrs[k];
-    if (v == null || v === false) continue;
-    if (k === 'html') el.innerHTML = v;
-    else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
-    else el.setAttribute(k, v === true ? '' : v);
-  }
-  kids.flat(Infinity).forEach(c => { if (c != null && c !== false) el.append(c.nodeType ? c : String(c)); });
-  return el;
-}
 const fmtDate = (iso, lang) => !iso ? '' : new Date(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)))
   .toLocaleDateString(lang === 'th' ? 'th-TH' : 'en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' });
 
 export function mount(container, opts = {}) {
-  injectCSS();
+  const { wa: WHATSAPP, line: LINE_OA } = contactOf(opts);
+  injectCSS('apxc-css', CSS);
   const lang = opts.lang === 'th' ? 'th' : 'en';
   const L = o => t(o, lang);
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) { /* host handler error */ } };

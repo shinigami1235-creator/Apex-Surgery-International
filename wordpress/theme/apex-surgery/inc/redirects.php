@@ -27,6 +27,8 @@ function apex_redirect_for( string $path ): string {
 	if ( $p === '' ) return '';
 	// 1. typed in by an editor
 	foreach ( apex_manual_redirects() as $from => $r ) if ( $from === $p ) return $r['to'];
+	// the retired photo nose preview: its page now is the 3D nose implant viewer
+	if ( preg_match( '#^(?:(en|th)/)?nose-preview$#', $p, $m ) ) return apex_link( 'nose-implants.html', ( $m[1] ?? '' ) ?: ( str_starts_with( $p, 'th/' ) ? 'th' : 'en' ) );
 	// 2. an item that came from the old site
 	$ids = get_posts( [ 'post_type' => 'any', 'post_status' => 'publish', 'meta_key' => '_apex_old', 'meta_value' => $p, 'posts_per_page' => 1, 'fields' => 'ids', 'lang' => '', 'suppress_filters' => true ] );
 	if ( $ids ) return get_permalink( $ids[0] );
@@ -52,6 +54,11 @@ function apex_manual_redirects(): array {
 	}
 	return $out;
 }
+
+/* a nose preview page left from an earlier import opens the nose implant viewer too */
+add_action( 'template_redirect', function () {
+	if ( is_page() && get_post_meta( get_queried_object_id(), '_apex_page', true ) === 'nose' ) { wp_safe_redirect( apex_link( 'nose-implants.html' ), 301, 'Apex' ); exit; }
+}, 1 );
 
 /* runs before WordPress guesses a page for the missing address */
 add_action( 'template_redirect', function () {

@@ -2,7 +2,7 @@
    mount(container, {lang, base, serviceUrl, onEvent, arrival?, procedures?, branch?, links?}) -> {destroy()} */
 
 import * as store from '../plan/store.js';
-import { PROCS, PROC_KEYS, BRANCHES, BRANCH_KEYS, t, procName } from '../plan/procedures.js';
+import { PROCS, PROC_KEYS, BRANCHES, BRANCH_KEYS, t, procName, contactOf, injectCSS, h, fill, loadData } from '../plan/procedures.js';
 
 /* ------------------------------------------------------------------------------------------
    PLANNING CONFIG
@@ -15,6 +15,7 @@ export const STAY_DAYS = {
   browlift: 10,     /* initial recovery 7 to 14 days */
   rhinoplasty: 10,  /* rest at least 7 to 14 days */
   eyelid: 7,        /* swelling eases in 7 to 14 days */
+  bone: 14,         /* same light-work milestone as breast; Apex to confirm */
   breast: 14,       /* back to light work in weeks 2 to 4 */
   lipo: 10          /* driving after 3 to 7 days */
 };
@@ -26,8 +27,6 @@ export const SURGERY_AFTER_CONSULT = 1;
 /* Follow-up check this many days before the earliest flight home. */
 export const FOLLOWUP_BEFORE_FLIGHT = 1;
 
-const WHATSAPP = '66850002001';
-const LINE_OA = '@apexsurgery';
 const T = {
   sendH: { en: 'Send these dates to Apex', th: 'ส่งวันเหล่านี้ให้ Apex' },
   sendP: { en: 'The team checks the surgeon\'s schedule and replies with the dates they can do.', th: 'ทีมงานจะเช็กตารางศัลยแพทย์และตอบกลับวันที่ทำได้' },
@@ -184,43 +183,7 @@ const ICON = {
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
 };
 
-function injectCSS() {
-  if (document.getElementById('apxt-css')) return;
-  const s = document.createElement('style'); s.id = 'apxt-css'; s.textContent = CSS; document.head.append(s);
-}
-function h(tag, attrs, ...kids) {
-  const el = document.createElement(tag);
-  if (attrs) for (const k in attrs) {
-    const v = attrs[k];
-    if (v == null || v === false) continue;
-    if (k === 'html') el.innerHTML = v;
-    else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
-    else el.setAttribute(k, v === true ? '' : v);
-  }
-  kids.flat(Infinity).forEach(c => { if (c != null && c !== false) el.append(c.nodeType ? c : String(c)); });
-  return el;
-}
-const fill = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => (o[k] ?? ''));
 
-/* ---------- data files (data/<lang>/<file>.js assign APEX._d[id]) ---------- */
-const dataCache = {};
-export function loadData(base, lang, id) {
-  const ck = lang + '|' + id;
-  if (dataCache[ck]) return dataCache[ck];
-  const file = id.includes(':') ? id.replace(':', '/') : id;
-  const P = window.APEX || {};
-  if (P._d && P._d[id] && (P.lang || lang) === lang) return Promise.resolve(JSON.parse(JSON.stringify(P._d[id])));
-  const one = l => new Promise((res, rej) => {
-    const s = document.createElement('script');
-    s.src = P.dataUrl ? `${P.dataUrl}${l}/${file}` : `${base}data/${l}/${file}.js`;
-    s.onload = () => { s.remove(); const d = window.APEX && APEX._d && APEX._d[id]; d ? res(JSON.parse(JSON.stringify(d))) : rej(new Error('empty ' + id)); };
-    s.onerror = () => { s.remove(); rej(new Error('missing ' + s.src)); };
-    document.head.append(s);
-  });
-  dataCache[ck] = one(lang).catch(e => (lang !== 'th' ? one('th') : Promise.reject(e)));
-  dataCache[ck].catch(() => { delete dataCache[ck]; });
-  return dataCache[ck];
-}
 
 /* ---------- date helpers on plain YYYY-MM-DD strings (UTC, no time zone drift) ---------- */
 const toMs = iso => Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10));
@@ -290,7 +253,8 @@ export function buildICS(plan, { lang, address, branchName }) {
 }
 
 export function mount(container, opts = {}) {
-  injectCSS();
+  const { wa: WHATSAPP, line: LINE_OA } = contactOf(opts);
+  injectCSS('apxt-css', CSS);
   const lang = opts.lang === 'th' ? 'th' : 'en';
   const L = o => t(o, lang);
   const base = opts.base || new URL('../../', import.meta.url).href;

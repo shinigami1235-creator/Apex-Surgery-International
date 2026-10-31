@@ -1,9 +1,7 @@
 // Accessibility (WCAG 2 A and AA rules in axe-core) on the WordPress pages as the server sends them,
 // with the cookie banner open, in both languages.
 //   AXE=/path/to/axe.min.js node tests/wordpress/axe.mjs [http://localhost:8080]
-import {createRequire} from 'module';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
+import {chromium} from '../pw.mjs';
 const BASE = (process.argv[2] || 'http://localhost:8080').replace(/\/$/, '');
 const AXE = process.env.AXE;
 const PAGES = ['/', '/about/', '/services/', '/surgery/facelift/', '/doctors/', '/offers/', '/patient-reviews/', '/articles/', '/articles/smas/', '/surgery-wars/', '/surgery-wars/ep-3/', '/contact/', '/consultation/', '/no-such-page/'];

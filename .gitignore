@@ -8,3 +8,6 @@ undefined/
 wordpress/theme/apex-surgery/assets/
 wordpress/theme/apex-surgery/data/
 wordpress/theme/apex-surgery/import/
+
+# the theme zip is built by wordpress/tools/build-theme.mjs and attached to a GitHub release, not committed
+wordpress/dist/

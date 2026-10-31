@@ -4,7 +4,7 @@
      data/<lang>/svc/<key>.js plus home.js. A video listed on several service pages is labelled with
      the first procedure that lists it (facelift before brow lift), since the clips are shared. */
 
-import { PROC_KEYS, t, procName } from '../plan/procedures.js';
+import { PROC_KEYS, t, procName, injectCSS, h, fill, loadData } from '../plan/procedures.js';
 
 const SITE = 'https://www.apexsurgeryhospital.com/';
 // '~/' is the client's media library; img/ and video/ are this site's own assets, under the assets base
@@ -177,44 +177,8 @@ const CSS = `
 @media (prefers-reduced-motion:reduce){.apxs *,.apxs-v *{transition:none!important;animation-duration:2s!important}}
 `;
 
-function injectCSS() {
-  if (document.getElementById('apxs-css')) return;
-  const s = document.createElement('style'); s.id = 'apxs-css'; s.textContent = CSS; document.head.append(s);
-}
-function h(tag, attrs, ...kids) {
-  const el = document.createElement(tag);
-  if (attrs) for (const k in attrs) {
-    const v = attrs[k];
-    if (v == null || v === false) continue;
-    if (k === 'html') el.innerHTML = v;
-    else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
-    else el.setAttribute(k, v === true ? '' : v);
-  }
-  kids.flat(Infinity).forEach(c => { if (c != null && c !== false) el.append(c.nodeType ? c : String(c)); });
-  return el;
-}
-const fill = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => (o[k] ?? ''));
 const reduced = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
 
-/* ---------- data files (data/<lang>/<file>.js assign APEX._d[id]) ---------- */
-const dataCache = {};
-function loadData(base, lang, id) {
-  const ck = lang + '|' + id;
-  if (dataCache[ck]) return dataCache[ck];
-  const file = id.includes(':') ? id.replace(':', '/') : id;
-  const P = window.APEX || {};
-  if (P._d && P._d[id] && (P.lang || lang) === lang) return Promise.resolve(JSON.parse(JSON.stringify(P._d[id])));
-  const one = l => new Promise((res, rej) => {
-    const s = document.createElement('script');
-    s.src = P.dataUrl ? `${P.dataUrl}${l}/${file}` : `${base}data/${l}/${file}.js`;
-    s.onload = () => { s.remove(); const d = window.APEX && APEX._d && APEX._d[id]; d ? res(JSON.parse(JSON.stringify(d))) : rej(new Error('empty ' + id)); };
-    s.onerror = () => { s.remove(); rej(new Error('missing ' + s.src)); };
-    document.head.append(s);
-  });
-  dataCache[ck] = one(lang).catch(e => (lang !== 'th' ? one('th') : Promise.reject(e)));
-  dataCache[ck].catch(() => { delete dataCache[ck]; });
-  return dataCache[ck];
-}
 
 /* Items from the service files (in procedure order) and home.js, one entry per video file. */
 export async function itemsFromData(base, lang) {
@@ -230,7 +194,7 @@ export async function itemsFromData(base, lang) {
 }
 
 export function mount(container, opts = {}) {
-  injectCSS();
+  injectCSS('apxs-css', CSS);
   const lang = opts.lang === 'th' ? 'th' : 'en';
   const L = o => t(o, lang);
   const base = opts.base || new URL('../../', import.meta.url).href;

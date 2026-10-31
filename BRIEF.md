@@ -4,24 +4,24 @@
 
 A redesign of https://www.apexsurgeryhospital.com, a plastic surgery hospital in Thailand (Phloen Chit, Bangkok and Phuket) that belongs to the Apex Medical Center group. The site is aimed at international clients first. Thai is the main language of the existing content and English is the priority for the new site, so everything ships in both.
 
-The current build is a static preview for GitHub Pages. It will later become a WordPress theme, so keep data separate from markup and keep every feature self-contained.
+The design is a static preview for GitHub Pages, and `wordpress/` turns it into the WordPress theme that goes live. Keep data separate from markup and keep every feature self-contained.
 
-- Site root: `/home/claude/apex-surgery/site/`
+- Site root: `site/`
   - English pages at the root, Thai pages under `/th/`.
   - Shared assets in `/assets/`.
-- Crawled source content (Thai, verbatim): `/home/claude/apex-surgery/_source/crawl.json`.
+- Crawled source content (Thai, verbatim): `_source/crawl.json`.
   - `pages` is keyed by URL path.
   - Each entry has `blocks`, a list of `{t: type, x: text, src, h: link, alt}`.
   - Image paths starting with `~/` are relative to `https://www.apexsurgeryhospital.com/`.
-- Review video files: `/home/claude/apex-surgery/_source/videos.json`. Paths are relative to `https://www.apexsurgeryhospital.com/wp-content/uploads/`.
-- Reference code from the group's main site, which already uses this design system: `/home/claude/apex-surgery/_ref/`.
+- Review video files: `_source/videos.json`. Paths are relative to `https://www.apexsurgeryhospital.com/wp-content/uploads/`.
+- Reference code from the group's main site, which already uses this design system: `_ref/` (not committed).
   - `apex.css`: design tokens and components.
   - `core.js`: page shell.
   - `atlas.js`: the particle face built from the MediaPipe canonical face mesh, using three.js.
   - `facemesh.js`: that mesh, as `window.FACEMESH`.
   - `whatif-core.js`: a face-landmark photo tool on @mediapipe/face_mesh.
 
-## The six procedures (service keys)
+## The seven procedures (service keys)
 
 | key | Thai | English | Service page |
 |---|---|---|---|
@@ -29,6 +29,7 @@ The current build is a static preview for GitHub Pages. It will later become a W
 | browlift | ยกคิ้ว | Brow lift | `service.html?p=browlift` |
 | rhinoplasty | เสริมจมูก | Rhinoplasty | `service.html?p=rhinoplasty` |
 | eyelid | ทำตาสองชั้น | Double eyelid surgery | `service.html?p=eyelid` |
+| bone | ศัลยกรรมโครงหน้า | Facial bone surgery | `service.html?p=bone` |
 | breast | เสริมหน้าอก | Breast augmentation | `service.html?p=breast` |
 | lipo | ดูดไขมัน | Liposuction | `service.html?p=lipo` |
 
@@ -86,7 +87,6 @@ Each interactive feature lives in `site/assets/features/<name>/`.
 - All UI strings live in the module in both English and Thai.
 - Add a demo page `site/lab/<name>.html` that mounts the module full width with a TH/EN switch, for testing.
 - External libraries are copied into `site/assets/vendor/` at exact pinned versions and served by the site, since code loaded from a CDN runs on pages with the camera open. The main site uses `three@0.160.0`, `@mediapipe/face_mesh@0.4.1633559619` and `@vladmandic/face-api@1.7.15` (see `site/assets/vendor/README.md`).
-  - The container's shell cannot reach those CDNs. To test locally, `npm install` the same versions in a scratch folder and point the demo page at the local copy through an import map, or vendor small files into the feature folder.
 - Browser storage (localStorage) is allowed only for per-visitor conveniences. Wrap every read and write in try/catch so the feature works without it.
 - Testing: Playwright with the preinstalled Chromium (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`; do not run `playwright install`).
   - Serve the site with `npx http-server` or `python3 -m http.server`.
@@ -105,7 +105,7 @@ The client is strict about this. Breaking these rules is a defect.
 7. **Dashes:** use a dash only where no other mark works. Write ranges with "to" ("7 to 14 days").
 8. **Errors** name what failed and stop. Example: "The photo could not be read."
 9. **Result screens say what changed:** score, level, prize. No quips or reaction beats.
-10. **Simulations:** every nose preview is labelled "Simulation only". Results text elsewhere uses the client's phrase "Results may vary from person to person."
+10. **Simulations:** every simulator image is labelled "Simulation only". Results text elsewhere uses the client's phrase "Results may vary from person to person."
 11. **No emoji.**
 
 Thai strings follow the same rules: plain, polite Thai, short labels, no filler.

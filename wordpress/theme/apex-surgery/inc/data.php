@@ -156,6 +156,8 @@ function apex_build( string $id, string $lang ) {
 		case 'home': return apex_build_home( $lang );
 		case 'about': return apex_page_obj( 'about', $lang );
 		case 'services': return apex_page_obj( 'services', $lang );
+		case 'treatments': return apex_page_obj( 'treatments', $lang ) ?: null;
+		case 'shows': return apex_page_obj( 'shows', $lang ) ?: null;
 		case 'contact': return apex_page_obj( 'contact', $lang );
 		case 'privacy':
 			$o = apex_page_obj( 'privacy', $lang );
@@ -186,7 +188,7 @@ function apex_build_shared( string $lang ): array {
 	$S = apex_read_option( $lang );
 	$S['branches'] = array_map( function ( $id ) {
 		$b = apex_read_post( $id, 'apex_branch' );
-		return apex_drop_nulls( [ 'key' => $b['key'], 'name' => $b['name'], 'short' => $b['short'], 'addr' => $b['addr'], 'phone' => $b['phone'], 'tel' => $b['tel'], 'map' => $b['map'], 'img' => $b['img'], 'tourVideo' => ( $b['tourVideo'] ?? '' ) ?: null, 'tourPoster' => ( $b['tourPoster'] ?? '' ) ?: null, 'tourStops' => ( $b['tourStops'] ?? [] ) ?: null ] );
+		return apex_drop_nulls( [ 'key' => $b['key'], 'name' => $b['name'], 'short' => $b['short'], 'addr' => $b['addr'], 'phone' => $b['phone'], 'tel' => $b['tel'], 'map' => $b['map'], 'img' => $b['img'], 'photos' => ( $b['photos'] ?? [] ) ?: null, 'tourVideo' => ( $b['tourVideo'] ?? '' ) ?: null, 'tourPoster' => ( $b['tourPoster'] ?? '' ) ?: null, 'tourStops' => ( $b['tourStops'] ?? [] ) ?: null ] );
 	}, apex_posts( 'apex_branch', $lang ) );
 	$S['doctor'] = null;
 	foreach ( apex_posts( 'apex_doctor', $lang ) as $id ) {
@@ -272,7 +274,7 @@ function apex_founder( string $lang ) {
 		$d = apex_read_post( $id, 'apex_doctor' );
 		if ( $d['kind'] !== 'founder' ) continue;
 		$o = [];
-		foreach ( [ 'photo', 'portrait', 'check', 'aaci', 'name', 'nick', 'license', 'role', 'specialty', 'eduH', 'edu', 'rolesH', 'roles', 'years', 'bio', 'quote', 'checkX' ] as $k ) $o[ $k ] = $d[ $k ];
+		foreach ( [ 'photo', 'portrait', 'wide', 'check', 'aaci', 'name', 'nick', 'license', 'role', 'specialty', 'eduH', 'edu', 'rolesH', 'roles', 'years', 'bio', 'quote', 'checkX' ] as $k ) $o[ $k ] = $d[ $k ];
 		$o[ $lang === 'th' ? 'nameEn' : 'nameTh' ] = $d['nameAlt'];
 		if ( ! $o['check'] ) $o['check'] = [ 'h' => '' ];
 		return apex_drop_nulls( $o );

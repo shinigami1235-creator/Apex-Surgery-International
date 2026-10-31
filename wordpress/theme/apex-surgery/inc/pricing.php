@@ -106,6 +106,10 @@ function apex_offer_key( string $src ): string {
 }
 /** The offers' rows for one list. An offer with no rows in this language takes them from its other language. */
 function apex_pricing_offers( string $region, string $lang ): array {
+	// read on every page with offers, so stored like apex_data(): any save bumps apex_data_v and makes it stale
+	$ck = 'apex_offers_' . (int) get_option( 'apex_data_v', 1 ) . '_' . md5( $region ) . '_' . $lang;
+	$hit = get_transient( $ck );
+	if ( is_array( $hit ) && ! ( defined( 'APEX_NO_CACHE' ) && APEX_NO_CACHE ) ) return $hit;
 	$by = [];
 	$langs = array_unique( [ $lang, ...APEX_LANGS ] );
 	foreach ( $langs as $l ) foreach ( apex_posts( 'apex_offer', $l ) as $id ) {
@@ -120,6 +124,8 @@ function apex_pricing_offers( string $region, string $lang ): array {
 		$by[ $k ] = [ 'noPrice' => ! empty( $o['noPrice'] ), 'price' => (float) ( $row['price'] ?? 0 ), 'poster' => (string) ( $row['poster'] ?? '' ), 'show' => in_array( $row['show'] ?? '', [ 'poster', 'card', 'hide' ], true ) ? $row['show'] : 'auto', '_row' => (bool) $row ];
 	}
 	foreach ( $by as &$x ) unset( $x['_row'] );
+	unset( $x );
+	set_transient( $ck, $by, DAY_IN_SECONDS );
 	return $by;
 }
 

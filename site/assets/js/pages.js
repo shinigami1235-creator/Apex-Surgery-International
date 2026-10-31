@@ -61,7 +61,7 @@
   };
   const procOf = s => {
     s = String(s || '');
-    if (/lipo|ดูดไขมัน/i.test(s)) return 'lipo';
+    if (/lipo|ดูดไขมัน|เหนียง|double chin/i.test(s)) return 'lipo';   // the V-Line offers are double chin liposuction
     if (/breast|หน้าอก|motiva|mentor/i.test(s)) return 'breast';
     if (/brow|forehead|endotine|คิ้ว|หน้าผาก/i.test(s)) return 'browlift';
     if (/rhino|nose|จมูก/i.test(s)) return 'rhinoplasty';
@@ -169,14 +169,6 @@
   };
   // How each procedure's before/after composites are split: lr = before left, after right; tb = before on top; single = a collage shown whole
   const BA_LAYOUT = {facelift:'lr', rhinoplasty:'lr', lipo:'lr', bone:'single', eyelid:'tb', breast:'tb', browlift:'single'};
-  const mountCompare = async (el, pairs, key) => {
-    if (!el) return;
-    try {
-      const m = await import(A.vurl(A.assets + 'features/compare/index.js'));
-      el.innerHTML = ''; el.classList.add('feat-on');
-      m.mount(el, A.featureOpts({items:pairs.map(s => IMG(s)), layout:BA_LAYOUT[key] || 'single', title:false}));
-    } catch (e) { /* keep the gallery grid */ }
-  };
   /* before/after cases: facts come only from each composite's filename and the patient's own review post */
   const BA_STORY = {DeePathama:['deep-plane-facelift-review-by-dy', 'Deep Plane Facelift'], TopFacelift:['dfl-review-khun-top', 'DFL facelift'], Wanna:['facelift-review-by-wanna', ''], Som:['dfl-review-by-som', 'DFL facelift'], 'กู๊ดดี้':['motiva-ergonomix-breast-augmentation-review-by-goody', 'Motiva Ergonomix']};
   const BA_AREA = [[/ต้นขา/, 'Thighs', 'ต้นขา'], [/ต้นแขน/, 'Upper arms', 'ต้นแขน'], [/หน้าท้อง|ท้อง/, 'Abdomen', 'หน้าท้อง'], [/กรอบหน้า/, 'Face contour', 'กรอบหน้า'], [/เหนียง/, 'Double chin', 'เหนียง'], [/FaceNeck/i, 'Face and neck', 'ใบหน้าและลำคอ'], [/eye-bag/i, 'Under-eye bags', 'ถุงใต้ตา']];
@@ -205,7 +197,7 @@
       if (cat === 'rhinoplasty') links.push({x:T('noseTry'), url:'nose-implants.html'});
       if (!opts.onService) links.push({x:T('seeService'), url:A.svcUrl(cat)});
       return {src:/^img\//.test(src) ? IMG(src) : src, cat, layout:BA_LAYOUT[cat] || 'single', procName, facts, story:post ? {title:post.title, url:A.postUrl(post.key)} : null,
-        ask:{line:`https://line.me/R/oaMessage/@apexsurgery/?${encodeURIComponent(msg)}`, wa:`${A.WA.h}?text=${encodeURIComponent(msg)}`}, links};
+        ask:{line:`https://line.me/R/oaMessage/${A.contact().line}/?${encodeURIComponent(msg)}`, wa:`${A.WA.h}?text=${encodeURIComponent(msg)}`}, links};
     });
     return cases.filter(c => c.story).concat(cases.filter(c => !c.story));
   };
@@ -246,7 +238,7 @@
     const priceTxt = price ? `${A.fmtNum(price)} ${T('baht')}` : '';
     const msg = (A.lang === 'th' ? `สวัสดี ขอสอบถามโปรโมชั่น ${label}` : `Hello, I would like to ask about this offer: ${label}`) + (priceTxt ? ` (${priceTxt})` : '') + (A.lang === 'th' ? '' : '.');
     return {key:file, src:p.src, alt:p.alt || label, cat, name, words, price, allIn, review, label,
-      line:`https://line.me/R/oaMessage/@apexsurgery/?${encodeURIComponent(msg)}`, wa:`${A.WA.h}?text=${encodeURIComponent(msg)}`};
+      line:`https://line.me/R/oaMessage/${A.contact().line}/?${encodeURIComponent(msg)}`, wa:`${A.WA.h}?text=${encodeURIComponent(msg)}`};
   };
   const fxSpan = thb => `<span class="apx-price op-fx" data-thb="${thb}" data-lang="${A.lang}"><span class="apx-fx" hidden></span><small>${E(T('approx'))}</small></span>`;
   const offerTags = o => `${o.allIn ? `<span class="o-tag hot">${E(T('allIn'))}</span>` : ''}${o.review ? `<span class="o-tag">${E(T('reviewCase'))}</span>` : ''}`;
@@ -329,7 +321,6 @@
     A.emit('plan:add', {procedure:b.dataset.plan, source:document.body.dataset.page});
     b.classList.add('done'); b.querySelector('span').textContent = T('planAdded'); b.querySelector('.i') && (b.querySelector('.i').outerHTML = I('badge-check'));
   });
-  const clinicLd = S => (S.branches || []).map(b => ({'@type':'MedicalClinic', name:b.name, telephone:b.phone, address:{'@type':'PostalAddress', streetAddress:b.addr, addressCountry:'TH'}, hasMap:b.map, parentOrganization:{'@type':'Organization', name:'Apex Medical Center'}}));
 
   /* =================== HOME =================== */
   async function home(){
@@ -1026,8 +1017,6 @@
     const ex = typeof extra === 'function' ? extra() : extra;
     await A.mount('#' + hostId, name, ex);
   };
-  // the photo nose preview is retired (photos can't show a result accurately), so its address opens the 3D nose implant viewer
-  const nose = async () => { location.replace(A.href('nose-implants.html')); };
   const proportions = featurePage('proportions', 'propPageH', 'propPageP', 'proportions', () => A.mpBase ? {mpBase:A.mpBase} : {}, 'prop-s');
   const filler = featurePage('filler', 'fillPageH', 'fillPageP', 'filler', {}, 'prop-s');
   const analysis = featurePage('analysis', 'anaPageH', 'anaPageP', 'analysis', () => Object.assign(A.mpBase ? {mpBase:A.mpBase} : {}, {links:{consult:'consult.html', proportions:'proportions.html'}}), 'prop-s');
@@ -1065,6 +1054,6 @@
   }
 
   const page = async () => {};   // any other WordPress page: the server's text as it is
-  const PAGES = {home, services, treatments, service, about, doctor, promotions, reviews, blog, article, shows, war, contact, nose, analysis, proportions, filler, implBreast, implChin, implForehead, implNose, play, plan, trip, consult, privacy, notfound, page};
+  const PAGES = {home, services, treatments, service, about, doctor, promotions, reviews, blog, article, shows, war, contact, analysis, proportions, filler, implBreast, implChin, implForehead, implNose, play, plan, trip, consult, privacy, notfound, page};
   A.boot(() => (PAGES[document.body.dataset.page] || home)());
 })();

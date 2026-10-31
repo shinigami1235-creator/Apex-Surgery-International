@@ -15,7 +15,7 @@ export function lab({ title, mountFn, el, extra }) {
     base: new URL('../assets/', location.href).href,
     serviceUrl: k => (lang === 'th' ? '../th/' : '../') + 'service.html?p=' + k,
     onEvent,
-    links: { bodymap: 'bodymap.html', nose: 'nose.html', games: 'games.html', trip: 'trip.html', plan: 'plan.html', consult: 'consult.html' },
+    links: { bodymap: 'bodymap.html', nose: 'implants.html?area=nose', games: 'games.html', trip: 'trip.html', plan: 'plan.html', consult: 'consult.html' },
     ...(extra ? extra(lang) : {})
   });
   const start = () => {

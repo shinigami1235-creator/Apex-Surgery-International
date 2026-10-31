@@ -1,8 +1,6 @@
 // Renders before/after with guides for every test face from lm.json, using the real geometry and warp modules
-import {createRequire} from 'module';
 import fs from 'fs';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
+import {chromium} from '../pw.mjs';
 const DIR = new URL('./faces/', import.meta.url).pathname, OUT = process.argv[2], AMT = +(process.argv[3] || 1);
 const lm = JSON.parse(fs.readFileSync(new URL('./lm.json', import.meta.url)));
 const b = await chromium.launch();

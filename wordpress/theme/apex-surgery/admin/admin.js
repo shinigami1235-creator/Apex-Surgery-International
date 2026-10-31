@@ -33,15 +33,18 @@
   });
 
   // repeaters: rows are numbered again on every change so the form posts them in order
+  // A repeater inside a row (treatments inside a group) has its own data-name, renamed with the row.
   const renumber = $rep => {
-    const base = $rep.data('name');
+    const base = $rep.attr('data-name');
+    const fix = n => (n.indexOf(base + '[') === 0 ? n : null);
     $rep.children('.apex-rows').children('.apex-row').each(function (i) {
-      $(this).find('[name]').each(function () {
-        const n = this.getAttribute('name');
-        if (n.indexOf(base + '[') !== 0) return;
-        const rest = n.slice(base.length).replace(/^\[[^\]]*\]/, '[' + i + ']');
-        this.setAttribute('name', base + rest);
-      });
+      const at = (el, a) => {
+        const n = el.getAttribute(a);
+        if (!n || !fix(n)) return;
+        el.setAttribute(a, base + n.slice(base.length).replace(/^\[[^\]]*\]/, '[' + i + ']'));
+      };
+      $(this).find('[name]').each(function () { at(this, 'name'); });
+      $(this).find('.apex-repeater').each(function () { at(this, 'data-name'); });
     });
   };
   $(document).on('click', '.apex-add', function (e) {
@@ -49,6 +52,11 @@
     const $rep = $(this).closest('.apex-repeater');
     const tpl = $rep.children('template.apex-row-tpl')[0];
     const $row = $(tpl.content.cloneNode(true));
+    // the template was drawn with this repeater's first name; a repeater inside a renumbered row has a new one
+    const from = $rep.attr('data-tpl'), to = $rep.attr('data-name');
+    if (from !== to) $row.find('[name],.apex-repeater').each(function () {
+      ['name', 'data-name', 'data-tpl'].forEach(a => { const n = this.getAttribute(a); if (n && n.indexOf(from + '[') === 0) this.setAttribute(a, to + n.slice(from.length)); });
+    });
     // fresh ids so labels and media buttons point at the new inputs
     $row.find('[id]').each(function () {
       const old = this.id, id = old + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);

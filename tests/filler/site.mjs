@@ -1,11 +1,10 @@
-// The filler page with three.js served locally: desktop, phone and Thai tablet.
+// The filler page: desktop, phone and Thai tablet.
 // Checks the totals against the paper's maths, that the head draws and lifts, the controls and the saved image.
-import {createRequire} from 'module';
 import fs from 'fs';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
-const OUT = process.argv[2] || '/tmp/claude-0/prev';
-const THREE = fs.readFileSync(new URL('../../site/lab/vendor/three.module.js', import.meta.url));
+import os from 'os';
+import path from 'path';
+import {chromium, SITE} from '../pw.mjs';
+const OUT = process.argv[2] || fs.mkdtempSync(path.join(os.tmpdir(), 'apex-filler-'));   // screenshots
 const b = await chromium.launch({args:['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist']});
 const fails = [];
 const want = {cheeks:'4', 'cheeks,temples':'6.4', 'cheeks,temples,chin':'10.9'};
@@ -13,9 +12,8 @@ for (const [w, h, path] of [[1440, 900, 'filler.html'], [390, 844, 'filler.html'
   const p = await (await b.newContext({viewport:{width:w, height:h}})).newPage();
   p.on('pageerror', e => fails.push(`${w} pageerror ${e.message}`));
   p.on('console', m => { if (m.type() === 'warning' && /filler/.test(m.text())) fails.push(`${w} ${m.text()}`); });
-  await p.route(/cdn\.jsdelivr\.net\/npm\/three@0\.160\.0\/build\/three\.module\.js/, r => r.fulfill({status:200, contentType:'text/javascript', headers:{'access-control-allow-origin':'*'}, body:THREE}));
-  await p.route(/^https?:\/\/(?!localhost|cdn\.jsdelivr)/, r => r.abort());
-  await p.goto('http://localhost:8765/' + path);
+  await p.route(/^https?:\/\/(?!localhost)/, r => r.abort());
+  await p.goto(SITE + path);
   await p.evaluate(() => { try { localStorage.removeItem('apex.filler'); } catch (e) {} });
   await p.reload();
   await p.waitForSelector('.ff', {timeout:20000});

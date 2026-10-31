@@ -112,7 +112,7 @@ function apex_img( $s ): string {
 	$s = (string) ( $s ?? '' );
 	if ( $s === '' ) return '';
 	if ( str_starts_with( $s, '~/' ) ) return apex_media_base() . substr( $s, 2 );
-	if ( preg_match( '#^(img|fonts|css|js|features)/#', $s ) ) return apex_asset( $s );   // a file that ships with the theme
+	if ( preg_match( '#^(img|video|fonts|css|js|features)/#', $s ) ) return apex_asset( $s );   // a file that ships with the theme
 	return $s;
 }
 /** The reverse, for storing: an upload URL on this site becomes "~/..." so content survives a domain move. */
@@ -141,12 +141,13 @@ function apex_yt( string $id ): string { return 'https://i.ytimg.com/vi/' . $id 
 function apex_asset( string $path ): string { return APEX_URI . '/assets/' . ltrim( $path, '/' ); }
 
 /* ---------- links ----------
-   The templates keep the design's page names ('nose.html', 'service.html?p=facelift') so they read the same as
+   The templates keep the design's page names ('plan.html', 'service.html?p=facelift') so they read the same as
    pages.js; apex_link() turns each into the WordPress address in the current language. */
 const APEX_PAGES = [
 	'index.html' => 'home', 'about.html' => 'about', 'services.html' => 'services', 'doctor.html' => 'doctor',
 	'promotions.html' => 'promotions', 'reviews.html' => 'reviews', 'blog.html' => 'blog', 'surgery-wars.html' => 'war',
-	'contact.html' => 'contact', 'nose.html' => 'nose', 'analysis.html' => 'analysis', 'proportions.html' => 'proportions',
+	'contact.html' => 'contact', 'treatments.html' => 'treatments', 'transformations.html' => 'shows', 'filler.html' => 'filler',
+	'nose.html' => 'implNose', 'analysis.html' => 'analysis', 'proportions.html' => 'proportions',
 	'breast-implants.html' => 'implBreast', 'chin-implants.html' => 'implChin', 'forehead-implants.html' => 'implForehead',
 	'nose-implants.html' => 'implNose', 'play.html' => 'play', 'plan.html' => 'plan', 'trip.html' => 'trip', 'consult.html' => 'consult', 'privacy.html' => 'privacy',
 	// names the feature modules use

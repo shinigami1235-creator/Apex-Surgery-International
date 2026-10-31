@@ -112,7 +112,7 @@ function apex_field_html( array $f, $v, string $name, string $lang, bool $in_row
 			break;
 		case 'repeater':
 			$rows = is_array( $v ) ? array_values( $v ) : [];
-			echo '<fieldset class="apex-group apex-repeater" data-name="' . esc_attr( $name ) . '"><legend>' . esc_html( $f['l'] ) . '</legend>' . $help . '<ol class="apex-rows">';
+			echo '<fieldset class="apex-group apex-repeater" data-name="' . esc_attr( $name ) . '" data-tpl="' . esc_attr( $name ) . '"><legend>' . esc_html( $f['l'] ) . '</legend>' . $help . '<ol class="apex-rows">';
 			foreach ( $rows as $i => $row ) apex_row_html( $f, $row, $name . '[' . $i . ']', $lang );
 			echo '</ol><template class="apex-row-tpl">';
 			apex_row_html( $f, [], $name . '[__i__]', $lang );
@@ -144,7 +144,7 @@ function apex_clean_link( string $s ): string {
 	$s = trim( $s );
 	if ( $s === '' ) return '';
 	if ( str_starts_with( $s, '~/' ) ) return '~/' . ltrim( preg_replace( '#[^\w\-./%~]#u', '', substr( $s, 2 ) ), '/' );
-	if ( preg_match( '#^(img|fonts|css|js|features)/#', $s ) ) return preg_replace( '#[^\w\-./]#', '', $s );   // a file in the theme
+	if ( preg_match( '#^(img|video|fonts|css|js|features)/#', $s ) ) return preg_replace( '#[^\w\-./]#', '', $s );   // a file in the theme
 	return esc_url_raw( $s, [ 'http', 'https', 'tel', 'mailto' ] );
 }
 /** Plain text with tags removed, where a "<" or "&" the editor typed stays the character itself. */

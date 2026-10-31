@@ -56,6 +56,8 @@ function apex_page_data_ids( array $r ): array {
 		case 'home': array_push( $ids, 'home', 'about', 'founder', 'war', 'team', 'social' ); break;
 		case 'about': array_push( $ids, 'about', 'founder', 'team' ); break;
 		case 'services': $ids[] = 'services'; break;
+		case 'treatments': $ids[] = 'treatments'; break;
+		case 'shows': array_push( $ids, 'shows', 'war', 'social' ); break;
 		case 'service': array_push( $ids, 'posts', 'team', 'svc:' . ( $p['p'] ?? '' ) ); break;
 		case 'doctor': array_push( $ids, 'founder', 'team' ); break;
 		case 'promotions': $ids[] = 'promotions'; break;
@@ -95,7 +97,7 @@ function apex_lang_href( string $code ): string {
 }
 
 /* ---------- header, menu, footer, contact button (core.js header(), footer(), fab()) ---------- */
-const APEX_NAV = [ [ 'index.html', 'home' ], [ 'about.html', 'about' ], [ 'services.html', 'services' ], [ 'promotions.html', 'promotions' ], [ 'reviews.html', 'reviews' ], [ 'surgery-wars.html', 'war' ], [ 'blog.html', 'articles' ], [ 'contact.html', 'contact' ] ];
+const APEX_NAV = [ [ 'index.html', 'home' ], [ 'about.html', 'about' ], [ 'services.html', 'services' ], [ 'doctor.html', 'doctor' ], [ 'promotions.html', 'promotions' ], [ 'reviews.html', 'reviews' ], [ 'transformations.html', 'shows' ], [ 'blog.html', 'articles' ], [ 'contact.html', 'contact' ] ];
 function apex_wa(): array {
 	$S = apex_data( 'shared' );
 	$w = $S['whatsapp'] ?? null;
@@ -120,14 +122,14 @@ function apex_header_html( string $page ): string {
 			$nav .= '<div class="has-mega"><button type="button" aria-expanded="false"' . $cur . '>' . apex_e( apex_t( 'services' ) ) . apex_ic( 'chevron-down' ) . '</button>
           <div class="mega surg" role="menu"><div class="mega-svcs">' . $items . '</div>
           <div class="mega-tools"><h4>' . apex_e( apex_t( 'tools' ) ) . '</h4>
-            <a href="' . esc_url( apex_link( 'nose.html' ) ) . '">' . apex_ic( 'scan-face' ) . apex_e( apex_t( 'nose' ) ) . '</a>
+            <a class="mt-new" href="' . esc_url( apex_link( 'filler.html' ) ) . '" data-new="page:filler" data-new-slot>' . apex_ic( 'syringe' ) . apex_e( apex_t( 'fill' ) ) . '</a>
             <a href="' . esc_url( apex_link( 'analysis.html' ) ) . '">' . apex_ic( 'scan-line' ) . apex_e( apex_t( 'ana' ) ) . '</a>
             <a href="' . esc_url( apex_link( 'proportions.html' ) ) . '">' . apex_ic( 'gem' ) . apex_e( apex_t( 'prop' ) ) . '</a>
             <a href="' . esc_url( apex_link( 'breast-implants.html' ) ) . '">' . apex_ic( 'ruler' ) . apex_e( apex_t( 'impl' ) ) . '</a>
             <a href="' . esc_url( apex_link( 'play.html' ) ) . '">' . apex_ic( 'sparkles' ) . apex_e( apex_t( 'games' ) ) . '</a>
             <a href="' . esc_url( apex_link( 'trip.html' ) ) . '">' . apex_ic( 'calendar' ) . apex_e( apex_t( 'trip' ) ) . '</a>
-            <a href="' . esc_url( apex_link( 'doctor.html' ) ) . '">' . apex_ic( 'stethoscope' ) . apex_e( apex_t( 'doctor' ) ) . '</a></div>
-          <div class="mega-foot"><a class="link-arrow" href="' . esc_url( apex_link( 'services.html' ) ) . '">' . apex_e( apex_t( 'allServices' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a></div></div></div>';
+</div>
+          <div class="mega-foot"><a class="link-arrow" href="' . esc_url( apex_link( 'services.html' ) ) . '">' . apex_e( apex_t( 'allServices' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a><a class="link-arrow" href="' . esc_url( apex_link( 'treatments.html' ) ) . '">' . apex_e( apex_t( 'treatments' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a></div></div></div>';
 		} else {
 			$nav .= '<a href="' . esc_url( apex_link( $h ) ) . '"' . $cur . '>' . apex_e( apex_t( $k ) ) . '</a>';
 		}
@@ -148,11 +150,11 @@ function apex_sheet_html(): string {
 	$nav = '';
 	foreach ( APEX_NAV as [ $h, $k ] ) {
 		$nav .= $k === 'services'
-			? '<details><summary>' . apex_e( apex_t( 'services' ) ) . apex_ic( 'chevron-down' ) . '</summary><div class="sub"><a href="' . esc_url( apex_link( 'services.html' ) ) . '">' . apex_e( apex_t( 'allServices' ) ) . '</a>' . $subs . '</div></details>'
+			? '<details><summary>' . apex_e( apex_t( 'services' ) ) . apex_ic( 'chevron-down' ) . '</summary><div class="sub"><a href="' . esc_url( apex_link( 'services.html' ) ) . '">' . apex_e( apex_t( 'allServices' ) ) . '</a>' . $subs . '<a href="' . esc_url( apex_link( 'treatments.html' ) ) . '">' . apex_e( apex_t( 'treatments' ) ) . '</a></div></details>'
 			: '<a href="' . esc_url( apex_link( $h ) ) . '">' . apex_e( apex_t( $k ) ) . apex_ic( 'arrow-up-right' ) . '</a>';
 	}
 	$tools = '';
-	foreach ( [ [ 'nose.html', 'nose' ], [ 'analysis.html', 'ana' ], [ 'proportions.html', 'prop' ], [ 'breast-implants.html', 'impl' ], [ 'play.html', 'games' ], [ 'trip.html', 'trip' ], [ 'plan.html', 'plan' ], [ 'doctor.html', 'doctor' ] ] as [ $h, $k ] ) $tools .= '<a href="' . esc_url( apex_link( $h ) ) . '">' . apex_e( apex_t( $k ) ) . '</a>';
+	foreach ( [ [ 'filler.html', 'fill' ], [ 'analysis.html', 'ana' ], [ 'proportions.html', 'prop' ], [ 'breast-implants.html', 'impl' ], [ 'play.html', 'games' ], [ 'trip.html', 'trip' ], [ 'plan.html', 'plan' ] ] as [ $h, $k ] ) $tools .= '<a href="' . esc_url( apex_link( $h ) ) . '">' . apex_e( apex_t( $k ) ) . '</a>';
 	return '<div class="sheet" role="dialog" aria-modal="true" aria-label="' . apex_e( apex_t( 'menu' ) ) . '"><div class="sheet-top"><span class="logo-txt light">APEX<small>Surgery Hospital</small></span><button class="close" aria-label="' . apex_e( apex_t( 'close' ) ) . '">' . apex_ic( 'close' ) . '</button></div>
       <nav>' . $nav . '
       <details><summary>' . apex_e( apex_t( 'tools' ) ) . apex_ic( 'chevron-down' ) . '</summary><div class="sub">' . $tools . '</div></details></nav>
@@ -182,7 +184,7 @@ function apex_footer_html(): string {
         <p>' . apex_e( $brand ) . '</p>
         <p class="ftr-lic">' . apex_e( $S['license'] ?? '' ) . '</p>' . $aaci . '
         <div class="ftr-socials">' . $soc . '<a href="' . esc_url( $WA['h'] ) . '"' . $ext . ' aria-label="WhatsApp">' . apex_ic( 'whatsapp' ) . '</a></div></div>
-      <div><h2 class="ftr-h">' . apex_e( apex_t( 'ourServices' ) ) . '</h2>' . $svcs . '<a href="' . esc_url( apex_link( 'nose.html' ) ) . '">' . apex_e( apex_t( 'nose' ) ) . '</a><a href="' . esc_url( apex_link( 'analysis.html' ) ) . '">' . apex_e( apex_t( 'ana' ) ) . '</a><a href="' . esc_url( apex_link( 'proportions.html' ) ) . '">' . apex_e( apex_t( 'prop' ) ) . '</a><a href="' . esc_url( apex_link( 'breast-implants.html' ) ) . '">' . apex_e( apex_t( 'impl' ) ) . '</a><a href="' . esc_url( apex_link( 'play.html' ) ) . '">' . apex_e( apex_t( 'games' ) ) . '</a></div>
+      <div><h2 class="ftr-h">' . apex_e( apex_t( 'ourServices' ) ) . '</h2>' . $svcs . '<a href="' . esc_url( apex_link( 'treatments.html' ) ) . '">' . apex_e( apex_t( 'treatments' ) ) . '</a><a href="' . esc_url( apex_link( 'analysis.html' ) ) . '">' . apex_e( apex_t( 'ana' ) ) . '</a><a href="' . esc_url( apex_link( 'proportions.html' ) ) . '">' . apex_e( apex_t( 'prop' ) ) . '</a><a href="' . esc_url( apex_link( 'filler.html' ) ) . '">' . apex_e( apex_t( 'fill' ) ) . '</a><a href="' . esc_url( apex_link( 'breast-implants.html' ) ) . '">' . apex_e( apex_t( 'impl' ) ) . '</a><a href="' . esc_url( apex_link( 'play.html' ) ) . '">' . apex_e( apex_t( 'games' ) ) . '</a></div>
       ' . $br . '
       <div><h2 class="ftr-h">' . apex_e( apex_t( 'contactLine' ) ) . '</h2><a href="' . esc_url( ( $line['h'] ?? '' ) ) . '"' . $ext . ' style="padding:0"><img class="qr" src="' . esc_url( apex_img( $line['qr'] ?? '' ) ) . '" alt="LINE ' . apex_e( $line['x'] ?? '' ) . '" loading="lazy" decoding="async" decoding="async"></a><p style="margin-top:10px">' . apex_e( $line['x'] ?? '' ) . '</p>
         <a href="' . esc_url( $WA['h'] ) . '"' . $ext . '>' . apex_ic( 'whatsapp' ) . apex_e( $WA['x'] ) . '</a></div>
@@ -206,6 +208,8 @@ function apex_fab_html(): string {
 /* ---------- scripts and styles ---------- */
 function apex_ver(): string {
 	static $v = null;
+	// the build's version (build-theme.mjs): the feature modules' own imports carry the same one
+	if ( $v === null && is_readable( APEX_DIR . '/data/version.txt' ) ) $v = trim( (string) file_get_contents( APEX_DIR . '/data/version.txt' ) ) ?: null;
 	if ( $v === null ) {   // changes when any of the files below does, so browsers fetch the new copy
 		$m = APEX_VERSION;
 		foreach ( [ 'css/base.css', 'css/site.css', 'js/icons.js', 'js/i18n.js', 'js/core.js', 'js/pages.js' ] as $f ) $m .= '|' . @filemtime( APEX_DIR . '/assets/' . $f );
@@ -269,7 +273,7 @@ add_action( 'template_redirect', function () {
 	$q = sanitize_text_field( wp_unslash( $_GET['apex_data'] ) );
 	if ( ! preg_match( '#^(en|th)/([a-z]+)(?:/([a-z0-9-]+))?$#', $q, $m ) ) { status_header( 404 ); exit; }
 	$id = $m[2] . ( isset( $m[3] ) && $m[3] !== '' ? ':' . $m[3] : '' );
-	if ( ! in_array( $m[2], [ 'shared', 'home', 'about', 'services', 'promotions', 'reviews', 'blogs', 'contact', 'founder', 'posts', 'post', 'svc', 'war', 'social', 'team', 'fresh' ], true ) ) { status_header( 404 ); exit; }
+	if ( ! in_array( $m[2], [ 'shared', 'home', 'about', 'services', 'promotions', 'reviews', 'blogs', 'contact', 'founder', 'posts', 'post', 'svc', 'war', 'social', 'team', 'fresh', 'treatments', 'shows' ], true ) ) { status_header( 404 ); exit; }
 	$d = apex_data( $id, $m[1] );
 	header( 'Content-Type: application/javascript; charset=utf-8' );
 	header( 'Cache-Control: public, max-age=300' );

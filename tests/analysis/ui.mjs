@@ -1,11 +1,10 @@
 // Drives the face analysis lab page: sample face, a side photo, factor selection, save; phone, tablet and desktop, both languages
-import {createRequire} from 'module';
 import fs from 'fs';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
-const SP = '/tmp/claude-0/-home-claude/b5460f3c-e75e-551e-b4ae-fc0088d5c4d9/scratchpad/';
-const MP = SP + 'mp/node_modules/@mediapipe/face_mesh/', FA = SP + 'fa/node_modules/@vladmandic/face-api/';
-const DIRS = ['tests/proportions/faces/', 'tests/analysis/faces/'], OUT = process.argv[2] || SP + 'sp';
+import os from 'os';
+import {chromium} from '../pw.mjs';
+const SP = fs.mkdtempSync(os.tmpdir() + '/apex-');   // screenshots
+const MP = new URL('../../site/assets/vendor/face_mesh/', import.meta.url).pathname, FA = new URL('../../site/assets/vendor/face-api/', import.meta.url).pathname;
+const DIRS = ['tests/proportions/faces/', 'tests/analysis/faces/'], OUT = process.argv[2] || SP;
 const findFace = id => { for (const d of DIRS) { const f = fs.readdirSync(d).find(x => x.startsWith(id)); if (f) return d + f; } return null; };
 export async function routes(p){
   const serve = (pre, dir) => p.route(u => new URL(u).pathname.startsWith(pre), r => { const f = r.request().url().split(pre)[1].split('?')[0]; if (!f || !fs.existsSync(dir + f)) return r.abort(); const t = f.endsWith('.js') ? 'text/javascript' : f.endsWith('.wasm') ? 'application/wasm' : f.endsWith('.json') ? 'application/json' : 'application/octet-stream'; return r.fulfill({status:200, contentType:t, headers:{'access-control-allow-origin':'*'}, body:fs.readFileSync(dir + f)}); });

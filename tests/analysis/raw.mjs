@@ -1,9 +1,8 @@
 // Runs the raw face analysis readings on every test photo and prints them, for calibration
-import {createRequire} from 'module';
 import fs from 'fs';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
-const MP = '/tmp/claude-0/-home-claude/b5460f3c-e75e-551e-b4ae-fc0088d5c4d9/scratchpad/mp/node_modules/@mediapipe/face_mesh/';
+import os from 'os';
+import {chromium} from '../pw.mjs';
+const MP = new URL('../../site/assets/vendor/face_mesh/', import.meta.url).pathname;
 const DIRS = process.env.FACES ? process.env.FACES.split(',') : ['tests/proportions/faces/', 'tests/analysis/faces/'];
 const b = await chromium.launch();
 const p = await (await b.newContext({viewport:{width:900, height:900}})).newPage();
@@ -17,7 +16,7 @@ for (const d of DIRS) for (const f of fs.readdirSync(d).filter(x => x.endsWith('
   const r = await p.evaluate(u => window.run(u), 'http://localhost:8765/__face/' + encodeURIComponent(d + f));
   out[process.env.FACES ? f.replace(/\.jpg$/, '') : f.slice(0, 13)] = r;
 }
-fs.writeFileSync(process.argv[2] || '/tmp/claude-0/-home-claude/b5460f3c-e75e-551e-b4ae-fc0088d5c4d9/scratchpad/raw.json', JSON.stringify(out, null, 1));
+fs.writeFileSync(process.argv[2] || os.tmpdir() + '/apex-raw.json', JSON.stringify(out, null, 1));
 const f2 = (x, k = 3) => x == null ? '-' : (+x).toFixed(k);
 console.log('face          ms  shp   lgt  trn | fhd   glb   crw   und  | pore  rgh  | spot  tL   tA  | redP  rCF  | dark trgh | shine| fold  mar   drp   brow  jaw | crease | asym | q');
 for (const [k, r] of Object.entries(out)) {

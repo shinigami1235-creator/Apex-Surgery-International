@@ -5,7 +5,7 @@ Each page is a thin HTML shell (head, SEO tags, JSON-LD, scripts). The content r
 whose fields map one to one onto the WordPress custom fields the theme will use later.
 Run: python3 build.py
 """
-PREVIEW = True
+# The design preview on GitHub Pages. The live site is the WordPress theme, which writes its own head tags.
 PREVIEW_URL = 'https://shinigami1235-creator.github.io/Apex-Surgery-International/'
 import json, os, re, html
 
@@ -161,18 +161,12 @@ def page_html(lang, fname, key, extras, prod_path, meta_id):
     if key == 'home' and lang == 'en' and (not title or re.search('[฀-๿]', title or '')):
         title, desc = 'Apex Surgery Hospital | Plastic surgery hospital in Bangkok and Phuket', 'Facelift, brow lift, rhinoplasty, double eyelid surgery, breast augmentation and liposuction by plastic and reconstructive surgeons at Apex Surgery Hospital, Phloen Chit and Phuket.'
 
-    en_url = PROD + prod_path
-    th_url = PROD + 'th/' + prod_path
-    if PREVIEW:
-        # the review copy points at itself: a link shared on Facebook or Messenger opens the og:url,
-        # and the live domain has none of these new pages yet, so it would show its not-found page
-        pf = '' if fname == 'index.html' else fname
-        en_url = PREVIEW_URL + pf
-        th_url = PREVIEW_URL + 'th/' + pf
+    # the review copy points at itself: a link shared on Facebook or Messenger opens the page that was sent.
+    # It has no canonical or og:url tag, since service and article pages depend on ?p=.
+    pf = '' if fname == 'index.html' else fname
+    en_url = PREVIEW_URL + pf
+    th_url = PREVIEW_URL + 'th/' + pf
     canon = en_url if lang == 'en' else th_url
-    # in the review copy, service and article pages depend on ?p=, so shares must open the exact link that was sent
-    canon_tag = '' if PREVIEW else f'<link rel="canonical" href="{canon}">'
-    ogurl_tag = '' if PREVIEW else f'<meta property="og:url" content="{canon}">'
     og_img = img((read_data('th', 'home') or {}).get('hero', {}).get('src', '')) if key == 'home' else img('~/wp-content/uploads/2025/11/Apex-Surgery.webp')
 
     ld = []
@@ -193,8 +187,7 @@ def page_html(lang, fname, key, extras, prod_path, meta_id):
     ld_html = '\n'.join(f'<script type="application/ld+json">{json.dumps(x, ensure_ascii=False)}</script>' for x in ld)
 
     data_scripts = ''.join(f'<script defer src="{up}assets/data/{lang}/{n}.js?v={ASSET_V}"></script>\n' for n in ['shared', 'fresh'] + extras)
-    # PREVIEW is True for the GitHub Pages review copy so search engines skip it. Set it to False for the live site.
-    robots = '<meta name="robots" content="noindex">' if (PREVIEW or key in ('notfound', 'plan')) else ''
+    robots = '<meta name="robots" content="noindex">'   # search engines skip the review copy
     return f'''<!doctype html>
 <html lang="{lang}" class="no-js">
 <head>
@@ -203,7 +196,6 @@ def page_html(lang, fname, key, extras, prod_path, meta_id):
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
 {robots}
-{canon_tag}
 <link rel="alternate" hreflang="en" href="{en_url}">
 <link rel="alternate" hreflang="th" href="{th_url}">
 <link rel="alternate" hreflang="x-default" href="{en_url}">
@@ -211,7 +203,6 @@ def page_html(lang, fname, key, extras, prod_path, meta_id):
 <meta property="og:site_name" content="Apex Surgery Hospital">
 <meta property="og:title" content="{esc(title)}">
 <meta property="og:description" content="{esc(desc)}">
-{ogurl_tag}
 <meta property="og:image" content="{esc(og_img)}">
 <meta property="og:locale" content="{'en_US' if lang == 'en' else 'th_TH'}">
 <meta property="og:locale:alternate" content="{'th_TH' if lang == 'en' else 'en_US'}">
@@ -222,14 +213,6 @@ def page_html(lang, fname, key, extras, prod_path, meta_id):
 <link rel="preconnect" href="https://www.apexsurgeryhospital.com">
 <link rel="stylesheet" href="{up}assets/css/base.css?v={ASSET_V}">
 <link rel="stylesheet" href="{up}assets/css/site.css?v={ASSET_V}">
-<script>
-/* local testing only: serve the 3D library from the lab copy when the page runs on this machine */
-if (/^(localhost|127\\.0\\.0\\.1)$/.test(location.hostname)) {{
-  var m = document.createElement('script'); m.type = 'importmap';
-  m.textContent = JSON.stringify({{imports: {{'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js': new URL('{up}lab/vendor/three.module.js', location.href).href}}}});
-  document.currentScript.after(m);
-}}
-</script>
 {ld_html}
 </head>
 <body data-page="{key}">
@@ -248,10 +231,10 @@ if (/^(localhost|127\\.0\\.0\\.1)$/.test(location.hostname)) {{
 # English moved from /en/ to the root on 22 Oct 2026. The old /en/ links in the review copy send visitors to the same page at the root
 MOVED = '''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex">
-<meta http-equiv="refresh" content="0;url=../{f}">
-<link rel="canonical" href="../{f}">
-<script>location.replace('../{f}' + location.search + location.hash)</script>
-<title>Apex Surgery Hospital</title></head><body><a href="../{f}">Apex Surgery Hospital</a></body></html>
+<meta http-equiv="refresh" content="0;url={f}">
+<link rel="canonical" href="{f}">
+<script>location.replace('{f}' + location.search + location.hash)</script>
+<title>Apex Surgery Hospital</title></head><body><a href="{f}">Apex Surgery Hospital</a></body></html>
 '''
 
 
@@ -262,13 +245,13 @@ def main():
         for fname, key, extras, prod_path, meta_id in PAGES:
             out = os.path.join(SITE, fname) if lang == 'en' else os.path.join(SITE, 'th', fname)
             with open(out, 'w', encoding='utf-8') as f:
-                f.write(page_html(lang, fname, key, extras, prod_path, meta_id))
+                # the retired nose preview forwards to the 3D nose implant viewer
+                f.write(MOVED.format(f='nose-implants.html') if key == 'nose' else page_html(lang, fname, key, extras, prod_path, meta_id))
             n += 1
-    if PREVIEW:
-        os.makedirs(os.path.join(SITE, 'en'), exist_ok=True)
-        for fname, *_ in PAGES:
-            with open(os.path.join(SITE, 'en', fname), 'w', encoding='utf-8') as f:
-                f.write(MOVED.format(f='' if fname == 'index.html' else fname))
+    os.makedirs(os.path.join(SITE, 'en'), exist_ok=True)
+    for fname, *_ in PAGES:
+        with open(os.path.join(SITE, 'en', fname), 'w', encoding='utf-8') as f:
+            f.write(MOVED.format(f='../' + ('' if fname == 'index.html' else fname)))
     en_ready = os.path.exists(os.path.join(SITE, 'assets', 'data', 'en', 'shared.js'))
     print(f'wrote {n} pages; English data present: {en_ready}')
 

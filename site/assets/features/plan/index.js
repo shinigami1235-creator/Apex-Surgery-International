@@ -4,13 +4,9 @@
    badge(el, {lang}) -> {destroy()} shows the plan item count in a header element. */
 
 import * as store from './store.js';
-import { PROCS, BRANCHES, t, procName, areaName, concernName } from './procedures.js';
+import { PROCS, BRANCHES, t, procName, areaName, concernName, contactOf, injectCSS, h, fill } from './procedures.js';
 
 export { store };
-
-/* Apex group international WhatsApp and the hospital's LINE official account. */
-const WHATSAPP = '66850002001';
-const LINE_OA = '@apexsurgery';
 
 const T = {
   title: { en: 'My Plan', th: 'แผนของฉัน' },
@@ -152,30 +148,15 @@ const CSS = `
 @media (prefers-reduced-motion:reduce){.apxp *{transition:none!important}}
 `;
 
-function injectCSS() {
-  if (document.getElementById('apxp-css')) return;
-  const s = document.createElement('style'); s.id = 'apxp-css'; s.textContent = CSS; document.head.append(s);
-}
 
-function h(tag, attrs, ...kids) {
-  const el = document.createElement(tag);
-  if (attrs) for (const k in attrs) {
-    const v = attrs[k];
-    if (v == null || v === false) continue;
-    if (k === 'html') el.innerHTML = v;
-    else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
-    else el.setAttribute(k, v === true ? '' : v);
-  }
-  kids.flat(Infinity).forEach(c => { if (c != null && c !== false) el.append(c.nodeType ? c : String(c)); });
-  return el;
-}
 
-const fill = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => (o[k] ?? ''));
 const loc = lang => (lang === 'th' ? 'th-TH' : 'en-GB');
 export function fmtDate(iso, lang, withYear = true) {
   if (!iso) return '';
   const d = typeof iso === 'number' ? new Date(iso) : new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10));
-  return d.toLocaleDateString(loc(lang), withYear ? { day: 'numeric', month: 'short', year: 'numeric' } : { day: 'numeric', month: 'short' });
+  const o = withYear ? { day: 'numeric', month: 'short', year: 'numeric' } : { day: 'numeric', month: 'short' };
+  /* timestamps are shown in Bangkok time, as the games show them; a plain date has no time to shift */
+  return d.toLocaleDateString(loc(lang), typeof iso === 'number' ? { timeZone: 'Asia/Bangkok', ...o } : o);
 }
 
 /* Plain-text summary used by WhatsApp and LINE. */
@@ -212,11 +193,12 @@ function procLine(p, lang) {
   return s;
 }
 
-export function whatsappUrl(text) { return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`; }
-export function lineUrl(text) { return `https://line.me/R/oaMessage/${LINE_OA}/?${encodeURIComponent(text)}`; }
+export function whatsappUrl(text, c = contactOf()) { return `https://wa.me/${c.wa}?text=${encodeURIComponent(text)}`; }
+export function lineUrl(text, c = contactOf()) { return `https://line.me/R/oaMessage/${c.line}/?${encodeURIComponent(text)}`; }
 
 export function mount(container, opts = {}) {
-  injectCSS();
+  const contact = contactOf(opts);
+  injectCSS('apxp-css', CSS);
   const lang = opts.lang === 'th' ? 'th' : 'en';
   const L = o => t(o, lang);
   const base = opts.base || new URL('../../', import.meta.url).href;
@@ -290,7 +272,7 @@ export function mount(container, opts = {}) {
     const lineBtn = h('a', { class: 'p-btn line', href: '#', target: '_blank', rel: 'noopener', 'data-act': 'line', html: ICON.line + `<span>${L(T.line)}</span>` });
     const setHref = () => {
       const txt = summaryText(store.get(), lang, store.vouchers());
-      waBtn.href = whatsappUrl(txt); lineBtn.href = lineUrl(txt);
+      waBtn.href = whatsappUrl(txt, contact); lineBtn.href = lineUrl(txt, contact);
     };
     setHref();
     [waBtn, lineBtn].forEach(a => a.addEventListener('click', () => { setHref(); emit('plan:send', { channel: a.dataset.act }); }));
@@ -424,7 +406,7 @@ export function mount(container, opts = {}) {
     });
     x.fillStyle = '#F1EAF7'; x.fillRect(0, H - FOOT + 30, W, FOOT - 30);
     x.fillStyle = '#55286F'; x.font = F(700, 26);
-    x.fillText(`WhatsApp +66 85 000 2001   LINE ${LINE_OA}`, P, H - 52);
+    x.fillText(`WhatsApp ${contact.waX}   LINE ${contact.line}`, P, H - 52);
     return new Promise((res, rej) => c.toBlob(b => (b ? res(b) : rej(new Error('toBlob'))), 'image/png'));
   }
 

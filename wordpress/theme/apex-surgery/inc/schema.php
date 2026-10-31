@@ -83,6 +83,7 @@ apex_f( 'newFrom', 'date', 'New from', [ 'h' => "Shows it under What's new on th
 		apex_f( 'promos', 'repeater', 'Offer posters', [ 'f' => [ apex_f( 'src', 'image', 'Poster' ), apex_f( 'alt', 'text', 'Alt text', [ 'h' => 'Name the offer, since its title is taken from this text' ] ), apex_f( 'price', 'number', 'Price in baht', [ 'h' => 'Leave empty to show "Ask for the price"' ] ) ] ] ),
 		apex_f( 'faqH', 'text', 'Questions heading' ),
 		apex_f( 'faqs', 'repeater', 'Questions and answers', [ 'f' => [ apex_f( 'q', 'text', 'Question' ), apex_f( 'a', 'lines', 'Answer', [ 'h' => 'One paragraph per line' ] ) ] ] ),
+		apex_f( 'sources', 'lines', 'Sources', [ 'h' => 'Links to the medical sources the page is based on, one per line. Shown in small print at the foot of the page.' ] ),
 	];
 
 	/* ---------- articles ---------- */
@@ -158,6 +159,7 @@ apex_f( 'newFrom', 'date', 'New from', [ 'h' => "Shows it under What's new on th
 		apex_f( 'tel', 'url', 'Phone link', [ 'h' => 'For example tel:0888700039' ] ),
 		apex_f( 'map', 'url', 'Google Maps link' ),
 		apex_f( 'img', 'image', 'Photo' ),
+		apex_f( 'photos', 'repeater', 'More photos', [ 'h' => 'Shown in a row under the branch on the home, about and contact pages', 'f' => [ apex_f( 'src', 'image', 'Image' ), apex_f( 'alt', 'text', 'Alt text' ) ] ] ),
 		apex_f( 'tourVideo', 'url', 'Tour video', [ 'h' => 'The branch tour MP4. Upload it under Media and paste its link here. Leave empty to hide the "Take the tour" button.' ] ),
 		apex_f( 'tourPoster', 'image', 'Tour start picture', [ 'h' => 'Shown before the tour starts. The first frame of the video works well.' ] ),
 		apex_f( 'tourStops', 'repeater', 'Tour rooms', [ 'h' => 'One row per room, in the order of the video. Times are seconds in the video: the room plays from "Starts at" and stops at "Stops at". A new video needs new times.', 'f' => [
@@ -179,6 +181,7 @@ apex_f( 'newFrom', 'date', 'New from', [ 'h' => "Shows it under What's new on th
 		apex_f( 'focus', 'lines', 'Specialties on the card', [ 'h' => 'One per line, four or five at most. For example: Rhinoplasty' ] ),
 		apex_f( 'photo', 'image', 'Photo' ),
 		apex_f( 'portrait', 'image', 'Portrait (founder)' ),
+		apex_f( 'wide', 'image', 'Wide photo (founder)', [ 'h' => 'Shown beside the introduction on the home page. Leave empty to use the portrait.' ] ),
 		apex_f( 'eduH', 'text', 'Education heading' ),
 		apex_f( 'edu', 'lines', 'Education', [ 'h' => 'One per line' ] ),
 		apex_f( 'moreH', 'text', 'Further education heading' ),
@@ -230,10 +233,41 @@ apex_f( 'newFrom', 'date', 'New from', [ 'h' => "Shows it under What's new on th
 	$S['page:promotions'] = [ ...apex_seo_f(), apex_f( 'h1', 'text', 'Heading' ), apex_f( 'filters', 'repeater', 'Filter labels', [ 'f' => [ apex_f( 'k', 'select', 'Procedure', [ 'o' => [ 'all' => 'All' ] + apex_service_keys() ] ), apex_f( 'x', 'text', 'Label' ) ] ] ) ];
 	$S['page:reviews'] = [ ...apex_seo_f(), apex_f( 'h1', 'text', 'Heading' ) ];
 	$S['page:blog'] = [ ...apex_seo_f(), apex_f( 'h1', 'text', 'Heading' ) ];
+	$S['page:treatments'] = [
+		...apex_seo_f(),
+		apex_f( 'h', 'text', 'Heading' ),
+		apex_f( 'lead', 'textarea', 'Introduction' ),
+		apex_f( 'from', 'text', 'Source line', [ 'h' => 'Shown in small print under the list, for example: From the Apex treatment list, October 2026.' ] ),
+		apex_f( 'groups', 'repeater', 'Groups', [ 'h' => 'One group per menu entry, in this order. A group with no treatments shows a consultation button instead.', 'f' => [
+			apex_f( 'k', 'select', 'Icon', [ 'o' => [ 'inject' => 'Injectables', 'lift' => 'Lifting', 'laser' => 'Laser and skin', 'smile' => 'Smile', 'hair-removal' => 'Hair removal', 'body' => 'Body', 'hair' => 'Hair', 'wellness' => 'Wellness', 'weight' => 'Weight', 'intimate' => 'Intimate health' ], 'keep' => 1, 'h' => 'Also names the group in the page address, as #tx-inject' ] ),
+			apex_f( 'h', 'text', 'Heading' ),
+			apex_f( 'p', 'textarea', 'Text' ),
+			apex_f( 'cards', 'repeater', 'Treatments', [ 'f' => [
+				apex_f( 'k', 'text', 'Key', [ 'h' => 'A short name with no spaces, for example filler' ] ),
+				apex_f( 'n', 'text', 'Name' ),
+				apex_f( 'p', 'textarea', 'Text' ),
+				apex_f( 'items', 'lines', 'Products and devices', [ 'h' => 'One per line' ] ),
+				apex_f( 'link', 'text', 'Link', [ 'h' => 'A page on this site, for example filler.html or service.html?p=bone#sec-3' ] ),
+				apex_f( 'lx', 'text', 'Link goes to a surgery page', [ 'h' => 'The service key, for example bone, when the link opens a surgery page. Empty for a tool such as the filler simulator.' ] ),
+			] ] ),
+			apex_f( 'imgs', 'repeater', 'Photos', [ 'f' => [ apex_f( 'src', 'image', 'Image' ), apex_f( 'alt', 'text', 'Alt text' ) ] ] ),
+		] ] ),
+	];
+	$S['page:shows'] = [
+		...apex_seo_f(),
+		apex_f( 'series', 'repeater', 'Shows and series', [ 'h' => 'One section each, in this order', 'f' => [
+			apex_f( 'key', 'text', 'Key', [ 'h' => 'Names the section in the page address, for example surgery-wars' ] ),
+			apex_f( 'name', 'text', 'Name' ),
+			apex_f( 'channel', 'text', 'Channel' ),
+			apex_f( 'data', 'select', 'Episodes from', [ 'o' => [ 'war' => 'Surgery Wars episodes' ], 'keep' => 1 ] ),
+			apex_f( 'href', 'text', 'Series page', [ 'h' => 'For example surgery-wars.html' ] ),
+			apex_f( 'lead', 'textarea', 'Text' ),
+		] ] ),
+	];
 	$S['page:privacy'] = [ ...apex_seo_f(), apex_f( 'h1', 'text', 'Heading' ), apex_f( 'blocks', 'content', 'Policy', [ 'h' => 'Written in the editor above: headings, paragraphs and lists.' ] ) ];
 	$S['page:contact'] = [ ...apex_seo_f(), apex_f( 'h1', 'text', 'Heading' ), apex_f( 'formH', 'text', 'Form heading' ), $branches ];
 	$S['page:doctor'] = [ ...apex_seo_f(), apex_f( 'h', 'text', 'Team heading', [ 'h' => 'For example: Our surgical team' ] ), apex_f( 'p', 'textarea', 'Team introduction', [ 'h' => 'One or two sentences under the page heading' ] ) ];
-	foreach ( [ 'war', 'nose', 'analysis', 'proportions', 'implBreast', 'implChin', 'implForehead', 'implNose', 'play', 'plan', 'trip', 'consult', 'notfound' ] as $k ) $S[ 'page:' . $k ] = apex_seo_f();
+	foreach ( [ 'war', 'filler', 'analysis', 'proportions', 'implBreast', 'implChin', 'implForehead', 'implNose', 'play', 'plan', 'trip', 'consult', 'notfound' ] as $k ) $S[ 'page:' . $k ] = apex_seo_f();
 	return $S[ $type ] ?? [];
 }
 
@@ -244,13 +278,15 @@ function apex_page_types(): array {
 		'home' => [ 'Home', '', '' ],
 		'about' => [ 'About', 'about', 'about-us' ],
 		'services' => [ 'Services', 'services', 'surgery' ],
+		'treatments' => [ 'Non-surgical treatments', 'treatments', 'treatments' ],
 		'doctor' => [ 'Doctors', 'doctors', 'doctors' ],
 		'promotions' => [ 'Promotions', 'offers', 'promotions' ],
 		'reviews' => [ 'Reviews', 'patient-reviews', 'reviews' ],
 		'blog' => [ 'Articles', 'articles', 'blogs' ],
+		'shows' => [ 'Transformations', 'transformations', 'transformations' ],
 		'war' => [ 'Surgery Wars', 'surgery-wars', 'surgery-wars' ],
 		'contact' => [ 'Contact', 'contact', 'contact-us' ],
-		'nose' => [ 'Nose preview', 'nose-preview', 'nose-preview' ],
+		'filler' => [ 'Filler simulator', 'filler-simulator', 'filler-simulator' ],
 		'analysis' => [ 'Face analysis', 'face-analysis', 'face-analysis' ],
 		'proportions' => [ 'Golden proportions', 'golden-proportions', 'golden-proportions' ],
 		'implBreast' => [ 'Breast implant viewer', 'breast-implant-viewer', 'breast-implant-viewer' ],

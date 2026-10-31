@@ -1,6 +1,4 @@
-import {createRequire} from 'module';
-const require = createRequire('/opt/npm-tools/node_modules/');
-const {chromium} = require('playwright');
+import {chromium} from '../pw.mjs';
 const b = await chromium.launch();
 for (const [w,h,n] of [[1400,900,'d'],[390,800,'m']]) {
   const p = await (await b.newContext({viewport:{width:w,height:h}})).newPage();
