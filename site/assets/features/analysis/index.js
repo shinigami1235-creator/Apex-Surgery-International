@@ -18,7 +18,7 @@ const SVC = {under:'eyelid', lid:'eyelid'};
 const STR = {
   en:{
     emptyH:'Take or choose a front photo.', hint:'Face the camera in even light, with no makeup and beauty mode off.', privacy:'No photo uploaded.',
-    take:'Take photo', choose:'Choose photo', sample:'Sample face', change:'New photo', busy:'Reading your skin', credit:'Sample photo: Unsplash',
+    take:'Take photo', choose:'Choose photo', sample:'Sample face', change:'New photo', busy:'Reading your skin', credit:'Sample face from Unsplash, not an Apex patient',
     photo:'Photo', sides:'Side photos', sidesP:'Optional. A photo with your head turned halfway on each side adds the jawline and the folds beside the nose.',
     left:'Left side', right:'Right side', add:'Add', remove:'Remove', ideal:'Golden match for', women:'Women', men:'Men',
     save:'Save', saveBtn:'Save to phone', plan:'Add to My Plan', planned:'Added to My Plan', consult:'Ask a surgeon',
@@ -49,7 +49,7 @@ const STR = {
   },
   th:{
     emptyH:'ถ่ายหรือเลือกรูปหน้าตรง', hint:'หันหน้าตรงเข้าหากล้องในที่แสงสม่ำเสมอ ไม่แต่งหน้า และปิดโหมดบิวตี้', privacy:'ไม่มีการอัปโหลดรูปภาพ',
-    take:'ถ่ายรูป', choose:'เลือกรูป', sample:'ใบหน้าตัวอย่าง', change:'เปลี่ยนรูป', busy:'กำลังอ่านผิวของคุณ', credit:'ภาพตัวอย่าง: Unsplash',
+    take:'ถ่ายรูป', choose:'เลือกรูป', sample:'ใบหน้าตัวอย่าง', change:'เปลี่ยนรูป', busy:'กำลังอ่านผิวของคุณ', credit:'ใบหน้าตัวอย่างจาก Unsplash ไม่ใช่ผู้รับบริการของ Apex',
     photo:'รูปภาพ', sides:'รูปด้านข้าง', sidesP:'ไม่บังคับ รูปที่หันศีรษะไปครึ่งทางทั้งสองข้างช่วยอ่านกรอบหน้าและร่องข้างจมูก',
     left:'ด้านซ้าย', right:'ด้านขวา', add:'เพิ่ม', remove:'ลบ', ideal:'สัดส่วนทองคำสำหรับ', women:'ผู้หญิง', men:'ผู้ชาย',
     save:'บันทึก', saveBtn:'บันทึกลงโทรศัพท์', plan:'เพิ่มในแผนของฉัน', planned:'เพิ่มในแผนแล้ว', consult:'ปรึกษาศัลยแพทย์',

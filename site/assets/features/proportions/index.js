@@ -17,7 +17,7 @@ const STR = {
   en:{
     change:'New photo', photo:'Photo', take:'Take photo', choose:'Choose photo', sample:'Sample face', privacy:'No photo uploaded.',
     hint:'Face the camera straight on with your lips closed.', emptyH:'Take or choose a front photo.',
-    busy:'Measuring your face', credit:'Sample photo: Unsplash', rows:'Proportions', settings:'Settings',
+    busy:'Measuring your face', credit:'Sample face from Unsplash, not an Apex patient', rows:'Proportions', settings:'Settings',
     ideal:'Ideal for', women:'Women', men:'Men', amount:'Amount', guides:'Guides', spiral:'Spiral',
     before:'Before', after:'After', sim:'Simulation only', compare:'Before and after',
     now:'Now', then:'After', fine:'Already in proportion', apply:'Apply',
@@ -36,7 +36,7 @@ const STR = {
   th:{
     change:'เปลี่ยนรูป', photo:'รูปภาพ', take:'ถ่ายรูป', choose:'เลือกรูป', sample:'ใบหน้าตัวอย่าง', privacy:'ไม่มีการอัปโหลดรูปภาพ',
     hint:'หันหน้าตรงเข้าหากล้องและปิดปาก', emptyH:'ถ่ายหรือเลือกรูปหน้าตรง',
-    busy:'กำลังวัดสัดส่วนใบหน้า', credit:'ภาพตัวอย่าง: Unsplash', rows:'สัดส่วน', settings:'การตั้งค่า',
+    busy:'กำลังวัดสัดส่วนใบหน้า', credit:'ใบหน้าตัวอย่างจาก Unsplash ไม่ใช่ผู้รับบริการของ Apex', rows:'สัดส่วน', settings:'การตั้งค่า',
     ideal:'สัดส่วนสำหรับ', women:'ผู้หญิง', men:'ผู้ชาย', amount:'ระดับ', guides:'เส้นสัดส่วน', spiral:'เกลียวทอง',
     before:'ก่อน', after:'หลัง', sim:'ภาพจำลองเท่านั้น', compare:'ก่อนและหลัง',
     now:'ตอนนี้', then:'หลังปรับ', fine:'ได้สัดส่วนแล้ว', apply:'ปรับ',
