@@ -85,7 +85,7 @@ function apex_svc_cards( array $S, ?array $keys = null ): string {
 	foreach ( $S['services'] ?? [] as $s ) {
 		if ( $keys && ! in_array( $s['key'], $keys, true ) ) continue;
 		$o .= '<a class="svc-tile rv" data-d="' . ( $i * 60 ) . '" href="' . esc_url( apex_svc_url( $s['key'] ) ) . '"' . apex_new_attr( 'svc:' . $s['key'] ) . '>
-      <span class="st-glow" aria-hidden="true"></span><span class="st-n">' . sprintf( '%02d', $i + 1 ) . '</span>
+      <span class="st-glow" aria-hidden="true"></span><span class="st-ic">' . ( $s['icon'] ? '<img src="' . esc_url( apex_img( $s['icon'] ) ) . '" alt="" loading="lazy" decoding="async">' : '' ) . '</span>
       <span class="st-name">' . apex_e( $s['short'] ?: $s['name'] ) . '</span><span class="st-en">' . apex_e( apex_L() === 'en' ? ( $s['name'] !== $s['short'] ? $s['name'] : '' ) : $s['en'] ) . '</span>
       <span class="st-go">' . apex_ic( 'arrow-up-right' ) . '</span></a>';
 		$i++;
