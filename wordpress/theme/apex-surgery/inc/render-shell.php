@@ -118,7 +118,7 @@ function apex_header_html( string $page ): string {
 		$cur = $k === $page || ( $k === 'services' && $page === 'service' ) || ( $k === 'articles' && $page === 'article' ) ? ' aria-current="page"' : '';
 		if ( $k === 'services' ) {
 			$items = '';
-			foreach ( $svcs as $s ) $items .= '<a class="mega-svc" href="' . esc_url( apex_svc_url( $s['key'] ) ) . '"><span class="ms-ic"><img src="' . esc_url( apex_img( $s['icon'] ) ) . '" alt="" loading="lazy" decoding="async" decoding="async"></span><span><b>' . apex_e( $s['short'] ?: $s['name'] ) . '</b><small>' . apex_e( $L === 'en' ? ( $s['name'] !== $s['en'] ? $s['en'] : '' ) : $s['en'] ) . '</small></span></a>';
+			foreach ( $svcs as $s ) $items .= '<a class="mega-svc" href="' . esc_url( apex_svc_url( $s['key'] ) ) . '"><span><b>' . apex_e( $s['short'] ?: $s['name'] ) . '</b><small>' . apex_e( $L === 'en' ? ( $s['name'] !== $s['en'] ? $s['en'] : '' ) : $s['en'] ) . '</small></span></a>';
 			$nav .= '<div class="has-mega"><button type="button" aria-expanded="false"' . $cur . '>' . apex_e( apex_t( 'services' ) ) . apex_ic( 'chevron-down' ) . '</button>
           <div class="mega surg" role="menu"><div class="mega-svcs">' . $items . '</div>
           <div class="mega-tools"><h4>' . apex_e( apex_t( 'tools' ) ) . '</h4>

@@ -155,7 +155,7 @@
     const nav = NAV.map(([h, k]) => {
       const cur = k === page || (k === 'services' && page === 'service') || (k === 'articles' && page === 'article') ? ' aria-current="page"' : '';
       if (k === 'services') {
-        const items = svcs.map(s => `<a class="mega-svc" href="${A.svcUrl(s.key)}"><span class="ms-ic"><img src="${A.img(s.icon)}" alt="" loading="lazy" decoding="async" decoding="async"></span><span><b>${A.esc(s.short || s.name)}</b><small>${A.esc(A.lang === 'en' ? (s.name !== s.en ? s.en : '') : s.en)}</small></span></a>`).join('');
+        const items = svcs.map(s => `<a class="mega-svc" href="${A.svcUrl(s.key)}"><span><b>${A.esc(s.short || s.name)}</b><small>${A.esc(A.lang === 'en' ? (s.name !== s.en ? s.en : '') : s.en)}</small></span></a>`).join('');
         return `<div class="has-mega"><button type="button" aria-expanded="false"${cur}>${A.esc(A.t('services'))}${A.ic('chevron-down')}</button>
           <div class="mega surg" role="menu"><div class="mega-svcs">${items}</div>
           <div class="mega-tools"><h4>${A.esc(A.t('tools'))}</h4>
@@ -433,7 +433,7 @@
   A.svcCards = (S, keys) => {
     const list = (S.services || []).filter(s => !keys || keys.includes(s.key));
     return `<div class="svc-grid">${list.map((s, i) => `<a class="svc-tile rv" data-d="${i*60}" href="${A.svcUrl(s.key)}" data-new="svc:${A.esc(s.key)}">
-      <span class="st-glow" aria-hidden="true"></span><span class="st-ic"><img src="${A.img(s.icon)}" alt="" loading="lazy" decoding="async" decoding="async"></span>
+      <span class="st-glow" aria-hidden="true"></span><span class="st-n">${String(i+1).padStart(2,'0')}</span>
       <span class="st-name">${A.esc(s.short || s.name)}</span><span class="st-en">${A.esc(A.lang === 'en' ? (s.name !== s.short ? s.name : '') : s.en)}</span>
       <span class="st-go">${A.ic('arrow-up-right')}</span></a>`).join('')}</div>`;
   };
