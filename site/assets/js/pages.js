@@ -196,7 +196,7 @@
       const links = [];
       if (cat === 'rhinoplasty') links.push({x:T('noseTry'), url:'nose-implants.html'});
       if (!opts.onService) links.push({x:T('seeService'), url:A.svcUrl(cat)});
-      return {src:/^img\//.test(src) ? IMG(src) : src, cat, layout:BA_LAYOUT[cat] || 'single', procName, facts, story:post ? {title:post.title, url:A.postUrl(post.key)} : null,
+      return {src:/^img\//.test(src) ? IMG(src) : src, cat, layout:(typeof x === 'object' && x.layout) || BA_LAYOUT[cat] || 'single', procName, facts, story:post ? {title:post.title, url:A.postUrl(post.key)} : null,
         ask:{line:`https://line.me/R/oaMessage/${A.contact().line}/?${encodeURIComponent(msg)}`, wa:`${A.WA.h}?text=${encodeURIComponent(msg)}`}, links};
     });
     return cases.filter(c => c.story).concat(cases.filter(c => !c.story));
@@ -746,6 +746,9 @@
     const others = rp.filter(p => !stories.some(x => x.p.key === p.key));
     const sCats = SVC_CATS.filter(k => stories.some(x => procOf((x.d.tag || '') + ' ' + x.p.title + ' ' + x.p.key) === k));
     main().innerHTML = phead(D.h1 || T('reviews'), T('reviewsSub'), [homeCrumb(), [T('reviews')]]) + `
+      <section class="section rx-s"><div class="wrap">
+        <div class="shead"><div><p class="eyebrow rv">${E(T('rxEyebrow'))}</p><h2 class="h-xl rv">${E(T('rxH'))}</h2></div><p class="note rv">${E(T('rxSub'))}</p></div>
+        <div id="rx" class="rx-host"></div></div></section>
       ${stories.length ? `<section class="section stories-s"><div class="wrap">
         <div class="shead"><h2 class="h-xl rv">${E(T('storiesH'))}</h2>${sCats.length > 1 ? chips([['all', T('all')], ...sCats.map(k => [k, svcName(S, k)])], 'all').replace('class="chips"', 'class="chips st-chips"') : ''}</div>
         <div class="story-grid" id="sgrid">${stories.map((x, i) => storyCard(x, i, S)).join('')}</div></div></section>` : ''}
@@ -758,7 +761,9 @@
       <section class="section washed"><div class="wrap">${A.consultBand(S)}</div></section>`;
     const sg = A.qs('#sgrid');
     if (sg) bindChips(A.qs('.stories-s'), k => A.qsa('.story', sg).forEach(el => el.hidden = !(k === 'all' || el.dataset.cat === k)));
-    mountShowcase(A.qs('#ba'), baCases(items, S), {cats:SVC_CATS.map(k => ({k, x:svcName(S, k)}))});
+    const cases = baCases(items, S);
+    mountShowcase(A.qs('#ba'), cases, {cats:SVC_CATS.map(k => ({k, x:svcName(S, k)}))});
+    A.mount(A.qs('#rx'), 'results', {cases, vary:T('resultsVary'), cats:SVC_CATS.map(k => ({k, x:svcName(S, k), icon:A.img(((S.services || []).find(x => x.key === k) || {}).icon)}))});
     A.bindMedia(main());
     mountStories(A.qs('#stories'));
     A.fbMount(main());

@@ -915,6 +915,9 @@ function apex_page_reviews( array $r ): string {
 	foreach ( $stories as $i => $x ) $cards .= apex_story_card( $x, $i, $S );
 	$others4 = array_slice( $others, 0, 4 );
 	return apex_phead( ( $D['h1'] ?? '' ) ?: $T( 'reviews' ), $T( 'reviewsSub' ), [ apex_home_crumb(), [ $T( 'reviews' ) ] ] ) . '
+      <section class="section rx-s"><div class="wrap">
+        <div class="shead"><div><p class="eyebrow rv">' . $E( $T( 'rxEyebrow' ) ) . '</p><h2 class="h-xl rv">' . $E( $T( 'rxH' ) ) . '</h2></div><p class="note rv">' . $E( $T( 'rxSub' ) ) . '</p></div>
+        <div id="rx" class="rx-host"></div></div></section>
       ' . ( $stories ? '<section class="section stories-s"><div class="wrap">
         <div class="shead"><h2 class="h-xl rv">' . $E( $T( 'storiesH' ) ) . '</h2>' . $chips . '</div>
         <div class="story-grid" id="sgrid">' . $cards . '</div></div></section>' : '' ) . '

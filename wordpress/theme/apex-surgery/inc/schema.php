@@ -148,6 +148,7 @@ apex_f( 'newFrom', 'date', 'New from', [ 'h' => "Shows it under What's new on th
 		apex_f( 'name', 'text', 'Case name', [ 'src' => 'title', 'h' => 'For the admin list only' ] ),
 		apex_f( 'src', 'image', 'Before and after image', [ 'h' => 'The file name can carry the facts: BA_Area_Name_6M.webp shows the area and a 6-month follow-up.' ] ),
 		apex_f( 'cat', 'select', 'Procedure', [ 'o' => $cats ] ),
+		apex_f( 'layout', 'select', 'How the photo is split', [ 'o' => [ '' => 'As usual for the procedure', 'lr' => 'Before on the left, after on the right', 'tb' => 'Before on top, after below', 'single' => 'One photo, not split' ], 'h' => 'Facelift, rhinoplasty and liposuction are usually left and right; eye and breast photos top and bottom. Only left and right photos go in the results machine at the top of the Reviews page.' ] ),
 		apex_f( 'alt', 'text', 'Alt text', [ 'h' => 'Optional. What the image shows.' ] ),
 	];
 	$S['apex_branch'] = [

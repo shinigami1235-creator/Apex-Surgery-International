@@ -1494,3 +1494,4 @@ html:has(.tm-dlg[open]){overflow:hidden}
 .svc-tile>.new-tag.inline{position:absolute;right:20px;bottom:20px;margin:0}
 html[lang="th"] .fresh-k,html[lang="th"] .new-tag{letter-spacing:.02em}
 .st-ic:empty,.ms-ic:empty{visibility:hidden}
+.rx-host:empty{aspect-ratio:16/10;border-radius:16px;background:#E9E3EF}

@@ -258,7 +258,7 @@ class Apex_CLI {
 			foreach ( $this->D[ $l ]['shared']['services'] ?? [] as $s ) $names[ $s['key'] ] = $s['short'] ?? $s['name'];
 			foreach ( $this->D[ $l ]['reviews']['items'] ?? [] as $i => $c ) {
 				$key = 'case-' . substr( md5( basename( $c['src'] ) ), 0, 10 );
-				$vals = [ 'name' => ( $names[ $c['cat'] ?? '' ] ?? 'Case' ) . ' ' . ( $i + 1 ), 'src' => $c['src'], 'cat' => $c['cat'] ?? '', 'alt' => $c['alt'] ?? '' ];
+				$vals = [ 'name' => ( $names[ $c['cat'] ?? '' ] ?? 'Case' ) . ' ' . ( $i + 1 ), 'src' => $c['src'], 'cat' => $c['cat'] ?? '', 'layout' => $c['layout'] ?? '', 'alt' => $c['alt'] ?? '' ];
 				$this->upsert( 'apex_case', $key, $l, [ 'menu_order' => $i ], 'apex_case', $vals );
 			}
 		}

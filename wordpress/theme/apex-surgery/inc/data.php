@@ -215,6 +215,7 @@ function apex_cases( string $lang ): array {
 	return array_map( function ( $id ) {
 		$c = apex_read_post( $id, 'apex_case' );
 		$o = [ 'src' => $c['src'], 'cat' => $c['cat'] ];
+		if ( ( $c['layout'] ?? '' ) !== '' ) $o['layout'] = $c['layout'];
 		if ( $c['alt'] !== '' ) $o['alt'] = $c['alt'];
 		return $o;
 	}, apex_posts( 'apex_case', $lang ) );
