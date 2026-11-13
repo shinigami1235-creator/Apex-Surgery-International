@@ -82,6 +82,8 @@ const T = {
   namePh: { en: 'e.g. Anna Lee', th: 'เช่น สมหญิง ใจดี' },
   consent: { en: 'I agree to Apex Surgery Hospital contacting me about this voucher.', th: 'ฉันยินยอมให้โรงพยาบาลศัลยกรรมตกแต่งเอเพ็กซ์ติดต่อฉันเกี่ยวกับบัตรกำนัลนี้' },
   remind: { en: 'Remind me on LINE', th: 'แจ้งเตือนฉันทาง LINE' },
+  remindGo: { en: 'Turn on reminders in LINE', th: 'เปิดการแจ้งเตือนใน LINE' },
+  remindHow: { en: 'LINE opens with your code typed to Apex. Send it and the reminders start. Send STOP any time to end them.', th: 'LINE จะเปิดพร้อมรหัสของคุณที่พิมพ์ถึง Apex ไว้แล้ว กดส่งเพื่อเริ่มการแจ้งเตือน พิมพ์ STOP เมื่อใดก็ได้เพื่อหยุด' },
   freq: { en: 'How often', th: 'ความถี่' },
   f1: { en: 'When my daily tries reset', th: 'เมื่อสิทธิ์รายวันรีเซ็ต' },
   f2: { en: 'Once a week', th: 'สัปดาห์ละครั้ง' },
@@ -180,6 +182,7 @@ const CSS = `
 .apxg .g-btn:active{transform:scale(.97)}
 .apxg .g-btn svg{width:18px;height:18px;flex:none}
 .apxg .g-btn.plum{background:linear-gradient(180deg,#7A44A0,var(--g-plum) 55%,var(--g-plum7));color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 12px 24px -12px rgba(106,56,140,.9)}
+.apxg .g-btn.line{background:#06C755;color:#fff;margin-top:10px}.apxg .g-btn.line:hover{filter:brightness(1.06)}
 .apxg .g-btn.plum:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 16px 30px -12px rgba(106,56,140,.95)}
 .apxg .g-btn.rose{background:linear-gradient(180deg,#DC4A7A,var(--g-rose) 55%,#B02654);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 24px -12px rgba(204,51,102,.9)}
 .apxg .g-btn.ghost{background:#fff;color:var(--g-plum);border-color:var(--g-l3)}
@@ -535,8 +538,11 @@ function applyConfig(c) {
     }));
   });
   if (+c.days > 0) voucherDays = +c.days;
+  lineRemind = c.line && c.line.oa ? c.line : null;
 }
 let voucherDays = VOUCHER_DAYS;
+/* LINE reminders: offered only when the site has them switched on (Apex settings › Games and prizes) */
+let lineRemind = null;
 
 export function mount(container, opts = {}) {
   applyConfig(opts.config);
@@ -1039,7 +1045,7 @@ export function mount(container, opts = {}) {
         code: makeCode(taken), game: run.id, prize: tier.prize, tier: tier.index, score: run.score, level: run.level,
         name: nameIn.value.trim().slice(0, 60), issued: now, expires: now + voucherDays * 86400e3, seed: run.seed,
         run: { durationMs: run.durationMs, inputs: run.inputs, logLength: run.log.length },
-        consent: true, remind: remind.checked ? { channel: 'line', when: f ? f.value : 'reset' } : null, preview: true
+        consent: true, remind: lineRemind && remind.checked ? { channel: 'line', when: f ? f.value : 'reset' } : null, preview: true
       };
       const all = vouchers(); all.push(v); store.set(K.vouchers, all);
       const shown = () => {
@@ -1052,7 +1058,7 @@ export function mount(container, opts = {}) {
          never receives (offline) keeps the Preview tag; a late success still clears it in storage. */
       create.disabled = true;
       const reg = fetch(opts.voucherEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
-        body: JSON.stringify({ code: v.code, game: v.game, tier: v.tier, score: v.score, name: v.name, lang, run: v.run }) })
+        body: JSON.stringify({ code: v.code, game: v.game, tier: v.tier, score: v.score, name: v.name, lang, run: v.run, remind: v.remind ? v.remind.when : '' }) })
         .then(r => r.ok ? r.json() : null).then(j => {
           if (!(j && j.ok)) return;
           v.registered = true; delete v.preview;
@@ -1065,8 +1071,7 @@ export function mount(container, opts = {}) {
       h('h3', { style: { marginTop: '20px' } }, L(T.details)),
       h('div', { class: 'g-field' }, h('label', { for: 'apxg-name' }, L(T.name)), nameIn),
       h('label', { class: 'g-check' }, consent, h('span', null, L(T.consent))),
-      h('label', { class: 'g-check opt' }, remind, h('span', null, L(T.remind))),
-      freq,
+      ...(lineRemind ? [h('label', { class: 'g-check opt' }, remind, h('span', null, L(T.remind))), freq] : []),
       h('div', { class: 'g-acts' }, create, btn('ghost block', L(T.cancel), () => (opts.voucherEndpoint ? showResult(o, run, { newBest: false }) : claimSignIn(o, run, tier)))));
     p.append(sheet);
     nameIn.focus({ preventScroll: true });
@@ -1115,6 +1120,7 @@ export function mount(container, opts = {}) {
     const box = h('div', { class: 'g-sheet', 'data-step': 'voucher', style: { background: 'transparent', boxShadow: 'none', padding: '0' } },
       voucherCard(v),
       h('div', { class: 'g-acts fit' }, save, plan),
+      ...(v.remind && lineRemind ? [h('a', { class: 'g-btn line block', href: `https://line.me/R/oaMessage/${encodeURIComponent(lineRemind.oa)}/?${encodeURIComponent('REMIND ' + v.code)}`, target: '_blank', rel: 'noopener', 'data-act': 'line-remind' }, L(T.remindGo)), h('p', { class: 'g-note' }, L(T.remindHow))] : []),
       status,
       h('div', { class: 'g-acts' }, btn('light block', L(T.done), onDone, { 'data-act': 'done' })));
     const card = box.querySelector('.g-vc');

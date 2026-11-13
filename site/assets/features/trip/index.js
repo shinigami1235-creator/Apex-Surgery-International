@@ -435,7 +435,9 @@ export function mount(container, opts = {}) {
   update(false);
   loadData(base, lang, 'shared').then(d => {
     (d.branches || []).forEach(b => { branches[b.key] = b; });
-    renderBranches(); renderOut();
+    // stay days set per service in WordPress replace the defaults above
+    (d.services || []).forEach(x => { if (x.key in STAY_DAYS && +x.stay > 0) STAY_DAYS[x.key] = +x.stay; });
+    renderBranches(); update(false);
   }).catch(() => { /* branch details stay hidden */ });
 
   return { destroy() { root.remove(); }, get trip() { return current; } };

@@ -260,6 +260,7 @@ function apex_boot_script( array $r ): string {
 	];
 	if ( $r['page'] === 'play' ) {
 		$cfg['games'] = apex_game_config();
+		if ( apex_line_ready() ) $cfg['games']['line'] = [ 'oa' => apex_line_oa() ];
 		$cfg['voucherCheck'] = admin_url( 'edit.php?post_type=apex_voucher&page=apex-voucher-check&code=' );
 	}
 	$j = fn( $x ) => wp_json_encode( $x, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP );

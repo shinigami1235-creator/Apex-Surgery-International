@@ -202,7 +202,7 @@ function apex_build_shared( string $lang ): array {
 		$k = (string) get_post_meta( $id, '_apex_key', true );
 		$m = apex_norm( apex_schema_field( 'apex_service', 'menu' ), get_post_meta( $id, 'apex_menu', true ) ) ?: [];
 		$t = get_the_title( $id );
-		$S['services'][] = [ 'key' => $k, 'name' => ( $m['name'] ?? '' ) ?: $t, 'short' => ( $m['short'] ?? '' ) ?: $t, 'en' => $m['en'] ?? '', 'icon' => $m['icon'] ?? '', 'nav' => ( $m['nav'] ?? '' ) ?: $t ];
+		$S['services'][] = [ 'key' => $k, 'name' => ( $m['name'] ?? '' ) ?: $t, 'short' => ( $m['short'] ?? '' ) ?: $t, 'en' => $m['en'] ?? '', 'icon' => $m['icon'] ?? '', 'nav' => ( $m['nav'] ?? '' ) ?: $t, 'stay' => (int) get_post_meta( $id, apex_meta_key( 'stay' ), true ) ?: null ];
 	}
 	return apex_drop_nulls( $S );
 }

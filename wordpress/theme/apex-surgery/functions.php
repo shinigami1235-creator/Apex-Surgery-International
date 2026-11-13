@@ -16,6 +16,7 @@
  * inc/seo.php       titles, descriptions, Open Graph, JSON-LD, hreflang when no SEO plugin is active
  * inc/redirects.php old URLs to new ones
  * inc/forms.php     online consultation, game vouchers, the reception voucher check
+ * inc/line.php      LINE reminders for game vouchers, off until Apex adds the channel codes
  * inc/social.php    Latest from Apex: Instagram and TikTok posts fetched every hour, Apex settings › Social feeds
  * inc/fresh.php     What's new on the home page and the New tags: the list, New from dates, What's new › Settings
  * inc/pricing.php   prices by country: the price lists, each visitor's list, Apex settings › Prices by country
@@ -32,7 +33,7 @@ define( 'APEX_VERSION', '1.0.0' );
 define( 'APEX_DIR', __DIR__ );
 define( 'APEX_URI', get_template_directory_uri() );
 
-foreach ( [ 'helpers', 'schema', 'types', 'fields', 'blocks', 'data', 'render-shell', 'render-pages', 'seo', 'redirects', 'forms', 'pricing', 'social', 'fresh', 'tracking', 'media', 'security', 'audit', 'admin' ] as $f ) {
+foreach ( [ 'helpers', 'schema', 'types', 'fields', 'blocks', 'data', 'render-shell', 'render-pages', 'seo', 'redirects', 'forms', 'line', 'pricing', 'social', 'fresh', 'tracking', 'media', 'security', 'audit', 'admin' ] as $f ) {
 	require_once APEX_DIR . "/inc/$f.php";
 }
 if ( defined( 'WP_CLI' ) && WP_CLI ) {

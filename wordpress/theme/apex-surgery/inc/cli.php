@@ -170,6 +170,7 @@ class Apex_CLI {
 			if ( ! $s ) continue;
 			$vals = $this->pick( 'apex_service', $s );
 			$vals['menu'] = [ 'name' => $m['name'], 'short' => $m['short'], 'en' => $m['en'], 'icon' => $m['icon'], 'nav' => $m['nav'] ];
+			$vals['stay'] = $m['stay'] ?? '';
 			$vals['sections'] = apex_sections_to_markup( $s['sections'] ?? [] );
 			$slug = $l === 'th' ? $this->slug_of( $m['path'] ?? $m['key'] ) : $m['key'];
 			$id = $this->upsert( 'apex_service', $m['key'], $l, [ 'menu_order' => $i ], 'apex_service', $vals, $slug );

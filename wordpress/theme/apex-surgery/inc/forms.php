@@ -217,6 +217,8 @@ function apex_voucher_register( WP_REST_Request $req ) {
 		'prize' => $cfg['prizes'][ $tier ][ $lang ] ?? '', 'issued' => $now, 'expires' => $now + $cfg['days'] * DAY_IN_SECONDS,
 		'run' => [ 'durationMs' => (int) ( $run['durationMs'] ?? 0 ), 'inputs' => (int) ( $run['inputs'] ?? 0 ), 'logLength' => (int) ( $run['logLength'] ?? 0 ) ],
 		'ip' => apex_ip_hash(),
+		// the player's reminder choice, kept only while Apex offers LINE reminders
+		'remind' => apex_line_ready() && in_array( (string) $req->get_param( 'remind' ), APEX_LINE_MODES, true ) ? (string) $req->get_param( 'remind' ) : '',
 	] ) );
 	update_post_meta( $id, 'apex_used', '' );
 	return [ 'ok' => true, 'code' => $code ];
@@ -474,6 +476,7 @@ function apex_games_page(): void {
 		foreach ( apex_game_config()['games'] as $g => $t ) foreach ( $t as $i => $x ) $o['games'][ $g ][ $i ] = max( 1, (int) ( $in['games'][ $g ][ $i ] ?? $x ) );
 		for ( $i = 0; $i < 3; $i++ ) foreach ( APEX_LANGS as $l ) $o['prizes'][ $i ][ $l ] = sanitize_text_field( $in['prizes'][ $i ][ $l ] ?? '' );
 		update_option( 'apex_games', $o, true );
+		apex_line_save( (array) wp_unslash( $_POST['l'] ?? [] ) );
 		apex_audit( 'settings', 0, 'Games and prizes' );
 		echo '<div class="notice notice-success"><p>' . esc_html__( 'Saved.', 'apex' ) . '</p></div>';
 	}
@@ -486,6 +489,7 @@ function apex_games_page(): void {
 	echo '</tbody></table><h2>' . esc_html__( 'Scores', 'apex' ) . '</h2><table class="widefat" style="max-width:820px"><thead><tr><th></th><th>' . esc_html__( 'Prize 1', 'apex' ) . '</th><th>' . esc_html__( 'Prize 2', 'apex' ) . '</th><th>' . esc_html__( 'Prize 3', 'apex' ) . '</th></tr></thead><tbody>';
 	foreach ( $c['games'] as $g => $t ) echo '<tr><th>' . esc_html( $names[ $g ] ?? $g ) . '</th>' . implode( '', array_map( fn( $x, $i ) => '<td><input type="number" min="1" class="small-text" name="g[games][' . $g . '][' . $i . ']" value="' . (int) $x . '"></td>', $t, array_keys( $t ) ) ) . '</tr>';
 	echo '</tbody></table><table class="form-table"><tr><th>' . esc_html__( 'Voucher valid for (days)', 'apex' ) . '</th><td><input type="number" min="1" name="g[days]" value="' . (int) $c['days'] . '"></td></tr><tr><th>' . esc_html__( 'Vouchers per connection per day', 'apex' ) . '</th><td><input type="number" min="1" name="g[perDay]" value="' . (int) $c['perDay'] . '"></td></tr></table>';
+	echo apex_line_settings_html();
 	submit_button();
 	echo '</form></div>';
 }

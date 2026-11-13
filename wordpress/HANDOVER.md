@@ -2,6 +2,13 @@
 
 This is the new apexsurgeryhospital.com as a WordPress theme, in English and Thai. It is written for whoever installs and runs the site. Please read it once before you start and follow the steps in order on a staging copy first.
 
+## Who does what
+
+- **Apex's IT team** sets up the hosting, staging and live, and installs the site with the steps below. The server, the domain, SSL, email sending, backups and plugin updates are theirs to run.
+- **Apex's staff** edit the content in WordPress: prices, offers, before and after photos, doctors, articles, prizes, stay days, wording. Nothing in this list needs a developer.
+- **Approvals** (the advertising approval, the legal review, signing off the English and Chinese text) are Apex's. The site is handed over for Apex to check.
+- **Gid** sends bigger changes, a new tool or a new page design, as a new theme zip. "Updating the theme" at the end says how to install one without losing anything.
+
 ## What is in this folder
 
 | Path | What it is |
@@ -151,6 +158,10 @@ Each page is drawn in PHP from the same content structure the design used, with 
 - JPEG and PNG uploads are saved as WebP at quality 82, which loads faster. Settings › Media turns this off. Once a day the site also makes the phone-size copies of new wide photos; `wp apex webp` does it straight away.
 - One photo in the article "Brow Lift: Restore a Bright Face with Endotine" and its Thai version (`/wp-content/uploads/2025/05/image-13.png`) is missing on the live site too. Upload it again or take the image block out.
 
+- The before and after photos are under Before and after. "How the photo is split" says where the before and the after sit in the photo. The results machine at the top of the Reviews page runs only the photos split left and right, grouped by procedure, so a new facelift, rhinoplasty or liposuction case set to left and right goes into it by itself.
+- Each service has "Stay in Thailand after surgery (days)", which the trip planner uses for clients from abroad. Empty uses the planner's own number for that procedure.
+- The service icons are under Services › In menus and service cards › Icon. Facial bone surgery has none yet, so its tile shows no icon until one is uploaded.
+
 ## Doctors
 
 Doctors holds the surgical team. Each doctor is one post per language, shown as "Surgical team", and the Order box under Page attributes sets their place in the team strip and on the Doctors page. The card shows the photo, short name, name, role and the specialties on the card. The profile that opens from it adds the license line, the other-language name, a quote, and the education, training, expertise, work, memberships and talks lists, one item per line. A line written "2016: Workshop name" shows the year in bold.
@@ -240,6 +251,18 @@ The token lasts 60 days and the site renews it every week, so it keeps working a
 
 The refresh token lasts a year and the site gets a new one on every fetch. TikTok has to approve the app before it can read videos from an account outside its sandbox, which takes a few days.
 
+## LINE reminders
+
+When a player claims a game voucher, the site can offer "Remind me on LINE". It is off until Apex turns it on, and players don't see the option while it is off.
+
+1. In the LINE Developers console, open the Messaging API channel of the Apex Surgery LINE account (the one under Site settings › LINE).
+2. Copy the Channel secret (Basic settings) and issue a long-lived Channel access token (Messaging API).
+3. In WordPress, open Apex settings › Games and prizes › LINE reminders. Paste both, tick "Offer reminders" and save.
+4. Copy the Webhook URL shown there into the channel's Webhook settings, turn on "Use webhook" and press Verify.
+5. Claim a voucher on your phone with "Remind me on LINE" ticked, tap "Turn on reminders in LINE" and send the message. LINE replies that reminders are on.
+
+The player picks daily (when their game tries reset), weekly, or only before the voucher ends. Every player also gets one message three days before the voucher ends. Messages go out at 10:00 Bangkok time and stop when the voucher is used or ends, or when the player sends STOP or blocks the account. The settings page shows the last run and the last error from LINE. A 401 there means the token is wrong or has been reissued.
+
 ## Who can see what
 
 | Role | Content | Enquiries and patient photos | Vouchers |
@@ -258,6 +281,7 @@ Enquiries › Access log, for Administrators only, lists who opened an enquiry, 
 - Photos are saved as new JPEGs no larger than 2400 px, with the camera data (including GPS location) removed, under `uploads/apex-private/` with random file names. Only Administrators and Apex staff can open them, from the enquiry screen.
 - Enquiries are deleted after 365 days, photos included. Apex settings › Forms changes the number of days. Deleting an enquiry by hand deletes its photos too.
 - Vouchers are deleted 90 days after they expire.
+- With LINE reminders on, a voucher keeps the player's LINE user ID while reminders run. The ID is deleted when the voucher is used or ends, when the player sends STOP, or when they block the account.
 - Tools › Erase Personal Data finds enquiries by email address. Enquiries that came in by WhatsApp or LINE have to be deleted by hand from the Enquiries list.
 - Backups copy `uploads/apex-private/` like any other folder. Keep backups encrypted and on the same retention period.
 - The cookie banner holds back analytics and advertising cookies until the visitor accepts (Google Consent Mode v2). Tags in the Tag Manager container must use Consent Mode for this to hold.
@@ -277,7 +301,7 @@ Enquiries › Access log, for Administrators only, lists who opened an enquiry, 
 From the repository root, with the staging site at `$SITE`:
 
 ```bash
-node tests/wordpress/ssr.mjs $SITE        # every page: the server's markup matches the scripts' (124 pages)
+node tests/wordpress/ssr.mjs $SITE        # every page: the server's markup matches the scripts' (132 pages)
 WP_PASS_FILE=... node tests/wordpress/admin.mjs $SITE   # opens and saves every edit screen, then wp apex check
 WP_PASS_FILE=... node tests/wordpress/flows.mjs $SITE   # consultation, vouchers, redirects, page heads, cookie banner, editor tools
 AXE=.../axe.min.js node tests/wordpress/axe.mjs $SITE  # accessibility, WCAG 2 A and AA
@@ -297,8 +321,16 @@ Then by hand:
 8. Measure Core Web Vitals on staging with the cache on: PageSpeed Insights, mobile, on the home page, one service, one article and the breast implant viewer. Aim for LCP under 2.5 s, INP under 200 ms and CLS under 0.1. Search Console shows the figures from real visitors about 28 days after launch.
 9. Restore one backup to a spare copy, to know the backup works.
 
-## Updating the design later
+## Updating the theme
 
-The design (the `site/` folder) is still the source for styles, scripts and the 3D tools. After a change there, run `node wordpress/tools/build-theme.mjs` and upload the theme again. A change to page markup in `pages.js` also needs the same change in `inc/render-pages.php`, and `tests/wordpress/ssr.mjs` will say where they differ.
+Gid sends an update as a new `apex-surgery-theme.zip` with a short note of what changed.
+
+1. Back up the database and `wp-content/` first.
+2. Install it on staging: Appearance › Themes › Add New › Upload Theme, choose the zip and pick "Replace current with uploaded". Or copy the new `apex-surgery/` folder over the old one by SFTP.
+3. Check the pages the note names, then do the same on the live site.
+
+The content, photos, enquiries, vouchers and settings live in the database and `uploads/`, so a new theme leaves them as they are. **Don't run `wp apex import` on a site Apex has been editing** unless the update note asks for it: the import writes the content from the package over the posts with the same key, and Apex's own edits to those posts would be lost.
+
+For the developer: the design (the `site/` folder) is the source for styles, scripts and the 3D tools. After a change there, run `node wordpress/tools/build-theme.mjs` to build the zip. A change to page markup in `pages.js` also needs the same change in `inc/render-pages.php`, and `tests/wordpress/ssr.mjs` will say where they differ.
 
 Thank you. Send me anything that does not match this and I will fix it.

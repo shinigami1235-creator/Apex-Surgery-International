@@ -65,6 +65,7 @@ function apex_schema( string $type ): array {
 		apex_f( 'hero', 'image', 'Banner image' ),
 		apex_f( 'heroAlt', 'text', 'Banner alt text' ),
 apex_f( 'newFrom', 'date', 'New from', [ 'h' => "Shows it under What's new on the home page with a New tag, for the number of days set under What's new › Settings. Filled in when first published; empty leaves it out." ] ),
+		apex_f( 'stay', 'number', 'Stay in Thailand after surgery (days)', [ 'h' => 'For the trip planner: how many days a client from abroad should stay after surgery before flying home, counted from the surgery day. The surgeon still confirms it at the consultation.' ] ),
 		apex_f( 'byline', 'text', 'Surgeon line', [ 'h' => 'For example: Dr. Somboon Waiphrip, License no. 22713, Apex Surgery Hospital' ] ),
 		apex_f( 'atApex', 'group', 'Introduction', [ 'f' => [ apex_f( 'h', 'text', 'Heading' ), apex_f( 'img', 'image', 'Photo' ), apex_f( 'alt', 'text', 'Photo alt text' ) ] ] ),
 		apex_f( 'intro', 'lines', 'Introduction paragraphs', [ 'h' => 'One paragraph per line. Lines starting with ✔ become ticked points.' ] ),
