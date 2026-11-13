@@ -30,34 +30,23 @@
   const SVC_CATS = ['facelift','browlift','rhinoplasty','eyelid','bone','breast','lipo'];
   const svcName = (S, k) => { const s = (S.services || []).find(x => x.key === k); return s ? (s.short || s.name) : k; };
 
-  /* ---------- photos for pages and articles that have none of their own (Unsplash, each one checked by search) ---------- */
+  /* ---------- photos for pages and articles that have none of their own: Apex's operating room, rooms and counter ---------- */
   const PH = {
-    consult1: ['1758691461935-202e2ef6b69f', 'A doctor talks with a patient in a clinic office', 'แพทย์พูดคุยกับผู้รับบริการในห้องตรวจ'],
-    consult2: ['1631217868264-e5b90bb7e133', 'A doctor in a white coat talks with a patient', 'แพทย์ในเสื้อกาวน์พูดคุยกับผู้รับบริการ'],
-    consult3: ['1758691463198-dc663b8a64e4', 'A doctor writes notes during a consultation', 'แพทย์จดบันทึกระหว่างการปรึกษา'],
-    or1: ['1579684453423-f84349ef60b0', 'A surgical team at work in an operating room', 'ทีมศัลยแพทย์ในห้องผ่าตัด'],
-    or2: ['1775947933085-30050ddad6b3', 'Surgeons in a modern operating room', 'ศัลยแพทย์ในห้องผ่าตัดที่ทันสมัย'],
-    face1: ['1600481176431-47ad2ab2745d', 'A smiling woman in a black shirt', 'ผู้หญิงยิ้มในเสื้อสีดำ'],
-    face2: ['1534528741775-53994a69daeb', 'Portrait of a woman', 'ภาพบุคคลผู้หญิง'],
-    face3: ['1628501023521-48cece9a6909', 'Close portrait of a woman', 'ภาพใบหน้าผู้หญิงระยะใกล้'],
-    face4: ['1687298703924-0d11be697d8b', 'A woman in a white top', 'ผู้หญิงในเสื้อสีขาว'],
-    face5: ['1526413232644-8a40f03cc03b', 'A woman resting her arms on a white table', 'ผู้หญิงวางแขนบนโต๊ะสีขาว'],
-    mature: ['1583767582213-8fd4531cef22', 'A smiling woman', 'ผู้หญิงยิ้ม'],
-    eye: ['1516220362602-dba5272034e7', 'Close-up of an eye', 'ภาพดวงตาระยะใกล้'],
-    eye2: ['1551392505-f4056032826e', 'Eye makeup in pink and gold', 'การแต่งตาโทนชมพูทอง'],
-    profile: ['1532074205216-d0e1f4b87368', 'A woman in profile', 'ผู้หญิงหันด้านข้าง'],
-    profile2: ['1541715301255-12a4839b424a', 'Side view of a woman\'s face', 'ใบหน้าผู้หญิงด้านข้าง'],
-    tape: ['1523901839036-a3030662f220', 'A tape measure', 'สายวัด'],
-    dress: ['1562904403-a5106bef8319', 'A woman in a floral top by the water', 'ผู้หญิงในเสื้อลายดอกริมน้ำ'],
-    dress2: ['1621390842036-f01b53d9cbfd', 'A woman in a brown shirt', 'ผู้หญิงในเสื้อสีน้ำตาล']
+    orTable: ['img/apex/or-table.webp', 'The operating table at Apex Surgery Hospital', 'เตียงผ่าตัดที่ Apex Surgery Hospital'],
+    or: ['img/hospital/bkk-or.webp', 'The operating room, Phloen Chit', 'ห้องผ่าตัด สาขาเพลินจิต'],
+    orEquip: ['img/apex/or-equipment.webp', 'Equipment beside the operating table at Apex', 'เครื่องมือข้างเตียงผ่าตัดที่ Apex'],
+    orUnit: ['img/apex/or-unit.webp', 'A surgical unit in the Apex operating room', 'เครื่องมือผ่าตัดในห้องผ่าตัดของ Apex'],
+    orLight: ['img/apex/or-light.webp', 'The operating light and equipment at Apex', 'โคมไฟผ่าตัดและเครื่องมือที่ Apex'],
+    renuvion: ['img/apex/renuvion.webp', 'The Renuvion (J-Plasma) generator at Apex', 'เครื่อง Renuvion (J-Plasma) ที่ Apex'],
+    room: ['img/hospital/bkk-room.webp', 'A patient room, Phloen Chit', 'ห้องพักผู้ป่วย สาขาเพลินจิต'],
+    room2: ['img/hospital/hkt-room2.webp', 'A patient room with a view, Phuket', 'ห้องพักผู้ป่วยวิวเมือง สาขาภูเก็ต'],
+    counter: ['img/hospital/bkk-counter.webp', 'Consultation counter, Phloen Chit', 'เคาน์เตอร์ปรึกษา สาขาเพลินจิต'],
+    recovery: ['img/hospital/bkk-recovery.webp', 'Recovery chairs, Phloen Chit', 'เก้าอี้พักฟื้น สาขาเพลินจิต']
   };
-  const ph = (k, w=1400) => { const p = PH[k]; return p ? {src:`https://images.unsplash.com/photo-${p[0]}?auto=format&fit=crop&w=${w}&q=80`, alt:A.lang === 'th' ? p[2] : p[1], un:true} : null; };
-  const SVC_PHOTOS = {facelift:['mature', 'or2'], browlift:['face4', 'consult3'], rhinoplasty:['profile', 'or1'], eyelid:['eye', 'consult2'], bone:['face1', 'consult1'], breast:['dress', 'or2'], lipo:['tape', 'consult3']};
+  const ph = k => { const p = PH[k]; return p ? {src:p[0], alt:A.lang === 'th' ? p[2] : p[1]} : null; };
+  const SVC_PHOTOS = {facelift:['orTable', 'room'], browlift:['orLight', 'recovery'], rhinoplasty:['or', 'counter'], eyelid:['orUnit', 'room2'], bone:['orTable', 'counter'], breast:['or', 'room'], lipo:['renuvion', 'orEquip']};
   const POST_PHOTOS = {
-    smas:['mature', 'or1', 'face1'], 'deep-plane-face-lift':['mature', 'or2'], 'rhinoplasty-faq-questions':['profile', 'consult1'],
-    'double-eyelid-surgery-facts':['eye', 'face3'], 'facelift-faq':['mature', 'consult2', 'face2'], 'endotine-browlift-fact':['face4', 'consult3'],
-    'mentor-vs-motiva-breast-augmentation':['dress', 'consult1'], 'forehead-lift-endotine':['face2', 'or1', 'consult3'], 'liposuction-facts':['tape', 'dress2'],
-    'nose-surgery-without-silicone':['profile2', 'consult2'], 'breast-augmentation-guide':['dress', 'consult3', 'or2'], 'endotine-browlift':['face4', 'consult1']
+    smas:['orTable', 'room', 'counter'], 'deep-plane-face-lift':['or', 'recovery'], 'rhinoplasty-faq-questions':['counter', 'orTable'], 'double-eyelid-surgery-facts':['orUnit', 'room2'], 'facelift-faq':['orTable', 'counter', 'room'], 'endotine-browlift-fact':['orLight', 'recovery'], 'mentor-vs-motiva-breast-augmentation':['counter', 'or'], 'forehead-lift-endotine':['orLight', 'orTable', 'counter'], 'liposuction-facts':['renuvion', 'orEquip'], 'nose-surgery-without-silicone':['or', 'counter'], 'breast-augmentation-guide':['counter', 'or', 'room'], 'endotine-browlift':['orLight', 'counter']
   };
   const procOf = s => {
     s = String(s || '');
@@ -132,7 +121,7 @@
         return `<li class="who-card rv" data-d="${(j % 3) * 60}">${art}${lab ? `<h3>${E(lab)}</h3><p>${A.inl(txt)}</p>` : `<p class="${txt.length < 90 ? 'wc-solo' : 'wc-long'}">${A.inl(txt)}</p>`}</li>`;
       }).join('')}</ul>`;
     }
-    const pic = (SVC_PHOTOS[key] || [])[i] ? ph(SVC_PHOTOS[key][i], 1000) : null;
+    const pic = (SVC_PHOTOS[key] || [])[i] ? ph(SVC_PHOTOS[key][i]) : null;
     return `<section class="section svc-sec${alt ? ' washed' : ''}" id="sec-${i}">
       <div class="wrap">
         <div class="ss-head${pic ? ' has-pic' : ''}"><div class="ss-copy"><h2 class="h-l rv">${E(sec.h || '')}</h2>${lead.map(p => `<p class="lead rv">${A.inl(p)}</p>`).join('')}</div>${pic ? figure(pic, 'ss-pic') : ''}</div>
