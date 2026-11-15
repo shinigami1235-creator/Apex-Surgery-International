@@ -121,7 +121,10 @@ input,select,textarea{font:inherit;caret-color:var(--plum)}
 .mega-foot{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--lilac-200);padding-top:18px;margin-top:4px}
 
 /* mobile sheet */
-.sheet{position:fixed;inset:0;z-index:80;background:var(--night);color:var(--on-night);transform:translateY(-100%);transition:transform .5s var(--ease-drawer);overflow:auto;padding:22px var(--gutter) 40px;display:flex;flex-direction:column}
+.sheet{position:fixed;inset:0;z-index:80;background:var(--night);color:var(--on-night);transform:translateY(-100%);transition:transform .5s var(--ease-drawer);overflow:auto;overscroll-behavior:contain;padding:22px var(--gutter) 40px;flex-direction:column;
+  width:auto;height:auto;max-width:none;max-height:none;margin:0;border:0}
+.sheet[open]{display:flex}
+.sheet::backdrop{background:transparent;overflow:hidden;overscroll-behavior:contain}
 .sheet.open{transform:none}
 .sheet-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}
 .sheet-top img{height:32px}
@@ -413,7 +416,10 @@ main>:first-child .rv,main>:first-child.rv{opacity:1;filter:none;transform:none;
 .socgrid a:hover{background:#fff;color:var(--plum)}
 
 /* ---------- lightbox ---------- */
-.lb{position:fixed;inset:0;z-index:100;background:rgba(18,5,29,.92);display:grid;place-items:center;opacity:0;visibility:hidden;transition:opacity .25s,visibility 0s .25s}
+.lb{position:fixed;inset:0;z-index:100;background:rgba(18,5,29,.92);place-items:center;opacity:0;visibility:hidden;transition:opacity .25s,visibility 0s .25s;
+  width:auto;height:auto;max-width:none;max-height:none;margin:0;padding:0;border:0;color:inherit;overflow:hidden;overscroll-behavior:contain}
+.lb[open]{display:grid}
+.lb::backdrop{background:transparent;overflow:hidden;overscroll-behavior:contain}
 @supports (backdrop-filter:blur(1px)){.lb{background:rgba(18,5,29,.82);backdrop-filter:blur(10px)}}
 .lb.open{opacity:1;visibility:visible;transition:opacity .25s}
 .lb-stage{max-width:min(92vw,1200px);max-height:84vh;transform:scale(.96);transition:transform .35s var(--ease-out)}

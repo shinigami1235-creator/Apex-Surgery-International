@@ -155,11 +155,11 @@ function apex_sheet_html(): string {
 	}
 	$tools = '';
 	foreach ( [ [ 'filler.html', 'fill' ], [ 'analysis.html', 'ana' ], [ 'proportions.html', 'prop' ], [ 'breast-implants.html', 'impl' ], [ 'play.html', 'games' ], [ 'trip.html', 'trip' ], [ 'plan.html', 'plan' ] ] as [ $h, $k ] ) $tools .= '<a href="' . esc_url( apex_link( $h ) ) . '">' . apex_e( apex_t( $k ) ) . '</a>';
-	return '<div class="sheet" role="dialog" aria-modal="true" aria-label="' . apex_e( apex_t( 'menu' ) ) . '"><div class="sheet-top"><span class="logo-txt light">APEX<small>Surgery Hospital</small></span><button class="close" aria-label="' . apex_e( apex_t( 'close' ) ) . '">' . apex_ic( 'close' ) . '</button></div>
+	return '<dialog class="sheet" aria-label="' . apex_e( apex_t( 'menu' ) ) . '"><div class="sheet-top"><span class="logo-txt light">APEX<small>Surgery Hospital</small></span><button class="close" aria-label="' . apex_e( apex_t( 'close' ) ) . '">' . apex_ic( 'close' ) . '</button></div>
       <nav>' . $nav . '
       <details><summary>' . apex_e( apex_t( 'tools' ) ) . apex_ic( 'chevron-down' ) . '</summary><div class="sub">' . $tools . '</div></details></nav>
       <div class="sheet-cta"><a class="btn btn-light" href="' . esc_url( apex_link( 'consult.html' ) ) . '">' . apex_ic( 'message-circle' ) . apex_e( apex_t( 'consult' ) ) . '</a>
-      <div class="lang" style="display:flex;justify-content:center;border-color:rgba(201,179,221,.3)">' . apex_langs_html() . '</div></div></div>';
+      <div class="lang" style="display:flex;justify-content:center;border-color:rgba(201,179,221,.3)">' . apex_langs_html() . '</div></div></dialog>';
 }
 function apex_footer_html(): string {
 	$S = apex_data( 'shared' );

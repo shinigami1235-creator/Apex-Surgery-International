@@ -211,8 +211,8 @@
     }, {passive:true});
 
     if (!sh) {
-    sh = document.createElement('div');
-    sh.className = 'sheet'; sh.setAttribute('role','dialog'); sh.setAttribute('aria-modal','true'); sh.setAttribute('aria-label', A.t('menu'));
+    sh = document.createElement('dialog');
+    sh.className = 'sheet'; sh.setAttribute('aria-label', A.t('menu'));
     const subs = svcs.map(s => `<a href="${A.svcUrl(s.key)}">${A.esc(s.short || s.name)}</a>`).join('');
     sh.innerHTML = `<div class="sheet-top"><span class="logo-txt light">APEX<small>Surgery Hospital</small></span><button class="close" aria-label="${A.esc(A.t('close'))}">${A.ic('close')}</button></div>
       <nav>${NAV.map(([h, k]) => k === 'services' ? `<details><summary>${A.esc(A.t('services'))}${A.ic('chevron-down')}</summary><div class="sub"><a href="services.html">${A.esc(A.t('allServices'))}</a>${subs}<a href="treatments.html">${A.esc(A.t('treatments'))}</a></div></details>` : `<a href="${h}">${A.esc(A.t(k))}${A.ic('arrow-up-right')}</a>`).join('')}
@@ -221,10 +221,17 @@
       <div class="lang" style="display:flex;justify-content:center;border-color:rgba(201,179,221,.3)">${langs}</div></div>`;
     document.body.append(sh);
     }
-    const toggle = v => { sh.classList.toggle('open', v); document.documentElement.style.overflow = v ? 'hidden' : ''; };
+    /* a native modal dialog: the page behind is inert, focus stays inside and goes back to the menu button on close */
+    let shut;
+    const toggle = v => {
+      clearTimeout(shut);
+      if (v) { if (!sh.open) sh.showModal(); requestAnimationFrame(() => sh.classList.add('open')); }
+      else { sh.classList.remove('open'); shut = setTimeout(() => { if (sh.open) sh.close(); }, 500); }
+    };
     A.qs('.burger', el).addEventListener('click', () => toggle(true));
     A.qs('.close', sh).addEventListener('click', () => toggle(false));
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && sh.classList.contains('open')) toggle(false); });
+    sh.addEventListener('cancel', e => { e.preventDefault(); toggle(false); });
+    sh.addEventListener('close', () => sh.classList.remove('open'));
   }
 
   /* My Plan badge: the plan store is a separate module; the badge stays hidden if it is missing */
@@ -304,15 +311,17 @@
   let lb, list = [], idx = 0, mode = 'img';
   function ensureLB(){
     if (lb) return;
-    lb = document.createElement('div');
-    lb.className = 'lb'; lb.setAttribute('role','dialog'); lb.setAttribute('aria-modal','true');
+    lb = document.createElement('dialog');
+    lb.className = 'lb'; lb.setAttribute('aria-label', A.t('viewer'));
     lb.innerHTML = `<div class="lb-stage"></div><button class="lb-x" aria-label="${A.esc(A.t('close'))}">${A.ic('close')}</button><button class="lb-prev" aria-label="${A.esc(A.t('prev'))}">${A.ic('chevron-left')}</button><button class="lb-next" aria-label="${A.esc(A.t('next'))}">${A.ic('chevron-right')}</button><div class="lb-count"></div>`;
     document.body.append(lb);
     A.qs('.lb-x', lb).onclick = close;
     A.qs('.lb-prev', lb).onclick = () => step(-1);
     A.qs('.lb-next', lb).onclick = () => step(1);
     lb.addEventListener('click', e => { if (e.target === lb) close(); });
-    document.addEventListener('keydown', e => { if (!lb.classList.contains('open')) return; if (e.key==='Escape') close(); if (e.key==='ArrowLeft') step(-1); if (e.key==='ArrowRight') step(1); });
+    lb.addEventListener('keydown', e => { if (e.key==='ArrowLeft') step(-1); if (e.key==='ArrowRight') step(1); });
+    lb.addEventListener('cancel', e => { e.preventDefault(); close(); });
+    lb.addEventListener('close', () => { lb.classList.remove('open'); A.qs('.lb-stage', lb).innerHTML = ''; });
     let sx = null;
     lb.addEventListener('pointerdown', e => sx = e.clientX);
     lb.addEventListener('pointerup', e => { if (sx != null && Math.abs(e.clientX - sx) > 50 && mode==='img') step(e.clientX < sx ? 1 : -1); sx = null; });
@@ -327,8 +336,9 @@
     A.qs('.lb-count', lb).textContent = many ? `${idx+1} / ${list.length}` : '';
   }
   function step(d){ idx = (idx + d + list.length) % list.length; draw(); }
-  function close(){ lb.classList.remove('open'); setTimeout(() => { if (!lb.classList.contains('open')) A.qs('.lb-stage', lb).innerHTML = ''; }, 260); document.documentElement.style.overflow = ''; }
-  const openLB = () => { lb.classList.add('open'); document.documentElement.style.overflow = 'hidden'; A.qs('.lb-x', lb).focus(); };
+  let lbShut;
+  function close(){ lb.classList.remove('open'); clearTimeout(lbShut); lbShut = setTimeout(() => { if (!lb.classList.contains('open') && lb.open) lb.close(); }, 260); }
+  const openLB = () => { clearTimeout(lbShut); if (!lb.open) lb.showModal(); requestAnimationFrame(() => { lb.classList.add('open'); A.qs('.lb-x', lb).focus(); }); };   // focus once it's visible
   A.lightbox = {
     images(items, i=0){ ensureLB(); mode='img'; list=items; idx=i; draw(); openLB(); },
     video(id){ ensureLB(); mode='yt'; list=[id]; draw(); openLB(); },

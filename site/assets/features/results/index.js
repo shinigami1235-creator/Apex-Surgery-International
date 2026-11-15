@@ -129,8 +129,9 @@ const CSS = `
   .rx-crown{font-size:22px}
 }
 @media (min-width:640px) and (max-width:1023px){.rx-panels{grid-template-columns:1fr 1fr}.rx-pc{grid-column:1/-1}}
-.apxr-zoom{position:fixed;inset:0;z-index:1000;background:rgba(15,4,24,.92);display:grid;place-items:center;padding:20px;font-family:"LINE Seed","Sarabun","Noto Sans Thai",system-ui,sans-serif}
-.apxr-zoom[hidden]{display:none}
+.apxr-zoom{position:fixed;inset:0;background:rgba(15,4,24,.92);place-items:center;padding:20px;font-family:"LINE Seed","Sarabun","Noto Sans Thai",system-ui,sans-serif;width:auto;height:auto;max-width:none;max-height:none;margin:0;border:0;color:inherit;overflow:hidden;overscroll-behavior:contain}
+.apxr-zoom[open]{display:grid}
+.apxr-zoom::backdrop{background:transparent;overflow:hidden;overscroll-behavior:contain}
 .apxr-zoom figure{margin:0;max-width:min(1000px,100%);width:100%}
 .apxr-zoom img{width:100%;max-height:80vh;object-fit:contain;border-radius:8px;display:block}
 .apxr-zoom figcaption{display:flex;justify-content:space-between;color:#F6EEFB;margin:8px 2px 0;font-size:17px;font-weight:700}
@@ -327,19 +328,16 @@ export function mount(el, opts = {}) {
   q('.rx-pr').addEventListener('click', e => { const a = e.target.closest('[data-ask]'); if (a) emit('results:ask', { via: a.dataset.ask, cat: cat.k }); });
 
   /* tap the case to see it large */
-  const zoom = document.createElement('div'); zoom.className = 'apxr-zoom'; zoom.hidden = true;
-  zoom.setAttribute('role', 'dialog'); zoom.setAttribute('aria-modal', 'true');
+  // a native modal dialog: Esc, focus inside, the page behind inert, and focus back to the case on close
+  const zoom = document.createElement('dialog'); zoom.className = 'apxr-zoom'; zoom.setAttribute('aria-label', L('big'));
   zoom.innerHTML = `<button class="rx-btn" type="button">${esc(L('close'))}</button><figure><img alt=""><figcaption><span>${esc(L('before'))}</span><span>${esc(L('after'))}</span></figcaption></figure>`;
   document.body.appendChild(zoom);
-  let back = null;
-  const closeZoom = () => { if (zoom.hidden) return; zoom.hidden = true; if (back) back.focus(); };
-  q('.rx-ba').addEventListener('click', e => {
-    back = e.currentTarget; const im = zoom.querySelector('img'); im.src = cur.url; im.alt = q('.rx-ba img').alt;
-    zoom.hidden = false; zoom.querySelector('button').focus();
+  const closeZoom = () => { if (zoom.open) zoom.close(); };
+  q('.rx-ba').addEventListener('click', () => {
+    const im = zoom.querySelector('img'); im.src = cur.url; im.alt = q('.rx-ba img').alt;
+    zoom.showModal(); zoom.querySelector('button').focus();
   });
   zoom.addEventListener('click', e => { if (e.target === zoom || e.target.closest('button')) closeZoom(); });
-  const onKey = e => { if (e.key === 'Escape') closeZoom(); };
-  addEventListener('keydown', onKey);
 
   /* load the film once the machine is near */
   const io = 'IntersectionObserver' in window ? new IntersectionObserver((en, ob) => { if (en[0].isIntersecting) { film.preload = 'auto'; film.load(); ob.disconnect(); } }, { rootMargin: '400px' }) : null;
@@ -352,7 +350,7 @@ export function mount(el, opts = {}) {
   return {
     destroy() {
       alive = false; film.pause(); io && io.disconnect(); ro ? ro.disconnect() : removeEventListener('resize', layout);
-      wide.removeEventListener('change', layout); removeEventListener('keydown', onKey); zoom.remove(); el.innerHTML = '';
+      wide.removeEventListener('change', layout); zoom.remove(); el.innerHTML = '';
     }
   };
 }

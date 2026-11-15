@@ -73,7 +73,12 @@ console.log('copied', copied, 'asset files; wrote i18n.json, icons.json');
 //    build it here, or download it from the repo's latest GitHub release.
 const DIST = path.join(ROOT, 'wordpress/dist');
 fs.mkdirSync(DIST, {recursive:true});
-fs.rmSync(path.join(DIST, 'apex-surgery-theme.zip'), {force:true});
-execSync('zip -qr ../dist/apex-surgery-theme.zip apex-surgery -x "*/.DS_Store"', {cwd:path.join(ROOT, 'wordpress/theme')});
-console.log('wrote wordpress/dist/apex-surgery-theme.zip');
+// the version: Version in style.css and APEX_VERSION in functions.php must agree, and the zip carries it
+const ver = (fs.readFileSync(path.join(THEME, 'style.css'), 'utf8').match(/^Version:\s*(\S+)/m) || [])[1];
+const verPhp = (fs.readFileSync(path.join(THEME, 'functions.php'), 'utf8').match(/define\( 'APEX_VERSION', '([^']+)' \)/) || [])[1];
+if (!ver || ver !== verPhp) { console.error(`version mismatch: style.css ${ver}, functions.php ${verPhp}`); process.exit(1); }
+for (const f of fs.readdirSync(DIST)) if (/^apex-surgery-theme.*\.zip$/.test(f)) fs.rmSync(path.join(DIST, f));
+const ZIP = `apex-surgery-theme-${ver}.zip`;
+execSync(`zip -qr ../dist/${ZIP} apex-surgery -x "*/.DS_Store"`, {cwd:path.join(ROOT, 'wordpress/theme')});
+console.log('wrote wordpress/dist/' + ZIP);
 

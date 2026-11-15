@@ -137,6 +137,19 @@ function apex_srcset( $src, string $sizes ): string {
 	$set[] = esc_url( apex_img( $src ) ) . ' ' . (int) $map[ $rel ]['w'] . 'w';
 	return ' srcset="' . implode( ', ', $set ) . '" sizes="' . esc_attr( $sizes ) . '"';
 }
+/** ' width="…" height="…"' for an upload the page shows at its own shape, so the browser keeps its space before it loads. */
+function apex_img_dims( $src ): string {
+	static $seen = [];
+	$src = (string) $src;
+	if ( isset( $seen[ $src ] ) ) return $seen[ $src ];
+	$out = '';
+	if ( preg_match( '#/wp-content/uploads/(.+)$#', $src, $m ) || preg_match( '#^~/wp-content/uploads/(.+)$#', $src, $m ) ) {
+		$file = trailingslashit( wp_upload_dir()['basedir'] ) . rawurldecode( $m[1] );
+		$size = is_readable( $file ) ? @getimagesize( $file ) : false;
+		if ( $size && $size[0] && $size[1] ) $out = ' width="' . (int) $size[0] . '" height="' . (int) $size[1] . '"';
+	}
+	return $seen[ $src ] = $out;
+}
 function apex_yt( string $id ): string { return 'https://i.ytimg.com/vi/' . $id . '/hqdefault.jpg'; }
 function apex_asset( string $path ): string { return APEX_URI . '/assets/' . ltrim( $path, '/' ); }
 

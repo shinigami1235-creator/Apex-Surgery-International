@@ -15,10 +15,10 @@ This is the new apexsurgeryhospital.com as a WordPress theme, in English and Tha
 |---|---|
 | `theme/apex-surgery/` | The theme. Every page of the site is drawn by it. |
 | `theme/apex-surgery/inc/` | The PHP, one file per job. `functions.php` lists them. |
-| `tools/build-theme.mjs` | Copies the styles, scripts, fonts and 3D files into the theme, writes the site's content in both languages to `theme/apex-surgery/import/` for `wp apex import`, and builds `dist/apex-surgery-theme.zip`. |
+| `tools/build-theme.mjs` | Copies the styles, scripts, fonts and 3D files into the theme, writes the site's content in both languages to `theme/apex-surgery/import/` for `wp apex import`, and builds `dist/apex-surgery-theme-<version>.zip`. |
 | `docker/` | A local copy of the site for testing. |
 
-The theme in the repository has no `assets/` or `import/` folder. Build it with `node wordpress/tools/build-theme.mjs` from the repository root, or download `apex-surgery-theme.zip` from the repository's latest release on GitHub (Releases, on the right of the repository page), which already has everything.
+The theme in the repository has no `assets/` or `import/` folder. Build it with `node wordpress/tools/build-theme.mjs` from the repository root, or use the `apex-surgery-theme-<version>.zip` Gid sent, which already has everything.
 
 ## What the server needs
 
@@ -44,7 +44,7 @@ Do this on staging first. When staging passes the checks at the end, repeat on t
 3. Install and activate Polylang: `wp plugin install polylang --activate`.
 4. Upload the theme zip under Appearance › Themes, or copy `apex-surgery/` into `wp-content/themes/`, and activate it. The zip is about 49 MB since it carries the face tracking and 3D libraries, so copy the folder over SFTP if the host's upload limit is smaller.
 5. Import the content: `wp apex import`. It takes about a minute and can be run again at any time. Each item is found by its key and language and updated in place. At the end it saves a WebP copy of each JPEG and PNG photo the pages show (the old site had ten, up to 1.2 MB each) and makes phone-size copies of wide photos, named `photo-w800.webp` and `photo-w1200.webp`, next to the originals. Phones download those instead of the full photo. The originals stay where they are.
-6. Check the import: `wp apex check`. It should end with `All 100 content objects match the design`.
+6. Check the import: `wp apex check`. It should end with `All 110 content objects match the design`.
 7. Add these lines to `wp-config.php`:
 
    ```php
@@ -323,7 +323,7 @@ Then by hand:
 
 ## Updating the theme
 
-Gid sends an update as a new `apex-surgery-theme.zip` with a short note of what changed.
+Gid sends an update as a new `apex-surgery-theme-<version>.zip`, for example `apex-surgery-theme-1.1.0.zip`, with a short note of what changed. The version on the site is at the bottom right of every admin page ("Apex Surgery theme 1.1.0") and under Appearance › Themes.
 
 1. Back up the database and `wp-content/` first.
 2. Install it on staging: Appearance › Themes › Add New › Upload Theme, choose the zip and pick "Replace current with uploaded". Or copy the new `apex-surgery/` folder over the old one by SFTP.
@@ -332,5 +332,12 @@ Gid sends an update as a new `apex-surgery-theme.zip` with a short note of what 
 The content, photos, enquiries, vouchers and settings live in the database and `uploads/`, so a new theme leaves them as they are. **Don't run `wp apex import` on a site Apex has been editing** unless the update note asks for it: the import writes the content from the package over the posts with the same key, and Apex's own edits to those posts would be lost.
 
 For the developer: the design (the `site/` folder) is the source for styles, scripts and the 3D tools. After a change there, run `node wordpress/tools/build-theme.mjs` to build the zip. A change to page markup in `pages.js` also needs the same change in `inc/render-pages.php`, and `tests/wordpress/ssr.mjs` will say where they differ.
+
+## Versions
+
+| Version | Date | What changed | Run `wp apex import` after installing? |
+|---|---|---|---|
+| 1.1.0 | 15 Nov 2026 | Service banners show whole, since their text was cut at the edges. Facial bone surgery has its icon. The mobile menu, the photo viewer and the before and after zoom are native dialogs: Esc closes them, keyboard focus stays inside, and the page behind can't be reached. Service banners keep their space while they load. The admin shows the version. | Yes, once on staging, since the icon is content and staging's content was older than 1.0.0. Nobody has edited staging yet, so nothing is lost. |
+| 1.0.0 | 13 Nov 2026 | First trial for staging. | Yes, the first time. |
 
 Thank you. Send me anything that does not match this and I will fix it.

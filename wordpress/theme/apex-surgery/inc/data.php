@@ -319,7 +319,7 @@ function apex_svc_obj( string $key, string $lang ) {
 	$id = apex_key_id( 'apex_service', $key, $lang );
 	if ( ! $id || ! apex_open( get_post( $id ) ) ) return null;
 	$o = apex_read_post( $id, 'apex_service' );
-	unset( $o['menu'] );
+	unset( $o['menu'], $o['stay'] );   // the stay days travel with the menu entry in shared.services
 	$o['key'] = $key;
 	$o['sections'] = apex_markup_to_sections( (string) $o['sections'] );
 	foreach ( [ 'atApex', 'tiktok' ] as $g ) if ( $o[ $g ] === null ) unset( $o[ $g ] );
