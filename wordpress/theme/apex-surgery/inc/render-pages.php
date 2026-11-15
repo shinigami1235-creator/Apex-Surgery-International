@@ -689,7 +689,7 @@ function apex_page_service( array $r ): string {
           ' . apex_recovery_card( $key ) . '
         </div>
       </div>
-      ' . ( ! empty( $D['hero'] ) ? '<figure class="sh-banner rv-clip ph-img wrap-wide"><img src="' . esc_url( apex_img( $D['hero'] ) ) . '"' . apex_srcset( $D['hero'], '(max-width: 900px) 150vw, 1500px' ) . ' alt="' . $E( ( $D['heroAlt'] ?? '' ) ?: ( $D['name'] ?? '' ) ) . '" data-field="svc.hero" data-par="24" fetchpriority="high"></figure>' : '' ) . '
+      ' . ( ! empty( $D['hero'] ) ? '<figure class="sh-banner rv-clip ph-img wrap-wide"><img src="' . esc_url( apex_img( $D['hero'] ) ) . '"' . apex_srcset( $D['hero'], '(max-width: 900px) 100vw, 1500px' ) . ' alt="' . $E( ( $D['heroAlt'] ?? '' ) ?: ( $D['name'] ?? '' ) ) . '" data-field="svc.hero" fetchpriority="high"></figure>' : '' ) . '
     </section>
 ';
 	$ip = '';

@@ -540,7 +540,7 @@
           ${recoveryCard(key, S)}
         </div>
       </div>
-      ${D.hero ? `<figure class="sh-banner rv-clip ph-img wrap-wide"><img src="${IMG(D.hero)}" alt="${E(D.heroAlt || D.name)}" data-field="svc.hero" data-par="24" fetchpriority="high"></figure>` : ''}
+      ${D.hero ? `<figure class="sh-banner rv-clip ph-img wrap-wide"><img src="${IMG(D.hero)}" alt="${E(D.heroAlt || D.name)}" data-field="svc.hero" fetchpriority="high"></figure>` : ''}
     </section>
 
     <section class="section svc-intro">
