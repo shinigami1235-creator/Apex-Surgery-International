@@ -11,7 +11,6 @@
  */
 defined( 'ABSPATH' ) || exit;
 
-const APEX_PROCS = [ 'facelift', 'browlift', 'rhinoplasty', 'eyelid', 'breast', 'lipo' ];
 const APEX_PHOTO_VIEWS = [ 'front', 'angle', 'profile' ];   // the views the consultation form asks for
 
 function apex_forms_opt( string $k, $def = '' ) {
@@ -115,8 +114,8 @@ function apex_consult_submit( WP_REST_Request $req ) {
 
 	$s = fn( $k, $n = 200 ) => mb_substr( sanitize_text_field( apex_str( $f[ $k ] ?? '' ) ), 0, $n );
 	$v = [
-		'procedures' => array_values( array_intersect( array_filter( (array) ( $f['procedures'] ?? [] ), 'is_string' ), APEX_PROCS ) ),
-		'branch' => in_array( $f['branch'] ?? '', [ 'ploenchit', 'phuket' ], true ) ? $f['branch'] : '',
+		'procedures' => array_values( array_intersect( array_filter( (array) ( $f['procedures'] ?? [] ), 'is_string' ), apex_proc_keys() ) ),
+		'branch' => in_array( $f['branch'] ?? '', apex_branch_keys(), true ) ? $f['branch'] : '',
 		'from' => preg_match( '/^\d{4}-\d{2}-\d{2}$/', apex_str( $f['from'] ?? '' ) ) ? $f['from'] : '',
 		'to' => preg_match( '/^\d{4}-\d{2}-\d{2}$/', apex_str( $f['to'] ?? '' ) ) ? $f['to'] : '',
 		'name' => $s( 'name', 100 ),
@@ -126,6 +125,7 @@ function apex_consult_submit( WP_REST_Request $req ) {
 		'questions' => mb_substr( sanitize_textarea_field( apex_str( $f['questions'] ?? '' ) ), 0, 3000 ),
 		'lang' => ( $f['lang'] ?? '' ) === 'th' ? 'th' : 'en',
 	];
+	$v['extra'] = apex_form_extra_in( $f['extra'] ?? [], $v['lang'] );
 	$missing = [];
 	if ( ! $v['procedures'] ) $missing[] = 'procedures';
 	if ( ! $v['branch'] ) $missing[] = 'branch';
@@ -247,9 +247,11 @@ add_action( 'load-post.php', function () {
 function apex_lead_box( WP_Post $p ): void {
 	$v = (array) get_post_meta( $p->ID, 'apex_fields', true );
 	$c = (array) get_post_meta( $p->ID, 'apex_consent', true );
-	$rows = [ __( 'Name', 'apex' ) => $v['name'] ?? '', __( 'Country', 'apex' ) => $v['country'] ?? '', __( 'Contact', 'apex' ) => ( $v['method'] ?? '' ) . ' ' . ( $v['contact'] ?? '' ), __( 'Procedures', 'apex' ) => implode( ', ', (array) ( $v['procedures'] ?? [] ) ), __( 'Branch', 'apex' ) => $v['branch'] ?? '', __( 'Travel dates', 'apex' ) => trim( ( $v['from'] ?? '' ) . ' – ' . ( $v['to'] ?? '' ), ' –' ), __( 'Page language', 'apex' ) => $v['lang'] ?? '', __( 'Questions', 'apex' ) => $v['questions'] ?? '', __( 'Consent', 'apex' ) => ( $c['at'] ?? '' ) . ' · ' . ( $c['text'] ?? '' ) ];
+	$rows = [ __( 'Name', 'apex' ) => $v['name'] ?? '', __( 'Country', 'apex' ) => $v['country'] ?? '', __( 'Contact', 'apex' ) => ( $v['method'] ?? '' ) . ' ' . ( $v['contact'] ?? '' ), __( 'Procedures', 'apex' ) => implode( ', ', (array) ( $v['procedures'] ?? [] ) ), __( 'Branch', 'apex' ) => $v['branch'] ?? '', __( 'Travel dates', 'apex' ) => trim( ( $v['from'] ?? '' ) . ' – ' . ( $v['to'] ?? '' ), ' –' ), __( 'Page language', 'apex' ) => $v['lang'] ?? '', __( 'Questions', 'apex' ) => $v['questions'] ?? '' ] + array_column( array_map( fn( $x ) => [ (string) ( $x['q'] ?? '' ), (string) ( $x['a'] ?? '' ) ], (array) ( $v['extra'] ?? [] ) ), 1, 0 ) + [ __( 'Consent', 'apex' ) => ( $c['at'] ?? '' ) . ' · ' . ( $c['text'] ?? '' ) ];
 	echo '<table class="widefat striped"><tbody>';
 	foreach ( $rows as $k => $x ) echo '<tr><th style="width:160px">' . esc_html( $k ) . '</th><td>' . nl2br( esc_html( (string) $x ) ) . '</td></tr>';
+	$wh = get_post_meta( $p->ID, 'apex_webhook', true );
+	if ( is_array( $wh ) && ! empty( $wh['at'] ) ) echo '<tr><th>' . esc_html__( 'Webhook', 'apex' ) . '</th><td>' . esc_html( ( $wh['ok'] ? __( 'Sent', 'apex' ) : __( 'Not sent', 'apex' ) ) . ' · ' . wp_date( 'j M Y H:i', (int) $wh['at'] ) . ' · ' . $wh['msg'] . ( ! $wh['ok'] && (int) $wh['try'] < 3 ? ' · ' . __( 'tries again within the hour', 'apex' ) : '' ) ) . '</td></tr>';
 	echo '</tbody></table>';
 	$photos = (array) get_post_meta( $p->ID, 'apex_photos', true );
 	if ( $photos ) {
@@ -446,10 +448,34 @@ function apex_forms_page(): void {
 			// an empty box keeps the saved secret; the tick box clears it
 			'turnstile_secret' => ! empty( $in['turnstile_clear'] ) ? '' : ( sanitize_text_field( $in['turnstile_secret'] ?? '' ) ?: (string) apex_forms_opt( 'turnstile_secret' ) ),
 			'keep_days' => max( 0, (int) ( $in['keep_days'] ?? 365 ) ),
+			'webhook_url' => ( $u = esc_url_raw( trim( (string) ( $in['webhook_url'] ?? '' ) ), [ 'https' ] ) ) ? $u : '',
+			'webhook_token' => sanitize_text_field( $in['webhook_token'] ?? '' ) ?: ( (string) apex_forms_opt( 'webhook_token' ) ?: wp_generate_password( 24, false ) ),
 		], false );
+		$fi = (array) wp_unslash( $_POST['form'] ?? [] );
+		$extra = [];
+		foreach ( (array) ( $fi['extra'] ?? [] ) as $k => $x ) {
+			if ( $k === '__i__' || ! is_array( $x ) ) continue;
+			$q = array_map( fn( $l ) => sanitize_text_field( $x['q'][ $l ] ?? '' ), array_combine( APEX_LANGS, APEX_LANGS ) );
+			if ( ! array_filter( $q, 'strlen' ) ) continue;
+			$ch = array_map( fn( $l ) => array_values( array_filter( array_map( 'sanitize_text_field', preg_split( '/\r\n|\r|\n/', (string) ( $x['choices'][ $l ] ?? '' ) ) ), 'strlen' ) ), array_combine( APEX_LANGS, APEX_LANGS ) );
+			$extra[] = [ 'q' => $q, 'type' => array_key_exists( $x['type'] ?? '', APEX_FORM_TYPES ) ? $x['type'] : 'text', 'choices' => $ch, 'req' => ! empty( $x['req'] ) ];
+			if ( count( $extra ) >= 10 ) break;
+		}
+		$text = [];
+		foreach ( APEX_LANGS as $l ) foreach ( array_keys( APEX_FORM_WORDING ) as $k ) { $t = sanitize_textarea_field( $fi['text'][ $l ][ $k ] ?? '' ); if ( $t !== '' ) $text[ $l ][ $k ] = $t; }
+		update_option( 'apex_form', [
+			'hide' => array_values( array_intersect( (array) ( $fi['hide'] ?? [] ), array_keys( APEX_FORM_HIDEABLE ) ) ),
+			'optional' => array_values( array_intersect( (array) ( $fi['optional'] ?? [] ), [ 'country' ] ) ),
+			'extra' => $extra, 'text' => $text,
+		], true );
+		apex_data_bump();
 		update_option( 'apex_turnstile_site', sanitize_text_field( $in['turnstile_site'] ?? '' ), true );
 		apex_audit( 'settings', 0, 'Forms' );
 		echo '<div class="notice notice-success"><p>' . esc_html__( 'Saved.', 'apex' ) . '</p></div>';
+	}
+	if ( isset( $_POST['apex_webhook_test'] ) && wp_verify_nonce( sanitize_key( $_POST['apex_webhook_test'] ), 'apex_webhook_test' ) ) {
+		[ $ok, $msg ] = apex_webhook_post( [ 'reference' => 'TEST', 'received' => wp_date( 'Y-m-d H:i' ), 'status' => 'new', 'name' => 'Test enquiry', 'country' => 'Australia', 'reply_by' => 'email', 'contact' => 'test@example.com', 'procedures' => 'facelift', 'branch' => 'ploenchit', 'arrival' => '', 'departure' => '', 'questions' => 'A test from Apex settings › Forms', 'more_answers' => '', 'photos' => 0, 'page_language' => 'en', 'link' => admin_url( 'edit.php?post_type=apex_lead' ), 'token' => (string) apex_forms_opt( 'webhook_token' ) ] );
+		echo '<div class="notice ' . ( $ok ? 'notice-success' : 'notice-error' ) . '"><p>' . esc_html( ( $ok ? __( 'Test sent: ', 'apex' ) : __( 'Test not sent: ', 'apex' ) ) . $msg ) . '</p></div>';
 	}
 	$o = (array) get_option( 'apex_forms' );
 	echo '<div class="wrap"><h1>' . esc_html__( 'Forms', 'apex' ) . '</h1>';
@@ -465,8 +491,13 @@ function apex_forms_page(): void {
 	$saved = (string) ( $o['turnstile_secret'] ?? '' );
 	echo '<tr><th><label for="f-turnstile_secret">' . esc_html__( 'Cloudflare Turnstile secret key', 'apex' ) . '</label></th><td><input id="f-turnstile_secret" type="password" autocomplete="off" class="regular-text" name="f[turnstile_secret]" value=""> ' . ( $saved !== '' ? '<span style="color:#2271b1">' . esc_html__( 'Saved', 'apex' ) . ' (…' . esc_html( substr( $saved, -4 ) ) . ')</span> <label><input type="checkbox" name="f[turnstile_clear]" value="1"> ' . esc_html__( 'Remove', 'apex' ) . '</label>' : '<span style="color:#b32d2e">' . esc_html__( 'Not set', 'apex' ) . '</span>' ) . '<p class="description">' . esc_html__( 'Leave empty to keep the saved key.', 'apex' ) . '</p></td></tr>';
 	echo '</table>';
+	echo apex_form_settings_html();
 	submit_button();
-	echo '</form></div>';
+	echo '</form>';
+	if ( apex_forms_opt( 'webhook_url' ) ) {
+		echo '<form method="post" style="margin-top:-8px">' . wp_nonce_field( 'apex_webhook_test', 'apex_webhook_test', true, false ) . '<button class="button">' . esc_html__( 'Send a test', 'apex' ) . '</button> <span class="description">' . esc_html__( 'Sends a made-up enquiry (reference TEST) to the webhook address.', 'apex' ) . '</span></form>';
+	}
+	echo '</div>';
 }
 function apex_games_page(): void {
 	if ( ! current_user_can( 'manage_options' ) ) return;

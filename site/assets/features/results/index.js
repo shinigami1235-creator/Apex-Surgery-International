@@ -84,7 +84,7 @@ const CSS = `
 .rx-panels[hidden]{display:none}
 .rx-panel{position:absolute;left:0;top:0;transform-origin:0 0;padding:22px 24px;color:#F6EEFB;background:linear-gradient(#1A0729,#2C0D40);opacity:0;transition:opacity .5s var(--r-ease);pointer-events:auto;overflow:hidden;display:flex;flex-direction:column}
 .rx-panels.on .rx-panel{opacity:1}
-.rx-pl,.rx-pr{width:366px;height:500px}.rx-pc{width:600px;height:510px}
+.rx-pl,.rx-pr{width:366px;height:500px}.rx-pc{width:600px;height:440px}
 .rx-panel h3{color:#F6EEFB;font-size:24px;line-height:1.2;margin:0 0 10px}
 .rx-kick{font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#C9B3DD;margin:0 0 10px!important}
 .rx-tile{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:center;padding:8px 10px;border-radius:10px;background:#3A1A58;border:1.5px solid #B58CDD;margin-bottom:16px}
@@ -192,7 +192,7 @@ export function mount(el, opts = {}) {
           <h3>${esc(L('cases'))}</h3>
           <div class="rx-cases"></div>
         </div>
-        <div class="rx-panel rx-pc" data-w="600" data-h="510">
+        <div class="rx-panel rx-pc" data-w="600" data-h="440">
           <h3 class="rx-title"></h3>
           <button class="rx-ba" type="button" aria-label="${esc(L('big'))}"><img alt=""><span class="cap"><b>${esc(L('before'))}</b><b>${esc(L('after'))}</b></span></button>
         </div>

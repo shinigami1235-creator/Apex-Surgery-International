@@ -50,6 +50,7 @@ function apex_fields_box( WP_Post $post, array $box ): void {
 		$label = apex_page_types()[ $k ][0] ?? $k;
 		echo '<p class="apex-note">' . sprintf( esc_html__( 'This is the %s page. Its layout is fixed; fill in the text and pictures here. Wording shared by every page (buttons, menus) is under Apex settings › Wording.', 'apex' ), '<b>' . esc_html( $label ) . '</b>' ) . '</p>';
 	}
+	echo '<p class="apex-note">' . esc_html__( 'Sections shared by several pages have one place of their own: doctors under Doctors, branches under Branches, phone numbers and buttons under Apex settings. Logged in, every section of the live page shows an Edit link that opens the screen where it is edited.', 'apex' ) . '</p>';
 	foreach ( apex_schema( $schema ) as $f ) {
 		if ( ! empty( $f['src'] ) ) continue;              // the title, excerpt or date box WordPress shows
 		if ( $f['t'] === 'content' ) {
@@ -195,6 +196,8 @@ add_action( 'save_post', function ( $id, $post ) {
 		if ( $f['k'] === 'key' ) $v = sanitize_title( (string) $v );
 		$vals[ $f['k'] ] = $v;
 	}
+	// a new service without a code takes one from its address, so it joins the procedure lists straight away
+	if ( $schema === 'apex_service' && array_key_exists( 'key', $vals ) && $vals['key'] === '' ) $vals['key'] = sanitize_title( $post->post_name ?: $post->post_title );
 	apex_write_post( $id, $schema, $vals );
 	apex_data_bump();
 }, 20, 2 );

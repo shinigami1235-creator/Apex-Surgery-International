@@ -19,8 +19,27 @@ function apex_seo_f(): array {
 		apex_f( 'desc', 'textarea', 'SEO description', [ 'h' => 'One or two sentences for Google. Rank Math\'s own description wins when it is filled in.' ] ),
 	];
 }
+/** Every procedure, for the Procedure lists on offers, before and after cases and the promotions filters:
+ *  the seven the site launched with, then any service Apex adds, named by its English title. */
 function apex_service_keys(): array {
-	return [ 'facelift' => 'Facelift', 'browlift' => 'Brow lift', 'rhinoplasty' => 'Rhinoplasty', 'eyelid' => 'Double eyelid surgery', 'breast' => 'Breast augmentation', 'lipo' => 'Liposuction', 'bone' => 'Facial bone surgery' ];
+	static $k = null;
+	if ( $k !== null ) return $k;
+	$k = [ 'facelift' => 'Facelift', 'browlift' => 'Brow lift', 'rhinoplasty' => 'Rhinoplasty', 'eyelid' => 'Double eyelid surgery', 'breast' => 'Breast augmentation', 'lipo' => 'Liposuction', 'bone' => 'Facial bone surgery' ];
+	if ( ! did_action( 'init' ) ) return $k;
+	$ids = get_posts( [ 'post_type' => 'apex_service', 'post_status' => [ 'publish', 'draft', 'private' ], 'posts_per_page' => -1, 'lang' => '', 'suppress_filters' => true, 'fields' => 'ids', 'orderby' => 'menu_order', 'order' => 'ASC' ] );
+	$names = [];
+	foreach ( $ids as $id ) {
+		$key = (string) get_post_meta( $id, '_apex_key', true );
+		if ( $key === '' || isset( $k[ $key ] ) ) continue;
+		if ( ! isset( $names[ $key ] ) || apex_post_lang( $id ) === 'en' ) $names[ $key ] = get_the_title( $id );
+	}
+	return $k += $names;
+}
+/** The procedure keys a form may send: every published service. */
+function apex_proc_keys(): array {
+	$out = [];
+	foreach ( APEX_LANGS as $l ) foreach ( ( apex_data( 'shared', $l ) ?: [] )['services'] ?? [] as $x ) if ( ! empty( $x['key'] ) ) $out[ $x['key'] ] = true;
+	return array_keys( $out ) ?: array_keys( apex_service_keys() );
 }
 
 function apex_schema( string $type ): array {
@@ -33,7 +52,8 @@ function apex_schema( string $type ): array {
 	$S['shared'] = [
 		apex_f( 'brand', 'text', 'Hospital name' ),
 		apex_f( 'brandTh', 'text', 'Hospital name in Thai' ),
-		apex_f( 'logo', 'image', 'Logo' ),
+		apex_f( 'logo', 'image', 'Logo', [ 'h' => 'The header logo, on a light background' ] ),
+		apex_f( 'logoLight', 'image', 'Logo on dark backgrounds', [ 'h' => 'The white version, shown in the footer' ] ),
 		apex_f( 'logoAll', 'image', 'Group logo' ),
 		apex_f( 'license', 'text', 'Advertising permit number', [ 'h' => 'Shown in the footer, for example ฆสพ.สบส.866/2569' ] ),
 		apex_f( 'line', 'group', 'LINE', [ 'f' => [ apex_f( 'x', 'text', 'LINE ID' ), apex_f( 'h', 'url', 'LINE link' ), apex_f( 'qr', 'image', 'LINE QR code' ) ] ] ),
@@ -58,13 +78,14 @@ function apex_schema( string $type ): array {
 	/* ---------- services ---------- */
 	$S['apex_service'] = [
 		apex_f( 'name', 'text', 'Page heading', [ 'src' => 'title' ] ),
-		apex_f( 'key', 'select', 'Procedure', [ 'o' => apex_service_keys(), 'keep' => true, 'h' => 'Links the page to its recovery facts, before and after cases, offers and My Plan' ] ),
+		apex_f( 'key', 'text', 'Procedure code', [ 'h' => 'A short code in lowercase letters that links this page to its offers, before and after photos, My Plan and the consultation form, for example fat-grafting. The English and Thai pages of one procedure use the same code. Left empty on a new service, it is made from the page address. Don\'t change it on an existing procedure.' ] ),
 		apex_f( 'en', 'text', 'Small heading above the name' ),
 		apex_f( 'menu', 'group', 'In menus and service cards', [ 'f' => [ apex_f( 'name', 'text', 'Name' ), apex_f( 'short', 'text', 'Short name' ), apex_f( 'en', 'text', 'Second line' ), apex_f( 'icon', 'image', 'Icon' ), apex_f( 'nav', 'text', 'Menu label' ) ] ] ),
 		...apex_seo_f(),
 		apex_f( 'hero', 'image', 'Banner image' ),
 		apex_f( 'heroAlt', 'text', 'Banner alt text' ),
 apex_f( 'newFrom', 'date', 'New from', [ 'h' => "Shows it under What's new on the home page with a New tag, for the number of days set under What's new › Settings. Filled in when first published; empty leaves it out." ] ),
+		apex_f( 'recovery', 'repeater', 'Recovery timeline', [ 'h' => 'The steps in the Recovery box at the top of the page, also used in the key facts box on articles about this procedure.', 'f' => [ apex_f( 'w', 'text', 'When', [ 'h' => 'For example: 4 to 7 days' ] ), apex_f( 'x', 'text', 'What happens', [ 'h' => 'For example: Back to light office work' ] ) ] ] ),
 		apex_f( 'stay', 'number', 'Stay in Thailand after surgery (days)', [ 'h' => 'For the trip planner: how many days a client from abroad should stay after surgery before flying home, counted from the surgery day. The surgeon still confirms it at the consultation.' ] ),
 		apex_f( 'byline', 'text', 'Surgeon line', [ 'h' => 'For example: Dr. Somboon Waiphrip, License no. 22713, Apex Surgery Hospital' ] ),
 		apex_f( 'atApex', 'group', 'Introduction', [ 'f' => [ apex_f( 'h', 'text', 'Heading' ), apex_f( 'img', 'image', 'Photo' ), apex_f( 'alt', 'text', 'Photo alt text' ) ] ] ),
@@ -77,7 +98,7 @@ apex_f( 'newFrom', 'date', 'New from', [ 'h' => "Shows it under What's new on th
 		apex_f( 'reviewsH', 'text', 'Reviews heading' ),
 		apex_f( 'reviewImgs', 'repeater', 'Review images', [ 'f' => [ apex_f( 'src', 'image', 'Image' ), apex_f( 'alt', 'text', 'Alt text' ) ] ] ),
 		apex_f( 'videos', 'scalars', 'Review videos (MP4)', [ 'item' => 'url', 'h' => 'Upload the MP4 to the media library and paste its link' ] ),
-		apex_f( 'yt', 'lines', 'YouTube videos', [ 'h' => 'One video id per line, the part after watch?v=' ] ),
+		apex_f( 'yt', 'lines', 'YouTube videos', [ 'h' => 'One video id per line, the part after watch?v=. Each language has its own list: on the English page, use the English version of a video when there is one.' ] ),
 		apex_link_f( 'tiktok', 'TikTok link' ),
 		apex_f( 'promoTag', 'lines', 'Offers small heading', [ 'h' => 'One word per line' ] ),
 		apex_f( 'promoH', 'text', 'Offers heading' ),
@@ -107,7 +128,7 @@ apex_f( 'newFrom', 'date', 'New from', [ 'h' => "Shows it under What's new on th
 		apex_f( 'title', 'text', 'Short title', [ 'h' => 'Shown on the episode cards' ] ),
 		apex_f( 'seo', 'text', 'SEO title' ),
 		apex_f( 'desc', 'textarea', 'Description', [ 'src' => 'excerpt' ] ),
-		apex_f( 'yt', 'text', 'YouTube video id' ),
+		apex_f( 'yt', 'text', 'YouTube video id', [ 'h' => 'The part after watch?v=. The English and Thai episodes each have their own: put an English-dubbed or English-subtitled upload on the English episode, and the Thai one on the Thai episode.' ] ),
 		apex_f( 'cover', 'image', 'Card image (640 × 336)' ),
 		apex_f( 'img', 'image', 'Video poster (1200 × 630)' ),
 		apex_f( 'photos', 'number', 'Number of photos' ),

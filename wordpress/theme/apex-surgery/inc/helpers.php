@@ -217,6 +217,10 @@ function apex_link( string $href, ?string $lang = null ): string {
 		$id = apex_key_id( 'post', $q['p'], $lang );
 		return ( $id ? get_permalink( $id ) : apex_link( 'blog.html', $lang ) ) . $hash;
 	}
+	if ( $file === 'doctor.html' && ! empty( $q['d'] ) ) {
+		$id = apex_key_id( 'apex_doctor', (string) $q['d'], $lang );
+		return ( $id ? get_permalink( $id ) : apex_link( 'doctor.html', $lang ) ) . $hash;
+	}
 	if ( $file === 'surgery-wars.html' && ! empty( $q['ep'] ) ) {
 		$id = apex_key_id( 'apex_episode', (string) $q['ep'], $lang );
 		if ( $id ) return get_permalink( $id ) . $hash;
@@ -230,6 +234,7 @@ function apex_link( string $href, ?string $lang = null ): string {
 }
 function apex_svc_url( string $k ): string { return apex_link( 'service.html?p=' . rawurlencode( $k ) ); }
 function apex_post_url( string $k ): string { return apex_link( 'article.html?p=' . rawurlencode( $k ) ); }
+function apex_doc_url( string $k ): string { return apex_link( 'doctor.html?d=' . rawurlencode( $k ) ); }
 
 /** Every design page name and content key mapped to its address, for the scripts (the feature modules
  *  still link to 'consult.html' and the like). */
@@ -245,7 +250,7 @@ function apex_link_map( ?string $lang = null ): array {
 function apex_link_map_build( string $lang ): array {
 	$m = [];
 	foreach ( array_keys( APEX_PAGES ) as $f ) $m[ $f ] = apex_link( $f, $lang );
-	foreach ( [ 'apex_service' => 'service', 'post' => 'article', 'apex_episode' => 'ep' ] as $type => $pre ) {
+	foreach ( [ 'apex_service' => 'service', 'post' => 'article', 'apex_episode' => 'ep', 'apex_doctor' => 'doctor' ] as $type => $pre ) {
 		$ids = get_posts( [ 'post_type' => $type, 'post_status' => 'publish', 'posts_per_page' => -1, 'lang' => '', 'suppress_filters' => true, 'fields' => 'ids' ] );
 		foreach ( $ids as $id ) {
 			if ( apex_post_lang( $id ) !== $lang ) continue;

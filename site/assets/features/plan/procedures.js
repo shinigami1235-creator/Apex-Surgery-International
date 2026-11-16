@@ -165,3 +165,25 @@ export function loadData(base, lang, id) {
   dataCache[ck].catch(() => { delete dataCache[ck]; });
   return dataCache[ck];
 }
+
+/* A procedure Apex adds later as a service in WordPress joins My Plan, the trip planner, the consultation form and
+   the review videos here: its name from the services list, its recovery timeline as plain facts. With no day
+   windows the trip planner uses the service's "Stay in Thailand after surgery" days. */
+export function addServices(services) {
+  (services || []).forEach(s => {
+    if (!s || !s.key || PROCS[s.key]) return;
+    const nm = s.short || s.name || s.key;
+    PROCS[s.key] = { name: { en: nm, th: nm }, facts: (s.recovery || []).map(r => { const x = [r.w, r.x].filter(Boolean).join(': '); return { en: x, th: x }; }) };
+    PROC_KEYS.push(s.key);
+  });
+}
+/* a branch Apex adds under Branches joins the branch choices the same way */
+export function addBranches(branches) {
+  (branches || []).forEach(b => {
+    if (!b || !b.key || BRANCHES[b.key]) return;
+    const nm = b.short || b.name || b.key;
+    BRANCHES[b.key] = { en: nm, th: nm };
+    BRANCH_KEYS.push(b.key);
+  });
+}
+try { const S = globalThis.APEX && globalThis.APEX._d && globalThis.APEX._d.shared; if (S) { addServices(S.services); addBranches(S.branches); } } catch (e) { /* the tools also run on their own */ }

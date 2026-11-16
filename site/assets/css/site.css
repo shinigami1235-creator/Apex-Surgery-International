@@ -31,7 +31,7 @@ img.img-x{opacity:0}
 
 /* ---------- header ---------- */
 .hdr-logo{display:flex;align-items:center;gap:8px;min-width:0}
-.hdr-logo img{height:38px}
+.hdr-logo img{height:36px}
 .logo-txt{display:none;font-size:24px;font-weight:700;letter-spacing:.06em;color:var(--plum);line-height:1}
 .logo-txt small{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--ink-3);margin-top:3px}
 .logo-txt.light{display:inline-block;color:#fff}.logo-txt.light small{color:var(--lilac-300)}
@@ -408,8 +408,8 @@ img.img-x{opacity:0}
 .feat-page-host .apxt>.t-wrap>h2:first-child,.feat-page-host .apxt>.t-wrap>h2:first-child+p,
 .feat-page-host .apxc>.c-wrap>h2:first-child,.feat-page-host .apxc>.c-wrap>h2:first-child+p{display:none}
 
-/* the surgery logo file is white: tint it plum on the light header pill */
-.hdr-logo img{filter:brightness(0) saturate(100%) invert(24%) sepia(41%) saturate(1588%) hue-rotate(254deg) brightness(92%) contrast(92%)}
+/* Apex's 2026 logo, in its own colours on the header; the white version in the footer */
+.ftr .brand .ftr-logo{display:block;height:56px;width:auto;margin-bottom:18px}
 
 /* =====================================================================
    Revision 1 (21 Oct 2026): section flow, surfaces, rich service sections,
@@ -698,7 +698,9 @@ section.night.sx-join{position:relative}
 }
 @media (max-width:900px){
   .si2,.ss-head.has-pic,.faq-grid2,.updates2{grid-template-columns:minmax(0,1fr)}
-  .si-media,.faq-cta{position:static}
+  .faq-cta{position:relative;top:auto}
+  /* relative, not static: the tilted panel behind the photo and the license card are placed against the photo, not the whole section */
+  .si-media{position:relative;top:auto}
   .si-media{max-width:480px}
   .br-stage{grid-template-columns:minmax(0,1fr);grid-template-rows:auto}
   .br-photo,.br-info,.br-map{grid-column:1;grid-row:auto}
@@ -898,7 +900,7 @@ html[lang=en] .art-prose p.lede::first-letter{float:left;font-size:4.1em;line-he
 /* doctor card photo frame */
 .doc-ph{position:relative}
 .doc-card .doc-ph{box-shadow:0 44px 80px -44px rgba(63,27,85,.65),0 0 0 1px rgba(106,56,140,.08)}
-@media (max-width:900px){.founder2{grid-template-columns:minmax(0,1fr)}.f2-media{position:static;max-width:440px}.f2-card{left:10px}.about-aside{position:static}.role-grid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.founder2{grid-template-columns:minmax(0,1fr)}.f2-media{position:relative;top:auto;max-width:440px}.f2-card{left:10px}.about-aside{position:static}.role-grid{grid-template-columns:minmax(0,1fr)}}
 
 .about-grid p.si-lead{font-size:clamp(20px,1.7vw,25px);line-height:1.55;color:var(--ink);letter-spacing:-.01em}
 /* night tool cards: glass with depth and a moving glow */
@@ -1479,6 +1481,8 @@ html:has(.tm-dlg[open]){overflow:hidden}
 .fresh-ph.fit-top img{object-position:50% 8%}
 .fresh-ph.fit-contain{background:radial-gradient(80% 80% at 50% 40%,#fff,var(--lilac-100))}
 .fresh-ph.fit-contain img{object-fit:contain;padding:10px}
+/* promotion posters are square: their box is square too, so the poster fills it whole with nothing cut */
+.fresh-ph.fit-poster{aspect-ratio:1}
 .fresh-ic{display:grid;place-items:center;height:100%;color:var(--plum)}
 .fresh-ic svg{width:44px;height:44px}
 .fresh-b{display:flex;flex-direction:column;gap:6px;padding:16px 18px 18px;flex:1}
@@ -1496,3 +1500,16 @@ html:has(.tm-dlg[open]){overflow:hidden}
 html[lang="th"] .fresh-k,html[lang="th"] .new-tag{letter-spacing:.02em}
 .st-ic:empty,.ms-ic:empty{visibility:hidden}
 .rx-host:empty{aspect-ratio:16/10;border-radius:16px;background:#E9E3EF}
+/* 1.2.0: license numbers wherever a doctor shows, and each doctor's own page */
+.tm-card{text-decoration:none}
+.tm-lic,.ts-lic{display:inline-flex;align-self:flex-start;align-items:center;height:24px;padding:0 10px;border-radius:var(--pill);background:var(--lilac-100);color:var(--plum);font-size:12.5px;font-weight:700;line-height:1}
+.ts-lic{margin-top:4px;font-size:12px;height:22px;padding:0 9px}
+.ifd-cap .ifd-lic{font-size:13px;font-weight:700;color:#fff;opacity:.92}
+.dr-prof .f2-alt{margin-top:0}
+.dr-prof .doc-meta{margin-top:14px}
+.dr-focus{margin:14px 0 6px}
+.dr-prof .pq{margin:26px 0}
+.dr-prof .tm-sec h2{margin:0 0 12px}
+.dr-prof .tm-sec:first-of-type{margin-top:18px}
+.dr-prof .doc-acts{margin-top:26px;display:flex;flex-wrap:wrap;gap:10px}
+.sheet-logo{display:block;height:40px;width:auto}

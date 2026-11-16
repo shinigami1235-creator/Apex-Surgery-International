@@ -5,29 +5,11 @@
   const ytIds = a => (a || []).filter(id => /^[\w-]{6,20}$/.test(String(id)));   // the same check as the PHP render
   const main = () => A.qs('#main');
 
-  /* recovery facts, taken from the service pages' own Q&A and recovery text */
-  const RECOVERY = {
-    en: {
-      facelift: [['4 to 7 days','Back to light office work'],['3 to 4 weeks','No strenuous exercise'],['7 to 12 years','How long a deep plane facelift lasts']],
-      browlift: [['7 to 14 days','Initial recovery'],['4 to 6 weeks','No strenuous exercise'],['3 to 6 months','Final shape']],
-      rhinoplasty: [['1 to 2 weeks','Soft food'],['7 to 14 days','Rest at home'],['2 to 3 weeks','No glasses or heavy exercise'],['3 to 6 months','Result clearly visible'],['6 to 12 months','Fully settled']],
-      eyelid: [['7 to 14 days','Swelling eases'],['At least 2 weeks','No alcohol or smoking'],['3 to 6 months','Final shape']],
-      breast: [['3 to 7 days','Soreness'],['Weeks 2 to 4','Back to light work'],['1 to 2 months','Back to exercise']],
-      bone: [['1 to 2 weeks','Swelling and bruising ease'],['Weeks 2 to 4','Back to work'],['1 to 3 months','Outline shows clearly'],['3 to 6 months','Face settles']],
-      lipo: [['3 to 7 days','Driving again'],['Week 1','Garment 22 to 24 hours a day'],['Weeks 2 to 4','Garment 12 to 18 hours a day'],['3 to 6 months','Results settle']]
-    },
-    th: {
-      facelift: [['4 ถึง 7 วัน','กลับไปทำงานออฟฟิศเบา ๆ'],['3 ถึง 4 สัปดาห์','งดออกกำลังกายหนัก'],['7 ถึง 12 ปี','ผลลัพธ์ Deep Plane อยู่ได้นาน']],
-      browlift: [['7 ถึง 14 วัน','พักฟื้นช่วงแรก'],['4 ถึง 6 สัปดาห์','งดออกกำลังกายหนัก'],['3 ถึง 6 เดือน','รูปทรงเข้าที่']],
-      rhinoplasty: [['1 ถึง 2 สัปดาห์','ทานอาหารอ่อน'],['7 ถึง 14 วัน','พักฟื้นที่บ้าน'],['2 ถึง 3 สัปดาห์','งดสวมแว่นและออกกำลังกายหนัก'],['3 ถึง 6 เดือน','เห็นผลลัพธ์ชัด'],['6 ถึง 12 เดือน','เข้าที่สมบูรณ์']],
-      eyelid: [['7 ถึง 14 วัน','อาการบวมลดลง'],['อย่างน้อย 2 สัปดาห์','งดแอลกอฮอล์และบุหรี่'],['3 ถึง 6 เดือน','รูปทรงเข้าที่']],
-      breast: [['3 ถึง 7 วัน','อาการระบม'],['สัปดาห์ที่ 2 ถึง 4','กลับไปทำงานเบา ๆ'],['1 ถึง 2 เดือน','กลับมาออกกำลังกาย']],
-      bone: [['1 ถึง 2 สัปดาห์','อาการบวมช้ำลดลง'],['สัปดาห์ที่ 2 ถึง 4','กลับไปทำงาน'],['1 ถึง 3 เดือน','กรอบหน้าเห็นชัดขึ้น'],['3 ถึง 6 เดือน','โครงหน้าเข้าที่']],
-      lipo: [['3 ถึง 7 วัน','ขับรถได้'],['สัปดาห์แรก','ชุดกระชับวันละ 22 ถึง 24 ชั่วโมง'],['สัปดาห์ที่ 2 ถึง 4','ชุดกระชับวันละ 12 ถึง 18 ชั่วโมง'],['3 ถึง 6 เดือน','ผลลัพธ์เข้าที่']]
-    }
-  };
-  A.RECOVERY = RECOVERY;
-  const SVC_CATS = ['facelift','browlift','rhinoplasty','eyelid','bone','breast','lipo'];
+  /* the procedures, in menu order, and each one's recovery timeline: both edited on the service in WordPress
+     (Services › the service › Recovery timeline), so a service Apex adds later joins every list on its own */
+  const svcCats = () => ((A.d('shared') || {}).services || []).map(s => s.key).filter(Boolean);
+  const recovOf = (S, k) => (((S.services || []).find(x => x.key === k) || {}).recovery || []).filter(r => r && (r.w || r.x)).map(r => [r.w || '', r.x || '']);
+
   const svcName = (S, k) => { const s = (S.services || []).find(x => x.key === k); return s ? (s.short || s.name) : k; };
 
   /* ---------- photos for pages and articles that have none of their own: Apex's operating room, rooms and counter ---------- */
@@ -298,8 +280,8 @@
   };
   const chipsCount = (pairs, items, on) => `<div class="chips c-count" role="group" aria-label="${E(T('filter'))}">${pairs.map(([k, x]) => `<button type="button" class="chip" data-k="${E(k)}" aria-pressed="${k === on}">${E(x)}<i>${k === 'all' ? items.length : items.filter(i => i.cat === k).length}</i></button>`).join('')}</div>`;
   const recoveryCard = (key, S) => {
-    const R = (RECOVERY[A.lang] || RECOVERY.en)[key];
-    if (!R) return '';
+    const R = recovOf(S, key);
+    if (!R.length) return '';
     return `<aside class="recov rv"><p class="eyebrow">${E(T('recoveryH'))}</p><ol class="recov-line">${R.map(([w, x]) => `<li><b>${E(w)}</b><span>${E(x)}</span></li>`).join('')}</ol>
       <p class="note">${E(T('resultsVary'))}</p><a class="link-arrow" href="trip.html?p=${E(key)}">${E(T('tripTry'))} ${I('arrow-right')}</a></aside>`;
   };
@@ -340,10 +322,10 @@
           <p class="intro-big rv" data-d="60" data-field="home.intro">${E((H.intro && H.intro.x) || '')}</p>
           <a class="link-arrow rv" href="about.html">${E(T('aboutMore'))} ${I('arrow-right')}</a></div>
         <div class="intro-side">
-          ${Fd ? `<a class="intro-fd rv-clip" href="about.html#founder">
+          ${Fd ? `<a class="intro-fd rv-clip" href="${A.docUrl('founder')}">
             <span class="ifd-ph"><img src="${IMG(Fd.wide || Fd.portrait || Fd.photo)}" alt="${E(Fd.name)}" loading="lazy" decoding="async" data-par="14"${Fd.wide ? ' style="object-position:38% 22%"' : ''}></span>
             ${Fd.aaci ? `<span class="ifd-badge"><img src="${IMG(Fd.aaci.src)}" alt="${E(Fd.aaci.alt || 'AACI')}" loading="lazy" decoding="async" decoding="async"></span>` : ''}
-            <span class="ifd-cap"><small>${E(T('foundedBy'))}</small><b>${E(Fd.name)}</b><span>${E(Fd.specialty || Fd.role)}</span></span>
+            <span class="ifd-cap"><small>${E(T('foundedBy'))}</small><b>${E(Fd.name)}</b><span>${E(Fd.specialty || Fd.role)}</span>${Fd.license ? `<span class="ifd-lic">${E(Fd.license)}</span>` : ''}</span>
           </a>` : ''}
           <ul class="pillars">${(About.pillars || []).map((p, i) => `<li class="rv" data-d="${i*90}"><span class="pl-n">0${i+1}</span><b>${E(p.h)}</b><span>${E(p.x)}</span></li>`).join('')}</ul>
         </div>
@@ -396,7 +378,7 @@
       <div class="wrap">
         <div class="shead"><div><p class="eyebrow rv">${E(T('reviews'))}</p><h2 class="h-xl rv" data-field="home.reviews.h">${E((H.reviews && H.reviews.h) || T('reviews'))}</h2></div>
           <div class="rail-ctrl rv"><button type="button" id="rv-prev" aria-label="${E(T('prev'))}">${I('chevron-left')}</button><button type="button" id="rv-next" aria-label="${E(T('next'))}">${I('chevron-right')}</button></div></div>
-        ${chips([['all', T('all')], ...SVC_CATS.filter(k => reviews.some(r => r.cat === k)).map(k => [k, svcName(S, k)])], 'all')}
+        ${chips([['all', T('all')], ...svcCats().filter(k => reviews.some(r => r.cat === k)).map(k => [k, svcName(S, k)])], 'all')}
         ${reviewRail(reviews, 'rv-rail')}
         <p class="note">${E(T('resultsVary'))}</p>
       </div>
@@ -591,7 +573,7 @@
     mountStories(A.qs('#stories'), {procedure:key, focus:key});
     mountShowcase(A.qs('#ba'), baCases(D.ba || [], S, {cat:key, onService:true}), {tileFacts:true});
     bindOffers(main());
-    A.jsonld({'@context':'https://schema.org','@type':'MedicalProcedure', name:D.name, alternateName:D.en, description:D.desc, procedureType:'https://schema.org/SurgicalProcedure', howPerformed:(D.intro || [])[0], followup:((RECOVERY[A.lang] || {})[key] || []).map(r => r.join(': ')).join('; '), performer:{'@type':'Physician', name:(S.doctor || {}).name}});
+    A.jsonld({'@context':'https://schema.org','@type':'MedicalProcedure', name:D.name, alternateName:D.en, description:D.desc, procedureType:'https://schema.org/SurgicalProcedure', howPerformed:(D.intro || [])[0], followup:recovOf(S, key).map(r => r.join(': ')).join('; '), performer:{'@type':'Physician', name:(S.doctor || {}).name}});
     if ((D.faqs || []).length) A.jsonld({'@context':'https://schema.org','@type':'FAQPage', mainEntity:D.faqs.map(q => ({'@type':'Question', name:q.q, acceptedAnswer:{'@type':'Answer', text:(q.a || []).join(' ')}}))});
     A.breadcrumbLd(crumbs.map((c, i) => [c[0], c[1] || location.href]));
   }
@@ -615,7 +597,7 @@
         ${full ? `<ul class="who-grid role-grid">${(F.roles || []).map((x, j) => { const [l, t] = splitLabel(x); return `<li class="who-card role-card rv" data-d="${(j % 2) * 60}"><span class="wc-ic">${I(pickIcon(l || x, j))}</span>${l ? `<h3>${E(l)}</h3><p>${E(t)}</p>` : `<p class="wc-solo">${E(t)}</p>`}</li>`; }).join('')}</ul>
           <div class="f2-edu rv"><h3 class="h-s">${E(F.eduH)}</h3><ul class="ticks">${(F.edu || []).map(x => `<li>${E(x)}</li>`).join('')}</ul></div>` : ''}
         <details class="f2-more rv"><summary><span>${E(T('readMore'))}</span>${I('chevron-down')}</summary><div class="f2-rest">${rest.map(x => `<p>${E(x)}</p>`).join('')}</div></details>
-        <div class="doc-acts rv">${full ? `<a class="btn btn-ghost on-light btn-sm" href="${A.url(F.check.h)}" target="_blank" rel="noopener">${I('shield-check')}${E(F.checkX)}</a>` : `<a class="btn btn-plum btn-sm" href="doctor.html#founder">${E(T('founderCta'))} ${I('arrow-right')}</a>`}</div>
+        <div class="doc-acts rv">${full ? `<a class="btn btn-ghost on-light btn-sm" href="${A.url(F.check.h)}" target="_blank" rel="noopener">${I('shield-check')}${E(F.checkX)}</a>` : `<a class="btn btn-plum btn-sm" href="${A.docUrl('founder')}">${E(T('founderCta'))} ${I('arrow-right')}</a>`}</div>
       </div></div>`;
   };
   const aaciCard = S => S.aaci ? `<a class="aaci-card rv" href="${A.url(S.aaci.h)}" target="_blank" rel="noopener"><img src="${IMG(S.aaci.src)}" alt="${E(S.aaci.alt)}" loading="lazy" decoding="async" width="96" height="96"><span><b>${E(T('aaciH'))}</b><small>${E(T('aaciP'))}</small></span>${I('arrow-up-right')}</a>` : '';
@@ -641,44 +623,65 @@
   }
 
   /* =================== DOCTOR =================== */
-  /* the surgical team (data "team"): a card per doctor, the full profile opens in a side panel */
+  /* the Doctors page: a card per doctor and the founder; each doctor has a page of their own (doctor.html?d=key,
+     /doctors/<name>/ on WordPress) so search engines can find each profile */
   const TM_SECS = [['edu', 'eduH'], ['train', 'trainH'], ['skills', 'skillsH'], ['work', 'workH'], ['member', 'memberH'], ['talks', 'talksH']];
-  const tmCard = (d, i) => `<li class="rv" data-d="${(i % 3) * 70}"><button type="button" class="tm-card" data-doc="${E(d.key)}" aria-haspopup="dialog" data-new="doc:${E(d.key)}">
+  const tmCard = (d, i) => `<li class="rv" data-d="${(i % 3) * 70}"><a class="tm-card" href="${A.docUrl(d.key)}" data-new="doc:${E(d.key)}">
       <span class="tm-ph ph-img"><img src="${IMG(d.photo)}" alt="${E(d.name)}" loading="lazy" decoding="async" width="731" height="1024"></span>
-      <span class="tm-body"><span class="tm-nick">${E(d.nick || '')}</span><b class="tm-name">${E(d.name)}</b><span class="tm-role">${E(d.role || '')}</span>
+      <span class="tm-body"><span class="tm-nick">${E(d.nick || '')}</span><b class="tm-name">${E(d.name)}</b>${d.license ? `<span class="tm-lic">${E(d.license)}</span>` : ''}<span class="tm-role">${E(d.role || '')}</span>
         <span class="tm-focus">${(d.focus || []).map(f => `<span>${E(f)}</span>`).join('')}</span>
-        <span class="tm-more">${E(T('viewProfile'))} ${I('arrow-right')}</span></span></button></li>`;
-  const tmProfile = d => `<button type="button" class="tm-x" aria-label="${E(T('close'))}">${I('x')}</button>
-      <div class="tm-dh"><span class="tm-dph ph-img"><img src="${IMG(d.photo)}" alt="" width="731" height="1024"></span>
-        <div><p class="eyebrow">${E(d.nick || '')}</p><h2 class="h-l" id="tm-dlg-h">${String(d.name || '').split(/\s+/).filter(Boolean).map(w => `<span class="nw">${E(w)}</span>`).join(' ')}</h2>${d.nameAlt ? `<p class="tm-alt">${E(d.nameAlt)}</p>` : ''}
-        ${d.license ? `<p class="doc-meta"><span>${E(d.license)}</span></p>` : ''}${d.role ? `<p class="tm-role2">${E(d.role)}</p>` : ''}</div></div>
-      ${d.quote ? pullQuote(d.quote, 'tm-q').replace('pq rv ', 'pq ') : ''}
-      ${TM_SECS.filter(([k]) => (d[k] || []).length).map(([k, h]) => `<section class="tm-sec"><h3 class="h-s">${E(T(h))}</h3><ul class="ticks">${d[k].map(x => `<li>${A.fmtLi(x)}</li>`).join('')}</ul></section>`).join('')}`;
-  const bindTeam = (root, docs) => {
-    const dlg = A.qs('#tm-dlg', root); if (!dlg) return;
-    const inner = dlg.firstElementChild;
-    const open = key => { const d = docs.find(x => x.key === key); if (!d) return; A.newSeen('doc:' + key); inner.innerHTML = tmProfile(d); inner.scrollTop = 0; if (!dlg.open) dlg.showModal(); history.replaceState(null, '', '#dr-' + key); };
-    const shut = () => { dlg.close(); };
-    dlg.addEventListener('close', () => { if (/^#dr-/.test(location.hash)) history.replaceState(null, '', location.pathname + location.search); });
-    root.addEventListener('click', e => { const b = e.target.closest('.tm-card'); if (b) open(b.dataset.doc); });
-    dlg.addEventListener('click', e => { if (e.target === dlg || e.target.closest('.tm-x')) shut(); });
-    const m = location.hash.match(/^#dr-([\w-]+)$/); if (m) open(m[1]);
-  };
+        <span class="tm-more">${E(T('viewProfile'))} ${I('arrow-right')}</span></span></a></li>`;
+  const docProfile = (d, S) => `<section class="section dr-s"><div class="wrap"><div class="founder2 dr-prof">
+      <div class="f2-media rv">
+        <figure class="f2-ph ph-img"><img src="${IMG(d.photo)}" alt="${E(d.name)}" decoding="async" width="731" height="1024" fetchpriority="high"></figure>
+        ${d.license ? `<div class="f2-card"><span class="f2-ic">${I('award')}</span><span><b>${E(d.license)}</b><small>Apex Surgery Hospital</small></span></div>` : ''}
+      </div>
+      <div class="f2-body">
+        ${d.nameAlt || d.nick ? `<p class="f2-alt rv">${E([d.nameAlt, d.nick].filter(Boolean).join(' · '))}</p>` : ''}
+        ${d.license ? `<p class="doc-meta rv"><span>${E(d.license)}</span></p>` : ''}
+        ${(d.focus || []).length ? `<p class="tm-focus dr-focus rv">${d.focus.map(f => `<span>${E(f)}</span>`).join('')}</p>` : ''}
+        ${pullQuote(d.quote)}
+        ${TM_SECS.filter(([k]) => (d[k] || []).length).map(([k, h]) => `<section class="tm-sec rv"><h2 class="h-s">${E(T(h))}</h2><ul class="ticks">${d[k].map(x => `<li>${A.fmtLi(x)}</li>`).join('')}</ul></section>`).join('')}
+        <div class="doc-acts rv"><a class="btn btn-plum btn-sm" href="consult.html">${I('message-circle')}${E(T('consult'))}</a><a class="btn btn-ghost on-light btn-sm" href="${A.url((S.line && S.line.h) || '#')}" target="_blank" rel="noopener">${I('line')}${E(T('book'))}</a></div>
+      </div></div></div></section>`;
+  const docLd = (d, img, org) => A.jsonld({'@context':'https://schema.org','@type':'Physician', name:d.name, alternateName:d.nameAlt || d.nameTh || d.nameEn, image:new URL(IMG(img), location.href).href, identifier:d.license, description:d.role || d.specialty, medicalSpecialty:'PlasticSurgery', url:location.href, worksFor:org});
   async function doctor(){
     const S = A.d('shared') || {}, Dr = S.doctor || {}, F = A.d('founder'), TM = A.d('team');
     const docs = (TM && TM.docs) || [];
+    const listCrumb = [T('doctorsH'), 'doctor.html'];
+    const key = A.param('d');
+    // an old link to a profile in the side panel (doctor.html#dr-key) goes to that doctor's page
+    const old = location.hash.match(/^#dr-([\w-]+)$/);
+    if (!key && old && docs.some(x => x.key === old[1])) { location.replace(A.docUrl(old[1])); return; }
+    const d = key && docs.find(x => x.key === key);
+    if (d) {
+      A.setMeta(`${d.name}${d.role && (d.name + d.role).length <= 60 ? ', ' + d.role : ''} | Apex Surgery Hospital`, [d.name, d.license, d.role, (d.focus || []).join(', ')].filter(Boolean).join('. '));
+      main().innerHTML = phead(d.name, d.role, [homeCrumb(), listCrumb, [d.name]]) + docProfile(d, S) + `
+        <section class="section washed"><div class="wrap">${A.teamStrip(S, TM, d.key)}</div></section>
+        <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
+      docLd(d, d.photo, {'@type':'Hospital', name:'Apex Surgery Hospital'});
+      A.breadcrumbLd([[T('home'), 'index.html'], [T('doctorsH'), 'doctor.html'], [d.name]]);
+      return;
+    }
+    if (key === 'founder' && F) {
+      A.setMeta(`${F.name}, ${F.role} | Apex Surgery Hospital`, [F.name, F.license, F.specialty].filter(Boolean).join('. '));
+      main().innerHTML = phead(F.name, F.role, [homeCrumb(), listCrumb, [F.name]]) + `
+        <section class="section founder-s"><div class="wrap">${founderBlock(F, true)}</div></section>
+        <section class="section washed"><div class="wrap">${A.teamStrip(S, TM)}</div></section>
+        <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
+      docLd(F, F.portrait || F.photo, {'@type':'Organization', name:'Apex Medical Center'});
+      A.breadcrumbLd([[T('home'), 'index.html'], [T('doctorsH'), 'doctor.html'], [F.name]]);
+      return;
+    }
     A.setMeta(`${T('doctorsH')}: ${(docs.length ? docs.map(d => d.name).slice(0, 3) : [Dr.name]).join(', ')}${F ? ', ' + F.name : ''} | Apex Surgery Hospital`, docs.length ? docs.map(d => `${d.name} (${d.role})`).join('; ') : Dr.specialty);
     main().innerHTML = phead(T('doctorsH'), docs.length ? TM.p : `${Dr.name} · ${Dr.title || ''}${F ? ` · ${F.name}` : ''}`, [homeCrumb(), [T('doctorsH')]]) + `
       ${docs.length ? `<section class="section team-s"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(TM.h)}</h2></div>
-        <ul class="team-grid">${docs.map(tmCard).join('')}</ul></div>
-        <dialog class="tm-dlg" id="tm-dlg" aria-labelledby="tm-dlg-h"><div class="tm-dlg-in"></div></dialog></section>`
+        <ul class="team-grid">${docs.map(tmCard).join('')}</ul></div></section>`
         : `<section class="section"><div class="wrap">${A.doctorCard(S, true)}</div></section>`}
-      ${F ? `<section class="section washed founder-s"><div class="wrap">${founderBlock(F, true)}</div></section>` : ''}
+      ${F ? `<section class="section washed founder-s"><div class="wrap">${founderBlock(F, false)}</div></section>` : ''}
       <section class="section"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(T('servicesH'))}</h2></div>${A.svcCards(S)}</div></section>
       <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
-    bindTeam(main(), docs);
-    docs.forEach(d => A.jsonld({'@context':'https://schema.org','@type':'Physician', name:d.name, alternateName:d.nameAlt, image:d.photo, identifier:d.license, description:d.role, medicalSpecialty:'PlasticSurgery', worksFor:{'@type':'Hospital', name:'Apex Surgery Hospital'}}));
-    if (F) A.jsonld({'@context':'https://schema.org','@type':'Physician', name:F.name, image:new URL(IMG(F.portrait || F.photo), location.href).href, identifier:F.license, description:F.specialty, worksFor:{'@type':'Organization', name:'Apex Medical Center'}});
+    docs.forEach(d => A.jsonld({'@context':'https://schema.org','@type':'Physician', name:d.name, alternateName:d.nameAlt, image:d.photo, identifier:d.license, description:d.role, medicalSpecialty:'PlasticSurgery', url:new URL(A.docUrl(d.key), location.href).href, worksFor:{'@type':'Hospital', name:'Apex Surgery Hospital'}}));
     if (location.hash === '#founder') setTimeout(() => { const f = A.qs('#founder'); f && f.scrollIntoView(); }, 60);
   }
 
@@ -687,7 +690,7 @@
     const S = A.d('shared') || {}, D = A.d('promotions') || {};
     A.setMeta(D.title, D.desc);
     const items = D.items || [];
-    const start = A.param('c') && SVC_CATS.includes(A.param('c')) ? A.param('c') : 'all';
+    const start = A.param('c') && svcCats().includes(A.param('c')) ? A.param('c') : 'all';
     const filters = (D.filters || [{k:'all', x:T('all')}]).map(f => [f.k, f.k === 'all' ? T('all') : f.x]).filter(([k]) => k === 'all' || items.some(i => i.cat === k));
     const si = items.findIndex(p => p.price);
     const offers = items.map(p => offerOf(p, S));
@@ -733,7 +736,7 @@
     const loaded = await Promise.all(rp.map(p => A.data('post/' + p.key, 'post:' + p.key).catch(() => null)));
     const stories = rp.map((p, i) => ({p, d:loaded[i]})).filter(x => x.d && (x.d.blocks || []).some(b => b.t === 'img'));
     const others = rp.filter(p => !stories.some(x => x.p.key === p.key));
-    const sCats = SVC_CATS.filter(k => stories.some(x => procOf((x.d.tag || '') + ' ' + x.p.title + ' ' + x.p.key) === k));
+    const sCats = svcCats().filter(k => stories.some(x => procOf((x.d.tag || '') + ' ' + x.p.title + ' ' + x.p.key) === k));
     main().innerHTML = phead(D.h1 || T('reviews'), T('reviewsSub'), [homeCrumb(), [T('reviews')]]) + `
       <section class="section rx-s"><div class="wrap">
         <div class="shead"><div><p class="eyebrow rv">${E(T('rxEyebrow'))}</p><h2 class="h-xl rv">${E(T('rxH'))}</h2></div><p class="note rv">${E(T('rxSub'))}</p></div>
@@ -751,8 +754,8 @@
     const sg = A.qs('#sgrid');
     if (sg) bindChips(A.qs('.stories-s'), k => A.qsa('.story', sg).forEach(el => el.hidden = !(k === 'all' || el.dataset.cat === k)));
     const cases = baCases(items, S);
-    mountShowcase(A.qs('#ba'), cases, {cats:SVC_CATS.map(k => ({k, x:svcName(S, k)}))});
-    A.mount(A.qs('#rx'), 'results', {cases, vary:T('resultsVary'), cats:SVC_CATS.map(k => ({k, x:svcName(S, k), icon:A.img(((S.services || []).find(x => x.key === k) || {}).icon)}))});
+    mountShowcase(A.qs('#ba'), cases, {cats:svcCats().map(k => ({k, x:svcName(S, k)}))});
+    A.mount(A.qs('#rx'), 'results', {cases, vary:T('resultsVary'), cats:svcCats().map(k => ({k, x:svcName(S, k), icon:A.img(((S.services || []).find(x => x.key === k) || {}).icon)}))});
     A.bindMedia(main());
     mountStories(A.qs('#stories'));
     A.fbMount(main());
@@ -777,8 +780,8 @@
   /* =================== ARTICLE =================== */
   /* editorial body: lede, drop-in key facts, pull quotes from the client's own words, interleaved photos, numbered questions, card lists */
   const factsBox = (proc, S) => {
-    const R = (RECOVERY[A.lang] || RECOVERY.en)[proc];
-    if (!R) return '';
+    const R = recovOf(S, proc);
+    if (!R.length) return '';
     return `<aside class="facts rv"><p class="facts-h">${I('clipboard-check')}<span>${E(T('keyFacts'))}</span></p>
       <dl><div class="f-proc"><dt>${E(T('procedure'))}</dt><dd><a href="${A.svcUrl(proc)}">${E(svcName(S, proc))}</a></dd></div>
       ${R.map(([w, x]) => `<div><dt>${E(x)}</dt><dd>${E(w)}</dd></div>`).join('')}</dl>
@@ -972,7 +975,7 @@
       if (!b) return;
       const box = b.parentElement;
       box.classList.add('playing');
-      box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(b.dataset.ytw)}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="${E(D.title)}"></iframe>`;
+      box.innerHTML = `<iframe src="${A.ytSrc(b.dataset.ytw)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="${E(D.title)}"></iframe>`;
       A.emit('war:play', {ep:n});
     });
     if (hasToc) A.tocSpy(A.qs('#toc'), body.toc.map(x => x.id));

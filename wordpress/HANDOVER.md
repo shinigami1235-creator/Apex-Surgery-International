@@ -131,6 +131,7 @@ English is at the root and Thai is under `/th/`. The old site was Thai only and 
 | Articles | `/articles/` | `/th/blogs/` |
 | One article | `/reviews/<slug>/`, `/articles/<slug>/`, `/hospital-news/<slug>/` | `/th/review/<slug>/`, `/th/blog/<slug>/`, `/th/news/<slug>/` |
 | Surgery Wars | `/surgery-wars/ep-3/` | `/th/surgery-wars/ep-3/` |
+| One doctor | `/doctors/somboon-waiphrip/` | `/th/doctors/somboon-waiphrip/` |
 
 A first visit to `/` from a browser set to Thai goes to `/th/`. After that the visitor's own choice of language is kept.
 
@@ -148,6 +149,7 @@ Each page is drawn in PHP from the same content structure the design used, with 
 
 ## What editors can do
 
+- **Finding where something is edited.** Logged in, every section of the live site shows an Edit link at its top right that opens the screen holding its words and pictures. "Edit links on/off" in the black toolbar hides them. On a service, the page's sections are the text in the block editor; the banner, introduction, recovery timeline, before and after photos, offers, videos, questions and SEO fields are in the Details box under the text, which a note at the top of the editor points to.
 - Bold, italic and links inside paragraphs, list items, table cells and question answers. A link can go to a web address, an email, a phone number or a page on the site.
 - Headings from H2 to H6.
 - Preview shows a draft, or the unsaved changes of a published page, the way it will look. Only logged-in editors can open it, and search engines are told to skip it.
@@ -160,11 +162,14 @@ Each page is drawn in PHP from the same content structure the design used, with 
 
 - The before and after photos are under Before and after. "How the photo is split" says where the before and the after sit in the photo. The results machine at the top of the Reviews page runs only the photos split left and right, grouped by procedure, so a new facelift, rhinoplasty or liposuction case set to left and right goes into it by itself.
 - Each service has "Stay in Thailand after surgery (days)", which the trip planner uses for clients from abroad. Empty uses the planner's own number for that procedure.
+- Each service has a "Recovery timeline": the steps in the Recovery box at the top of its page, also used in the key facts box on articles about that procedure.
+- **A new procedure.** Add a service under Services, in both languages, with the same "Procedure code" on the English and Thai pages (left empty, it is made from the page address). It then shows in the menus and service cards, in the Procedure lists on offers and before and after photos, in the promotions and reviews filters, in My Plan, the trip planner and the consultation form, all by themselves.
+- **Videos in each language.** The English and Thai pages each have their own YouTube video ids, on every service and every Surgery Wars episode. Put the English-dubbed or English-subtitled upload on the English page. The player opens in the page's language, so a video with English captions shows them first on the English site. YouTube's own multi-language audio (several audio tracks on one video) plays the track that matches each viewer's YouTube language.
 - The service icons are under Services › In menus and service cards › Icon. Facial bone surgery has none yet, so its tile shows no icon until one is uploaded.
 
 ## Doctors
 
-Doctors holds the surgical team. Each doctor is one post per language, shown as "Surgical team", and the Order box under Page attributes sets their place in the team strip and on the Doctors page. The card shows the photo, short name, name, role and the specialties on the card. The profile that opens from it adds the license line, the other-language name, a quote, and the education, training, expertise, work, memberships and talks lists, one item per line. A line written "2016: Workshop name" shows the year in bold.
+Doctors holds the surgical team. Each doctor is one post per language, shown as "Surgical team", and the Order box under Page attributes sets their place in the team strip and on the Doctors page. The card shows the photo, short name, name, license line, role and the specialties on the card. Each doctor and the founder have a page of their own at `/doctors/<name>/`, which Google can find and list: the license line, the other-language name, a quote, and the education, training, expertise, work, memberships and talks lists, one item per line. A line written "2016: Workshop name" shows the year in bold. The license line shows on every card, in the team strip on the home, about and service pages, and on the page. The address is the post's slug: keep it the same on the English and Thai post.
 
 The heading and introduction above the team are on the Doctors page under Pages. The Shown as column tells the doctor posts apart: the founder has a biography of her own, and the "Lead surgeon card" shows only while the team is empty.
 
@@ -289,6 +294,18 @@ Enquiries › Access log, for Administrators only, lists who opened an enquiry, 
 - The face tracking (MediaPipe), the age guess (face-api) and the 3D viewers (three.js) load from the theme's own `assets/vendor/` folder rather than a CDN. `site/assets/vendor/README.md` in the repository lists the versions.
 - The events the site sends to Tag Manager (`apex_consult_submit`, `apex_plan_add`, `apex_contact_click` and others) carry the tool, button, branch and channel. They leave out the procedure since an ad tag in the container would pass a person's interest in a surgery on to Google, Meta or TikTok. Keep Google Ads, Meta and TikTok tags off the consultation page and the photo tools, and turn off Meta's automatic advanced matching, which reads email and phone boxes on the page.
 
+## The consultation form
+
+Apex settings › Forms sets the form up without code:
+
+- **Fields.** Travel dates, country, questions and photos can each be left off; country can be made optional. Name, contact method and consent are always asked. Procedures are the services under Services and branches the ones under Branches.
+- **More questions.** Up to 10 questions after Questions, in English and Thai: a short answer, a long answer or one choice from a list, required or not. Answers show on the enquiry, in the export and in the webhook.
+- **Wording.** Every heading, hint and button on the form in both languages. An empty box keeps the wording shown in grey.
+
+**Export.** Enquiries › Export downloads the enquiries between two dates as a CSV file that Excel and Google Sheets open, Thai included. It holds names and contacts but no photos, and each export is written in the access log.
+
+**Webhook to Google Sheets.** Each new enquiry can also be sent to an address a few seconds after it arrives. The settings screen has a Google Apps Script to paste into a sheet (Extensions › Apps Script), with steps: deploy it as a web app, paste its address into "Webhook address", and press "Send a test". Any other system can take it too (a CRM, Zapier, Make): it is a JSON POST, signed in the `X-Apex-Signature` header with HMAC SHA-256 of the body and the token. A send that fails is tried twice more, an hour apart, and the enquiry shows whether it was sent. It copies personal data to another service, so the Data Protection Officer should agree to it first. Photos never leave the website.
+
 ## Spam and limits
 
 - The consultation form has a hidden trap field and allows 6 enquiries an hour from one connection. Apex settings › Forms takes a Cloudflare Turnstile key for a visible check as well.
@@ -337,6 +354,7 @@ For the developer: the design (the `site/` folder) is the source for styles, scr
 
 | Version | Date | What changed | Run `wp apex import` after installing? |
 |---|---|---|---|
+| 1.2.0 | 16 Nov 2026 | Apex's feedback of 16 November. The 2026 logo in the header, and its white version in the footer and mobile menu. The My Plan button has its own icon, apart from the menu button. Promotion pictures in What's new fill their box. The purple panel behind photos stays behind the photo on phones, and the founder's license card no longer covers the Founder profile button. Before and after photos on the results machine keep their shape. Every doctor and the founder have a page of their own at `/doctors/<name>/`, with their license number, and the license shows on every doctor card. Each service has an editable Recovery timeline. A service added later joins every procedure list, the form and the planning tools; facial bone surgery enquiries are now accepted. The consultation form is set up under Apex settings › Forms (fields, more questions, wording), Enquiries › Export downloads a CSV, and a webhook can copy each enquiry to Google Sheets. Edit links on the live site for logged-in staff. YouTube players open in the page's language. | No. The theme makes its few content changes on its own on the first page load after installing (logo, recovery timelines, doctor page addresses), and only where they are still as 1.1.0 left them, so edits made on staging stay. |
 | 1.1.0 | 15 Nov 2026 | Service banners show whole, since their text was cut at the edges. Facial bone surgery has its icon. The mobile menu, the photo viewer and the before and after zoom are native dialogs: Esc closes them, keyboard focus stays inside, and the page behind can't be reached. Service banners keep their space while they load. The admin shows the version. | Yes, once on staging, since the icon is content and staging's content was older than 1.0.0. Nobody has edited staging yet, so nothing is lost. |
 | 1.0.0 | 13 Nov 2026 | First trial for staging. | Yes, the first time. |
 

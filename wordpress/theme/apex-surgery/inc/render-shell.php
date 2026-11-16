@@ -35,6 +35,10 @@ function apex_route(): array {
 		$k = (string) get_post_meta( $o->ID, '_apex_key', true );
 		if ( $k === '' ) $k = apex_ensure_key( $o->ID );
 		$r = [ 'page' => 'article', 'params' => [ 'p' => $k ], 'status' => 200, 'id' => $o->ID ];
+	} elseif ( is_singular( 'apex_doctor' ) && $o ) {
+		// founder and surgical team doctors have a page; the lead surgeon card (shown only while the team is empty) does not
+		$kind = (string) get_post_meta( $o->ID, apex_meta_key( 'kind' ), true );
+		if ( in_array( $kind, [ 'team', 'founder' ], true ) ) $r = [ 'page' => 'doctor', 'params' => [ 'd' => (string) get_post_meta( $o->ID, '_apex_key', true ) ], 'status' => 200, 'id' => $o->ID ];
 	} elseif ( is_singular( 'apex_episode' ) && $o ) {
 		$r = [ 'page' => 'war', 'params' => [ 'ep' => (string) (int) get_post_meta( $o->ID, 'apex_n', true ) ], 'status' => 200, 'id' => $o->ID ];
 	} elseif ( is_category() && $o ) {
@@ -136,10 +140,10 @@ function apex_header_html( string $page ): string {
 	}
 	$langs = apex_langs_html();
 	return '<header class="hdr' . ( empty( $S['logo'] ) ? ' no-logo' : '' ) . '"><a class="skip" href="#main">' . apex_e( apex_t( 'skip' ) ) . '</a><div class="hdr-in">
-      <a class="hdr-logo" href="' . esc_url( apex_link( 'index.html' ) ) . '" aria-label="Apex Surgery Hospital"><img src="' . esc_url( apex_img( $S['logo'] ?? '' ) ) . '" alt="Apex Surgery Hospital" width="150" height="38"><span class="logo-txt" aria-hidden="true">APEX<small>Surgery Hospital</small></span></a>
+      <a class="hdr-logo" href="' . esc_url( apex_link( 'index.html' ) ) . '" aria-label="Apex Surgery Hospital"><img src="' . esc_url( apex_img( $S['logo'] ?? '' ) ) . '" alt="Apex Surgery Hospital" width="150" height="36"><span class="logo-txt" aria-hidden="true">APEX<small>Surgery Hospital</small></span></a>
       <nav class="hdr-nav" aria-label="Main">' . $nav . '</nav>
       <div class="hdr-right"><div class="lang">' . $langs . '</div>
-        <a class="plan-link" href="' . esc_url( apex_link( 'plan.html' ) ) . '" aria-label="' . apex_e( apex_t( 'plan' ) ) . '" title="' . apex_e( apex_t( 'plan' ) ) . '">' . apex_ic( 'list' ) . '<span class="plan-n" hidden>0</span></a>
+        <a class="plan-link" href="' . esc_url( apex_link( 'plan.html' ) ) . '" aria-label="' . apex_e( apex_t( 'plan' ) ) . '" title="' . apex_e( apex_t( 'plan' ) ) . '">' . apex_ic( 'clipboard-check' ) . '<span class="plan-n" hidden>0</span></a>
         <a class="btn btn-plum btn-sm hdr-cta" href="' . esc_url( apex_link( 'consult.html' ) ) . '">' . apex_ic( 'message-circle' ) . apex_e( apex_t( 'consult' ) ) . '</a>
         <button class="burger" type="button" aria-label="' . apex_e( apex_t( 'menu' ) ) . '">' . apex_ic( 'menu' ) . '</button></div></div></header>';
 }
@@ -155,7 +159,7 @@ function apex_sheet_html(): string {
 	}
 	$tools = '';
 	foreach ( [ [ 'filler.html', 'fill' ], [ 'analysis.html', 'ana' ], [ 'proportions.html', 'prop' ], [ 'breast-implants.html', 'impl' ], [ 'play.html', 'games' ], [ 'trip.html', 'trip' ], [ 'plan.html', 'plan' ] ] as [ $h, $k ] ) $tools .= '<a href="' . esc_url( apex_link( $h ) ) . '">' . apex_e( apex_t( $k ) ) . '</a>';
-	return '<dialog class="sheet" aria-label="' . apex_e( apex_t( 'menu' ) ) . '"><div class="sheet-top"><span class="logo-txt light">APEX<small>Surgery Hospital</small></span><button class="close" aria-label="' . apex_e( apex_t( 'close' ) ) . '">' . apex_ic( 'close' ) . '</button></div>
+	return '<dialog class="sheet" aria-label="' . apex_e( apex_t( 'menu' ) ) . '"><div class="sheet-top">' . ( ! empty( $S['logoLight'] ) ? '<img class="sheet-logo" src="' . esc_url( apex_img( $S['logoLight'] ) ) . '" alt="Apex Surgery Hospital" width="167" height="40">' : '<span class="logo-txt light">APEX<small>Surgery Hospital</small></span>' ) . '<button class="close" aria-label="' . apex_e( apex_t( 'close' ) ) . '">' . apex_ic( 'close' ) . '</button></div>
       <nav>' . $nav . '
       <details><summary>' . apex_e( apex_t( 'tools' ) ) . apex_ic( 'chevron-down' ) . '</summary><div class="sub">' . $tools . '</div></details></nav>
       <div class="sheet-cta"><a class="btn btn-light" href="' . esc_url( apex_link( 'consult.html' ) ) . '">' . apex_ic( 'message-circle' ) . apex_e( apex_t( 'consult' ) ) . '</a>
@@ -180,7 +184,7 @@ function apex_footer_html(): string {
 	$brand = apex_lang() === 'th' ? ( $S['brandTh'] ?? '' ) : ( $S['brand'] ?? '' );
 	$foot_langs = implode( '·', array_map( fn( $x ) => '<a href="' . esc_url( apex_lang_href( $x[0] ) ) . '" hreflang="' . $x[0] . '" style="display:inline;padding:0 6px">' . $x[1] . '</a>', [ [ 'en', 'EN' ], [ 'th', 'TH' ] ] ) );
 	return '<footer class="ftr"><div class="wrap"><div class="ftr-top surg">
-      <div class="brand"><span class="logo-txt light">APEX<small>Surgery Hospital</small></span>
+      <div class="brand">' . ( ! empty( $S['logoLight'] ) ? '<img class="ftr-logo" src="' . esc_url( apex_img( $S['logoLight'] ) ) . '" alt="Apex Surgery Hospital" width="234" height="56" loading="lazy" decoding="async">' : '<span class="logo-txt light">APEX<small>Surgery Hospital</small></span>' ) . '
         <p>' . apex_e( $brand ) . '</p>
         <p class="ftr-lic">' . apex_e( $S['license'] ?? '' ) . '</p>' . $aaci . '
         <div class="ftr-socials">' . $soc . '<a href="' . esc_url( $WA['h'] ) . '"' . $ext . ' aria-label="WhatsApp">' . apex_ic( 'whatsapp' ) . '</a></div></div>
@@ -257,6 +261,7 @@ function apex_boot_script( array $r ): string {
 		'rest' => esc_url_raw( rest_url( 'apex/v1/' ) ),
 		'turnstile' => (string) get_option( 'apex_turnstile_site', '' ),
 		'pricing' => apex_pricing_multi() ? 1 : 0,
+		'form' => apex_form_cfg(),   // the consultation form as set under Apex settings › Forms
 	];
 	if ( $r['page'] === 'play' ) {
 		$cfg['games'] = apex_game_config();

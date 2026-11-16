@@ -150,16 +150,24 @@ class Apex_CLI {
 		}
 		WP_CLI::log( 'Branches: ' . count( $this->made['apex_branch'] ?? [] ) );
 	}
+	/** A doctor's address on /doctors/: the English name without "Dr.", the same in both languages. */
+	private function doc_slug( string $name, string $key ): string {
+		$n = sanitize_title( preg_replace( '/^\s*(Dr|Prof|Assoc\.?\s*Prof)\.?\s+/i', '', $name ) );
+		return $n !== '' ? $n : 'dr-' . $key;
+	}
 	private function doctors(): void {
+		$en = [];
+		foreach ( $this->D['en']['team']['docs'] ?? [] as $d ) $en[ $d['key'] ] = $this->doc_slug( (string) ( $d['name'] ?? '' ), $d['key'] );
+		$fslug = $this->doc_slug( (string) ( $this->D['en']['founder']['name'] ?? '' ), 'founder' );
 		foreach ( APEX_LANGS as $l ) {
 			$d = $this->D[ $l ]['shared']['doctor'] ?? null;
 			if ( $d ) $this->upsert( 'apex_doctor', 'surgeon-1', $l, [ 'menu_order' => 1 ], 'apex_doctor', [ 'kind' => 'doctor' ] + $this->pick( 'apex_doctor', $d ) );
 			$f = $this->D[ $l ]['founder'] ?? null;
-			if ( $f ) $this->upsert( 'apex_doctor', 'founder', $l, [ 'menu_order' => 0 ], 'apex_doctor', [ 'kind' => 'founder', 'nameAlt' => $f['nameTh'] ?? $f['nameEn'] ?? '' ] + $this->pick( 'apex_doctor', $f ) );
+			if ( $f ) $this->upsert( 'apex_doctor', 'founder', $l, [ 'menu_order' => 0 ], 'apex_doctor', [ 'kind' => 'founder', 'nameAlt' => $f['nameTh'] ?? $f['nameEn'] ?? '' ] + $this->pick( 'apex_doctor', $f ), $fslug );
 			foreach ( $this->D[ $l ]['team']['docs'] ?? [] as $i => $d ) {
 				$vals = [ 'kind' => 'team' ] + $this->pick( 'apex_doctor', $d );
 				foreach ( [ 'specialty', 'title', 'eduH', 'moreH', 'more', 'portrait', 'rolesH', 'roles', 'years', 'bio', 'check' ] as $k ) $vals[ $k ] = $vals[ $k ] ?? null;
-				$this->upsert( 'apex_doctor', $d['key'], $l, [ 'menu_order' => 10 + $i ], 'apex_doctor', $vals, 'dr-' . $d['key'] );
+				$this->upsert( 'apex_doctor', $d['key'], $l, [ 'menu_order' => 10 + $i ], 'apex_doctor', $vals, $en[ $d['key'] ] ?? 'dr-' . $d['key'] );
 			}
 		}
 		WP_CLI::log( 'Doctors: ' . count( $this->made['apex_doctor'] ?? [] ) );
@@ -171,6 +179,7 @@ class Apex_CLI {
 			$vals = $this->pick( 'apex_service', $s );
 			$vals['menu'] = [ 'name' => $m['name'], 'short' => $m['short'], 'en' => $m['en'], 'icon' => $m['icon'], 'nav' => $m['nav'] ];
 			$vals['stay'] = $m['stay'] ?? '';
+			$vals['recovery'] = $m['recovery'] ?? [];
 			$vals['sections'] = apex_sections_to_markup( $s['sections'] ?? [] );
 			$slug = $l === 'th' ? $this->slug_of( $m['path'] ?? $m['key'] ) : $m['key'];
 			$id = $this->upsert( 'apex_service', $m['key'], $l, [ 'menu_order' => $i ], 'apex_service', $vals, $slug );

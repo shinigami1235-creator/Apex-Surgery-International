@@ -39,6 +39,7 @@
     const p = new URLSearchParams((m[2] || '').slice(1));
     if (file === 'service.html' && p.get('p')) return (L['service:' + p.get('p')] || L['services.html']) + hash;
     if (file === 'article.html' && p.get('p')) return (L['article:' + p.get('p')] || L['blog.html']) + hash;
+    if (file === 'doctor.html' && p.get('d')) return (L['doctor:' + p.get('d')] || L['doctor.html']) + hash;
     if (file === 'surgery-wars.html' && p.get('ep')) { const u = L['ep:' + p.get('ep')]; if (u) return u + hash; p.delete('ep'); }
     if (file === 'bodymap.html' && !hash) hash = '#hero';
     if (!L[file]) return h;
@@ -48,6 +49,10 @@
   A.relink = root => { if (!A.links || !root) return; (root.matches && root.matches('a[href]') ? [root] : []).concat(A.qsa('a[href]', root)).forEach(a => { const h = a.getAttribute('href'), n = A.href(h); if (n !== h) a.setAttribute('href', n); }); };
   A.svcUrl = k => A.href('service.html?p=' + encodeURIComponent(k));
   A.postUrl = k => A.href('article.html?p=' + encodeURIComponent(k));
+  A.docUrl = k => A.href('doctor.html?d=' + encodeURIComponent(k));
+  /* a YouTube player in the page's language: its menus, and the captions it picks when the viewer turns them on.
+     The spoken language is the video's own; an English version is a separate video id on the English page. */
+  A.ytSrc = id => `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&hl=${A.lang}&cc_lang_pref=${A.lang}`;
   A.yt = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
   A.WA = {x:'+66 85 000 2001', h:'https://wa.me/66850002001'};
 
@@ -125,7 +130,7 @@
     }
   };
   /* WordPress: the consultation posts to the site, and game vouchers are recorded for reception */
-  A.liveOpts = name => !A.rest ? {} : name === 'consult' ? {endpoint:A.rest + 'consult', turnstile:A.turnstile || ''}
+  A.liveOpts = name => !A.rest ? {} : name === 'consult' ? {endpoint:A.rest + 'consult', turnstile:A.turnstile || '', form:A.form || null}
     : name === 'games' ? {voucherEndpoint:A.rest + 'voucher', checkUrl:A.voucherCheck || '', config:A.games || null} : {};
   /* mount only once the host is near the viewport */
   A.mountLazy = (el, name, extra={}) => {
@@ -173,10 +178,10 @@
     el = document.createElement('header');
     el.className = 'hdr';
     el.innerHTML = `<a class="skip" href="#main">${A.esc(A.t('skip'))}</a><div class="hdr-in">
-      <a class="hdr-logo" href="index.html" aria-label="Apex Surgery Hospital"><img src="${A.img(S.logo)}" alt="Apex Surgery Hospital" width="150" height="38"><span class="logo-txt" aria-hidden="true">APEX<small>Surgery Hospital</small></span></a>
+      <a class="hdr-logo" href="index.html" aria-label="Apex Surgery Hospital"><img src="${A.img(S.logo)}" alt="Apex Surgery Hospital" width="150" height="36"><span class="logo-txt" aria-hidden="true">APEX<small>Surgery Hospital</small></span></a>
       <nav class="hdr-nav" aria-label="Main">${nav}</nav>
       <div class="hdr-right"><div class="lang">${langs}</div>
-        <a class="plan-link" href="plan.html" aria-label="${A.esc(A.t('plan'))}" title="${A.esc(A.t('plan'))}">${A.ic('list')}<span class="plan-n" hidden>0</span></a>
+        <a class="plan-link" href="plan.html" aria-label="${A.esc(A.t('plan'))}" title="${A.esc(A.t('plan'))}">${A.ic('clipboard-check')}<span class="plan-n" hidden>0</span></a>
         <a class="btn btn-plum btn-sm hdr-cta" href="consult.html">${A.ic('message-circle')}${A.esc(A.t('consult'))}</a>
         <button class="burger" type="button" aria-label="${A.esc(A.t('menu'))}">${A.ic('menu')}</button></div></div>`;
     document.body.prepend(el);
@@ -214,7 +219,7 @@
     sh = document.createElement('dialog');
     sh.className = 'sheet'; sh.setAttribute('aria-label', A.t('menu'));
     const subs = svcs.map(s => `<a href="${A.svcUrl(s.key)}">${A.esc(s.short || s.name)}</a>`).join('');
-    sh.innerHTML = `<div class="sheet-top"><span class="logo-txt light">APEX<small>Surgery Hospital</small></span><button class="close" aria-label="${A.esc(A.t('close'))}">${A.ic('close')}</button></div>
+    sh.innerHTML = `<div class="sheet-top">${S.logoLight ? `<img class="sheet-logo" src="${A.img(S.logoLight)}" alt="Apex Surgery Hospital" width="167" height="40">` : `<span class="logo-txt light">APEX<small>Surgery Hospital</small></span>`}<button class="close" aria-label="${A.esc(A.t('close'))}">${A.ic('close')}</button></div>
       <nav>${NAV.map(([h, k]) => k === 'services' ? `<details><summary>${A.esc(A.t('services'))}${A.ic('chevron-down')}</summary><div class="sub"><a href="services.html">${A.esc(A.t('allServices'))}</a>${subs}<a href="treatments.html">${A.esc(A.t('treatments'))}</a></div></details>` : `<a href="${h}">${A.esc(A.t(k))}${A.ic('arrow-up-right')}</a>`).join('')}
       <details><summary>${A.esc(A.t('tools'))}${A.ic('chevron-down')}</summary><div class="sub"><a href="filler.html">${A.esc(A.t('fill'))}</a><a href="analysis.html">${A.esc(A.t('ana'))}</a><a href="proportions.html">${A.esc(A.t('prop'))}</a><a href="breast-implants.html">${A.esc(A.t('impl'))}</a><a href="play.html">${A.esc(A.t('games'))}</a><a href="trip.html">${A.esc(A.t('trip'))}</a><a href="plan.html">${A.esc(A.t('plan'))}</a></div></details></nav>
       <div class="sheet-cta"><a class="btn btn-light" href="consult.html">${A.ic('message-circle')}${A.esc(A.t('consult'))}</a>
@@ -264,7 +269,7 @@
     const aaci = S.aaci ? `<a class="ftr-aaci" href="${A.url(S.aaci.h)}"${ext} aria-label="${A.esc(A.t('aaciH'))}"><img src="${A.img(S.aaci.src)}" alt="${A.esc(S.aaci.alt)}" loading="lazy" decoding="async" width="84" height="84"><span><b>${A.esc(A.t('aaciH'))}</b><small>APEX Surgery Hospital Ploenchit</small></span></a>` : '';
     const svcs = (S.services || []).map(s => `<a href="${A.svcUrl(s.key)}">${A.esc(s.short || s.name)}</a>`).join('');
     f.innerHTML = `<div class="wrap"><div class="ftr-top surg">
-      <div class="brand"><span class="logo-txt light">APEX<small>Surgery Hospital</small></span>
+      <div class="brand">${S.logoLight ? `<img class="ftr-logo" src="${A.img(S.logoLight)}" alt="Apex Surgery Hospital" width="234" height="56" loading="lazy" decoding="async">` : `<span class="logo-txt light">APEX<small>Surgery Hospital</small></span>`}
         <p>${A.esc(A.lang === 'th' ? S.brandTh : (S.brandTh && S.brand ? S.brand : S.brand))}</p>
         <p class="ftr-lic">${A.esc(S.license || '')}</p>${aaci}
         <div class="ftr-socials">${(S.socials || []).map(s => `<a href="${A.url(s.h)}"${ext} aria-label="${A.esc(s.x || s.k)}">${A.socIcon(s.k)}</a>`).join('')}<a href="${A.url(A.WA.h)}"${ext} aria-label="WhatsApp">${A.ic('whatsapp')}</a></div></div>
@@ -328,7 +333,7 @@
   }
   function draw(){
     const st = A.qs('.lb-stage', lb);
-    if (mode === 'yt') st.innerHTML = `<div class="yt"><iframe src="https://www.youtube-nocookie.com/embed/${list[0]}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="YouTube"></iframe></div>`;
+    if (mode === 'yt') st.innerHTML = `<div class="yt"><iframe src="${A.ytSrc(list[0])}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="YouTube"></iframe></div>`;
     else if (mode === 'vid') st.innerHTML = `<video src="${A.img(list[0])}" controls autoplay playsinline></video>`;
     else st.innerHTML = `<img src="${A.img(list[idx].src || list[idx])}" alt="${A.esc(list[idx].alt || '')}">`;
     const many = mode==='img' && list.length > 1;
@@ -383,7 +388,7 @@
   A.bindMedia = el => {
     el.addEventListener('click', e => {
       const y = e.target.closest('[data-yt]');
-      if (y) { e.preventDefault(); if (!/^[\w-]{6,20}$/.test(y.dataset.yt)) return; y.parentElement.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(y.dataset.yt)}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="YouTube"></iframe>`; }
+      if (y) { e.preventDefault(); if (!/^[\w-]{6,20}$/.test(y.dataset.yt)) return; y.parentElement.innerHTML = `<iframe src="${A.ytSrc(y.dataset.yt)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="YouTube"></iframe>`; }
       const g = e.target.closest('[data-gal]');
       if (g) { e.preventDefault(); const items = A._gal[+g.dataset.gal]; A.lightbox.images(items, +g.dataset.i || 0); }
       const v = e.target.closest('[data-vid]');
@@ -426,12 +431,13 @@
         <div><h4>${A.esc(D.moreH || A.t('moreH'))}</h4><ul class="ticks">${(D.more || []).map(x => `<li>${A.esc(x)}</li>`).join('')}</ul></div></div>
         <div class="doc-acts">${full ? '' : `<a class="btn btn-plum btn-sm" href="doctor.html">${A.esc(A.t('doctorCta'))} ${A.ic('arrow-right')}</a>`}<a class="btn btn-ghost on-light btn-sm" href="${A.url((S.line && S.line.h) || '#')}" target="_blank" rel="noopener">${A.ic('line')}${A.esc(A.t('book'))}</a></div></div></div>`;
   };
-  A.teamStrip = (S, TM) => {
-    const docs = (TM && TM.docs) || [];
-    if (!docs.length) return A.doctorCard(S);
+  A.teamStrip = (S, TM, skip) => {
+    const all = (TM && TM.docs) || [], docs = all.filter(d => d.key !== skip);
+    if (!all.length) return A.doctorCard(S);
+    if (!docs.length) return '';
     return `<div class="team-strip"><div class="shead"><div><p class="eyebrow rv">${A.esc(A.t('doctorsH'))}</p><h2 class="h-xl rv">${A.esc(TM.h)}</h2></div><a class="link-arrow rv" href="doctor.html">${A.esc(A.t('teamAll'))} ${A.ic('arrow-right')}</a></div>
-      <ul class="ts-list">${docs.map((d, i) => `<li class="rv" data-d="${(i % 6) * 50}"><a class="ts-doc" href="doctor.html#dr-${A.esc(d.key)}" data-new="doc:${A.esc(d.key)}"><span class="ts-ph ph-img"><img src="${A.img(d.photo)}" alt="${A.esc(d.name)}" loading="lazy" decoding="async" width="731" height="1024"></span>
-        <span class="ts-nick">${A.esc(d.nick || '')}</span><b>${A.esc(d.name)}</b><span class="ts-role">${A.esc(d.role || '')}</span></a></li>`).join('')}</ul></div>`;
+      <ul class="ts-list">${docs.map((d, i) => `<li class="rv" data-d="${(i % 6) * 50}"><a class="ts-doc" href="${A.docUrl(d.key)}" data-new="doc:${A.esc(d.key)}"><span class="ts-ph ph-img"><img src="${A.img(d.photo)}" alt="${A.esc(d.name)}" loading="lazy" decoding="async" width="731" height="1024"></span>
+        <span class="ts-nick">${A.esc(d.nick || '')}</span><b>${A.esc(d.name)}</b><span class="ts-role">${A.esc(d.role || '')}</span>${d.license ? `<span class="ts-lic">${A.esc(d.license)}</span>` : ''}</a></li>`).join('')}</ul></div>`;
   };
   A.branchesHtml = (S, h, p) => A.branches(S, h, p);
   A.consultBand = (S) => `<div class="consult-band rv">

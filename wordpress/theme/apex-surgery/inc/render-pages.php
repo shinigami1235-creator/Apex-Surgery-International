@@ -51,23 +51,25 @@ function apex_doctor_card( array $S, bool $full = false ): string {
         <div class="doc-acts">' . ( $full ? '' : '<a class="btn btn-plum btn-sm" href="' . esc_url( apex_link( 'doctor.html' ) ) . '">' . apex_e( apex_t( 'doctorCta' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a>' ) . '<a class="btn btn-ghost on-light btn-sm" href="' . esc_url( ( ( $S['line']['h'] ?? '' ) ?: '#' ) ) . '" target="_blank" rel="noopener">' . apex_ic( 'line' ) . apex_e( apex_t( 'book' ) ) . '</a></div></div></div>';
 }
 /** The surgical team strip (assets/js/core.js A.teamStrip); the single surgeon card while the team is empty. */
-function apex_team_strip( array $S, $TM ): string {
-	$docs = is_array( $TM ) ? ( $TM['docs'] ?? [] ) : [];
-	if ( ! $docs ) return apex_doctor_card( $S );
+function apex_team_strip( array $S, $TM, string $skip = '' ): string {
+	$all = is_array( $TM ) ? ( $TM['docs'] ?? [] ) : [];
+	if ( ! $all ) return apex_doctor_card( $S );
+	$docs = array_values( array_filter( $all, fn( $d ) => ( $d['key'] ?? '' ) !== $skip ) );
+	if ( ! $docs ) return '';
 	$E = 'apex_e';
 	$li = '';
-	foreach ( $docs as $i => $d ) $li .= '<li class="rv" data-d="' . ( ( $i % 6 ) * 50 ) . '"><a class="ts-doc" href="' . esc_url( apex_link( 'doctor.html' ) ) . '#dr-' . $E( $d['key'] ) . '"' . apex_new_attr( 'doc:' . $d['key'] ) . '><span class="ts-ph ph-img"><img src="' . esc_url( apex_img( $d['photo'] ?? '' ) ) . '" alt="' . $E( $d['name'] ?? '' ) . '" loading="lazy" decoding="async" width="731" height="1024"></span>
-        <span class="ts-nick">' . $E( $d['nick'] ?? '' ) . '</span><b>' . $E( $d['name'] ?? '' ) . '</b><span class="ts-role">' . $E( $d['role'] ?? '' ) . '</span></a></li>';
+	foreach ( $docs as $i => $d ) $li .= '<li class="rv" data-d="' . ( ( $i % 6 ) * 50 ) . '"><a class="ts-doc" href="' . esc_url( apex_doc_url( $d['key'] ) ) . '"' . apex_new_attr( 'doc:' . $d['key'] ) . '><span class="ts-ph ph-img"><img src="' . esc_url( apex_img( $d['photo'] ?? '' ) ) . '" alt="' . $E( $d['name'] ?? '' ) . '" loading="lazy" decoding="async" width="731" height="1024"></span>
+        <span class="ts-nick">' . $E( $d['nick'] ?? '' ) . '</span><b>' . $E( $d['name'] ?? '' ) . '</b><span class="ts-role">' . $E( $d['role'] ?? '' ) . '</span>' . ( ! empty( $d['license'] ) ? '<span class="ts-lic">' . $E( $d['license'] ) . '</span>' : '' ) . '</a></li>';
 	return '<div class="team-strip"><div class="shead"><div><p class="eyebrow rv">' . $E( apex_t( 'doctorsH' ) ) . '</p><h2 class="h-xl rv">' . $E( $TM['h'] ?? '' ) . '</h2></div><a class="link-arrow rv" href="' . esc_url( apex_link( 'doctor.html' ) ) . '">' . $E( apex_t( 'teamAll' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a></div>
       <ul class="ts-list">' . $li . '</ul></div>';
 }
 function apex_tm_card( array $d, int $i ): string {
 	$E = 'apex_e';
-	return '<li class="rv" data-d="' . ( ( $i % 3 ) * 70 ) . '"><button type="button" class="tm-card" data-doc="' . $E( $d['key'] ) . '" aria-haspopup="dialog"' . apex_new_attr( 'doc:' . $d['key'] ) . '>
+	return '<li class="rv" data-d="' . ( ( $i % 3 ) * 70 ) . '"><a class="tm-card" href="' . esc_url( apex_doc_url( $d['key'] ) ) . '"' . apex_new_attr( 'doc:' . $d['key'] ) . '>
       <span class="tm-ph ph-img"><img src="' . esc_url( apex_img( $d['photo'] ?? '' ) ) . '" alt="' . $E( $d['name'] ?? '' ) . '" loading="lazy" decoding="async" width="731" height="1024"></span>
-      <span class="tm-body"><span class="tm-nick">' . $E( $d['nick'] ?? '' ) . '</span><b class="tm-name">' . $E( $d['name'] ?? '' ) . '</b><span class="tm-role">' . $E( $d['role'] ?? '' ) . '</span>
+      <span class="tm-body"><span class="tm-nick">' . $E( $d['nick'] ?? '' ) . '</span><b class="tm-name">' . $E( $d['name'] ?? '' ) . '</b>' . ( ! empty( $d['license'] ) ? '<span class="tm-lic">' . $E( $d['license'] ) . '</span>' : '' ) . '<span class="tm-role">' . $E( $d['role'] ?? '' ) . '</span>
         <span class="tm-focus">' . implode( '', array_map( fn( $f ) => '<span>' . $E( $f ) . '</span>', $d['focus'] ?? [] ) ) . '</span>
-        <span class="tm-more">' . $E( apex_t( 'viewProfile' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</span></span></button></li>';
+        <span class="tm-more">' . $E( apex_t( 'viewProfile' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</span></span></a></li>';
 }
 function apex_consult_band( array $S ): string {
 	$WA = apex_wa();
@@ -154,27 +156,13 @@ function apex_branches( array $S, ?string $h = null, ?string $p = null ): string
 }
 
 /* ---------- pages.js: shared tables ---------- */
-const APEX_RECOVERY = [
-	'en' => [
-		'facelift' => [ [ '4 to 7 days', 'Back to light office work' ], [ '3 to 4 weeks', 'No strenuous exercise' ], [ '7 to 12 years', 'How long a deep plane facelift lasts' ] ],
-		'browlift' => [ [ '7 to 14 days', 'Initial recovery' ], [ '4 to 6 weeks', 'No strenuous exercise' ], [ '3 to 6 months', 'Final shape' ] ],
-		'rhinoplasty' => [ [ '1 to 2 weeks', 'Soft food' ], [ '7 to 14 days', 'Rest at home' ], [ '2 to 3 weeks', 'No glasses or heavy exercise' ], [ '3 to 6 months', 'Result clearly visible' ], [ '6 to 12 months', 'Fully settled' ] ],
-		'eyelid' => [ [ '7 to 14 days', 'Swelling eases' ], [ 'At least 2 weeks', 'No alcohol or smoking' ], [ '3 to 6 months', 'Final shape' ] ],
-		'breast' => [ [ '3 to 7 days', 'Soreness' ], [ 'Weeks 2 to 4', 'Back to light work' ], [ '1 to 2 months', 'Back to exercise' ] ],
-		'bone' => [ [ '1 to 2 weeks', 'Swelling and bruising ease' ], [ 'Weeks 2 to 4', 'Back to work' ], [ '1 to 3 months', 'Outline shows clearly' ], [ '3 to 6 months', 'Face settles' ] ],
-		'lipo' => [ [ '3 to 7 days', 'Driving again' ], [ 'Week 1', 'Garment 22 to 24 hours a day' ], [ 'Weeks 2 to 4', 'Garment 12 to 18 hours a day' ], [ '3 to 6 months', 'Results settle' ] ],
-	],
-	'th' => [
-		'facelift' => [ [ '4 ถึง 7 วัน', 'กลับไปทำงานออฟฟิศเบา ๆ' ], [ '3 ถึง 4 สัปดาห์', 'งดออกกำลังกายหนัก' ], [ '7 ถึง 12 ปี', 'ผลลัพธ์ Deep Plane อยู่ได้นาน' ] ],
-		'browlift' => [ [ '7 ถึง 14 วัน', 'พักฟื้นช่วงแรก' ], [ '4 ถึง 6 สัปดาห์', 'งดออกกำลังกายหนัก' ], [ '3 ถึง 6 เดือน', 'รูปทรงเข้าที่' ] ],
-		'rhinoplasty' => [ [ '1 ถึง 2 สัปดาห์', 'ทานอาหารอ่อน' ], [ '7 ถึง 14 วัน', 'พักฟื้นที่บ้าน' ], [ '2 ถึง 3 สัปดาห์', 'งดสวมแว่นและออกกำลังกายหนัก' ], [ '3 ถึง 6 เดือน', 'เห็นผลลัพธ์ชัด' ], [ '6 ถึง 12 เดือน', 'เข้าที่สมบูรณ์' ] ],
-		'eyelid' => [ [ '7 ถึง 14 วัน', 'อาการบวมลดลง' ], [ 'อย่างน้อย 2 สัปดาห์', 'งดแอลกอฮอล์และบุหรี่' ], [ '3 ถึง 6 เดือน', 'รูปทรงเข้าที่' ] ],
-		'breast' => [ [ '3 ถึง 7 วัน', 'อาการระบม' ], [ 'สัปดาห์ที่ 2 ถึง 4', 'กลับไปทำงานเบา ๆ' ], [ '1 ถึง 2 เดือน', 'กลับมาออกกำลังกาย' ] ],
-		'bone' => [ [ '1 ถึง 2 สัปดาห์', 'อาการบวมช้ำลดลง' ], [ 'สัปดาห์ที่ 2 ถึง 4', 'กลับไปทำงาน' ], [ '1 ถึง 3 เดือน', 'กรอบหน้าเห็นชัดขึ้น' ], [ '3 ถึง 6 เดือน', 'โครงหน้าเข้าที่' ] ],
-		'lipo' => [ [ '3 ถึง 7 วัน', 'ขับรถได้' ], [ 'สัปดาห์แรก', 'ชุดกระชับวันละ 22 ถึง 24 ชั่วโมง' ], [ 'สัปดาห์ที่ 2 ถึง 4', 'ชุดกระชับวันละ 12 ถึง 18 ชั่วโมง' ], [ '3 ถึง 6 เดือน', 'ผลลัพธ์เข้าที่' ] ],
-	],
-];
-const APEX_SVC_CATS = [ 'facelift', 'browlift', 'rhinoplasty', 'eyelid', 'breast', 'lipo' ];
+/** The procedures in menu order (pages.js svcCats()): every published service, so one Apex adds joins the lists. */
+function apex_svc_cats(): array { return array_values( array_filter( array_column( ( apex_data( 'shared' ) ?: [] )['services'] ?? [], 'key' ) ) ); }
+/** A procedure's recovery timeline as [when, what] pairs, from Services › the service › Recovery timeline. */
+function apex_recov( array $S, string $k ): array {
+	foreach ( $S['services'] ?? [] as $x ) if ( ( $x['key'] ?? '' ) === $k ) return array_values( array_map( fn( $r ) => [ (string) ( $r['w'] ?? '' ), (string) ( $r['x'] ?? '' ) ], array_filter( $x['recovery'] ?? [], fn( $r ) => is_array( $r ) && ( ( $r['w'] ?? '' ) !== '' || ( $r['x'] ?? '' ) !== '' ) ) ) );
+	return [];
+}
 function apex_svc_name( array $S, ?string $k ): string {
 	foreach ( $S['services'] ?? [] as $s ) if ( $s['key'] === $k ) return $s['short'] ?: $s['name'];
 	return (string) $k;
@@ -439,7 +427,7 @@ function apex_chips_count( array $pairs, array $items, string $on ): string {
 	return '<div class="chips c-count" role="group" aria-label="' . apex_e( apex_t( 'filter' ) ) . '">' . $o . '</div>';
 }
 function apex_recovery_card( string $key ): string {
-	$R = APEX_RECOVERY[ apex_L() ][ $key ] ?? null;
+	$R = apex_recov( apex_data( 'shared' ) ?: [], $key );
 	if ( ! $R ) return '';
 	return '<aside class="recov rv"><p class="eyebrow">' . apex_e( apex_t( 'recoveryH' ) ) . '</p><ol class="recov-line">' . implode( '', array_map( fn( $r ) => '<li><b>' . apex_e( $r[0] ) . '</b><span>' . apex_e( $r[1] ) . '</span></li>', $R ) ) . '</ol>
       <p class="note">' . apex_e( apex_t( 'resultsVary' ) ) . '</p><a class="link-arrow" href="' . esc_url( apex_link( 'trip.html?p=' . $key ) ) . '">' . apex_e( apex_t( 'tripTry' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a></aside>';
@@ -466,15 +454,15 @@ function apex_page_home( array $r ): string {
 	$news = $H['news']['items'] ?? [];
 	$E = 'apex_e'; $T = 'apex_t'; $I = 'apex_ic';
 	$svcs = implode( '', array_map( fn( $s ) => '<li><a href="' . esc_url( apex_svc_url( $s['key'] ) ) . '">' . $E( $s['short'] ?: $s['name'] ) . '</a></li>', $S['services'] ?? [] ) );
-	$fd = $Fd ? '<a class="intro-fd rv-clip" href="' . esc_url( apex_link( 'about.html#founder' ) ) . '">
+	$fd = $Fd ? '<a class="intro-fd rv-clip" href="' . esc_url( apex_doc_url( 'founder' ) ) . '">
             <span class="ifd-ph"><img src="' . esc_url( apex_img( ( $Fd['wide'] ?? '' ) ?: ( ( $Fd['portrait'] ?? '' ) ?: ( $Fd['photo'] ?? '' ) ) ) ) . '" alt="' . $E( $Fd['name'] ) . '" loading="lazy" decoding="async" data-par="14"' . ( ! empty( $Fd['wide'] ) ? ' style="object-position:38% 22%"' : '' ) . '></span>
             ' . ( ! empty( $Fd['aaci'] ) ? '<span class="ifd-badge"><img src="' . esc_url( apex_img( $Fd['aaci']['src'] ) ) . '" alt="' . $E( ( $Fd['aaci']['alt'] ?? '' ) ?: 'AACI' ) . '" loading="lazy" decoding="async" decoding="async"></span>' : '' ) . '
-            <span class="ifd-cap"><small>' . $E( $T( 'foundedBy' ) ) . '</small><b>' . $E( $Fd['name'] ) . '</b><span>' . $E( ( $Fd['specialty'] ?? '' ) ?: ( $Fd['role'] ?? '' ) ) . '</span></span>
+            <span class="ifd-cap"><small>' . $E( $T( 'foundedBy' ) ) . '</small><b>' . $E( $Fd['name'] ) . '</b><span>' . $E( ( $Fd['specialty'] ?? '' ) ?: ( $Fd['role'] ?? '' ) ) . '</span>' . ( ! empty( $Fd['license'] ) ? '<span class="ifd-lic">' . $E( $Fd['license'] ) . '</span>' : '' ) . '</span>
           </a>' : '';
 	$pillars = '';
 	foreach ( $About['pillars'] ?? [] as $i => $p ) $pillars .= '<li class="rv" data-d="' . ( $i * 90 ) . '"><span class="pl-n">0' . ( $i + 1 ) . '</span><b>' . $E( $p['h'] ?? '' ) . '</b><span>' . $E( $p['x'] ?? '' ) . '</span></li>';
 	$cats = [ [ 'all', $T( 'all' ) ] ];
-	foreach ( APEX_SVC_CATS as $k ) foreach ( $reviews as $rv ) if ( ( $rv['cat'] ?? '' ) === $k ) { $cats[] = [ $k, apex_svc_name( $S, $k ) ]; break; }
+	foreach ( apex_svc_cats() as $k ) foreach ( $reviews as $rv ) if ( ( $rv['cat'] ?? '' ) === $k ) { $cats[] = [ $k, apex_svc_name( $S, $k ) ]; break; }
 	$tt = $H['tiktok'] ?? null;
 
 	$o = '
@@ -779,7 +767,7 @@ function apex_founder_block( $F, bool $full ): string {
         ' . ( $full ? '<ul class="who-grid role-grid">' . $roles . '</ul>
           <div class="f2-edu rv"><h3 class="h-s">' . $E( $F['eduH'] ?? '' ) . '</h3><ul class="ticks">' . implode( '', array_map( fn( $x ) => '<li>' . $E( $x ) . '</li>', $F['edu'] ?? [] ) ) . '</ul></div>' : '' ) . '
         <details class="f2-more rv"><summary><span>' . $E( $T( 'readMore' ) ) . '</span>' . $I( 'chevron-down' ) . '</summary><div class="f2-rest">' . implode( '', array_map( fn( $x ) => '<p>' . $E( $x ) . '</p>', $rest ) ) . '</div></details>
-        <div class="doc-acts rv">' . ( $full ? '<a class="btn btn-ghost on-light btn-sm" href="' . esc_url( ( $F['check']['h'] ?? '' ) ) . '" target="_blank" rel="noopener">' . $I( 'shield-check' ) . $E( $F['checkX'] ?? '' ) . '</a>' : '<a class="btn btn-plum btn-sm" href="' . esc_url( apex_link( 'doctor.html#founder' ) ) . '">' . $E( $T( 'founderCta' ) ) . ' ' . $I( 'arrow-right' ) . '</a>' ) . '</div>
+        <div class="doc-acts rv">' . ( $full ? '<a class="btn btn-ghost on-light btn-sm" href="' . esc_url( ( $F['check']['h'] ?? '' ) ) . '" target="_blank" rel="noopener">' . $I( 'shield-check' ) . $E( $F['checkX'] ?? '' ) . '</a>' : '<a class="btn btn-plum btn-sm" href="' . esc_url( apex_doc_url( 'founder' ) ) . '">' . $E( $T( 'founderCta' ) ) . ' ' . $I( 'arrow-right' ) . '</a>' ) . '</div>
       </div></div>';
 }
 function apex_aaci_card( array $S ): string {
@@ -811,19 +799,58 @@ function apex_page_about( array $r ): string {
       <section class="section night"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>';
 }
 
-/* DOCTOR */
+/* DOCTOR: the Doctors page, and each doctor's own page (pages.js doctor()) */
+const APEX_TM_SECS = [ [ 'edu', 'eduH' ], [ 'train', 'trainH' ], [ 'skills', 'skillsH' ], [ 'work', 'workH' ], [ 'member', 'memberH' ], [ 'talks', 'talksH' ] ];
+function apex_doc_profile( array $d, array $S ): string {
+	$E = 'apex_e'; $T = 'apex_t'; $I = 'apex_ic';
+	$alt = implode( ' · ', array_filter( [ $d['nameAlt'] ?? '', $d['nick'] ?? '' ] ) );
+	$secs = '';
+	foreach ( APEX_TM_SECS as [ $k, $h ] ) if ( ! empty( $d[ $k ] ) ) $secs .= '<section class="tm-sec rv"><h2 class="h-s">' . $E( $T( $h ) ) . '</h2><ul class="ticks">' . implode( '', array_map( fn( $x ) => '<li>' . apex_fmt_li( (string) $x ) . '</li>', $d[ $k ] ) ) . '</ul></section>';
+	$lic = (string) ( $d['license'] ?? '' );
+	return '<section class="section dr-s"><div class="wrap"><div class="founder2 dr-prof">
+      <div class="f2-media rv">
+        <figure class="f2-ph ph-img"><img src="' . esc_url( apex_img( $d['photo'] ?? '' ) ) . '" alt="' . $E( $d['name'] ?? '' ) . '" decoding="async" width="731" height="1024" fetchpriority="high"></figure>
+        ' . ( $lic !== '' ? '<div class="f2-card"><span class="f2-ic">' . $I( 'award' ) . '</span><span><b>' . $E( $lic ) . '</b><small>Apex Surgery Hospital</small></span></div>' : '' ) . '
+      </div>
+      <div class="f2-body">
+        ' . ( $alt !== '' ? '<p class="f2-alt rv">' . $E( $alt ) . '</p>' : '' ) . '
+        ' . ( $lic !== '' ? '<p class="doc-meta rv"><span>' . $E( $lic ) . '</span></p>' : '' ) . '
+        ' . ( ! empty( $d['focus'] ) ? '<p class="tm-focus dr-focus rv">' . implode( '', array_map( fn( $f ) => '<span>' . $E( $f ) . '</span>', $d['focus'] ) ) . '</p>' : '' ) . '
+        ' . apex_pull_quote( (string) ( $d['quote'] ?? '' ) ) . '
+        ' . $secs . '
+        <div class="doc-acts rv"><a class="btn btn-plum btn-sm" href="' . esc_url( apex_link( 'consult.html' ) ) . '">' . $I( 'message-circle' ) . $E( $T( 'consult' ) ) . '</a><a class="btn btn-ghost on-light btn-sm" href="' . esc_url( ( $S['line']['h'] ?? '' ) ?: '#' ) . '" target="_blank" rel="noopener">' . $I( 'line' ) . $E( $T( 'book' ) ) . '</a></div>
+      </div></div></div></section>';
+}
+/** The team doctor a request names (?d= or its /doctors/ address), or null. */
+function apex_doc_by_key( string $key ): ?array {
+	if ( $key === '' ) return null;
+	foreach ( ( apex_data( 'team' ) ?: [] )['docs'] ?? [] as $d ) if ( ( $d['key'] ?? '' ) === $key ) return $d;
+	return null;
+}
 function apex_page_doctor( array $r ): string {
 	$S = apex_data( 'shared' ) ?: []; $Dr = $S['doctor'] ?? []; $F = apex_data( 'founder' ); $TM = apex_data( 'team' ) ?: [];
 	$E = 'apex_e'; $T = 'apex_t';
 	$docs = $TM['docs'] ?? [];
+	$key = (string) ( $r['params']['d'] ?? '' );
+	$list = [ $T( 'doctorsH' ), 'doctor.html' ];
+	if ( $d = apex_doc_by_key( $key ) ) {
+		return apex_phead( $d['name'] ?? '', ( $d['role'] ?? '' ) ?: null, [ apex_home_crumb(), $list, [ $d['name'] ?? '' ] ] ) . apex_doc_profile( $d, $S ) . '
+        <section class="section washed"><div class="wrap">' . apex_team_strip( $S, $TM, $key ) . '</div></section>
+        <section class="section night"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>';
+	}
+	if ( $key === 'founder' && $F ) {
+		return apex_phead( $F['name'], ( $F['role'] ?? '' ) ?: null, [ apex_home_crumb(), $list, [ $F['name'] ] ] ) . '
+        <section class="section founder-s"><div class="wrap">' . apex_founder_block( $F, true ) . '</div></section>
+        <section class="section washed"><div class="wrap">' . apex_team_strip( $S, $TM ) . '</div></section>
+        <section class="section night"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>';
+	}
 	$cards = '';
 	foreach ( $docs as $i => $d ) $cards .= apex_tm_card( $d, $i );
 	return apex_phead( $T( 'doctorsH' ), $docs ? (string) ( $TM['p'] ?? '' ) : ( $Dr['name'] ?? '' ) . ' · ' . ( $Dr['title'] ?? '' ) . ( $F ? ' · ' . $F['name'] : '' ), [ apex_home_crumb(), [ $T( 'doctorsH' ) ] ] ) . '
       ' . ( $docs ? '<section class="section team-s"><div class="wrap"><div class="shead"><h2 class="h-xl rv">' . $E( $TM['h'] ?? '' ) . '</h2></div>
-        <ul class="team-grid">' . $cards . '</ul></div>
-        <dialog class="tm-dlg" id="tm-dlg" aria-labelledby="tm-dlg-h"><div class="tm-dlg-in"></div></dialog></section>'
+        <ul class="team-grid">' . $cards . '</ul></div></section>'
         : '<section class="section"><div class="wrap">' . apex_doctor_card( $S, true ) . '</div></section>' ) . '
-      ' . ( $F ? '<section class="section washed founder-s"><div class="wrap">' . apex_founder_block( $F, true ) . '</div></section>' : '' ) . '
+      ' . ( $F ? '<section class="section washed founder-s"><div class="wrap">' . apex_founder_block( $F, false ) . '</div></section>' : '' ) . '
       <section class="section"><div class="wrap"><div class="shead"><h2 class="h-xl rv">' . $E( $T( 'servicesH' ) ) . '</h2></div>' . apex_svc_cards( $S ) . '</div></section>
       <section class="section night"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>';
 }
@@ -834,7 +861,7 @@ function apex_page_promotions( array $r ): string {
 	$E = 'apex_e'; $T = 'apex_t';
 	$items = $D['items'] ?? [];
 	$c = $r['params']['c'] ?? null;
-	$start = $c && in_array( $c, APEX_SVC_CATS, true ) ? $c : 'all';
+	$start = $c && in_array( $c, apex_svc_cats(), true ) ? $c : 'all';
 	$filters = [];
 	foreach ( ( $D['filters'] ?? [] ) ?: [ [ 'k' => 'all', 'x' => $T( 'all' ) ] ] as $f ) {
 		$k = $f['k'] ?? '';
@@ -897,7 +924,7 @@ function apex_page_reviews( array $r ): string {
 		if ( $has ) $stories[] = [ 'p' => $p, 'd' => $d ]; else $others[] = $p;
 	}
 	$sCats = [];
-	foreach ( APEX_SVC_CATS as $k ) foreach ( $stories as $x ) if ( apex_proc_of( ( $x['d']['tag'] ?? '' ) . ' ' . $x['p']['title'] . ' ' . $x['p']['key'] ) === $k ) { $sCats[] = $k; break; }
+	foreach ( apex_svc_cats() as $k ) foreach ( $stories as $x ) if ( apex_proc_of( ( $x['d']['tag'] ?? '' ) . ' ' . $x['p']['title'] . ' ' . $x['p']['key'] ) === $k ) { $sCats[] = $k; break; }
 	$chips = '';
 	if ( count( $sCats ) > 1 ) $chips = preg_replace( '/class="chips"/', 'class="chips st-chips"', apex_chips( array_merge( [ [ 'all', $T( 'all' ) ] ], array_map( fn( $k ) => [ $k, apex_svc_name( $S, $k ) ], $sCats ) ), 'all' ), 1 );
 	$cards = '';
@@ -942,7 +969,7 @@ function apex_page_blog( array $r ): string {
 
 /* ARTICLE */
 function apex_facts_box( string $proc, array $S ): string {
-	$R = APEX_RECOVERY[ apex_L() ][ $proc ] ?? null;
+	$R = apex_recov( $S, $proc );
 	if ( ! $R ) return '';
 	$E = 'apex_e'; $T = 'apex_t'; $I = 'apex_ic';
 	return '<aside class="facts rv"><p class="facts-h">' . $I( 'clipboard-check' ) . '<span>' . $E( $T( 'keyFacts' ) ) . '</span></p>

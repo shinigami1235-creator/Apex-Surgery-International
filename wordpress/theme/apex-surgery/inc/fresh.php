@@ -59,7 +59,7 @@ function apex_fresh_data( string $lang ): array {
 			switch ( $type ) {
 				case 'apex_offer':
 					$o = apex_offer_of( [ 'src' => $v['src'], 'alt' => $v['alt'], 'cat' => $v['cat'], 'price' => $v['price'] ], $S );
-					$add( [ 'id' => 'offer:' . apex_offer_key( (string) $v['src'] ), 'kind' => 'promotion', 'title' => $o['label'], 'img' => $v['src'], 'fit' => 'contain', 'href' => 'promotions.html' . ( $o['cat'] ? '?c=' . $o['cat'] : '' ), 'date' => $date ] );
+					$add( [ 'id' => 'offer:' . apex_offer_key( (string) $v['src'] ), 'kind' => 'promotion', 'title' => $o['label'], 'img' => $v['src'], 'fit' => 'poster', 'href' => 'promotions.html' . ( $o['cat'] ? '?c=' . $o['cat'] : '' ), 'date' => $date ] );
 					break;
 				case 'apex_service':
 					$add( [ 'id' => 'svc:' . $v['key'], 'kind' => 'surgery', 'title' => ( $v['menu']['name'] ?? '' ) ?: $v['name'], 'text' => apex_fresh_cap( (string) ( $v['desc'] ?? '' ) ), 'img' => $v['hero'] ?? '', 'href' => 'service.html?p=' . $v['key'], 'date' => $date ] );
@@ -74,7 +74,7 @@ function apex_fresh_data( string $lang ): array {
 				case 'apex_doctor':
 					if ( $v['kind'] !== 'team' ) break;
 					$key = $key ?: (string) get_post_field( 'post_name', $id );
-					$add( [ 'id' => 'doc:' . $key, 'kind' => 'doctor', 'title' => $v['name'], 'text' => (string) ( $v['role'] ?? '' ), 'img' => $v['photo'] ?? '', 'fit' => 'top', 'href' => 'doctor.html#dr-' . $key, 'date' => $date ] );
+					$add( [ 'id' => 'doc:' . $key, 'kind' => 'doctor', 'title' => $v['name'], 'text' => implode( ' · ', array_filter( [ (string) ( $v['role'] ?? '' ), (string) ( $v['license'] ?? '' ) ] ) ), 'img' => $v['photo'] ?? '', 'fit' => 'top', 'href' => 'doctor.html?d=' . $key, 'date' => $date ] );
 					break;
 				case 'apex_fresh':
 					$add( [ 'id' => apex_fresh_page_id( (string) ( $v['link'] ?? '' ), $lang ) ?: 'item:' . $id, 'kind' => $v['kind'] ?: 'other', 'title' => $v['title'], 'text' => apex_fresh_cap( (string) ( $v['text'] ?? '' ) ), 'img' => $v['img'] ?? '', 'fit' => $v['fit'] === 'contain' ? 'contain' : '', 'href' => (string) ( $v['link'] ?? '' ) ?: '#whats-new', 'date' => $date ] );

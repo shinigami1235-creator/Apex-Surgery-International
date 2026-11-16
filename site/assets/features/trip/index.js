@@ -199,7 +199,7 @@ const fmtShort = (iso, lang) => fmt(iso, lang, { day: 'numeric', month: 'short' 
 export function planTrip({ procedures, arrival, branch }) {
   const procs = PROC_KEYS.filter(k => procedures.includes(k));
   if (!procs.length || !arrival) return null;
-  const longest = Math.max(...procs.map(k => STAY_DAYS[k]));
+  const longest = Math.max(...procs.map(k => STAY_DAYS[k] || 14));   // a procedure added later without stay days: two weeks
   const stayDays = longest + (procs.length > 1 ? COMBINED_EXTRA_DAYS : 0);
   const consult = addDays(arrival, CONSULT_AFTER_ARRIVAL);
   const surgery = addDays(consult, SURGERY_AFTER_CONSULT);
@@ -436,7 +436,7 @@ export function mount(container, opts = {}) {
   loadData(base, lang, 'shared').then(d => {
     (d.branches || []).forEach(b => { branches[b.key] = b; });
     // stay days set per service in WordPress replace the defaults above
-    (d.services || []).forEach(x => { if (x.key in STAY_DAYS && +x.stay > 0) STAY_DAYS[x.key] = +x.stay; });
+    (d.services || []).forEach(x => { if (x.key && +x.stay > 0) STAY_DAYS[x.key] = +x.stay; });
     renderBranches(); update(false);
   }).catch(() => { /* branch details stay hidden */ });
 

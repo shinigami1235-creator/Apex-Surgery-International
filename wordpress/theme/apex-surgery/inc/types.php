@@ -18,7 +18,8 @@ add_action( 'init', function () {
 	$cpt( 'apex_offer', 'Offer', 'Offers', $hidden + [ 'menu_icon' => 'dashicons-tag', 'supports' => [ 'title', 'revisions' ] ] );
 	$cpt( 'apex_case', 'Before and after case', 'Before and after', $hidden + [ 'menu_icon' => 'dashicons-images-alt2', 'supports' => [ 'title', 'page-attributes' ] ] );
 	$cpt( 'apex_branch', 'Branch', 'Branches', $hidden + [ 'menu_icon' => 'dashicons-location', 'supports' => [ 'title', 'page-attributes' ] ] );
-	$cpt( 'apex_doctor', 'Doctor', 'Doctors', $hidden + [ 'menu_icon' => 'dashicons-businessperson', 'supports' => [ 'title', 'page-attributes', 'revisions' ] ] );
+	// each doctor has a page of their own at /doctors/<name>/ (founder and surgical team; the lead surgeon card has none)
+	$cpt( 'apex_doctor', 'Doctor', 'Doctors', [ 'public' => true, 'exclude_from_search' => true, 'has_archive' => false, 'rewrite' => [ 'slug' => 'doctors', 'with_front' => false ], 'menu_icon' => 'dashicons-businessperson', 'supports' => [ 'title', 'page-attributes', 'revisions' ] ] );
 	$cpt( 'apex_fresh', "What's new item", "What's new", $hidden + [ 'menu_icon' => 'dashicons-megaphone', 'supports' => [ 'title', 'revisions' ], 'menu_position' => 5 ] );
 	// enquiries and vouchers hold personal details: no REST, no search, editors and admins only
 	// their own capabilities: administrators and the "Apex staff" role see enquiries and patient photos;
@@ -74,7 +75,7 @@ add_filter( 'pll_get_post_types', function ( $types, $is_settings ) {
    Polylang (free) makes every slug unique across languages, so /th/surgery-wars/ep-1/ would become ep-1-2.
    A slug is allowed again when every other post that has it is in another language. Polylang Pro and WPML
    do this themselves; the filter steps aside when they are active. */
-const APEX_SHARED_SLUG_TYPES = [ 'post', 'page', 'apex_service', 'apex_episode' ];
+const APEX_SHARED_SLUG_TYPES = [ 'post', 'page', 'apex_service', 'apex_episode', 'apex_doctor' ];
 add_filter( 'wp_unique_post_slug', function ( $slug, $post_id, $status, $type, $parent, $original ) {
 	if ( $slug === $original || ! in_array( $type, APEX_SHARED_SLUG_TYPES, true ) || ! function_exists( 'pll_get_post_language' ) ) return $slug;
 	if ( defined( 'POLYLANG_PRO' ) || defined( 'ICL_SITEPRESS_VERSION' ) ) return $slug;
@@ -130,3 +131,10 @@ add_filter( 'request', function ( $qv ) {
 	}
 	return $qv;
 }, 5 );
+
+/* new addresses (the doctors' pages in 1.2.0) work straight after a theme update, without visiting Settings › Permalinks */
+add_action( 'init', function () {
+	if ( get_option( 'apex_rewrite_v' ) === APEX_VERSION ) return;
+	flush_rewrite_rules( false );
+	update_option( 'apex_rewrite_v', APEX_VERSION, true );
+}, 99 );

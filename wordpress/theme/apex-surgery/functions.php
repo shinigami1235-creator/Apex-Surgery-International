@@ -16,6 +16,7 @@
  * inc/seo.php       titles, descriptions, Open Graph, JSON-LD, hreflang when no SEO plugin is active
  * inc/redirects.php old URLs to new ones
  * inc/forms.php     online consultation, game vouchers, the reception voucher check
+ * inc/leads.php     the form set up without code, enquiries to CSV, the webhook to Google Sheets
  * inc/line.php      LINE reminders for game vouchers, off until Apex adds the channel codes
  * inc/social.php    Latest from Apex: Instagram and TikTok posts fetched every hour, Apex settings › Social feeds
  * inc/fresh.php     What's new on the home page and the New tags: the list, New from dates, What's new › Settings
@@ -25,18 +26,20 @@
  * inc/security.php  hardening
  * inc/audit.php     access log: who opened enquiries and photos, changed settings or roles
  * inc/admin.php     admin menus, columns and help
+ * inc/editlinks.php an Edit link on each section of the live page for logged-in staff, and the Details note in the block editor
+ * inc/upgrade.php   one-time content changes a new version makes on its own after IT installs it
  * inc/cli.php       wp apex import | export | check
  */
 defined( 'ABSPATH' ) || exit;
 
-define( 'APEX_VERSION', '1.1.0' );   // keep in step with Version in style.css; tools/build-theme.mjs checks both
+define( 'APEX_VERSION', '1.2.0' );   // keep in step with Version in style.css; tools/build-theme.mjs checks both
 
 // the installed version, bottom right of every admin page, so Apex can tell which package is on the site
 add_filter( 'update_footer', fn( $t ) => 'Apex Surgery theme ' . APEX_VERSION . ' · ' . $t, 20 );
 define( 'APEX_DIR', __DIR__ );
 define( 'APEX_URI', get_template_directory_uri() );
 
-foreach ( [ 'helpers', 'schema', 'types', 'fields', 'blocks', 'data', 'render-shell', 'render-pages', 'seo', 'redirects', 'forms', 'line', 'pricing', 'social', 'fresh', 'tracking', 'media', 'security', 'audit', 'admin' ] as $f ) {
+foreach ( [ 'helpers', 'schema', 'types', 'fields', 'blocks', 'data', 'render-shell', 'render-pages', 'seo', 'redirects', 'forms', 'leads', 'line', 'pricing', 'social', 'fresh', 'tracking', 'media', 'security', 'audit', 'admin', 'editlinks', 'upgrade' ] as $f ) {
 	require_once APEX_DIR . "/inc/$f.php";
 }
 if ( defined( 'WP_CLI' ) && WP_CLI ) {

@@ -28,6 +28,20 @@ function apex_seo(): array {
 			$desc = $D['desc'] ?? '';
 			$img = $D['hero'] ?? '';
 			break;
+		case 'doctor':
+			$k = (string) ( $r['params']['d'] ?? '' );
+			$F = apex_data( 'founder' );
+			if ( $d = apex_doc_by_key( $k ) ) {
+				// the role goes in the title while it stays short enough for Google to show whole
+				$title = $d['name'] . ( ! empty( $d['role'] ) && mb_strlen( $d['name'] . $d['role'] ) <= 60 ? ', ' . $d['role'] : '' ) . ' | ' . $brand;
+				$desc = implode( '. ', array_filter( [ $d['name'], $d['license'] ?? '', $d['role'] ?? '', implode( ', ', $d['focus'] ?? [] ) ] ) );
+				$img = $d['photo'] ?? '';
+			} elseif ( $k === 'founder' && $F ) {
+				$title = $F['name'] . ( ! empty( $F['role'] ) ? ', ' . $F['role'] : '' ) . ' | ' . $brand;
+				$desc = implode( '. ', array_filter( [ $F['name'], $F['license'] ?? '', $F['specialty'] ?? '' ] ) );
+				$img = ( $F['portrait'] ?? '' ) ?: ( $F['photo'] ?? '' );
+			} else { $title = $pm['title']; $desc = $pm['desc']; }
+			break;
 		case 'article':
 			$D = apex_data( 'post:' . ( $r['params']['p'] ?? '' ) ) ?: [];
 			$title = ( $D['title'] ?? '' ) . ' | ' . $brand;
@@ -138,7 +152,7 @@ function apex_jsonld(): array {
 			$k = $r['params']['p'] ?? '';
 			$D = apex_data( 'svc:' . $k );
 			if ( ! $D ) break;
-			$ld[] = [ '@context' => 'https://schema.org', '@type' => 'MedicalProcedure', 'name' => $D['name'], 'alternateName' => $D['en'] ?? '', 'description' => $D['desc'] ?? '', 'procedureType' => 'https://schema.org/SurgicalProcedure', 'howPerformed' => $D['intro'][0] ?? '', 'followup' => implode( '; ', array_map( fn( $x ) => $x[0] . ': ' . $x[1], APEX_RECOVERY[ apex_lang() ][ $k ] ?? [] ) ), 'performer' => [ '@type' => 'Physician', 'name' => $S['doctor']['name'] ?? '' ] ];
+			$ld[] = [ '@context' => 'https://schema.org', '@type' => 'MedicalProcedure', 'name' => $D['name'], 'alternateName' => $D['en'] ?? '', 'description' => $D['desc'] ?? '', 'procedureType' => 'https://schema.org/SurgicalProcedure', 'howPerformed' => $D['intro'][0] ?? '', 'followup' => implode( '; ', array_map( fn( $x ) => $x[0] . ': ' . $x[1], apex_recov( $S, $k ) ) ), 'performer' => [ '@type' => 'Physician', 'name' => $S['doctor']['name'] ?? '' ] ];
 			if ( ! empty( $D['faqs'] ) ) $ld[] = apex_ld_faq( $D['faqs'] );
 			if ( ! $plugin ) $ld[] = apex_ld_crumbs( [ $home, [ apex_t( 'services' ), apex_link( 'services.html' ) ], [ apex_svc_name( $S, $k ), $here ] ] );
 			break;
@@ -152,6 +166,16 @@ function apex_jsonld(): array {
 			if ( ! $plugin ) { $cat = apex_cat_label( $D['cat'] ?? '' ); $ld[] = apex_ld_crumbs( [ $home, [ apex_t( 'articles' ), apex_link( 'blog.html' ) ], [ $cat, apex_link( 'blog.html?c=' . ( $D['cat'] ?? '' ) ) ], [ $D['title'], $here ] ] ); }
 			break;
 		case 'doctor':
+			$k = (string) ( $r['params']['d'] ?? '' );
+			$F = apex_data( 'founder' );
+			$one = $k !== '' ? apex_doc_by_key( $k ) : null;
+			if ( $one || ( $k === 'founder' && $F ) ) {
+				$x = $one ?: $F;
+				$ld[] = array_filter( [ '@context' => 'https://schema.org', '@type' => 'Physician', 'name' => $x['name'], 'alternateName' => $one ? ( $one['nameAlt'] ?? '' ) : ( ( $F['nameTh'] ?? '' ) ?: ( $F['nameEn'] ?? '' ) ), 'image' => apex_img( $one ? ( $one['photo'] ?? '' ) : ( ( $F['portrait'] ?? '' ) ?: ( $F['photo'] ?? '' ) ) ), 'identifier' => $x['license'] ?? '', 'description' => $one ? ( $one['role'] ?? '' ) : ( $F['specialty'] ?? '' ), 'medicalSpecialty' => 'PlasticSurgery', 'url' => $here, 'worksFor' => $one ? [ '@type' => 'Hospital', 'name' => 'Apex Surgery Hospital' ] : [ '@type' => 'Organization', 'name' => 'Apex Medical Center' ] ] );
+				if ( ! $plugin ) $ld[] = apex_ld_crumbs( [ $home, [ apex_t( 'doctorsH' ), apex_link( 'doctor.html' ) ], [ $x['name'], $here ] ] );
+				break;
+			}
+			foreach ( ( apex_data( 'team' ) ?: [] )['docs'] ?? [] as $t ) $ld[] = array_filter( [ '@context' => 'https://schema.org', '@type' => 'Physician', 'name' => $t['name'], 'image' => apex_img( $t['photo'] ?? '' ), 'identifier' => $t['license'] ?? '', 'description' => $t['role'] ?? '', 'medicalSpecialty' => 'PlasticSurgery', 'url' => apex_doc_url( $t['key'] ), 'worksFor' => [ '@type' => 'Hospital', 'name' => 'Apex Surgery Hospital' ] ] );
 			$d = $S['doctor'] ?? null;
 			if ( $d ) $ld[] = [ '@context' => 'https://schema.org', '@type' => 'Physician', 'name' => $d['name'], 'image' => apex_img( $d['photo'] ?? '' ), 'medicalSpecialty' => 'PlasticSurgery', 'description' => $d['specialty'] ?? '', 'identifier' => $d['license'] ?? '', 'memberOf' => array_values( array_filter( $d['more'] ?? [], fn( $x ) => preg_match( '/สมาคม|Society|ISAPS/u', $x ) ) ), 'worksFor' => [ '@type' => 'Hospital', 'name' => 'Apex Surgery Hospital' ] ];
 			$F = apex_data( 'founder' );
@@ -173,7 +197,7 @@ function apex_jsonld(): array {
 			}
 			break;
 	}
-	if ( ! $plugin && ! in_array( $r['page'], [ 'home', 'service', 'article', 'war', 'notfound' ], true ) && $here ) {
+	if ( ! $plugin && ! in_array( $r['page'], [ 'home', 'service', 'article', 'war', 'notfound' ], true ) && ! ( $r['page'] === 'doctor' && ! empty( $r['params']['d'] ) ) && $here ) {
 		$ld[] = apex_ld_crumbs( [ $home, [ trim( explode( '|', apex_seo()['title'] )[0] ), $here ] ] );
 	}
 	return $ld;

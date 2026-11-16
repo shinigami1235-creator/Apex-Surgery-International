@@ -59,7 +59,7 @@ export async function post(endpoint, payload, extra = {}) {
   return { sent: true, ref: j.ref };
 }
 
-const T = {
+const TX = {
   title: { en: 'Online consultation', th: 'ปรึกษาแพทย์ออนไลน์' },
   intro: { en: 'Send your questions and photos to the Apex surgeons before you travel.', th: 'ส่งคำถามและรูปถ่ายถึงศัลยแพทย์ Apex ก่อนเดินทาง' },
   proc: { en: 'Procedure', th: 'หัตถการ' },
@@ -125,7 +125,8 @@ const T = {
   textHead: { en: 'Online consultation: Apex Surgery Hospital', th: 'ปรึกษาแพทย์ออนไลน์: โรงพยาบาลศัลยกรรมตกแต่งเอเพ็กซ์' },
   contact: { en: 'Contact', th: 'ติดต่อกลับ' },
   photoCount: { en: 'Photos ready', th: 'รูปถ่ายที่เตรียมไว้' },
-  none: { en: 'None', th: 'ไม่มี' }
+  none: { en: 'None', th: 'ไม่มี' },
+  eExtra: { en: '{q}: answer this question.', th: '{q}: ตอบคำถามนี้' }
 };
 
 const COUNTRIES = {
@@ -287,10 +288,20 @@ const ICON = {
 const fmtDate = (iso, lang) => !iso ? '' : new Date(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)))
   .toLocaleDateString(lang === 'th' ? 'th-TH' : 'en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' });
 
+/* opts.form, set in WordPress under Apex settings › Forms:
+     text   {key: wording} for this language, in place of the wording in TX
+     hide   fields left off the form: 'dates', 'country', 'questions', 'photos'
+     optional  fields that may be left empty: 'country'
+     extra  [{k, q, type: 'text' | 'long' | 'choice', choices: [..], req}] questions Apex adds after Questions */
 export function mount(container, opts = {}) {
   const { wa: WHATSAPP, line: LINE_OA } = contactOf(opts);
   injectCSS('apxc-css', CSS);
   const lang = opts.lang === 'th' ? 'th' : 'en';
+  const FC = opts.form || {};
+  const T = Object.assign({}, TX, Object.fromEntries(Object.entries(FC.text || {}).filter(([k, v]) => TX[k] && typeof v === 'string' && v.trim()).map(([k, v]) => [k, { en: v, th: v }])));
+  const off = k => (FC.hide || []).includes(k);
+  const optional = k => (FC.optional || []).includes(k);
+  const EXTRA = (FC.extra || []).filter(x => x && x.k && x.q).slice(0, 10);
   const L = o => t(o, lang);
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) { /* host handler error */ } };
   const uid = 'apxc' + Math.random().toString(36).slice(2, 7);
@@ -340,7 +351,7 @@ export function mount(container, opts = {}) {
   const iCountry = h('input', { type: 'text', id: id('country'), name: 'country', autocomplete: 'country-name', list: id('cl'), placeholder: L(T.countryPh), maxlength: '60', 'aria-describedby': id('e-country') });
   const fWho = h('div', { class: 'c-f c-two' },
     h('div', null, h('label', { class: 'c-lab', for: id('name') }, L(T.name), req()), iName, err('name')),
-    h('div', null, h('label', { class: 'c-lab', for: id('country') }, L(T.country), req()), iCountry, err('country'),
+    off('country') ? null : h('div', null, h('label', { class: 'c-lab', for: id('country') }, L(T.country), optional('country') ? null : req()), iCountry, err('country'),
       h('datalist', { id: id('cl') }, COUNTRIES[lang].map(c => h('option', { value: c })))));
 
   const METHOD = {
@@ -374,6 +385,16 @@ export function mount(container, opts = {}) {
 
   const iQ = h('textarea', { id: id('q'), name: 'questions', maxlength: '2000', placeholder: L(T.qPh), 'aria-describedby': id('h-q') });
   const fQ = h('div', { class: 'c-f' }, h('label', { class: 'c-lab', for: id('q') }, L(T.q)), h('span', { class: 'c-hint', id: id('h-q') }, L(T.qHint)), iQ);
+  const fExtra = EXTRA.map((x, i) => {
+    const k = 'x' + i;
+    if (x.type === 'choice') return h('fieldset', { class: 'c-f', id: id(k), 'aria-describedby': id('e-' + k), 'data-extra': i },
+      h('legend', null, x.q, x.req ? req() : null),
+      h('div', { class: 'c-opts' }, (x.choices || []).map(c => h('label', { class: 'c-opt' }, h('input', { type: 'radio', name: uid + '-' + k, value: c }), h('span', null, c)))),
+      err(k));
+    const inp = h(x.type === 'long' ? 'textarea' : 'input', { id: id(k), name: k, maxlength: x.type === 'long' ? '1000' : '200', 'aria-describedby': id('e-' + k), ...(x.type === 'long' ? {} : { type: 'text' }) });
+    return h('div', { class: 'c-f', 'data-extra': i }, h('label', { class: 'c-lab', for: id(k) }, x.q, x.req ? req() : null), inp, err(k));
+  });
+  const extraVal = i => { const box = fExtra[i]; const r = box.querySelector('input:checked'); if (r) return r.value; const t = box.querySelector('textarea,input[type=text]'); return t ? t.value.trim() : ''; };
 
   const slots = VIEWS.map(v => {
     const input = h('input', { type: 'file', accept: 'image/*', id: id('ph-' + v), 'aria-label': `${L(T.photos)}: ${L(T[v])}` });
@@ -422,7 +443,7 @@ export function mount(container, opts = {}) {
   // Cloudflare Turnstile, only when the site has a key; its script loads when the visitor starts the form
   const tsBox = opts.endpoint && opts.turnstile ? h('div', { class: 'c-ts' }) : null;
   let tsId = null;
-  const form = h('form', { novalidate: true }, fProc, fBranch, fDates, fWho, fMethod, fQ, fPhotos, fConsent, trapBox, tsBox, summary, submit);
+  const form = h('form', { novalidate: true }, fProc, fBranch, off('dates') ? null : fDates, fWho, fMethod, off('questions') ? null : fQ, ...fExtra, off('photos') ? null : fPhotos, fConsent, trapBox, tsBox, summary, submit);
   wrap.append(form);
   if (tsBox) form.addEventListener('focusin', () => {
     const cb = 'apxTs' + uid;
@@ -445,10 +466,11 @@ export function mount(container, opts = {}) {
   const values = () => ({
     procedures: [...fProc.querySelectorAll('input:checked')].map(i => i.value),
     branch: (fBranch.querySelector('input:checked') || {}).value || '',
-    from: dFrom.value, to: dTo.value,
-    name: iName.value.trim(), country: iCountry.value.trim(),
+    from: off('dates') ? '' : dFrom.value, to: off('dates') ? '' : dTo.value,
+    name: iName.value.trim(), country: off('country') ? '' : iCountry.value.trim(),
     method, contact: cIn.value.trim(),
-    questions: iQ.value.trim(),
+    questions: off('questions') ? '' : iQ.value.trim(),
+    extra: EXTRA.map((x, i) => ({ q: x.q, a: extraVal(i) })).filter(x => x.a),
     consent: consent.checked
   });
   function validate() {
@@ -459,7 +481,9 @@ export function mount(container, opts = {}) {
     chk('branch', !v.branch, T.eBranch, null, fBranch.querySelector('input'));
     chk('dates', v.from && v.to && v.to < v.from, T.eDates, dTo);
     chk('name', v.name.length < 2, T.eName, iName);
-    chk('country', v.country.length < 2, T.eCountry, iCountry);
+    if (!off('country') && !optional('country')) chk('country', v.country.length < 2, T.eCountry, iCountry);
+    EXTRA.forEach((x, i) => { if (!x.req) return; const k = 'x' + i, empty = !extraVal(i), target = fExtra[i].querySelector('textarea,input[type=text]');
+      setErr(k, empty ? L(T.eExtra).replace('{q}', x.q) : null, target); if (empty) out.push({ key: k, msg: L(T.eExtra).replace('{q}', x.q), focus: target || fExtra[i].querySelector('input') }); });
     chk('method', !v.method, T.eMethod, null, fMethod.querySelector('input'));
     if (v.method) {
       const bad = v.method === 'whatsapp' ? v.contact.replace(/\D/g, '').length < 8
@@ -515,7 +539,10 @@ export function mount(container, opts = {}) {
       `${L(T.proc)}: ${v.procedures.map(k => procName(k, lang)).join(', ')}`,
       `${L(T.branch)}: ${L(BRANCHES[v.branch])}`];
     if (v.from || v.to) lines.push(`${L(T.dates)}: ${[fmtDate(v.from, lang), fmtDate(v.to, lang)].filter(Boolean).join(lang === 'th' ? ' ถึง ' : ' to ')}`);
-    lines.push(`${L(T.name)}: ${v.name}`, `${L(T.country)}: ${v.country}`, `${L(T.contact)}: ${L(METHOD[v.method].short)} ${v.contact}`);
+    lines.push(`${L(T.name)}: ${v.name}`);
+    if (v.country) lines.push(`${L(T.country)}: ${v.country}`);
+    lines.push(`${L(T.contact)}: ${L(METHOD[v.method].short)} ${v.contact}`);
+    (v.extra || []).forEach(x => lines.push(`${x.q}: ${x.a}`));
     const pv = VIEWS.filter(x => photos[x]);
     if (pv.length) lines.push(`${L(T.photoCount)}: ${pv.map(x => L(T[x])).join(', ')}`);
     if (v.questions) lines.push('', `${L(T.q)}:`, v.questions);
@@ -530,9 +557,10 @@ export function mount(container, opts = {}) {
       [L(T.proc), v.procedures.map(k => procName(k, lang)).join(', ')],
       [L(T.branch), L(BRANCHES[v.branch])],
       (v.from || v.to) ? [L(T.dates), [fmtDate(v.from, lang), fmtDate(v.to, lang)].filter(Boolean).join(lang === 'th' ? ' ถึง ' : ' to ')] : null,
-      [L(T.name), v.name], [L(T.country), v.country],
+      [L(T.name), v.name], v.country ? [L(T.country), v.country] : null,
       [L(T.contact), `${L(METHOD[v.method].short)} ${v.contact}`],
       v.questions ? [L(T.q), v.questions] : null,
+      ...(v.extra || []).map(x => [x.q, x.a]),
       [L(T.photoCount), pv.length ? pv.map(x => L(T[x])).join(', ') : L(T.none)]
     ].filter(Boolean);
     done = h('section', { class: 'c-done', tabindex: '-1', 'aria-labelledby': id('dh') },
