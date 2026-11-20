@@ -54,7 +54,7 @@
      The spoken language is the video's own; an English version is a separate video id on the English page. */
   A.ytSrc = id => `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&hl=${A.lang}&cc_lang_pref=${A.lang}`;
   A.yt = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
-  A.WA = {x:'+66 85 000 2001', h:'https://wa.me/66850002001'};
+  A.WA = {x:'+66 88 624 1617', h:'https://wa.me/66886241617'};
 
   A.ic = (n, cls='') => {
     const I = window.ICONS || {};
@@ -100,7 +100,7 @@
   /* WhatsApp and LINE from the WordPress settings, for the tools' send buttons */
   A.contact = () => {
     const S = A.d('shared') || {}, line = ((S.line && S.line.x) || '@apexsurgery').trim();
-    return {wa: (String(A.WA.h).match(/(\d{6,})/) || [, '66850002001'])[1], waX: A.WA.x, line: line[0] === '@' ? line : '@' + line};
+    return {wa: (String(A.WA.h).match(/(\d{6,})/) || [, '66886241617'])[1], waX: A.WA.x, line: line[0] === '@' ? line : '@' + line};
   };
   A.featureOpts = (extra={}) => {
     const o = Object.assign({
@@ -448,8 +448,8 @@
       <a class="cb-row" href="${A.url(((S.branches||[])[0]||{}).tel || 'tel:0888700039')}">${A.ic('phone')}<span><b>${A.esc((S.cta && S.cta.call) || A.t('callUs'))}</b><small>${A.esc(((S.branches||[])[0]||{}).phone || '088-870-0039')}</small></span></a></div></div>`;
   A.svcCards = (S, keys) => {
     const list = (S.services || []).filter(s => !keys || keys.includes(s.key));
-    return `<div class="svc-grid">${list.map((s, i) => `<a class="svc-tile rv" data-d="${i*60}" href="${A.svcUrl(s.key)}" data-new="svc:${A.esc(s.key)}">
-      <span class="st-glow" aria-hidden="true"></span><span class="st-ic">${s.icon ? `<img src="${A.img(s.icon)}" alt="" loading="lazy" decoding="async">` : ''}</span>
+    return `<div class="svc-grid">${list.map((s, i) => `<a class="svc-tile rv${s.tile ? ' has-pic' : ''}" data-d="${i*60}" href="${A.svcUrl(s.key)}" data-new="svc:${A.esc(s.key)}">
+      <span class="st-glow" aria-hidden="true"></span>${s.tile ? `<img class="st-pic" src="${A.img(s.tile)}" alt="" loading="lazy" decoding="async">` : ''}<span class="st-ic">${s.icon ? `<img src="${A.img(s.icon)}" alt="" loading="lazy" decoding="async">` : ''}</span>
       <span class="st-name">${A.esc(s.short || s.name)}</span><span class="st-en">${A.esc(A.lang === 'en' ? (s.name !== s.short ? s.name : '') : s.en)}</span>
       <span class="st-go">${A.ic('arrow-up-right')}</span></a>`).join('')}</div>`;
   };

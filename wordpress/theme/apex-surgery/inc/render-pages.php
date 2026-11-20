@@ -86,8 +86,9 @@ function apex_svc_cards( array $S, ?array $keys = null ): string {
 	$i = 0;
 	foreach ( $S['services'] ?? [] as $s ) {
 		if ( $keys && ! in_array( $s['key'], $keys, true ) ) continue;
-		$o .= '<a class="svc-tile rv" data-d="' . ( $i * 60 ) . '" href="' . esc_url( apex_svc_url( $s['key'] ) ) . '"' . apex_new_attr( 'svc:' . $s['key'] ) . '>
-      <span class="st-glow" aria-hidden="true"></span><span class="st-ic">' . ( $s['icon'] ? '<img src="' . esc_url( apex_img( $s['icon'] ) ) . '" alt="" loading="lazy" decoding="async">' : '' ) . '</span>
+		$pic = (string) ( $s['tile'] ?? '' );
+		$o .= '<a class="svc-tile rv' . ( $pic ? ' has-pic' : '' ) . '" data-d="' . ( $i * 60 ) . '" href="' . esc_url( apex_svc_url( $s['key'] ) ) . '"' . apex_new_attr( 'svc:' . $s['key'] ) . '>
+      <span class="st-glow" aria-hidden="true"></span>' . ( $pic ? '<img class="st-pic" src="' . esc_url( apex_img( $pic ) ) . '" alt="" loading="lazy" decoding="async">' : '' ) . '<span class="st-ic">' . ( $s['icon'] ? '<img src="' . esc_url( apex_img( $s['icon'] ) ) . '" alt="" loading="lazy" decoding="async">' : '' ) . '</span>
       <span class="st-name">' . apex_e( $s['short'] ?: $s['name'] ) . '</span><span class="st-en">' . apex_e( apex_L() === 'en' ? ( $s['name'] !== $s['short'] ? $s['name'] : '' ) : $s['en'] ) . '</span>
       <span class="st-go">' . apex_ic( 'arrow-up-right' ) . '</span></a>';
 		$i++;
@@ -179,11 +180,29 @@ const APEX_PH = [
 	'counter' => [ 'img/hospital/bkk-counter.webp', 'Consultation counter, Phloen Chit', 'เคาน์เตอร์ปรึกษา สาขาเพลินจิต' ],
 	'recovery' => [ 'img/hospital/bkk-recovery.webp', 'Recovery chairs, Phloen Chit', 'เก้าอี้พักฟื้น สาขาเพลินจิต' ],
 ];
+/** Each procedure page: the treated area, a consultation, the operating room (Apex's photos, Nov 2026). */
+const APEX_SVC_PH = [
+	'facelift' => [ [ 'Facelift at Apex Surgery Hospital', 'ดึงหน้าที่ Apex Surgery Hospital' ], [ 'A surgeon marking a patient\'s face before a facelift', 'แพทย์มาร์กจุดบนใบหน้าผู้ป่วยก่อนดึงหน้า' ], [ 'Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex' ] ],
+	'browlift' => [ null, [ 'Dr. Somboon Waiphrip examining a patient before surgery', 'นพ.สมบูรณ์ ไหวพริบ ตรวจผู้ป่วยก่อนผ่าตัด' ], [ 'Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex' ] ],
+	'rhinoplasty' => [ [ 'The nose in side profile', 'จมูกด้านข้าง' ], [ 'A consultation at Apex Surgery Hospital', 'การให้คำปรึกษาที่ Apex Surgery Hospital' ], [ 'Revision rhinoplasty in the Apex operating room', 'การผ่าตัดแก้จมูกในห้องผ่าตัดของ Apex' ] ],
+	'eyelid' => [ [ 'Double eyelids', 'ตาสองชั้น' ], [ 'Dr. Somboon Waiphrip marking a patient before surgery', 'นพ.สมบูรณ์ ไหวพริบ มาร์กจุดก่อนผ่าตัด' ], [ 'Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex' ] ],
+	'bone' => [ null, [ 'A surgeon checking a patient\'s face before surgery', 'แพทย์ตรวจใบหน้าผู้ป่วยก่อนผ่าตัด' ], [ 'Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex' ] ],
+	'breast' => [ [ 'Breast augmentation', 'เสริมหน้าอก' ], [ 'A surgeon talking a patient through her plan', 'แพทย์อธิบายแผนการรักษาให้ผู้ป่วย' ], [ 'Breast surgery in the Apex operating room', 'การผ่าตัดเสริมหน้าอกในห้องผ่าตัดของ Apex' ] ],
+	'lipo' => [ [ 'Body contouring at Apex', 'ดูดไขมันและกระชับสัดส่วนที่ Apex' ], [ 'A surgeon assessing a patient before liposuction', 'แพทย์ประเมินผู้ป่วยก่อนดูดไขมัน' ], [ 'Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex' ] ],
+];
+function apex_svc_ph(): array {
+	static $m = null;
+	if ( $m === null ) {
+		$m = [];
+		foreach ( APEX_SVC_PH as $k => $l ) foreach ( [ 'area', 'consult', 'or' ] as $i => $w ) if ( $l[ $i ] ) $m[ "$k-$w" ] = [ "img/apex/svc/$w-$k.webp", $l[ $i ][0], $l[ $i ][1] ];
+	}
+	return $m;
+}
+function apex_svc_photos( string $key ): array { return array_values( array_filter( [ "$key-area", "$key-consult", "$key-or" ], fn( $x ) => isset( apex_svc_ph()[ $x ] ) ) ); }
 function apex_ph( ?string $k ): ?array {
-	$p = $k ? ( APEX_PH[ $k ] ?? null ) : null;
+	$p = $k ? ( APEX_PH[ $k ] ?? apex_svc_ph()[ $k ] ?? null ) : null;
 	return $p ? [ 'src' => $p[0], 'alt' => apex_L() === 'th' ? $p[2] : $p[1] ] : null;
 }
-const APEX_SVC_PHOTOS = [ 'facelift' => [ 'orTable', 'room' ], 'browlift' => [ 'orLight', 'recovery' ], 'rhinoplasty' => [ 'or', 'counter' ], 'eyelid' => [ 'orUnit', 'room2' ], 'bone' => [ 'orTable', 'counter' ], 'breast' => [ 'or', 'room' ], 'lipo' => [ 'renuvion', 'orEquip' ] ];
 const APEX_POST_PHOTOS = [
 	'smas' => [ 'orTable', 'room', 'counter' ], 'deep-plane-face-lift' => [ 'or', 'recovery' ], 'rhinoplasty-faq-questions' => [ 'counter', 'orTable' ], 'double-eyelid-surgery-facts' => [ 'orUnit', 'room2' ], 'facelift-faq' => [ 'orTable', 'counter', 'room' ], 'endotine-browlift-fact' => [ 'orLight', 'recovery' ], 'mentor-vs-motiva-breast-augmentation' => [ 'counter', 'or' ], 'forehead-lift-endotine' => [ 'orLight', 'orTable', 'counter' ], 'liposuction-facts' => [ 'renuvion', 'orEquip' ], 'nose-surgery-without-silicone' => [ 'or', 'counter' ], 'breast-augmentation-guide' => [ 'counter', 'or', 'room' ], 'endotine-browlift' => [ 'orLight', 'counter' ],
 ];
@@ -302,7 +321,7 @@ function apex_svc_section( array $sec, int $i, string $key, bool $alt ): string 
 		}
 		$body = '<ul class="who-grid' . ( $n % 3 === 1 && $n > 3 ? ' odd' : '' ) . ( $is_areas ? ' areas' : '' ) . '">' . $lis . '</ul>';
 	}
-	$pk = APEX_SVC_PHOTOS[ $key ][ $i ] ?? null;
+	$pk = apex_svc_photos( (string) $key )[ $i ] ?? null;
 	$pic = $pk ? apex_ph( $pk ) : null;
 	return '<section class="section svc-sec' . ( $alt ? ' washed' : '' ) . '" id="sec-' . $i . '">
       <div class="wrap">
@@ -352,28 +371,30 @@ function apex_post_card( array $p, int $i = 0, bool $big = false ): string {
 }
 
 /* ---------- offers ---------- */
-const APEX_OFFER_WORDS = [ [ '/Mentor/i', 'Mentor' ], [ '/Motiva/i', 'Motiva' ], [ '/MemoryGel/i', 'MemoryGel' ], [ '/Endotine/i', 'Endotine' ], [ '/LipoSlim/i', 'LipoSlim' ], [ '/J-?Plasma/i', 'J-Plasma' ], [ '/V-?Line/i', 'V-Line' ], [ '/Facial/i', 'Facial' ] ];
-const APEX_OFFER_AREA = [ [ '/หน้าท้อง|abdominal/iu', 'Abdomen', 'หน้าท้อง' ], [ '/เหนียง|double chin/iu', 'Double chin', 'เหนียง' ] ];
+const APEX_OFFER_WORDS = [ [ '/Mentor/i', 'Mentor' ], [ '/Motiva/i', 'Motiva' ], [ '/MemoryGel/i', 'MemoryGel' ], [ '/Endotine/i', 'Endotine' ], [ '/LipoSlim/i', 'LipoSlim' ], [ '/J-?Plasma/i', 'J-Plasma' ], [ '/V-?Line/i', 'V-Line' ], [ '/Facial/i', 'Facial' ], [ '/deep plane|ชั้นลึก/iu', 'Deep plane', 'ชั้นลึก' ], [ '/endoscopic|ส่องกล้อง/iu', 'Endoscopic', 'ส่องกล้อง' ] ];
+const APEX_OFFER_AREA = [ [ '/ตัดหนังหน้าท้อง|tummy tuck/iu', 'Tummy tuck', 'ตัดหนังหน้าท้อง' ], [ '/sexy line/iu', 'Sexy Line', 'Sexy Line' ], [ '/หน้าท้อง|abdom/iu', 'Abdomen', 'หน้าท้อง' ], [ '/ต่อบริเวณ|per area/iu', 'Face, per area', 'หน้า ต่อบริเวณ' ], [ '/เหมาหน้า|full face/iu', 'Full face', 'เหมาหน้า' ], [ '/เหนียง|double chin|jaw/iu', 'Jaw and double chin', 'กรอบหน้าและเหนียง' ], [ '/ต้นแขน|arms/iu', 'Arms', 'ต้นแขน' ], [ '/360/u', 'Thighs 360°', 'รอบต้นขา 360 องศา' ], [ '/ต้นขา|thigh/iu', 'Thighs', 'ต้นขา' ], [ '/ปีกหลัง|back/iu', 'Back', 'ปีกหลัง' ] ];
 function apex_offer_of( array $p, array $S, ?string $cat0 = null ): array {
 	$parts = explode( '/', (string) ( $p['src'] ?? '' ) );
 	$file = rawurldecode( (string) end( $parts ) );
 	$text = ( $p['alt'] ?? '' ) . ' ' . $file;
 	$cat = ( $p['cat'] ?? '' ) ?: ( apex_proc_of( $text ) ?: $cat0 );
 	$words = [];
-	foreach ( APEX_OFFER_WORDS as [ $r, $w ] ) if ( preg_match( $r, $text ) && ! in_array( $w, $words, true ) ) $words[] = $w;
+	foreach ( APEX_OFFER_WORDS as $ow ) { $w = apex_L() === 'th' && ! empty( $ow[2] ) ? $ow[2] : $ow[1]; if ( preg_match( $ow[0], $text ) && ! in_array( $w, $words, true ) ) $words[] = $w; }
 	foreach ( APEX_OFFER_AREA as [ $r, $en, $th ] ) if ( preg_match( $r, $text ) ) { $words[] = apex_L() === 'th' ? $th : $en; break; }
 	$name = $cat ? apex_svc_name( $S, $cat ) : ( $words ? array_shift( $words ) : apex_t( 'promotions' ) );
 	$price = (float) ( $p['price'] ?? 0 );
 	if ( ! $price && preg_match( '/(?:^|[-_ ])(\d{5,6})(?=[-_ .])/', $file, $m ) ) $price = (float) $m[1];
-	$all_in = (bool) preg_match( '/จ่ายจบ|เหมา|all-in/iu', $text );
+	$all_in = (bool) preg_match( '/จ่ายจบ|ราคาเหมา|all-in/iu', $text );
 	$review = (bool) preg_match( '/case-review/i', $text );
 	$label = $name . ( $words ? ' · ' . implode( ' · ', $words ) : '' );
 	$price_txt = $price ? apex_fmt_num( $price ) . ' ' . apex_t( 'baht' ) : '';
 	$msg = ( apex_L() === 'th' ? "สวัสดี ขอสอบถามโปรโมชั่น $label" : "Hello, I would like to ask about this offer: $label" ) . ( $price_txt ? " ($price_txt)" : '' ) . ( apex_L() === 'th' ? '' : '.' );
 	$WA = apex_wa();
-	return [ 'key' => $file, 'src' => $p['src'] ?? '', 'alt' => ( $p['alt'] ?? '' ) ?: $label, 'cat' => $cat, 'name' => $name, 'words' => $words, 'price' => $price, 'allIn' => $all_in, 'review' => $review, 'label' => $label,
+	return [ 'key' => $file, 'src' => $p['src'] ?? '', 'alt' => ( $p['alt'] ?? '' ) ?: $label, 'cat' => $cat, 'name' => $name, 'words' => $words, 'price' => $price, 'from' => ! empty( $p['from'] ), 'ends' => (string) ( $p['ends'] ?? '' ), 'allIn' => $all_in, 'review' => $review, 'label' => $label,
 		'line' => 'https://line.me/R/oaMessage/@apexsurgery/?' . apex_jsuri( $msg ), 'wa' => $WA['h'] . '?text=' . apex_jsuri( $msg ) ];
 }
+function apex_price_from( array $o ): string { return $o['from'] ? '<small class="op-from">' . apex_e( apex_t( 'promoFrom' ) ) . '</small>' : ''; }
+function apex_until( array $o ): string { return $o['ends'] ? '<p class="o-until">' . apex_ic( 'calendar' ) . apex_e( str_replace( '{d}', apex_fmt_date( $o['ends'] ), apex_t( 'offerUntil' ) ) ) . '</p>' : ''; }
 function apex_fx_span( $thb ): string { return '<span class="apx-price op-fx" data-thb="' . apex_num_attr( $thb ) . '" data-lang="' . apex_L() . '"><span class="apx-fx" hidden></span><small>' . apex_e( apex_t( 'approx' ) ) . '</small></span>'; }
 function apex_num_attr( $n ): string { $n = (float) $n; return floor( $n ) == $n ? (string) (int) $n : (string) $n; }
 function apex_offer_tags( array $o ): string { return ( $o['allIn'] ? '<span class="o-tag hot">' . apex_e( apex_t( 'allIn' ) ) . '</span>' : '' ) . ( $o['review'] ? '<span class="o-tag">' . apex_e( apex_t( 'reviewCase' ) ) . '</span>' : '' ); }
@@ -387,7 +408,7 @@ function apex_offer_card( array $o, int $i, int $g ): string {
       <div class="offer-body">
         <div class="o-tags">' . ( $o['cat'] && $o['words'] ? '<span class="o-proc">' . apex_e( $o['name'] ) . '</span>' : '' ) . apex_offer_tags( $o ) . '</div>
         <h3 class="o-title">' . apex_e( $o['cat'] ? ( implode( ' · ', $o['words'] ) ?: $o['name'] ) : $o['label'] ) . '</h3>
-        <div class="o-price">' . ( $o['price'] ? '<span class="op-row"><b class="op-n">' . apex_e( apex_fmt_num( $o['price'] ) ) . '</b><span class="op-u">' . apex_e( apex_t( 'baht' ) ) . '</span></span>' . apex_fx_span( $o['price'] ) : '<span class="op-ask">' . apex_ic( 'message-circle' ) . apex_e( apex_t( 'askPrice' ) ) . '</span>' ) . '</div>
+        <div class="o-price">' . ( $o['price'] ? '<span class="op-row">' . apex_price_from( $o ) . '<b class="op-n">' . apex_e( apex_fmt_num( $o['price'] ) ) . '</b><span class="op-u">' . apex_e( apex_t( 'baht' ) ) . '</span></span>' . apex_fx_span( $o['price'] ) : '<span class="op-ask">' . apex_ic( 'message-circle' ) . apex_e( apex_t( 'askPrice' ) ) . '</span>' ) . '</div>' . apex_until( $o ) . '
         <div class="o-acts"><span class="o-ask">' . apex_e( apex_t( 'askOffer' ) ) . '</span>
           <a class="o-btn ln" href="' . esc_url( $o['line'] ) . '" target="_blank" rel="noopener" aria-label="' . apex_e( apex_t( 'askOffer' ) ) . ': LINE">' . apex_ic( 'line' ) . '<span>LINE</span></a>
           <a class="o-btn wa" href="' . esc_url( $o['wa'] ) . '" target="_blank" rel="noopener" aria-label="' . apex_e( apex_t( 'askOffer' ) ) . ': WhatsApp">' . apex_ic( 'whatsapp' ) . '<span>WhatsApp</span></a>
@@ -398,7 +419,7 @@ function apex_game_card(): string {
 	return '<a class="offer offer-game rv" href="' . esc_url( apex_link( 'play.html' ) ) . '"><span class="og-art" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="og-ic">' . apex_ic( 'sparkles' ) . '</span><b class="h-s">' . apex_e( apex_t( 'gameTie' ) ) . '</b><span class="og-p">' . apex_e( apex_t( 'gamesP' ) ) . '</span><span class="btn btn-light btn-sm">' . apex_e( apex_t( 'gamesCta' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</span></a>';
 }
 function apex_promo_grid( array $items, array $S, array $opts = [] ): string {
-	$offers = array_map( fn( $p ) => apex_offer_of( $p, $S, $opts['cat'] ?? null ), $items );
+	$offers = array_map( fn( $p ) => apex_offer_of( $p, $S, $opts['cat'] ?? null ), array_values( array_filter( $items, 'apex_offer_live' ) ) );
 	$g = apex_gallery();
 	$game = ! empty( $opts['game'] );
 	$cards = '';
@@ -414,7 +435,7 @@ function apex_offer_spot( array $p, array $S ): string {
         <p class="os-kick">' . apex_e( apex_t( 'featuredOffer' ) ) . '</p>
         <h3 class="os-title">' . apex_e( $o['name'] ) . '</h3>
         <div class="o-tags">' . implode( '', array_map( fn( $w ) => '<span class="o-tag">' . apex_e( $w ) . '</span>', $o['words'] ) ) . apex_offer_tags( $o ) . '</div>
-        ' . ( $o['price'] ? '<div class="os-price"><span class="op-row"><b class="os-n" data-count="' . apex_num_attr( $o['price'] ) . '">' . apex_e( apex_fmt_num( $o['price'] ) ) . '</b><span class="op-u">' . apex_e( apex_t( 'baht' ) ) . '</span></span>' . apex_fx_span( $o['price'] ) . '</div>' : '<p class="os-ask">' . apex_ic( 'message-circle' ) . apex_e( apex_t( 'askPrice' ) ) . '</p>' ) . '
+        ' . ( $o['price'] ? '<div class="os-price"><span class="op-row">' . apex_price_from( $o ) . '<b class="os-n" data-count="' . apex_num_attr( $o['price'] ) . '">' . apex_e( apex_fmt_num( $o['price'] ) ) . '</b><span class="op-u">' . apex_e( apex_t( 'baht' ) ) . '</span></span>' . apex_fx_span( $o['price'] ) . '</div>' : '<p class="os-ask">' . apex_ic( 'message-circle' ) . apex_e( apex_t( 'askPrice' ) ) . '</p>' ) . apex_until( $o ) . '
         <div class="os-pick" data-cur-picker></div>
         <p class="os-ask-l">' . apex_e( apex_t( 'askOffer' ) ) . '</p>
         <div class="os-acts"><a class="o-btn ln lg" href="' . esc_url( $o['line'] ) . '" target="_blank" rel="noopener">' . apex_ic( 'line' ) . '<span>LINE</span></a><a class="o-btn wa lg" href="' . esc_url( $o['wa'] ) . '" target="_blank" rel="noopener">' . apex_ic( 'whatsapp' ) . '<span>WhatsApp</span></a>' . ( $o['cat'] ? '<a class="btn btn-ghost btn-sm os-more" href="' . esc_url( apex_svc_url( $o['cat'] ) ) . '">' . apex_e( apex_t( 'seeService' ) ) . ' ' . apex_ic( 'arrow-right' ) . '</a>' : '' ) . '</div>
@@ -450,7 +471,7 @@ function apex_render_page( array $r ): string {
 function apex_page_home( array $r ): string {
 	$S = apex_data( 'shared' ) ?: []; $H = apex_data( 'home' ) ?: []; $About = apex_data( 'about' ) ?: []; $Fd = apex_data( 'founder' );
 	$reviews = $H['reviews']['items'] ?? [];
-	$promos = $H['promos']['items'] ?? [];
+	$promos = array_values( array_filter( $H['promos']['items'] ?? [], 'apex_offer_live' ) );
 	$news = $H['news']['items'] ?? [];
 	$E = 'apex_e'; $T = 'apex_t'; $I = 'apex_ic';
 	$svcs = implode( '', array_map( fn( $s ) => '<li><a href="' . esc_url( apex_svc_url( $s['key'] ) ) . '">' . $E( $s['short'] ?: $s['name'] ) . '</a></li>', $S['services'] ?? [] ) );
@@ -653,14 +674,14 @@ function apex_page_service( array $r ): string {
 	$E = 'apex_e'; $T = 'apex_t'; $I = 'apex_ic';
 	if ( ! $D ) return apex_phead( $T( 'notFoundH' ), $T( 'loadError' ), [ apex_home_crumb(), [ $T( 'services' ), 'services.html' ], [ $key ] ] );
 	$nm = apex_svc_name( $S, $key );
-	$promos = $D['promos'] ?? [];
+	$promos = array_values( array_filter( $D['promos'] ?? [], 'apex_offer_live' ) );
 	$crumbs = [ apex_home_crumb(), [ $T( 'services' ), 'services.html' ], [ $nm ] ];
 	$intro = $D['intro'] ?? [];
 	$introP = array_values( array_filter( $intro, fn( $x ) => ! preg_match( '/^✔/u', $x ) ) );
 	$ticks = array_values( array_map( fn( $x ) => preg_replace( '/^✔\s*/u', '', $x ), array_filter( $intro, fn( $x ) => (bool) preg_match( '/^✔/u', $x ) ) ) );
 	$q = apex_len( implode( ' ', $introP ) ) > 420 ? apex_pick_quote( $introP ) : '';
 	$aa = $D['atApex'] ?? null;
-	$aaImg = $aa && ! empty( $aa['img'] ) ? [ 'src' => $aa['img'], 'alt' => ( $aa['alt'] ?? '' ) ?: ( $aa['h'] ?? '' ) ] : apex_ph( APEX_SVC_PHOTOS[ $key ][0] ?? null );
+	$aaImg = $aa && ! empty( $aa['img'] ) ? [ 'src' => $aa['img'], 'alt' => ( $aa['alt'] ?? '' ) ?: ( $aa['h'] ?? '' ) ] : apex_ph( apex_svc_photos( (string) $key )[0] ?? null );
 	$secs = $D['sections'] ?? [];
 	$o = '
     <section class="svc-head">
@@ -859,7 +880,7 @@ function apex_page_doctor( array $r ): string {
 function apex_page_promotions( array $r ): string {
 	$S = apex_data( 'shared' ) ?: []; $D = apex_data( 'promotions' ) ?: [];
 	$E = 'apex_e'; $T = 'apex_t';
-	$items = $D['items'] ?? [];
+	$items = array_values( array_filter( $D['items'] ?? [], 'apex_offer_live' ) );
 	$c = $r['params']['c'] ?? null;
 	$start = $c && in_array( $c, apex_svc_cats(), true ) ? $c : 'all';
 	$filters = [];

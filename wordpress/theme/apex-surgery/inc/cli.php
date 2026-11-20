@@ -54,6 +54,7 @@ class Apex_CLI {
 		if ( $run( 'cases' ) ) $this->cases();
 		if ( $run( 'pages' ) ) $this->pages();
 		$this->link();
+		update_option( 'apex_upgraded', APEX_VERSION, true );   // an import already holds what inc/upgrade.php would change
 		wp_defer_term_counting( false );
 		if ( empty( $assoc['no-webp'] ) ) { $w = apex_photo_pass( false, 40 ); if ( $w['kb'] ) WP_CLI::log( "Photos: {$w['done']} saved as WebP, {$w['kb']} KB lighter" ); }
 		apex_data_bump();
@@ -138,7 +139,7 @@ class Apex_CLI {
 	private function settings(): void {
 		foreach ( APEX_LANGS as $l ) {
 			$S = $this->D[ $l ]['shared'];
-			$S['whatsapp'] = $S['whatsapp'] ?? [ 'x' => '+66 85 000 2001', 'h' => 'https://wa.me/66850002001' ];
+			$S['whatsapp'] = $S['whatsapp'] ?? [ 'x' => '+66 88 624 1617', 'h' => 'https://wa.me/66886241617' ];
 			update_option( 'apex_shared_' . $l, [], true );
 			apex_write_option( $l, $this->pick( 'shared', $S ) );
 		}
@@ -177,7 +178,7 @@ class Apex_CLI {
 			$s = $this->D[ $l ][ 'svc:' . $m['key'] ] ?? null;
 			if ( ! $s ) continue;
 			$vals = $this->pick( 'apex_service', $s );
-			$vals['menu'] = [ 'name' => $m['name'], 'short' => $m['short'], 'en' => $m['en'], 'icon' => $m['icon'], 'nav' => $m['nav'] ];
+			$vals['menu'] = [ 'name' => $m['name'], 'short' => $m['short'], 'en' => $m['en'], 'icon' => $m['icon'], 'tile' => $m['tile'] ?? '', 'nav' => $m['nav'] ];
 			$vals['stay'] = $m['stay'] ?? '';
 			$vals['recovery'] = $m['recovery'] ?? [];
 			$vals['sections'] = apex_sections_to_markup( $s['sections'] ?? [] );
@@ -256,7 +257,7 @@ class Apex_CLI {
 			}
 			foreach ( $all as $src => $x ) {
 				$key = 'offer-' . substr( md5( basename( $src ) ), 0, 10 );
-				$vals = [ 'alt' => $x['p']['alt'] ?? '', 'src' => $src, 'cat' => $x['p']['cat'] ?? '', 'price' => $x['p']['price'] ?? '', 'onPromotions' => ! empty( $x['onPromotions'] ), 'order' => $x['order'] ?? '', 'onHome' => ! empty( $x['onHome'] ), 'homeOrder' => $x['homeOrder'] ?? '' ];
+				$vals = [ 'alt' => $x['p']['alt'] ?? '', 'src' => $src, 'cat' => $x['p']['cat'] ?? '', 'price' => $x['p']['price'] ?? '', 'from' => ! empty( $x['p']['from'] ), 'ends' => $x['p']['ends'] ?? '', 'onPromotions' => ! empty( $x['onPromotions'] ), 'order' => $x['order'] ?? '', 'onHome' => ! empty( $x['onHome'] ), 'homeOrder' => $x['homeOrder'] ?? '' ];
 				$this->upsert( 'apex_offer', $key, $l, [], 'apex_offer', $vals );
 			}
 		}

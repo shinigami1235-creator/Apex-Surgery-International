@@ -49,7 +49,7 @@ await p.click('#fake-voucher');
 ok(await p.locator('.p-v').count() === 2, 'plan: vouchers read from apxg.vouchers plus plan:voucher event, expired one hidden');
 ok(await p.locator('#badge').innerText() === '4', 'plan: header badge counts 4 items');
 const wa = await p.locator('a[data-act=wa]').getAttribute('href');
-ok(wa.startsWith('https://wa.me/66850002001?text=') && decodeURIComponent(wa).includes('Rhinoplasty') && decodeURIComponent(wa).includes('APX-GAME01'), 'plan: WhatsApp link carries the summary');
+ok(wa.startsWith('https://wa.me/66886241617?text=') && decodeURIComponent(wa).includes('Rhinoplasty') && decodeURIComponent(wa).includes('APX-GAME01'), 'plan: WhatsApp link carries the summary');
 const line = await p.locator('a[data-act=line]').getAttribute('href');
 ok(line.startsWith('https://line.me/R/oaMessage/@apexsurgery/?') && decodeURIComponent(line).includes('Liposuction: Thighs'), 'plan: LINE link carries the summary');
 await p.fill('#apxp-notes', 'Can I fly home 10 days after rhinoplasty?');

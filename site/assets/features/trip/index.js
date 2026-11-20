@@ -15,7 +15,7 @@ export const STAY_DAYS = {
   browlift: 10,     /* initial recovery 7 to 14 days */
   rhinoplasty: 10,  /* rest at least 7 to 14 days */
   eyelid: 7,        /* swelling eases in 7 to 14 days */
-  bone: 14,         /* same light-work milestone as breast; Apex to confirm */
+  bone: 21,         /* Apex: 2 to 3 weeks after surgery before flying home */
   breast: 14,       /* back to light work in weeks 2 to 4 */
   lipo: 10          /* driving after 3 to 7 days */
 };

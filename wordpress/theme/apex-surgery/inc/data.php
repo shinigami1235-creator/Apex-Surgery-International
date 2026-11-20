@@ -202,7 +202,7 @@ function apex_build_shared( string $lang ): array {
 		$k = (string) get_post_meta( $id, '_apex_key', true );
 		$m = apex_norm( apex_schema_field( 'apex_service', 'menu' ), get_post_meta( $id, 'apex_menu', true ) ) ?: [];
 		$t = get_the_title( $id );
-		$S['services'][] = [ 'key' => $k, 'name' => ( $m['name'] ?? '' ) ?: $t, 'short' => ( $m['short'] ?? '' ) ?: $t, 'en' => $m['en'] ?? '', 'icon' => $m['icon'] ?? '', 'nav' => ( $m['nav'] ?? '' ) ?: $t, 'stay' => (int) get_post_meta( $id, apex_meta_key( 'stay' ), true ) ?: null, 'recovery' => apex_norm( apex_schema_field( 'apex_service', 'recovery' ), get_post_meta( $id, apex_meta_key( 'recovery' ), true ) ) ?: null ];
+		$S['services'][] = [ 'key' => $k, 'name' => ( $m['name'] ?? '' ) ?: $t, 'short' => ( $m['short'] ?? '' ) ?: $t, 'en' => $m['en'] ?? '', 'icon' => $m['icon'] ?? '', 'tile' => $m['tile'] ?? '', 'nav' => ( $m['nav'] ?? '' ) ?: $t, 'stay' => (int) get_post_meta( $id, apex_meta_key( 'stay' ), true ) ?: null, 'recovery' => apex_norm( apex_schema_field( 'apex_service', 'recovery' ), get_post_meta( $id, apex_meta_key( 'recovery' ), true ) ) ?: null ];
 	}
 	return apex_drop_nulls( $S );
 }
@@ -220,15 +220,19 @@ function apex_cases( string $lang ): array {
 		return $o;
 	}, apex_posts( 'apex_case', $lang ) );
 }
+/** An offer drops off the site the day after its end date, Bangkok time (the preview's live() does the same). */
+function apex_offer_live( array $o ): bool { return empty( $o['ends'] ) || (string) $o['ends'] >= gmdate( 'Y-m-d', time() + 7 * 3600 ); }
 /** Offers flagged for a page, in that page's order. */
 function apex_offers( string $lang, string $flag, string $order ): array {
 	$rows = [];
 	foreach ( apex_posts( 'apex_offer', $lang ) as $id ) {
 		$o = apex_read_post( $id, 'apex_offer' );
-		if ( ! $o[ $flag ] ) continue;
+		if ( ! $o[ $flag ] || ! apex_offer_live( $o ) ) continue;
 		$r = [ 'src' => $o['src'], 'alt' => $o['alt'] ];
 		if ( $o['cat'] !== '' ) $r['cat'] = $o['cat'];
 		if ( $o['price'] ) $r['price'] = $o['price'];
+		if ( ! empty( $o['from'] ) ) $r['from'] = true;
+		if ( ! empty( $o['ends'] ) ) $r['ends'] = $o['ends'];
 		$rows[] = [ $o[ $order ] ?? 0, count( $rows ), $r ];
 	}
 	usort( $rows, fn( $a, $b ) => [ $a[0] ?? 0, $a[1] ] <=> [ $b[0] ?? 0, $b[1] ] );

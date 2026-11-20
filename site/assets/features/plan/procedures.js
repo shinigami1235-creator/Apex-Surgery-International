@@ -125,7 +125,7 @@ export const BRANCH_KEYS = ['ploenchit', 'phuket'];
 
 /* WhatsApp and LINE for the send buttons. The site passes the numbers set in WordPress as opts.contact;
    these are only used when a tool runs on its own, as on the lab pages. */
-export const contactOf = o => Object.assign({ wa: '66850002001', waX: '+66 85 000 2001', line: '@apexsurgery' }, o && o.contact);
+export const contactOf = o => Object.assign({ wa: '66886241617', waX: '+66 88 624 1617', line: '@apexsurgery' }, o && o.contact);
 
 /* ---------- small DOM and data helpers the plan, trip, consultation and stories modules share ---------- */
 export function injectCSS(id, css) {

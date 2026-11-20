@@ -105,7 +105,7 @@ const APEX_NAV = [ [ 'index.html', 'home' ], [ 'about.html', 'about' ], [ 'servi
 function apex_wa(): array {
 	$S = apex_data( 'shared' );
 	$w = $S['whatsapp'] ?? null;
-	return $w && ! empty( $w['h'] ) ? [ 'x' => $w['x'] ?: $w['h'], 'h' => $w['h'] ] : [ 'x' => '+66 85 000 2001', 'h' => 'https://wa.me/66850002001' ];
+	return $w && ! empty( $w['h'] ) ? [ 'x' => $w['x'] ?: $w['h'], 'h' => $w['h'] ] : [ 'x' => '+66 88 624 1617', 'h' => 'https://wa.me/66886241617' ];
 }
 function apex_langs_html(): string {
 	$L = apex_lang();

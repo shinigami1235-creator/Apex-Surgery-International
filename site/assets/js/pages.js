@@ -25,8 +25,19 @@
     counter: ['img/hospital/bkk-counter.webp', 'Consultation counter, Phloen Chit', 'เคาน์เตอร์ปรึกษา สาขาเพลินจิต'],
     recovery: ['img/hospital/bkk-recovery.webp', 'Recovery chairs, Phloen Chit', 'เก้าอี้พักฟื้น สาขาเพลินจิต']
   };
+  /* each procedure page: the treated area, a consultation, the operating room (Apex's photos, Nov 2026) */
+  const SVC_PH = {
+    facelift:[['Facelift at Apex Surgery Hospital', 'ดึงหน้าที่ Apex Surgery Hospital'], ['A surgeon marking a patient\'s face before a facelift', 'แพทย์มาร์กจุดบนใบหน้าผู้ป่วยก่อนดึงหน้า'], ['Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex']],
+    browlift:[null, ['Dr. Somboon Waiphrip examining a patient before surgery', 'นพ.สมบูรณ์ ไหวพริบ ตรวจผู้ป่วยก่อนผ่าตัด'], ['Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex']],
+    rhinoplasty:[['The nose in side profile', 'จมูกด้านข้าง'], ['A consultation at Apex Surgery Hospital', 'การให้คำปรึกษาที่ Apex Surgery Hospital'], ['Revision rhinoplasty in the Apex operating room', 'การผ่าตัดแก้จมูกในห้องผ่าตัดของ Apex']],
+    eyelid:[['Double eyelids', 'ตาสองชั้น'], ['Dr. Somboon Waiphrip marking a patient before surgery', 'นพ.สมบูรณ์ ไหวพริบ มาร์กจุดก่อนผ่าตัด'], ['Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex']],
+    bone:[null, ['A surgeon checking a patient\'s face before surgery', 'แพทย์ตรวจใบหน้าผู้ป่วยก่อนผ่าตัด'], ['Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex']],
+    breast:[['Breast augmentation', 'เสริมหน้าอก'], ['A surgeon talking a patient through her plan', 'แพทย์อธิบายแผนการรักษาให้ผู้ป่วย'], ['Breast surgery in the Apex operating room', 'การผ่าตัดเสริมหน้าอกในห้องผ่าตัดของ Apex']],
+    lipo:[['Body contouring at Apex', 'ดูดไขมันและกระชับสัดส่วนที่ Apex'], ['A surgeon assessing a patient before liposuction', 'แพทย์ประเมินผู้ป่วยก่อนดูดไขมัน'], ['Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex']]
+  };
+  Object.entries(SVC_PH).forEach(([k, l]) => ['area', 'consult', 'or'].forEach((w, i) => { if (l[i]) PH[k + '-' + w] = ['img/apex/svc/' + w + '-' + k + '.webp', ...l[i]]; }));
   const ph = k => { const p = PH[k]; return p ? {src:p[0], alt:A.lang === 'th' ? p[2] : p[1]} : null; };
-  const SVC_PHOTOS = {facelift:['orTable', 'room'], browlift:['orLight', 'recovery'], rhinoplasty:['or', 'counter'], eyelid:['orUnit', 'room2'], bone:['orTable', 'counter'], breast:['or', 'room'], lipo:['renuvion', 'orEquip']};
+  const SVC_PHOTOS = Object.fromEntries(Object.keys(SVC_PH).map(k => [k, ['area', 'consult', 'or'].map(w => k + '-' + w).filter(x => PH[x])]));
   const POST_PHOTOS = {
     smas:['orTable', 'room', 'counter'], 'deep-plane-face-lift':['or', 'recovery'], 'rhinoplasty-faq-questions':['counter', 'orTable'], 'double-eyelid-surgery-facts':['orUnit', 'room2'], 'facelift-faq':['orTable', 'counter', 'room'], 'endotine-browlift-fact':['orLight', 'recovery'], 'mentor-vs-motiva-breast-augmentation':['counter', 'or'], 'forehead-lift-endotine':['orLight', 'orTable', 'counter'], 'liposuction-facts':['renuvion', 'orEquip'], 'nose-surgery-without-silicone':['or', 'counter'], 'breast-augmentation-guide':['counter', 'or', 'room'], 'endotine-browlift':['orLight', 'counter']
   };
@@ -191,26 +202,30 @@
     <span class="pc-meta"><span class="pc-cat">${E(T({review:'catReview', blog:'catBlog', news:'catNews'}[p.cat] || 'articles'))}</span>${p.date ? `<time datetime="${E(p.date)}">${E(A.fmtDate(p.date))}</time>` : ''}</span>
     <span class="pc-title">${E(p.title)}</span>${p.excerpt || p.desc ? `<span class="pc-ex">${E(p.excerpt || p.desc)}</span>` : ''}</a>`;
   /* ---------- offers: names, tags and prices come only from the poster's alt text, filename and price field ---------- */
-  const OFFER_WORDS = [[/Mentor/i, 'Mentor'], [/Motiva/i, 'Motiva'], [/MemoryGel/i, 'MemoryGel'], [/Endotine/i, 'Endotine'], [/LipoSlim/i, 'LipoSlim'], [/J-?Plasma/i, 'J-Plasma'], [/V-?Line/i, 'V-Line'], [/Facial/i, 'Facial']];
-  const OFFER_AREA = [[/หน้าท้อง|abdominal/i, 'Abdomen', 'หน้าท้อง'], [/เหนียง|double chin/i, 'Double chin', 'เหนียง']];
+  const OFFER_WORDS = [[/Mentor/i, 'Mentor'], [/Motiva/i, 'Motiva'], [/MemoryGel/i, 'MemoryGel'], [/Endotine/i, 'Endotine'], [/LipoSlim/i, 'LipoSlim'], [/J-?Plasma/i, 'J-Plasma'], [/V-?Line/i, 'V-Line'], [/Facial/i, 'Facial'], [/deep plane|ชั้นลึก/i, 'Deep plane', 'ชั้นลึก'], [/endoscopic|ส่องกล้อง/i, 'Endoscopic', 'ส่องกล้อง']];
+  const OFFER_AREA = [[/ตัดหนังหน้าท้อง|tummy tuck/i, 'Tummy tuck', 'ตัดหนังหน้าท้อง'], [/sexy line/i, 'Sexy Line', 'Sexy Line'], [/หน้าท้อง|abdom/i, 'Abdomen', 'หน้าท้อง'], [/ต่อบริเวณ|per area/i, 'Face, per area', 'หน้า ต่อบริเวณ'], [/เหมาหน้า|full face/i, 'Full face', 'เหมาหน้า'], [/เหนียง|double chin|jaw/i, 'Jaw and double chin', 'กรอบหน้าและเหนียง'], [/ต้นแขน|arms/i, 'Arms', 'ต้นแขน'], [/360/, 'Thighs 360°', 'รอบต้นขา 360 องศา'], [/ต้นขา|thigh/i, 'Thighs', 'ต้นขา'], [/ปีกหลัง|back/i, 'Back', 'ปีกหลัง']];
+  /* an offer drops off the site the day after its end date */
+  const live = p => !p.ends || p.ends >= new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10);
   const offerOf = (p, S, cat0) => {
     let file = String(p.src || '').split('/').pop();
     try { file = decodeURIComponent(file); } catch (e) { /* raw */ }
     const text = (p.alt || '') + ' ' + file;
     const cat = p.cat || procOf(text) || cat0;
-    const words = [...new Set(OFFER_WORDS.filter(([r]) => r.test(text)).map(w => w[1]))];
+    const words = [...new Set(OFFER_WORDS.filter(([r]) => r.test(text)).map(w => A.lang === 'th' && w[2] ? w[2] : w[1]))];
     const area = OFFER_AREA.find(([r]) => r.test(text));
     if (area) words.push(A.lang === 'th' ? area[2] : area[1]);
     const name = cat ? svcName(S, cat) : (words.shift() || T('promotions'));
     const price = +p.price || +((file.match(/(?:^|[-_ ])(\d{5,6})(?=[-_ .])/) || [])[1]) || 0;
-    const allIn = /จ่ายจบ|เหมา|all-in/i.test(text);
+    const allIn = /จ่ายจบ|ราคาเหมา|all-in/i.test(text);
     const review = /case-review/i.test(text);
     const label = name + (words.length ? ' · ' + words.join(' · ') : '');
     const priceTxt = price ? `${A.fmtNum(price)} ${T('baht')}` : '';
     const msg = (A.lang === 'th' ? `สวัสดี ขอสอบถามโปรโมชั่น ${label}` : `Hello, I would like to ask about this offer: ${label}`) + (priceTxt ? ` (${priceTxt})` : '') + (A.lang === 'th' ? '' : '.');
-    return {key:file, src:p.src, alt:p.alt || label, cat, name, words, price, allIn, review, label,
+    return {key:file, src:p.src, alt:p.alt || label, cat, name, words, price, from:!!p.from, ends:p.ends || '', allIn, review, label,
       line:`https://line.me/R/oaMessage/${A.contact().line}/?${encodeURIComponent(msg)}`, wa:`${A.WA.h}?text=${encodeURIComponent(msg)}`};
   };
+  const priceFrom = o => o.from ? `<small class="op-from">${E(T('promoFrom'))}</small>` : '';
+  const until = o => o.ends ? `<p class="o-until">${I('calendar')}${E(T('offerUntil').replace('{d}', A.fmtDate(o.ends)))}</p>` : '';
   const fxSpan = thb => `<span class="apx-price op-fx" data-thb="${thb}" data-lang="${A.lang}"><span class="apx-fx" hidden></span><small>${E(T('approx'))}</small></span>`;
   const offerTags = o => `${o.allIn ? `<span class="o-tag hot">${E(T('allIn'))}</span>` : ''}${o.review ? `<span class="o-tag">${E(T('reviewCase'))}</span>` : ''}`;
   /* data-offer and the rest let the country price lists find each offer (features/pricing) */
@@ -220,7 +235,7 @@
       <div class="offer-body">
         <div class="o-tags">${o.cat && o.words.length ? `<span class="o-proc">${E(o.name)}</span>` : ''}${offerTags(o)}</div>
         <h3 class="o-title">${E(o.cat ? (o.words.join(' · ') || o.name) : o.label)}</h3>
-        <div class="o-price">${o.price ? `<span class="op-row"><b class="op-n">${E(A.fmtNum(o.price))}</b><span class="op-u">${E(T('baht'))}</span></span>${fxSpan(o.price)}` : `<span class="op-ask">${I('message-circle')}${E(T('askPrice'))}</span>`}</div>
+        <div class="o-price">${o.price ? `<span class="op-row">${priceFrom(o)}<b class="op-n">${E(A.fmtNum(o.price))}</b><span class="op-u">${E(T('baht'))}</span></span>${fxSpan(o.price)}` : `<span class="op-ask">${I('message-circle')}${E(T('askPrice'))}</span>`}</div>${until(o)}
         <div class="o-acts"><span class="o-ask">${E(T('askOffer'))}</span>
           <a class="o-btn ln" href="${A.url(o.line)}" target="_blank" rel="noopener" aria-label="${E(T('askOffer'))}: LINE">${I('line')}<span>LINE</span></a>
           <a class="o-btn wa" href="${A.url(o.wa)}" target="_blank" rel="noopener" aria-label="${E(T('askOffer'))}: WhatsApp">${I('whatsapp')}<span>WhatsApp</span></a>
@@ -229,6 +244,7 @@
   const gameCard = () => `<a class="offer offer-game rv" href="play.html"><span class="og-art" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="og-ic">${I('sparkles')}</span><b class="h-s">${E(T('gameTie'))}</b><span class="og-p">${E(T('gamesP'))}</span><span class="btn btn-light btn-sm">${E(T('gamesCta'))} ${I('arrow-right')}</span></a>`;
   const promoGrid = (items, S, opts={}) => {
     S = S || A.d('shared') || {};
+    items = items.filter(live);
     const offers = items.map(p => offerOf(p, S, opts.cat));
     const g = A.gallery(offers.map(o => ({src:o.src, alt:o.alt})));
     return `<div class="offer-grid${offers.length + (opts.game ? 1 : 0) <= 2 ? ' few' : ''}">${offers.map((o, i) => offerCard(o, i, g)).join('')}${opts.game ? gameCard() : ''}</div>`;
@@ -242,7 +258,7 @@
         <p class="os-kick">${E(T('featuredOffer'))}</p>
         <h3 class="os-title">${E(o.name)}</h3>
         <div class="o-tags">${o.words.map(w => `<span class="o-tag">${E(w)}</span>`).join('')}${offerTags(o)}</div>
-        ${o.price ? `<div class="os-price"><span class="op-row"><b class="os-n" data-count="${o.price}">${E(A.fmtNum(o.price))}</b><span class="op-u">${E(T('baht'))}</span></span>${fxSpan(o.price)}</div>` : `<p class="os-ask">${I('message-circle')}${E(T('askPrice'))}</p>`}
+        ${o.price ? `<div class="os-price"><span class="op-row">${priceFrom(o)}<b class="os-n" data-count="${o.price}">${E(A.fmtNum(o.price))}</b><span class="op-u">${E(T('baht'))}</span></span>${fxSpan(o.price)}</div>` : `<p class="os-ask">${I('message-circle')}${E(T('askPrice'))}</p>`}${until(o)}
         <div class="os-pick" data-cur-picker></div>
         <p class="os-ask-l">${E(T('askOffer'))}</p>
         <div class="os-acts"><a class="o-btn ln lg" href="${A.url(o.line)}" target="_blank" rel="noopener">${I('line')}<span>LINE</span></a><a class="o-btn wa lg" href="${A.url(o.wa)}" target="_blank" rel="noopener">${I('whatsapp')}<span>WhatsApp</span></a>${o.cat ? `<a class="btn btn-ghost btn-sm os-more" href="${A.svcUrl(o.cat)}">${E(T('seeService'))} ${I('arrow-right')}</a>` : ''}</div>
@@ -297,7 +313,7 @@
   async function home(){
     const S = A.d('shared') || {}, H = A.d('home') || {}, About = A.d('about') || {}, Fd = A.d('founder');
     const reviews = (H.reviews && H.reviews.items) || [];
-    const promos = (H.promos && H.promos.items) || [];
+    const promos = ((H.promos && H.promos.items) || []).filter(live);
     const news = (H.news && H.news.items) || [];
     main().innerHTML = `
     <section class="hero-body" id="hero">
@@ -499,7 +515,7 @@
     if (!D) { main().innerHTML = phead(T('notFoundH'), T('loadError'), [homeCrumb(), [T('services'), 'services.html'], [key]]); return; }
     A.setMeta(D.title || D.name, D.desc);
     const nm = svcName(S, key);
-    const promos = D.promos || [];
+    const promos = (D.promos || []).filter(live);
     const crumbs = [homeCrumb(), [T('services'), 'services.html'], [nm]];
     const intro = (D.intro || []);
     const introP = intro.filter(x => !/^✔/.test(x)), ticks = intro.filter(x => /^✔/.test(x)).map(x => x.replace(/^✔\s*/, ''));
@@ -689,7 +705,7 @@
   async function promotions(){
     const S = A.d('shared') || {}, D = A.d('promotions') || {};
     A.setMeta(D.title, D.desc);
-    const items = D.items || [];
+    const items = (D.items || []).filter(live);
     const start = A.param('c') && svcCats().includes(A.param('c')) ? A.param('c') : 'all';
     const filters = (D.filters || [{k:'all', x:T('all')}]).map(f => [f.k, f.k === 'all' ? T('all') : f.x]).filter(([k]) => k === 'all' || items.some(i => i.cat === k));
     const si = items.findIndex(p => p.price);
