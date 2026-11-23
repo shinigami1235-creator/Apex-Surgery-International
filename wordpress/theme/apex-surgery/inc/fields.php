@@ -77,7 +77,7 @@ function apex_field_html( array $f, $v, string $name, string $lang, bool $in_row
 			echo $label . '<input type="date" id="' . $id . '" name="' . esc_attr( $name ) . '" value="' . esc_attr( (string) $v ) . '">' . $help;
 			break;
 		case 'number':
-			echo $label . '<input type="number" step="any" class="small-text" id="' . $id . '" name="' . esc_attr( $name ) . '" value="' . esc_attr( $v === null ? '' : (string) $v ) . '">' . $help;
+			echo $label . '<input type="number" step="any" class="small-text" style="width:9em" id="' . $id . '" name="' . esc_attr( $name ) . '" value="' . esc_attr( $v === null ? '' : (string) $v ) . '">' . $help;
 			break;
 		case 'textarea':
 			echo $label . '<textarea class="widefat" rows="3" id="' . $id . '" name="' . esc_attr( $name ) . '">' . esc_textarea( (string) $v ) . '</textarea>' . $help;
