@@ -6,21 +6,21 @@ import { FACTS, PROCS } from './content.js';
 import { LEARN_SET_SIZE } from './config.js';
 
 const UI = {
-  title: { en: 'Learn', th: 'เรียนรู้' },
-  q: { en: 'Question {n} of {t}', th: 'ข้อ {n} จาก {t}' },
-  fact: { en: 'Fact', th: 'จริง' },
-  myth: { en: 'Myth', th: 'เข้าใจผิด' },
-  right: { en: 'Correct', th: 'ถูกต้อง' },
-  wrong: { en: 'Incorrect', th: 'ไม่ถูกต้อง' },
-  next: { en: 'Next', th: 'ข้อต่อไป' },
-  finish: { en: 'Finish set', th: 'จบชุดคำถาม' },
-  done: { en: 'Set complete', th: 'ทำครบชุดแล้ว' },
-  score: { en: '{c} of {t} correct', th: 'ตอบถูก {c} จาก {t} ข้อ' },
-  bonus: { en: '1 extra scored try added for today.', th: 'เพิ่มสิทธิ์เล่นแบบนับคะแนน 1 ครั้งสำหรับวันนี้' },
-  bonusUsed: { en: "Today's extra try is already added.", th: 'วันนี้ได้รับสิทธิ์เพิ่มแล้ว' },
-  again: { en: 'New set', th: 'ชุดใหม่' },
-  back: { en: 'Games', th: 'เกม' },
-  ask: { en: 'Fact or myth?', th: 'จริงหรือเข้าใจผิด' }
+  title: { en: 'Learn', th: 'เรียนรู้', zh: '学习' },
+  q: { en: 'Question {n} of {t}', th: 'ข้อ {n} จาก {t}', zh: '第 {n} 题，共 {t} 题' },
+  fact: { en: 'Fact', th: 'จริง', zh: '事实' },
+  myth: { en: 'Myth', th: 'เข้าใจผิด', zh: '误区' },
+  right: { en: 'Correct', th: 'ถูกต้อง', zh: '正确' },
+  wrong: { en: 'Incorrect', th: 'ไม่ถูกต้อง', zh: '错误' },
+  next: { en: 'Next', th: 'ข้อต่อไป', zh: '下一个' },
+  finish: { en: 'Finish set', th: 'จบชุดคำถาม', zh: '完成本组' },
+  done: { en: 'Set complete', th: 'ทำครบชุดแล้ว', zh: '本组完成' },
+  score: { en: '{c} of {t} correct', th: 'ตอบถูก {c} จาก {t} ข้อ', zh: '答对 {c} 题，共 {t} 题' },
+  bonus: { en: '1 extra scored try added for today.', th: 'เพิ่มสิทธิ์เล่นแบบนับคะแนน 1 ครั้งสำหรับวันนี้', zh: '今天已增加 1 次计分机会。' },
+  bonusUsed: { en: "Today's extra try is already added.", th: 'วันนี้ได้รับสิทธิ์เพิ่มแล้ว', zh: '今天的额外机会已经加过了。' },
+  again: { en: 'New set', th: 'ชุดใหม่', zh: '新的一组' },
+  back: { en: 'Games', th: 'เกม', zh: '游戏' },
+  ask: { en: 'Fact or myth?', th: 'จริงหรือเข้าใจผิด', zh: '事实还是误区？' }
 };
 const f = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => o[k]);
 

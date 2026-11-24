@@ -60,7 +60,7 @@ fs.writeFileSync(path.join(THEME, 'data/version.txt'), VER);
 // 3. content
 fs.rmSync(IMPORT, {recursive:true, force:true});
 fs.mkdirSync(IMPORT, {recursive:true});
-for (const lang of ['en', 'th']) {
+for (const lang of ['en', 'th', 'zh']) {
   const D = run(walk(path.join(SITE, 'assets/data', lang)).filter(f => f.endsWith('.js'))).APEX._d;
   fs.writeFileSync(path.join(IMPORT, `content-${lang}.json`), JSON.stringify(D));
   console.log(lang, Object.keys(D).length, 'content files');

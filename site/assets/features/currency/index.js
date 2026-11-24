@@ -27,25 +27,25 @@ export const CODES = ['THB', 'USD', 'AUD', 'GBP', 'EUR', 'SGD', 'CNY', 'JPY', 'A
 const KEY = 'apex.currency';
 
 const CUR = {
-  THB: { sym: '฿', en: 'Thai baht', th: 'บาท' },
-  USD: { sym: 'US$', en: 'US dollar', th: 'ดอลลาร์สหรัฐ' },
-  AUD: { sym: 'A$', en: 'Australian dollar', th: 'ดอลลาร์ออสเตรเลีย' },
-  GBP: { sym: '£', en: 'British pound', th: 'ปอนด์สเตอร์ลิง' },
-  EUR: { sym: '€', en: 'Euro', th: 'ยูโร' },
-  SGD: { sym: 'S$', en: 'Singapore dollar', th: 'ดอลลาร์สิงคโปร์' },
-  CNY: { sym: 'CN¥', en: 'Chinese yuan', th: 'หยวนจีน' },
-  JPY: { sym: 'JP¥', en: 'Japanese yen', th: 'เยนญี่ปุ่น' },
-  AED: { sym: 'AED ', en: 'UAE dirham', th: 'ดีแรห์มสหรัฐอาหรับเอมิเรตส์' },
-  HKD: { sym: 'HK$', en: 'Hong Kong dollar', th: 'ดอลลาร์ฮ่องกง' },
-  KRW: { sym: '₩', en: 'Korean won', th: 'วอนเกาหลีใต้' },
-  PHP: { sym: '₱', en: 'Philippine peso', th: 'เปโซฟิลิปปินส์' }
+  THB: { sym: '฿', en: 'Thai baht', th: 'บาท', zh: '泰铢' },
+  USD: { sym: 'US$', en: 'US dollar', th: 'ดอลลาร์สหรัฐ', zh: '美元' },
+  AUD: { sym: 'A$', en: 'Australian dollar', th: 'ดอลลาร์ออสเตรเลีย', zh: '澳元' },
+  GBP: { sym: '£', en: 'British pound', th: 'ปอนด์สเตอร์ลิง', zh: '英镑' },
+  EUR: { sym: '€', en: 'Euro', th: 'ยูโร', zh: '欧元' },
+  SGD: { sym: 'S$', en: 'Singapore dollar', th: 'ดอลลาร์สิงคโปร์', zh: '新加坡元' },
+  CNY: { sym: 'CN¥', en: 'Chinese yuan', th: 'หยวนจีน', zh: '人民币' },
+  JPY: { sym: 'JP¥', en: 'Japanese yen', th: 'เยนญี่ปุ่น', zh: '日元' },
+  AED: { sym: 'AED ', en: 'UAE dirham', th: 'ดีแรห์มสหรัฐอาหรับเอมิเรตส์', zh: '阿联酋迪拉姆' },
+  HKD: { sym: 'HK$', en: 'Hong Kong dollar', th: 'ดอลลาร์ฮ่องกง', zh: '港元' },
+  KRW: { sym: '₩', en: 'Korean won', th: 'วอนเกาหลีใต้', zh: '韩元' },
+  PHP: { sym: '₱', en: 'Philippine peso', th: 'เปโซฟิลิปปินส์', zh: '菲律宾比索' }
 };
 
 const T = {
-  label: { en: 'Currency', th: 'สกุลเงิน' },
-  note: { en: 'Approximate, rates as of 21 Oct 2026.', th: 'ราคาโดยประมาณ อัตราแลกเปลี่ยน ณ 21 ต.ค. 2569' },
-  title: { en: 'Prices', th: 'ราคา' },
-  baht: { en: 'Price in baht', th: 'ราคาเป็นบาท' }
+  label: { en: 'Currency', th: 'สกุลเงิน', zh: '货币' },
+  note: { en: 'Approximate, rates as of 21 Oct 2026.', th: 'ราคาโดยประมาณ อัตราแลกเปลี่ยน ณ 21 ต.ค. 2569', zh: '约数，汇率截至 2026 年 10 月 21 日。' },
+  title: { en: 'Prices', th: 'ราคา', zh: '价格' },
+  baht: { en: 'Price in baht', th: 'ราคาเป็นบาท', zh: '泰铢价格' }
 };
 const tx = (o, lang) => o[lang] ?? o.en;
 
@@ -116,14 +116,14 @@ export function set(code) {
 }
 
 /* ---------- formatting ---------- */
-const nf = lang => new Intl.NumberFormat(lang === 'th' ? 'th-TH' : 'en-US', { maximumFractionDigits: 0 });
+const nf = lang => new Intl.NumberFormat(({th:'th-TH', zh:'zh-CN'}[lang] || 'en-US'), { maximumFractionDigits: 0 });
 export function convert(thb, code) { return thb / THB_PER[code]; }
 export function symbol(code) { return (CUR[code] || {}).sym || code + ' '; }
 function roundFx(v, code) {
   const step = code === 'KRW' ? 1000 : code === 'JPY' ? 100 : v >= 1000 ? 10 : 1;
   return Math.round(v / step) * step;
 }
-export function bahtText(thb, lang = 'en') { return lang === 'th' ? `${nf(lang).format(thb)} บาท` : `฿${nf(lang).format(thb)}`; }
+export function bahtText(thb, lang = 'en') { return lang === 'th' ? `${nf(lang).format(thb)} บาท` : lang === 'zh' ? `${nf(lang).format(thb)} 泰铢` : `฿${nf(lang).format(thb)}`; }
 export function fxText(thb, code, lang = 'en') {
   if (code === 'THB') return '';
   return `≈ ${CUR[code].sym}${nf('en').format(roundFx(convert(thb, code), code))}`;
@@ -133,7 +133,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 /* HTML for one price. The page keeps it current through the apex:currency listener below. */
 export function price(thb, opts = {}) {
   injectCSS();
-  const lang = opts.lang === 'th' ? 'th' : 'en';
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en');
   const code = opts.currency || get();
   const fx = fxText(thb, code, lang);
   return `<span class="apx-price" data-thb="${+thb}" data-lang="${lang}">` +
@@ -162,7 +162,7 @@ if (typeof window !== 'undefined') {
 let pid = 0;
 export function picker(el, opts = {}) {
   injectCSS();
-  const lang = opts.lang === 'th' ? 'th' : 'en';
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en');
   const id = 'apxk-sel-' + (++pid);
   const sel = document.createElement('select');
   sel.id = id;
@@ -188,7 +188,7 @@ export function picker(el, opts = {}) {
 /* ---------- module mount: picker plus a list of prices ---------- */
 export function mount(container, opts = {}) {
   injectCSS();
-  const lang = opts.lang === 'th' ? 'th' : 'en';
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en');
   const prices = opts.prices || [{ thb: 19900 }, { thb: 69000 }, { thb: 100000 }, { thb: 180000 }];
   const root = document.createElement('div');
   root.className = 'apxk';

@@ -40,16 +40,16 @@ export const BREAST = [{"id":"motiva-round","brand":"Motiva","name":"Motiva Roun
 /* chin: Implantech styles. mm forward at the centre, span and height in mm, plate = full-thickness
    front width, arm = thickness of the side arms */
 export const CHIN = [
-  {id:'button', en:'Central', th:'ทรงกลางคาง', src:'Implantech Curvilinear',
-   desc:{en:'Adds forward projection at the point of the chin only.', th:'เพิ่มความยื่นเฉพาะปลายคาง'},
+  {id:'button', en:'Central', th:'ทรงกลางคาง', zh: '中央型', src:'Implantech Curvilinear',
+   desc:{en:'Adds forward projection at the point of the chin only.', th:'เพิ่มความยื่นเฉพาะปลายคาง', zh: '仅增加下巴最前端的前突度。'},
    sizes:[{s:'XS', mm:4.5, spanMm:31, heightMm:11}, {s:'S', mm:6.5, spanMm:32, heightMm:14}, {s:'M', mm:6.5, spanMm:36, heightMm:14},
           {s:'L', mm:6.5, spanMm:44, heightMm:14}, {s:'XL', mm:7, spanMm:40, heightMm:15}].map(z => ({...z, plateMm:z.spanMm * .35, armMm:0}))},
-  {id:'extended', en:'Extended', th:'ทรงยาวรับกรอบหน้า', src:'Implantech Extended Anatomical',
-   desc:{en:'Arms run along the jaw, so the chin and jawline come forward together.', th:'แขนของซิลิโคนวางตามแนวกราม คางและกรอบหน้ายื่นไปพร้อมกัน'},
+  {id:'extended', en:'Extended', th:'ทรงยาวรับกรอบหน้า', zh: '加长型', src:'Implantech Extended Anatomical',
+   desc:{en:'Arms run along the jaw, so the chin and jawline come forward together.', th:'แขนของซิลิโคนวางตามแนวกราม คางและกรอบหน้ายื่นไปพร้อมกัน', zh: '两侧延伸部分沿下颌线分布，下巴与下颌线同时向前。'},
    sizes:[{s:'S', mm:4.5, spanMm:90, heightMm:10, plateMm:18, armMm:2}, {s:'M', mm:5, spanMm:95, heightMm:12, plateMm:21, armMm:4},
           {s:'L', mm:6, spanMm:110, heightMm:14, plateMm:24, armMm:4}, {s:'XL', mm:7.5, spanMm:110, heightMm:14, plateMm:25, armMm:5}]},
-  {id:'square', en:'Square', th:'ทรงเหลี่ยม', src:'Implantech Terino Square Style I',
-   desc:{en:'A wide flat front gives a squarer chin.', th:'ด้านหน้ากว้างและแบน ให้คางดูเหลี่ยมขึ้น'},
+  {id:'square', en:'Square', th:'ทรงเหลี่ยม', zh: '方形', src:'Implantech Terino Square Style I',
+   desc:{en:'A wide flat front gives a squarer chin.', th:'ด้านหน้ากว้างและแบน ให้คางดูเหลี่ยมขึ้น', zh: '宽而平的前部使下巴更方。'},
    sizes:[{s:'S', mm:6, spanMm:98, heightMm:13, plateMm:40, armMm:4}, {s:'M', mm:7, spanMm:109, heightMm:14, plateMm:42, armMm:3},
           {s:'L', mm:8, spanMm:120, heightMm:16, plateMm:46, armMm:3}, {s:'XL', mm:11, spanMm:128, heightMm:16, plateMm:42, armMm:4}]},
 ];
@@ -59,7 +59,7 @@ export const FOREHEAD = {src:'Park 2016; Eppley', widthMm:112, sizes:[{s:'3 mm',
    estimate, since no maker publishes one */
 export const NOSE = {
   src:'Implantech Flowers Dorsal; Aesthet Surg J 2025 (2 to 7 mm in East Asian patients)', widthMm:10,
-  shapes:[{id:'i', en:'I-shape', th:'ทรง I', desc:{en:'Raises the bridge from between the eyes to above the tip.', th:'เสริมสันจมูกตั้งแต่หว่างตาถึงเหนือปลายจมูก'}},
-          {id:'l', en:'L-shape', th:'ทรง L', desc:{en:'Raises the bridge and, through the strut under the tip, brings the tip forward.', th:'เสริมสันจมูกและดันปลายจมูกให้ยื่นขึ้นด้วยขาซิลิโคนใต้ปลายจมูก'}}],
+  shapes:[{id:'i', en:'I-shape', th:'ทรง I', zh: 'I 形', desc:{en:'Raises the bridge from between the eyes to above the tip.', th:'เสริมสันจมูกตั้งแต่หว่างตาถึงเหนือปลายจมูก', zh: '垫高鼻梁，从两眼之间直至鼻尖上方。'}},
+          {id:'l', en:'L-shape', th:'ทรง L', zh: 'L 形', desc:{en:'Raises the bridge and, through the strut under the tip, brings the tip forward.', th:'เสริมสันจมูกและดันปลายจมูกให้ยื่นขึ้นด้วยขาซิลิโคนใต้ปลายจมูก', zh: '垫高鼻梁，并通过鼻尖下方的支撑条使鼻尖向前。'}}],
   sizes:[{s:'1.5 mm', mm:1.5, tipMm:1.5}, {s:'2.5 mm', mm:2.5, tipMm:2}, {s:'3.5 mm', mm:3.5, tipMm:2.5}, {s:'4.5 mm', mm:4.5, tipMm:3}],
 };

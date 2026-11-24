@@ -28,55 +28,55 @@ export const SURGERY_AFTER_CONSULT = 1;
 export const FOLLOWUP_BEFORE_FLIGHT = 1;
 
 const T = {
-  sendH: { en: 'Send these dates to Apex', th: 'ส่งวันเหล่านี้ให้ Apex' },
-  sendP: { en: 'The team checks the surgeon\'s schedule and replies with the dates they can do.', th: 'ทีมงานจะเช็กตารางศัลยแพทย์และตอบกลับวันที่ทำได้' },
-  sendWa: { en: 'Send on WhatsApp', th: 'ส่งทาง WhatsApp' },
-  sendLine: { en: 'Send on LINE', th: 'ส่งทาง LINE' },
-  msgHi: { en: 'Hello Apex, I would like to book these dates.', th: 'สวัสดี Apex อยากจองวันตามนี้' },
-  msgProc: { en: 'Procedure', th: 'หัตถการ' },
-  msgBranch: { en: 'Branch', th: 'สาขา' },
-  msgArrive: { en: 'Arrival', th: 'วันเดินทางมาถึง' },
-  msgSurgery: { en: 'Surgery', th: 'วันผ่าตัด' },
-  msgFly: { en: 'Flying home', th: 'วันเดินทางกลับ' },
-  title: { en: 'Trip planner', th: 'วางแผนการเดินทาง' },
-  procs: { en: 'Procedure', th: 'หัตถการ' },
-  procsHint: { en: 'Which procedures are you planning? Choose one or more.', th: 'วางแผนทำหัตถการอะไรบ้าง เลือกได้มากกว่าหนึ่ง' },
-  branch: { en: 'Branch', th: 'สาขา' },
-  arrival: { en: 'Arrival date', th: 'วันเดินทางถึง' },
-  arrivalHint: { en: 'Which day do you land in Thailand?', th: 'เดินทางถึงประเทศไทยวันไหน' },
-  needAll: { en: 'Choose a procedure, a branch and an arrival date.', th: 'เลือกหัตถการ สาขา และวันเดินทางถึง' },
-  errProc: { en: 'Procedure: choose at least one.', th: 'หัตถการ: เลือกอย่างน้อยหนึ่งรายการ' },
-  errDate: { en: 'Arrival date: the date is in the past.', th: 'วันเดินทางถึง: วันที่นี้ผ่านไปแล้ว' },
-  stay: { en: 'Stay in Thailand', th: 'ระยะเวลาอยู่ในประเทศไทย' },
-  nights: { en: '{n} nights', th: '{n} คืน' },
-  fly: { en: 'Earliest flight home', th: 'วันบินกลับเร็วที่สุด' },
-  rule: { en: 'Stay after surgery: {n} days.', th: 'อยู่ต่อหลังผ่าตัด {n} วัน' },
-  ruleMulti: { en: 'Stay after surgery: {n} days, since procedures done together add {x} days to the longest stay.', th: 'อยู่ต่อหลังผ่าตัด {n} วัน เนื่องจากการทำหลายหัตถการพร้อมกันบวกเพิ่ม {x} วันจากระยะที่นานที่สุด' },
-  timeline: { en: 'Day by day', th: 'กำหนดการรายวัน' },
-  after: { en: 'After you fly home', th: 'หลังบินกลับบ้าน' },
-  eArrive: { en: 'Arrival', th: 'เดินทางถึง' },
-  eArriveD: { en: 'You land and check in near the {b} branch.', th: 'เดินทางถึงและเข้าพักใกล้สาขา{b}' },
-  eConsult: { en: 'Consultation', th: 'ปรึกษาแพทย์' },
-  eConsultD: { en: 'The surgeon examines you and confirms the plan and dates.', th: 'ศัลยแพทย์ตรวจและยืนยันแผนการรักษาและกำหนดวัน' },
-  eSurgery: { en: 'Surgery', th: 'วันผ่าตัด' },
-  eFollow: { en: 'Follow-up check', th: 'ตรวจติดตามผล' },
-  eFollowD: { en: 'The surgeon checks your recovery before you fly.', th: 'ศัลยแพทย์ตรวจการฟื้นตัวก่อนเดินทางกลับ' },
-  eFly: { en: 'Earliest flight home', th: 'วันบินกลับเร็วที่สุด' },
-  afterSurgery: { en: 'Day {n} after surgery', th: 'วันที่ {n} หลังผ่าตัด' },
-  until: { en: 'Until {d}', th: 'ถึง {d}' },
-  to: { en: '{a} to {b}', th: '{a} ถึง {b}' },
-  confirm: { en: 'Your surgeon confirms these dates at consultation.', th: 'ศัลยแพทย์จะยืนยันวันเหล่านี้ในวันปรึกษา' },
-  ics: { en: 'Add to calendar', th: 'เพิ่มในปฏิทิน' },
-  save: { en: 'Save to My Plan', th: 'บันทึกในแผนของฉัน' },
-  savedPlan: { en: 'Saved to My Plan', th: 'บันทึกในแผนแล้ว' },
-  openPlan: { en: 'Open My Plan', th: 'เปิดแผนของฉัน' },
-  call: { en: 'Call', th: 'โทร' },
-  map: { en: 'Map', th: 'แผนที่' },
+  sendH: { en: 'Send these dates to Apex', th: 'ส่งวันเหล่านี้ให้ Apex', zh: '将这些日期发送给 Apex' },
+  sendP: { en: 'The team checks the surgeon\'s schedule and replies with the dates they can do.', th: 'ทีมงานจะเช็กตารางศัลยแพทย์และตอบกลับวันที่ทำได้', zh: '团队会核对医生的排期，并回复可安排的日期。' },
+  sendWa: { en: 'Send on WhatsApp', th: 'ส่งทาง WhatsApp', zh: '通过 WhatsApp 发送' },
+  sendLine: { en: 'Send on LINE', th: 'ส่งทาง LINE', zh: '通过 LINE 发送' },
+  msgHi: { en: 'Hello Apex, I would like to book these dates.', th: 'สวัสดี Apex อยากจองวันตามนี้', zh: '您好 Apex，我想预约这些日期。' },
+  msgProc: { en: 'Procedure', th: 'หัตถการ', zh: '手术项目' },
+  msgBranch: { en: 'Branch', th: 'สาขา', zh: '分院' },
+  msgArrive: { en: 'Arrival', th: 'วันเดินทางมาถึง', zh: '抵达' },
+  msgSurgery: { en: 'Surgery', th: 'วันผ่าตัด', zh: '手术' },
+  msgFly: { en: 'Flying home', th: 'วันเดินทางกลับ', zh: '返程' },
+  title: { en: 'Trip planner', th: 'วางแผนการเดินทาง', zh: '行程规划' },
+  procs: { en: 'Procedure', th: 'หัตถการ', zh: '手术项目' },
+  procsHint: { en: 'Which procedures are you planning? Choose one or more.', th: 'วางแผนทำหัตถการอะไรบ้าง เลือกได้มากกว่าหนึ่ง', zh: '您计划做哪些手术？可多选。' },
+  branch: { en: 'Branch', th: 'สาขา', zh: '分院' },
+  arrival: { en: 'Arrival date', th: 'วันเดินทางถึง', zh: '抵达日期' },
+  arrivalHint: { en: 'Which day do you land in Thailand?', th: 'เดินทางถึงประเทศไทยวันไหน', zh: '您哪天抵达泰国？' },
+  needAll: { en: 'Choose a procedure, a branch and an arrival date.', th: 'เลือกหัตถการ สาขา และวันเดินทางถึง', zh: '请选择手术项目、分院和抵达日期。' },
+  errProc: { en: 'Procedure: choose at least one.', th: 'หัตถการ: เลือกอย่างน้อยหนึ่งรายการ', zh: '手术项目：请至少选择一项。' },
+  errDate: { en: 'Arrival date: the date is in the past.', th: 'วันเดินทางถึง: วันที่นี้ผ่านไปแล้ว', zh: '抵达日期：该日期已过。' },
+  stay: { en: 'Stay in Thailand', th: 'ระยะเวลาอยู่ในประเทศไทย', zh: '在泰国停留' },
+  nights: { en: '{n} nights', th: '{n} คืน', zh: '{n} 晚' },
+  fly: { en: 'Earliest flight home', th: 'วันบินกลับเร็วที่สุด', zh: '最早返程航班' },
+  rule: { en: 'Stay after surgery: {n} days.', th: 'อยู่ต่อหลังผ่าตัด {n} วัน', zh: '术后停留：{n} 天。' },
+  ruleMulti: { en: 'Stay after surgery: {n} days, since procedures done together add {x} days to the longest stay.', th: 'อยู่ต่อหลังผ่าตัด {n} วัน เนื่องจากการทำหลายหัตถการพร้อมกันบวกเพิ่ม {x} วันจากระยะที่นานที่สุด', zh: '术后停留：{n} 天，因为同时进行的手术会使最长的停留时间增加 {x} 天。' },
+  timeline: { en: 'Day by day', th: 'กำหนดการรายวัน', zh: '每日安排' },
+  after: { en: 'After you fly home', th: 'หลังบินกลับบ้าน', zh: '返程之后' },
+  eArrive: { en: 'Arrival', th: 'เดินทางถึง', zh: '抵达' },
+  eArriveD: { en: 'You land and check in near the {b} branch.', th: 'เดินทางถึงและเข้าพักใกล้สาขา{b}', zh: '您抵达后，在{b}分院附近办理入住。' },
+  eConsult: { en: 'Consultation', th: 'ปรึกษาแพทย์', zh: '咨询' },
+  eConsultD: { en: 'The surgeon examines you and confirms the plan and dates.', th: 'ศัลยแพทย์ตรวจและยืนยันแผนการรักษาและกำหนดวัน', zh: '医生为您检查，并确认方案和日期。' },
+  eSurgery: { en: 'Surgery', th: 'วันผ่าตัด', zh: '手术' },
+  eFollow: { en: 'Follow-up check', th: 'ตรวจติดตามผล', zh: '复诊检查' },
+  eFollowD: { en: 'The surgeon checks your recovery before you fly.', th: 'ศัลยแพทย์ตรวจการฟื้นตัวก่อนเดินทางกลับ', zh: '医生在您返程前检查恢复情况。' },
+  eFly: { en: 'Earliest flight home', th: 'วันบินกลับเร็วที่สุด', zh: '最早返程航班' },
+  afterSurgery: { en: 'Day {n} after surgery', th: 'วันที่ {n} หลังผ่าตัด', zh: '术后第 {n} 天' },
+  until: { en: 'Until {d}', th: 'ถึง {d}', zh: '截止 {d}' },
+  to: { en: '{a} to {b}', th: '{a} ถึง {b}', zh: '{a} 至 {b}' },
+  confirm: { en: 'Your surgeon confirms these dates at consultation.', th: 'ศัลยแพทย์จะยืนยันวันเหล่านี้ในวันปรึกษา', zh: '医生将在咨询时确认这些日期。' },
+  ics: { en: 'Add to calendar', th: 'เพิ่มในปฏิทิน', zh: '添加到日历' },
+  save: { en: 'Save to My Plan', th: 'บันทึกในแผนของฉัน', zh: '保存到我的方案' },
+  savedPlan: { en: 'Saved to My Plan', th: 'บันทึกในแผนแล้ว', zh: '已保存到我的方案' },
+  openPlan: { en: 'Open My Plan', th: 'เปิดแผนของฉัน', zh: '打开我的方案' },
+  call: { en: 'Call', th: 'โทร', zh: '致电' },
+  map: { en: 'Map', th: 'แผนที่', zh: '地图' },
   hospital: { en: 'Apex Surgery Hospital', th: 'โรงพยาบาลศัลยกรรมตกแต่งเอเพ็กซ์' },
-  service: { en: 'Service page', th: 'หน้าบริการ' },
-  icsConsult: { en: 'Consultation, Apex Surgery Hospital', th: 'ปรึกษาแพทย์ โรงพยาบาลศัลยกรรมตกแต่งเอเพ็กซ์' },
-  icsSurgery: { en: 'Surgery, Apex Surgery Hospital', th: 'ผ่าตัด โรงพยาบาลศัลยกรรมตกแต่งเอเพ็กซ์' },
-  icsFly: { en: 'Earliest flight home', th: 'วันบินกลับเร็วที่สุด' }
+  service: { en: 'Service page', th: 'หน้าบริการ', zh: '服务页面' },
+  icsConsult: { en: 'Consultation, Apex Surgery Hospital', th: 'ปรึกษาแพทย์ โรงพยาบาลศัลยกรรมตกแต่งเอเพ็กซ์', zh: '咨询，Apex Surgery Hospital' },
+  icsSurgery: { en: 'Surgery, Apex Surgery Hospital', th: 'ผ่าตัด โรงพยาบาลศัลยกรรมตกแต่งเอเพ็กซ์', zh: '手术，Apex Surgery Hospital' },
+  icsFly: { en: 'Earliest flight home', th: 'วันบินกลับเร็วที่สุด', zh: '最早返程航班' }
 };
 
 const CSS = `
@@ -190,7 +190,7 @@ const toMs = iso => Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(
 const toIso = ms => new Date(ms).toISOString().slice(0, 10);
 export const addDays = (iso, n) => toIso(toMs(iso) + n * 86400e3);
 const todayIso = () => { const d = new Date(); return toIso(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); };
-const loc = lang => (lang === 'th' ? 'th-TH' : 'en-GB');
+const loc = lang => (({th:'th-TH', zh:'zh-CN'}[lang] || 'en-GB'));
 const fmt = (iso, lang, o) => new Date(toMs(iso)).toLocaleDateString(loc(lang), { timeZone: 'UTC', ...o });
 const fmtLong = (iso, lang) => fmt(iso, lang, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 const fmtShort = (iso, lang) => fmt(iso, lang, { day: 'numeric', month: 'short' });
@@ -255,12 +255,12 @@ export function buildICS(plan, { lang, address, branchName }) {
 export function mount(container, opts = {}) {
   const { wa: WHATSAPP, line: LINE_OA } = contactOf(opts);
   injectCSS('apxt-css', CSS);
-  const lang = opts.lang === 'th' ? 'th' : 'en';
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en');
   const L = o => t(o, lang);
   const base = opts.base || new URL('../../', import.meta.url).href;
   const serviceUrl = typeof opts.serviceUrl === 'function' ? opts.serviceUrl : k => `service.html?p=${k}`;
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) { /* host handler error */ } };
-  const site = new URL('../', base).href + (lang === 'th' ? 'th/' : '');
+  const site = new URL('../', base).href + (lang === 'en' ? '' : lang + '/');
   const links = { plan: site + 'my-plan.html', ...(opts.links || {}) };
   const uid = 'apxt' + Math.random().toString(36).slice(2, 7);
 

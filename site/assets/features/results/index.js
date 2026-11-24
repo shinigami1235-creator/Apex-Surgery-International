@@ -12,35 +12,37 @@ import { MAP } from './map.js';
 
 const RULE_TH = 'ใช้เป็นตัวอย่าง ผลจากการเข้ารับการรักษาพยาบาลสำหรับผู้ป่วยเฉพาะราย';
 const RULE_EN = 'Example only. Results from treatment of an individual patient.';
-const SITE = 'https://www.apexsurgeryhospital.com/';
-const abs = u => (u && u.startsWith('~/') ? SITE + u.slice(2) : u);
+let SITE = 'https://www.apexsurgeryhospital.com/';   // the review copy; WordPress passes its own address as opts.media
+let HOME = '';
+const site = u => HOME && u.startsWith('~/wp-content/uploads/apex-media/') ? HOME : SITE;
+const abs = u => (u && u.startsWith('~/') ? site(u) + u.slice(2) : u);
 const HERE = new URL('./', import.meta.url);
 const file = n => new URL(n, HERE).href;
 /* where to cut the pod's 2:3 window from each half: faces sit high; the liposuction photos carry a title band on top */
 const FOCUS = { lipo: '100%' };
 
 const T = {
-  pick: { en: 'Pick a procedure', th: 'เลือกหัตถการ' },
-  idle: { en: 'Pick a case', th: 'เลือกเคส' },
-  scan: { en: 'Processing {n}%', th: 'กำลังประมวลผล {n}%' },
-  done: { en: 'Done', th: 'เสร็จแล้ว' },
-  send: { en: 'Sending', th: 'กำลังส่งผล' },
-  again: { en: 'Run again', th: 'ดูอีกครั้ง' },
-  next: { en: 'Next case', th: 'เคสถัดไป' },
-  kick: { en: 'Apex Surgery Hospital', th: 'Apex Surgery Hospital' },
-  proc: { en: 'Procedure', th: 'หัตถการ' },
-  cases: { en: 'Cases', th: 'เคส' },
-  nCases: { en: '{n} cases', th: '{n} เคส' },
-  caseN: { en: 'Case {n}', th: 'เคส {n}' },
-  before: { en: 'Before', th: 'ก่อน' },
-  after: { en: 'After', th: 'หลัง' },
-  thisCase: { en: 'This case', th: 'เคสนี้' },
-  plain: { en: 'Photos from Apex Surgery Hospital. The dates are on the photos.', th: 'ภาพจาก Apex Surgery Hospital วันที่อยู่บนภาพ' },
-  story: { en: 'Patient review', th: 'รีวิวจากผู้เข้ารับบริการ' },
-  ask: { en: 'Ask about this result', th: 'สอบถามเกี่ยวกับผลลัพธ์นี้' },
-  big: { en: 'See it large', th: 'ดูภาพใหญ่' },
-  close: { en: 'Close', th: 'ปิด' },
-  stage: { en: 'The results pod', th: 'เครื่องแสดงผลลัพธ์' }
+  pick: { en: 'Pick a procedure', th: 'เลือกหัตถการ', zh: '选择手术项目' },
+  idle: { en: 'Pick a case', th: 'เลือกเคส', zh: '选择案例' },
+  scan: { en: 'Processing {n}%', th: 'กำลังประมวลผล {n}%', zh: '处理中 {n}%' },
+  done: { en: 'Done', th: 'เสร็จแล้ว', zh: '完成' },
+  send: { en: 'Sending', th: 'กำลังส่งผล', zh: '发送中' },
+  again: { en: 'Run again', th: 'ดูอีกครั้ง', zh: '重新运行' },
+  next: { en: 'Next case', th: 'เคสถัดไป', zh: '下一个案例' },
+  kick: { en: 'Apex Surgery Hospital', th: 'Apex Surgery Hospital', zh: 'Apex Surgery Hospital' },
+  proc: { en: 'Procedure', th: 'หัตถการ', zh: '手术项目' },
+  cases: { en: 'Cases', th: 'เคส', zh: '案例' },
+  nCases: { en: '{n} cases', th: '{n} เคส', zh: '{n} 个案例' },
+  caseN: { en: 'Case {n}', th: 'เคส {n}', zh: '案例 {n}' },
+  before: { en: 'Before', th: 'ก่อน', zh: '术前' },
+  after: { en: 'After', th: 'หลัง', zh: '术后' },
+  thisCase: { en: 'This case', th: 'เคสนี้', zh: '本案例' },
+  plain: { en: 'Photos from Apex Surgery Hospital. The dates are on the photos.', th: 'ภาพจาก Apex Surgery Hospital วันที่อยู่บนภาพ', zh: '照片来自 Apex Surgery Hospital，拍摄日期见照片。' },
+  story: { en: 'Patient review', th: 'รีวิวจากผู้เข้ารับบริการ', zh: '患者评价' },
+  ask: { en: 'Ask about this result', th: 'สอบถามเกี่ยวกับผลลัพธ์นี้', zh: '咨询此效果' },
+  big: { en: 'See it large', th: 'ดูภาพใหญ่', zh: '查看大图' },
+  close: { en: 'Close', th: 'ปิด', zh: '关闭' },
+  stage: { en: 'The results pod', th: 'เครื่องแสดงผลลัพธ์', zh: '效果展示舱' }
 };
 
 const ICON = {
@@ -164,9 +166,11 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 const loadImg = src => new Promise(res => { const i = new Image(); const to = setTimeout(res, 5000); i.onload = i.onerror = () => { clearTimeout(to); res(); }; i.src = src; });
 
 export function mount(el, opts = {}) {
+  if (opts.media) SITE = opts.media;
+  if (opts.home) HOME = opts.home;
   injectCss();
-  const lang = opts.lang === 'th' ? 'th' : 'en';
-  const L = (k, v = {}) => T[k][lang].replace(/\{(\w+)\}/g, (_, n) => v[n] ?? '');
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en');
+  const L = (k, v = {}) => (T[k][lang] ?? T[k].en).replace(/\{(\w+)\}/g, (_, n) => v[n] ?? '');
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) { /* analytics only */ } };
   const cases = (opts.cases || []).filter(c => c && c.src && c.layout === 'lr').map(c => Object.assign({}, c, { url: abs(c.src) }));
   const cats = (opts.cats || []).map(c => Object.assign({}, c, { list: cases.filter(x => x.cat === c.k) })).filter(c => c.list.length);

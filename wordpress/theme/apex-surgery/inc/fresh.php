@@ -123,7 +123,7 @@ function apex_fresh_page(): void {
 	echo '</form>';
 	foreach ( APEX_LANGS as $l ) {
 		$F = apex_with_lang( $l, fn() => apex_fresh_data( $l ) );
-		echo '<h2>' . esc_html( $l === 'th' ? 'ไทย' : 'English' ) . '</h2>';
+		echo '<h2>' . esc_html( [ 'th' => 'ไทย', 'zh' => '中文' ][ $l ] ?? 'English' ) . '</h2>';
 		if ( ! $F['items'] ) { echo '<p>' . esc_html__( "Nothing is new. The home page leaves out What's new until something is.", 'apex' ) . '</p>'; continue; }
 		echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'New from', 'apex' ) . '</th><th>' . esc_html__( 'Kind', 'apex' ) . '</th><th>' . esc_html__( 'Title', 'apex' ) . '</th></tr></thead><tbody>';
 		foreach ( $F['items'] as $x ) echo '<tr><td>' . esc_html( $x['date'] ) . '</td><td>' . esc_html( ucfirst( $x['kind'] ) ) . '</td><td>' . esc_html( $x['title'] ) . '</td></tr>';
@@ -142,6 +142,7 @@ function apex_fresh_card( array $x, int $i ): string {
 }
 function apex_fresh_section( $F ): string {
 	$items = is_array( $F ) ? ( $F['items'] ?? [] ) : [];
+	$items = array_values( array_filter( $items, fn( $x ) => empty( $x['href'] ) || apex_page_on( (string) $x['href'] ) ) );   // nothing points at a part that is switched off
 	if ( ! $items ) return '';
 	$E = 'apex_e';
 	$cards = '';

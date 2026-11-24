@@ -14,30 +14,18 @@
 
   /* ---------- photos for pages and articles that have none of their own: Apex's operating room, rooms and counter ---------- */
   const PH = {
-    orTable: ['img/apex/or-table.webp', 'The operating table at Apex Surgery Hospital', 'เตียงผ่าตัดที่ Apex Surgery Hospital'],
-    or: ['img/hospital/bkk-or.webp', 'The operating room, Phloen Chit', 'ห้องผ่าตัด สาขาเพลินจิต'],
-    orEquip: ['img/apex/or-equipment.webp', 'Equipment beside the operating table at Apex', 'เครื่องมือข้างเตียงผ่าตัดที่ Apex'],
-    orUnit: ['img/apex/or-unit.webp', 'A surgical unit in the Apex operating room', 'เครื่องมือผ่าตัดในห้องผ่าตัดของ Apex'],
-    orLight: ['img/apex/or-light.webp', 'The operating light and equipment at Apex', 'โคมไฟผ่าตัดและเครื่องมือที่ Apex'],
-    renuvion: ['img/apex/renuvion.webp', 'The Renuvion (J-Plasma) generator at Apex', 'เครื่อง Renuvion (J-Plasma) ที่ Apex'],
-    room: ['img/hospital/bkk-room.webp', 'A patient room, Phloen Chit', 'ห้องพักผู้ป่วย สาขาเพลินจิต'],
-    room2: ['img/hospital/hkt-room2.webp', 'A patient room with a view, Phuket', 'ห้องพักผู้ป่วยวิวเมือง สาขาภูเก็ต'],
-    counter: ['img/hospital/bkk-counter.webp', 'Consultation counter, Phloen Chit', 'เคาน์เตอร์ปรึกษา สาขาเพลินจิต'],
-    recovery: ['img/hospital/bkk-recovery.webp', 'Recovery chairs, Phloen Chit', 'เก้าอี้พักฟื้น สาขาเพลินจิต']
+    orTable: ['img/apex/or-table.webp', 'The operating table at Apex Surgery Hospital', 'เตียงผ่าตัดที่ Apex Surgery Hospital', 'Apex Surgery Hospital 的手术台'],
+    or: ['img/hospital/bkk-or.webp', 'The operating room, Phloen Chit', 'ห้องผ่าตัด สาขาเพลินจิต', '奔集分院手术室'],
+    orEquip: ['img/apex/or-equipment.webp', 'Equipment beside the operating table at Apex', 'เครื่องมือข้างเตียงผ่าตัดที่ Apex', 'Apex 手术台旁的设备'],
+    orUnit: ['img/apex/or-unit.webp', 'A surgical unit in the Apex operating room', 'เครื่องมือผ่าตัดในห้องผ่าตัดของ Apex', 'Apex 手术室内的手术设备'],
+    orLight: ['img/apex/or-light.webp', 'The operating light and equipment at Apex', 'โคมไฟผ่าตัดและเครื่องมือที่ Apex', 'Apex 的手术灯和设备'],
+    renuvion: ['img/apex/renuvion.webp', 'The Renuvion (J-Plasma) generator at Apex', 'เครื่อง Renuvion (J-Plasma) ที่ Apex', 'Apex 的 Renuvion (J-Plasma) 设备'],
+    room: ['img/hospital/bkk-room.webp', 'A patient room, Phloen Chit', 'ห้องพักผู้ป่วย สาขาเพลินจิต', '奔集分院病房'],
+    room2: ['img/hospital/hkt-room2.webp', 'A patient room with a view, Phuket', 'ห้องพักผู้ป่วยวิวเมือง สาขาภูเก็ต', '普吉分院景观病房'],
+    counter: ['img/hospital/bkk-counter.webp', 'Consultation counter, Phloen Chit', 'เคาน์เตอร์ปรึกษา สาขาเพลินจิต', '奔集分院咨询台'],
+    recovery: ['img/hospital/bkk-recovery.webp', 'Recovery chairs, Phloen Chit', 'เก้าอี้พักฟื้น สาขาเพลินจิต', '奔集分院恢复区座椅']
   };
-  /* each procedure page: the treated area, a consultation, the operating room (Apex's photos, Nov 2026) */
-  const SVC_PH = {
-    facelift:[['Facelift at Apex Surgery Hospital', 'ดึงหน้าที่ Apex Surgery Hospital'], ['A surgeon marking a patient\'s face before a facelift', 'แพทย์มาร์กจุดบนใบหน้าผู้ป่วยก่อนดึงหน้า'], ['Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex']],
-    browlift:[null, ['Dr. Somboon Waiphrip examining a patient before surgery', 'นพ.สมบูรณ์ ไหวพริบ ตรวจผู้ป่วยก่อนผ่าตัด'], ['Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex']],
-    rhinoplasty:[['The nose in side profile', 'จมูกด้านข้าง'], ['A consultation at Apex Surgery Hospital', 'การให้คำปรึกษาที่ Apex Surgery Hospital'], ['Revision rhinoplasty in the Apex operating room', 'การผ่าตัดแก้จมูกในห้องผ่าตัดของ Apex']],
-    eyelid:[['Double eyelids', 'ตาสองชั้น'], ['Dr. Somboon Waiphrip marking a patient before surgery', 'นพ.สมบูรณ์ ไหวพริบ มาร์กจุดก่อนผ่าตัด'], ['Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex']],
-    bone:[null, ['A surgeon checking a patient\'s face before surgery', 'แพทย์ตรวจใบหน้าผู้ป่วยก่อนผ่าตัด'], ['Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex']],
-    breast:[['Breast augmentation', 'เสริมหน้าอก'], ['A surgeon talking a patient through her plan', 'แพทย์อธิบายแผนการรักษาให้ผู้ป่วย'], ['Breast surgery in the Apex operating room', 'การผ่าตัดเสริมหน้าอกในห้องผ่าตัดของ Apex']],
-    lipo:[['Body contouring at Apex', 'ดูดไขมันและกระชับสัดส่วนที่ Apex'], ['A surgeon assessing a patient before liposuction', 'แพทย์ประเมินผู้ป่วยก่อนดูดไขมัน'], ['Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex']]
-  };
-  Object.entries(SVC_PH).forEach(([k, l]) => ['area', 'consult', 'or'].forEach((w, i) => { if (l[i]) PH[k + '-' + w] = ['img/apex/svc/' + w + '-' + k + '.webp', ...l[i]]; }));
-  const ph = k => { const p = PH[k]; return p ? {src:p[0], alt:A.lang === 'th' ? p[2] : p[1]} : null; };
-  const SVC_PHOTOS = Object.fromEntries(Object.keys(SVC_PH).map(k => [k, ['area', 'consult', 'or'].map(w => k + '-' + w).filter(x => PH[x])]));
+  const ph = k => { const p = PH[k]; return p ? {src:p[0], alt:A.pick(p[1], p[2], p[3])} : null; };
   const POST_PHOTOS = {
     smas:['orTable', 'room', 'counter'], 'deep-plane-face-lift':['or', 'recovery'], 'rhinoplasty-faq-questions':['counter', 'orTable'], 'double-eyelid-surgery-facts':['orUnit', 'room2'], 'facelift-faq':['orTable', 'counter', 'room'], 'endotine-browlift-fact':['orLight', 'recovery'], 'mentor-vs-motiva-breast-augmentation':['counter', 'or'], 'forehead-lift-endotine':['orLight', 'orTable', 'counter'], 'liposuction-facts':['renuvion', 'orEquip'], 'nose-surgery-without-silicone':['or', 'counter'], 'breast-augmentation-guide':['counter', 'or', 'room'], 'endotine-browlift':['orLight', 'counter']
   };
@@ -53,7 +41,7 @@
     return null;
   };
   /* sentences or clauses of the client's own text, used verbatim for pull quotes */
-  const clauses = t => A.lang === 'th' ? String(t).split(/\s+/).filter(Boolean) : String(t).split(/(?<!\b(?:[Dd]r|[Nn]o|Mr|Ms|Mrs|St|vs|approx|e\.g|i\.e)\.)(?<=[.!?])\s+(?=[A-Z“"0-9])/);
+  const clauses = t => A.lang === 'th' ? String(t).split(/\s+/).filter(Boolean) : A.lang === 'zh' ? String(t).split(/(?<=[。！？])/) : String(t).split(/(?<!\b(?:[Dd]r|[Nn]o|Mr|Ms|Mrs|St|vs|approx|e\.g|i\.e)\.)(?<=[.!?])\s+(?=[A-Z“"0-9])/);
   const pickQuote = (paras, skipFirst=true) => {
     const pool = [];
     paras.forEach((p, pi) => clauses(p).forEach((c, ci) => { c = c.trim(); if (skipFirst && pi === 0 && ci === 0) return; if (A.lang === 'th' && /^(ก็|และ|ซึ่ง|เพราะ|โดย|ที่|หรือ|แต่|จึง|ทำให้|เพื่อ|ด้วย|รวมถึง|ไม่ว่า|อีกทั้ง|นอกจาก|จะ|ได้|เป็น|คือ|ให้)/.test(c)) return; if (c.length >= 45 && c.length <= 190) pool.push(c); }));
@@ -66,7 +54,7 @@
     return out.sort((a, b) => Math.abs(a.length - 110) - Math.abs(b.length - 110));
   };
   const pullQuote = (q, cls='') => q ? `<figure class="pq rv ${cls}"><span class="pq-mark" aria-hidden="true">${I('quote')}</span><blockquote><p>${E(q)}</p></blockquote></figure>` : '';
-  const readMins = text => Math.max(1, Math.round(A.lang === 'th' ? text.length / 800 : text.split(/\s+/).length / 230));
+  const readMins = text => Math.max(1, Math.round(A.lang === 'th' ? text.length / 800 : A.lang === 'zh' ? text.length / 400 : text.split(/\s+/).length / 230));
 
   /* icon for a card, matched from the client's own label */
   const ICON_RULES = [
@@ -94,7 +82,7 @@
   const figure = (img, cls='', par=true) => img && img.src ? `<figure class="xfig ${cls} ${img.un ? 'un' : 'own'} rv-clip"><span class="xfig-in ph-img">${(() => { const g = A.gallery([{src:img.src, alt:img.alt}]); return `<button type="button" class="xfig-btn" ${g.attr(0)} aria-label="${E(img.alt || T('image'))}"><img src="${IMG(img.src)}" alt="${E(img.alt || '')}" loading="lazy"${par ? ' data-par="28"' : ''}></button>`; })()}</span>${img.un ? `<figcaption>${E(T('photoCredit'))}</figcaption>` : ''}</figure>` : '';
 
   /* a service section: rich cards for lists, numbered steps for h3/p sequences, with a side photo */
-  const svcSection = (sec, i, key, alt) => {
+  const svcSection = (sec, i, key, alt, pics=[]) => {
     const bl = sec.blocks || [];
     const firstStruct = bl.findIndex(b => b.t === 'list' || b.t === 'h3');
     const lead = bl.slice(0, firstStruct < 0 ? bl.length : firstStruct).filter(b => b.t === 'p').map(b => b.x);
@@ -114,7 +102,7 @@
         return `<li class="who-card rv" data-d="${(j % 3) * 60}">${art}${lab ? `<h3>${E(lab)}</h3><p>${A.inl(txt)}</p>` : `<p class="${txt.length < 90 ? 'wc-solo' : 'wc-long'}">${A.inl(txt)}</p>`}</li>`;
       }).join('')}</ul>`;
     }
-    const pic = (SVC_PHOTOS[key] || [])[i] ? ph(SVC_PHOTOS[key][i]) : null;
+    const pic = pics[i] || null;
     return `<section class="section svc-sec${alt ? ' washed' : ''}" id="sec-${i}">
       <div class="wrap">
         <div class="ss-head${pic ? ' has-pic' : ''}"><div class="ss-copy"><h2 class="h-l rv">${E(sec.h || '')}</h2>${lead.map(p => `<p class="lead rv">${A.inl(p)}</p>`).join('')}</div>${pic ? figure(pic, 'ss-pic') : ''}</div>
@@ -153,9 +141,9 @@
   const BA_LAYOUT = {facelift:'lr', rhinoplasty:'lr', lipo:'lr', bone:'single', eyelid:'tb', breast:'tb', browlift:'single'};
   /* before/after cases: facts come only from each composite's filename and the patient's own review post */
   const BA_STORY = {DeePathama:['deep-plane-facelift-review-by-dy', 'Deep Plane Facelift'], TopFacelift:['dfl-review-khun-top', 'DFL facelift'], Wanna:['facelift-review-by-wanna', ''], Som:['dfl-review-by-som', 'DFL facelift'], 'กู๊ดดี้':['motiva-ergonomix-breast-augmentation-review-by-goody', 'Motiva Ergonomix']};
-  const BA_AREA = [[/ต้นขา/, 'Thighs', 'ต้นขา'], [/ต้นแขน/, 'Upper arms', 'ต้นแขน'], [/หน้าท้อง|ท้อง/, 'Abdomen', 'หน้าท้อง'], [/กรอบหน้า/, 'Face contour', 'กรอบหน้า'], [/เหนียง/, 'Double chin', 'เหนียง'], [/FaceNeck/i, 'Face and neck', 'ใบหน้าและลำคอ'], [/eye-bag/i, 'Under-eye bags', 'ถุงใต้ตา']];
-  const BA_L = {tech:['Technique', 'เทคนิค'], area:['Area', 'บริเวณ'], follow:['Follow-up', 'ติดตามผล']};
-  const baL = k => BA_L[k][A.lang === 'th' ? 1 : 0];
+  const BA_AREA = [[/ต้นขา/, 'Thighs', 'ต้นขา', '大腿'], [/ต้นแขน/, 'Upper arms', 'ต้นแขน', '上臂'], [/หน้าท้อง|ท้อง/, 'Abdomen', 'หน้าท้อง', '腹部'], [/กรอบหน้า/, 'Face contour', 'กรอบหน้า', '面部轮廓'], [/เหนียง/, 'Double chin', 'เหนียง', '双下巴'], [/FaceNeck/i, 'Face and neck', 'ใบหน้าและลำคอ', '面部和颈部'], [/eye-bag/i, 'Under-eye bags', 'ถุงใต้ตา', '眼袋']];
+  const BA_L = {tech:['Technique', 'เทคนิค', '技术'], area:['Area', 'บริเวณ', '部位'], follow:['Follow-up', 'ติดตามผล', '随访']};
+  const baL = k => A.pick(...BA_L[k]);
   const baCases = (list, S, opts={}) => {
     const P = A.d('posts') || [];
     const cases = list.map(x => {
@@ -169,12 +157,12 @@
       const tech = (st && BA_STORY[st][1]) || (/J-Plasma/i.test(file) ? 'J-Plasma' : '');
       if (tech) facts.push([baL('tech'), tech]);
       const ar = BA_AREA.find(([r]) => r.test(file));
-      if (ar) facts.push([baL('area'), A.lang === 'th' ? ar[2] : ar[1]]);
+      if (ar) facts.push([baL('area'), A.pick(ar[1], ar[2], ar[3])]);
       const fm = file.match(/(\d{1,2})([MY])(?=[_\-.]|$)/);
-      if (fm) facts.push([baL('follow'), A.lang === 'th' ? `${fm[1]} ${fm[2] === 'Y' ? 'ปี' : 'เดือน'}` : `${fm[1]} ${fm[2] === 'Y' ? (fm[1] === '1' ? 'year' : 'years') : (fm[1] === '1' ? 'month' : 'months')}`]);
+      if (fm) facts.push([baL('follow'), A.lang === 'th' ? `${fm[1]} ${fm[2] === 'Y' ? 'ปี' : 'เดือน'}` : A.lang === 'zh' ? `${fm[1]}${fm[2] === 'Y' ? '年' : '个月'}` : `${fm[1]} ${fm[2] === 'Y' ? (fm[1] === '1' ? 'year' : 'years') : (fm[1] === '1' ? 'month' : 'months')}`]);
       const eyeBag = /eye-bag/i.test(file);
-      const procName = eyeBag ? (A.lang === 'th' ? 'ผ่าตัดถุงใต้ตา' : 'Eye bag surgery') : svcName(S, cat);
-      const msg = A.lang === 'th' ? `สวัสดี ขอสอบถามเรื่อง${procName} จากเคสก่อนและหลังบนเว็บไซต์ Apex Surgery Hospital` : `Hello, I would like to ask about ${procName.toLowerCase()} after seeing a before and after case on the Apex Surgery Hospital website.`;
+      const procName = eyeBag ? A.pick('Eye bag surgery', 'ผ่าตัดถุงใต้ตา', '眼袋手术') : svcName(S, cat);
+      const msg = A.lang === 'th' ? `สวัสดี ขอสอบถามเรื่อง${procName} จากเคสก่อนและหลังบนเว็บไซต์ Apex Surgery Hospital` : A.lang === 'zh' ? `您好，我在 Apex Surgery Hospital 网站上看到一个术前术后对比案例，想咨询${procName}。` : `Hello, I would like to ask about ${procName.toLowerCase()} after seeing a before and after case on the Apex Surgery Hospital website.`;
       const links = [];
       if (cat === 'rhinoplasty') links.push({x:T('noseTry'), url:'nose-implants.html'});
       if (!opts.onService) links.push({x:T('seeService'), url:A.svcUrl(cat)});
@@ -202,8 +190,8 @@
     <span class="pc-meta"><span class="pc-cat">${E(T({review:'catReview', blog:'catBlog', news:'catNews'}[p.cat] || 'articles'))}</span>${p.date ? `<time datetime="${E(p.date)}">${E(A.fmtDate(p.date))}</time>` : ''}</span>
     <span class="pc-title">${E(p.title)}</span>${p.excerpt || p.desc ? `<span class="pc-ex">${E(p.excerpt || p.desc)}</span>` : ''}</a>`;
   /* ---------- offers: names, tags and prices come only from the poster's alt text, filename and price field ---------- */
-  const OFFER_WORDS = [[/Mentor/i, 'Mentor'], [/Motiva/i, 'Motiva'], [/MemoryGel/i, 'MemoryGel'], [/Endotine/i, 'Endotine'], [/LipoSlim/i, 'LipoSlim'], [/J-?Plasma/i, 'J-Plasma'], [/V-?Line/i, 'V-Line'], [/Facial/i, 'Facial'], [/deep plane|ชั้นลึก/i, 'Deep plane', 'ชั้นลึก'], [/endoscopic|ส่องกล้อง/i, 'Endoscopic', 'ส่องกล้อง']];
-  const OFFER_AREA = [[/ตัดหนังหน้าท้อง|tummy tuck/i, 'Tummy tuck', 'ตัดหนังหน้าท้อง'], [/sexy line/i, 'Sexy Line', 'Sexy Line'], [/หน้าท้อง|abdom/i, 'Abdomen', 'หน้าท้อง'], [/ต่อบริเวณ|per area/i, 'Face, per area', 'หน้า ต่อบริเวณ'], [/เหมาหน้า|full face/i, 'Full face', 'เหมาหน้า'], [/เหนียง|double chin|jaw/i, 'Jaw and double chin', 'กรอบหน้าและเหนียง'], [/ต้นแขน|arms/i, 'Arms', 'ต้นแขน'], [/360/, 'Thighs 360°', 'รอบต้นขา 360 องศา'], [/ต้นขา|thigh/i, 'Thighs', 'ต้นขา'], [/ปีกหลัง|back/i, 'Back', 'ปีกหลัง']];
+  const OFFER_WORDS = [[/Mentor/i, 'Mentor'], [/Motiva/i, 'Motiva'], [/MemoryGel/i, 'MemoryGel'], [/Endotine/i, 'Endotine'], [/LipoSlim/i, 'LipoSlim'], [/J-?Plasma/i, 'J-Plasma'], [/V-?Line/i, 'V-Line'], [/Facial/i, 'Facial'], [/deep plane|ชั้นลึก|深层/i, 'Deep plane', 'ชั้นลึก', '深层'], [/endoscopic|ส่องกล้อง|内窥镜/i, 'Endoscopic', 'ส่องกล้อง', '内窥镜']];
+  const OFFER_AREA = [[/ตัดหนังหน้าท้อง|tummy tuck|腹壁整形/i, 'Tummy tuck', 'ตัดหนังหน้าท้อง', '腹壁整形'], [/sexy line/i, 'Sexy Line', 'Sexy Line', 'Sexy Line'], [/หน้าท้อง|abdom|腹部/i, 'Abdomen', 'หน้าท้อง', '腹部'], [/ต่อบริเวณ|per area|每个部位/i, 'Face, per area', 'หน้า ต่อบริเวณ', '面部单个部位'], [/เหมาหน้า|full face|全脸/i, 'Full face', 'เหมาหน้า', '全脸'], [/เหนียง|double chin|jaw|双下巴|下颌/i, 'Jaw and double chin', 'กรอบหน้าและเหนียง', '下颌线和双下巴'], [/ต้นแขน|arms|手臂|上臂/i, 'Arms', 'ต้นแขน', '上臂'], [/360/, 'Thighs 360°', 'รอบต้นขา 360 องศา', '大腿 360°'], [/ต้นขา|thigh|大腿/i, 'Thighs', 'ต้นขา', '大腿'], [/ปีกหลัง|back|背部/i, 'Back', 'ปีกหลัง', '背部']];
   /* an offer drops off the site the day after its end date */
   const live = p => !p.ends || p.ends >= new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10);
   const offerOf = (p, S, cat0) => {
@@ -211,16 +199,16 @@
     try { file = decodeURIComponent(file); } catch (e) { /* raw */ }
     const text = (p.alt || '') + ' ' + file;
     const cat = p.cat || procOf(text) || cat0;
-    const words = [...new Set(OFFER_WORDS.filter(([r]) => r.test(text)).map(w => A.lang === 'th' && w[2] ? w[2] : w[1]))];
+    const words = [...new Set(OFFER_WORDS.filter(([r]) => r.test(text)).map(w => A.pick(w[1], w[2] || w[1], w[3])))];
     const area = OFFER_AREA.find(([r]) => r.test(text));
-    if (area) words.push(A.lang === 'th' ? area[2] : area[1]);
+    if (area) words.push(A.pick(area[1], area[2], area[3]));
     const name = cat ? svcName(S, cat) : (words.shift() || T('promotions'));
     const price = +p.price || +((file.match(/(?:^|[-_ ])(\d{5,6})(?=[-_ .])/) || [])[1]) || 0;
     const allIn = /จ่ายจบ|ราคาเหมา|all-in/i.test(text);
     const review = /case-review/i.test(text);
     const label = name + (words.length ? ' · ' + words.join(' · ') : '');
     const priceTxt = price ? `${A.fmtNum(price)} ${T('baht')}` : '';
-    const msg = (A.lang === 'th' ? `สวัสดี ขอสอบถามโปรโมชั่น ${label}` : `Hello, I would like to ask about this offer: ${label}`) + (priceTxt ? ` (${priceTxt})` : '') + (A.lang === 'th' ? '' : '.');
+    const msg = A.pick(`Hello, I would like to ask about this offer: ${label}`, `สวัสดี ขอสอบถามโปรโมชั่น ${label}`, `您好，我想咨询这个优惠：${label}`) + (priceTxt ? ` (${priceTxt})` : '') + A.pick('.', '', '。');
     return {key:file, src:p.src, alt:p.alt || label, cat, name, words, price, from:!!p.from, ends:p.ends || '', allIn, review, label,
       line:`https://line.me/R/oaMessage/${A.contact().line}/?${encodeURIComponent(msg)}`, wa:`${A.WA.h}?text=${encodeURIComponent(msg)}`};
   };
@@ -247,7 +235,7 @@
     items = items.filter(live);
     const offers = items.map(p => offerOf(p, S, opts.cat));
     const g = A.gallery(offers.map(o => ({src:o.src, alt:o.alt})));
-    return `<div class="offer-grid${offers.length + (opts.game ? 1 : 0) <= 2 ? ' few' : ''}">${offers.map((o, i) => offerCard(o, i, g)).join('')}${opts.game ? gameCard() : ''}</div>`;
+    return `<div class="offer-grid${offers.length + (opts.game && A.on('games') ? 1 : 0) <= 2 ? ' few' : ''}">${offers.map((o, i) => offerCard(o, i, g)).join('')}${opts.game && A.on('games') ? gameCard() : ''}</div>`;
   };
   const offerSpot = (p, S) => {
     const o = offerOf(p, S);
@@ -360,10 +348,10 @@
             <span class="tc-art st-art" aria-hidden="true"><img src="${A.assets}img/stencil-side.svg" alt="" loading="lazy" decoding="async"><svg viewBox="20 60 560 640"><path class="tc-prof2" d="M97.3 334C96.2 336.7 93.4 344.3 90.6 350C87.8 355.7 83.9 362 80.6 368C77.3 374 74 380 70.6 386C67.2 392 63.4 398.7 60.1 404C56.8 409.3 53.1 414.3 50.6 418C48.1 421.7 46.4 423.5 45.2 426C44 428.5 43.5 430.7 43.5 433C43.5 435.3 44.3 437.8 45.4 440C46.5 442.2 48.2 444.8 50 446.5C51.8 448.2 53.7 449 56 450C58.3 451 61.3 451.8 64 452.5C66.7 453.2 70.7 454.2 72 454.5"/></svg></span>
             <span class="tc-body"><span class="eyebrow on-night">${E(T('nose'))}</span><b class="h-l">${E(T('noseH'))}</b><span class="tc-p">${E(T('noseP'))}</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">${E(T('noseCta'))} ${I('arrow-right')}</span><small>${I('shield-check')}${E(T('noseNote'))}</small></span></span></a>
-          <a class="tool-card tool-games rv" data-d="90" href="play.html">
+          ${A.on('games') ? `<a class="tool-card tool-games rv" data-d="90" href="play.html">
             <span class="tc-art dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
             <span class="tc-body"><span class="eyebrow on-night">${E(T('gamesEb'))}</span><b class="h-m">${E(T('gamesH'))}</b><span class="tc-p">${E(T('gamesP'))}</span><span class="tc-list">${E(T('gamesList'))}</span>
-            <span class="tc-foot"><span class="btn btn-light btn-sm">${E(T('gamesCta'))} ${I('arrow-right')}</span></span></span></a>
+            <span class="tc-foot"><span class="btn btn-light btn-sm">${E(T('gamesCta'))} ${I('arrow-right')}</span></span></span></a>` : ''}
           <a class="tool-card tool-trip rv" data-d="180" href="trip.html">
             <span class="tc-art cal2" aria-hidden="true"><svg viewBox="0 0 150 144"><rect class="cl-card" x="1" y="8" width="148" height="134" rx="14"/><path class="cl-top" d="M1 22a14 14 0 0 1 14-14h120a14 14 0 0 1 14 14v18H1z"/><rect class="cl-ring" x="36" y="2" width="7" height="15" rx="3.5"/><rect class="cl-ring" x="107" y="2" width="7" height="15" rx="3.5"/><path class="cl-plane" transform="translate(64 13) scale(.92)" d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/><path class="cl-wd" d="M18 50h6M36 50h6M54 50h6M72 50h6M90 50h6M108 50h6M126 50h6"/><rect class="cl-stay" x="30" y="75" width="108" height="16" rx="8"/><rect class="cl-stay" x="12" y="92" width="90" height="16" rx="8"/><circle class="cl-op" cx="75" cy="83" r="8.5"/><text class="cl-n" x="21" y="69.2">1</text><text class="cl-n" x="39" y="69.2">2</text><text class="cl-n" x="57" y="69.2">3</text><text class="cl-n" x="75" y="69.2">4</text><text class="cl-n" x="93" y="69.2">5</text><text class="cl-n" x="111" y="69.2">6</text><text class="cl-n" x="129" y="69.2">7</text><text class="cl-n" x="21" y="86.2">8</text><text class="cl-n on" x="39" y="86.2">9</text><text class="cl-n on" x="57" y="86.2">10</text><text class="cl-n on" x="75" y="86.2">11</text><text class="cl-n on" x="93" y="86.2">12</text><text class="cl-n on" x="111" y="86.2">13</text><text class="cl-n on" x="129" y="86.2">14</text><text class="cl-n on" x="21" y="103.2">15</text><text class="cl-n on" x="39" y="103.2">16</text><text class="cl-n on" x="57" y="103.2">17</text><text class="cl-n on" x="75" y="103.2">18</text><text class="cl-n on" x="93" y="103.2">19</text><text class="cl-n" x="111" y="103.2">20</text><text class="cl-n" x="129" y="103.2">21</text><text class="cl-n" x="21" y="120.2">22</text><text class="cl-n" x="39" y="120.2">23</text><text class="cl-n" x="57" y="120.2">24</text><text class="cl-n" x="75" y="120.2">25</text><text class="cl-n" x="93" y="120.2">26</text><text class="cl-n" x="111" y="120.2">27</text><text class="cl-n" x="129" y="120.2">28</text></svg></span>
             <span class="tc-body"><span class="eyebrow on-night">${E(T('trip'))}</span><b class="h-m">${E(T('tripH'))}</b><span class="tc-p">${E(T('tripP'))}</span>
@@ -408,7 +396,7 @@
       </div>
     </section>
 
-    ${(() => { const W = A.d('war'); const eps = (W && W.episodes) || []; return eps.length ? `<section class="section war-home">
+    ${(() => { const W = A.d('war'); const eps = (W && W.episodes) || []; return eps.length && A.on('wars') ? `<section class="section war-home">
       <div class="wrap"><div class="shead"><div><p class="eyebrow rv">${E(T('shows'))} · Workpoint 23</p><h2 class="h-xl rv">${E(T('warH'))}</h2><p class="reels-sub rv">${E(T('warLead'))}</p></div>
         <div class="rail-ctrl rv"><button type="button" id="war-prev" aria-label="${E(T('prev'))}">${I('chevron-left')}</button><button type="button" id="war-next" aria-label="${E(T('next'))}">${I('chevron-right')}</button></div></div>
       <div class="rail war-rail" id="war-rail">${eps.map((x, i) => warCard(x, i)).join('')}</div>
@@ -448,7 +436,7 @@
     A.setMeta(D.title, D.desc);
     main().innerHTML = phead(D.h || T('services'), T('servicesSub'), [homeCrumb(), [T('services')]]) + `
       <section class="section"><div class="wrap">${A.svcCards(S)}
-        <a class="tx-band rv" href="treatments.html"><span class="tx-gi">${I('sparkles')}</span><span><b>${E(T('treatments'))}</b><span>${E(T('txBand'))}</span></span>${I('arrow-right')}</a></div></section>
+        ${A.on('treatments') ? `<a class="tx-band rv" href="treatments.html"><span class="tx-gi">${I('sparkles')}</span><span><b>${E(T('treatments'))}</b><span>${E(T('txBand'))}</span></span>${I('arrow-right')}</a>` : ''}</div></section>
       <section class="section washed"><div class="wrap"><div class="shead"><h2 class="h-xl rv">${E(T('tools'))}</h2></div>
         <div class="mini-tools">
           <a class="mini-tool rv mt-new" href="filler.html" data-new="page:filler">${I('syringe')}<b data-new-slot>${E(T('fill'))}</b><span>${E(T('fillPageP'))}</span></a>
@@ -456,7 +444,7 @@
           <a class="mini-tool rv" data-d="35" href="proportions.html">${I('gem')}<b>${E(T('prop'))}</b><span>${E(T('propPageP'))}</span></a>
           <a class="mini-tool rv" data-d="50" href="breast-implants.html">${I('ruler')}<b>${E(T('impl'))}</b><span>${E(T('implP'))}</span></a>
           <a class="mini-tool rv" data-d="70" href="trip.html">${I('calendar')}<b>${E(T('trip'))}</b><span>${E(T('tripP'))}</span></a>
-          <a class="mini-tool rv" data-d="140" href="play.html">${I('sparkles')}<b>${E(T('games'))}</b><span>${E(T('gamesP'))}</span></a>
+          ${A.on('games') ? `<a class="mini-tool rv" data-d="140" href="play.html">${I('sparkles')}<b>${E(T('games'))}</b><span>${E(T('gamesP'))}</span></a>` : ''}
         </div></div></section>
       <section class="section night"><div class="wrap">${A.consultBand(S)}</div></section>`;
   }
@@ -521,7 +509,9 @@
     const introP = intro.filter(x => !/^✔/.test(x)), ticks = intro.filter(x => /^✔/.test(x)).map(x => x.replace(/^✔\s*/, ''));
     const q = introP.join(' ').length > 420 ? pickQuote(introP) : '';
     const aa = D.atApex || null;
-    const aaImg = aa && aa.img ? {src:aa.img, alt:aa.alt || aa.h} : ph((SVC_PHOTOS[key] || [])[0]);
+    /* the photos for the page's sections, in order (Section photos on the service in WordPress) */
+    const pics = (D.photos || []).filter(x => x && x.src).map(x => ({src:x.src, alt:x.alt || ''}));
+    const aaImg = aa && aa.img ? {src:aa.img, alt:aa.alt || aa.h} : pics[0] || null;
     const secs = D.sections || [];
     main().innerHTML = `
     <section class="svc-head">
@@ -555,7 +545,7 @@
       ${(D.badges || []).length ? `<div class="wrap"><div class="badges">${D.badges.map((b, i) => `<figure class="badge ph-img rv" data-d="${i * 80}"><img src="${IMG(b.src)}" alt="${E(b.alt || '')}" loading="lazy" decoding="async" decoding="async"></figure>`).join('')}</div></div>` : ''}
     </section>
 
-    ${secs.map((sec, i) => svcSection(sec, i, key, i % 2 === 0)).join('')}
+    ${secs.map((sec, i) => svcSection(sec, i, key, i % 2 === 0, pics)).join('')}
     ${(D.sources || []).length ? `<div class="wrap svc-src"><p class="note">${E(T('sourcesH'))}: ${D.sources.map(u => `<a href="${A.url(u)}" target="_blank" rel="noopener">${E(u.replace(/^https?:\/\/(www\.)?/, '').split('/')[0])}</a>`).join(', ')}</p></div>` : ''}
 
     ${(D.ba || []).length ? `<section class="section night ba-s"><div class="wrap"><div class="shead"><div><p class="eyebrow on-night rv">${E(nm)}</p><h2 class="h-xl rv">${E(D.baH || T('baH'))}</h2></div><p class="note on-night rv">${E(T('resultsVary'))}</p></div>
@@ -605,7 +595,7 @@
       </div>
       <div class="f2-body">
         <h2 class="h-l rv" data-field="founder.name">${E(F.name)}</h2>
-        <p class="f2-alt rv">${E(A.lang === 'en' ? F.nameTh : F.nameEn)}${F.nick ? ` · ${E(F.nick)}` : ''}</p>
+        <p class="f2-alt rv">${E(A.lang === 'th' ? F.nameEn : F.nameTh)}${F.nick ? ` · ${E(F.nick)}` : ''}</p>
         <p class="doc-meta rv"><span>${E(F.role)}</span><span>${E(F.license)}</span></p>
         <p class="f2-lead rv" data-field="founder.bio">${E(F.bio[0])}</p>
         <ol class="f2-years rv" aria-label="${E(T('yearsH'))}">${(F.years || []).map(y => `<li><b>${E(y.y)}</b><span>${E(y.x)}</span></li>`).join('')}</ol>
@@ -807,7 +797,7 @@
     const bl = (D.blocks || []).filter(b => !(b.t === 'p' && !String(b.x || '').trim()));
     const paras = bl.filter(b => b.t === 'p').map(b => b.x);
     const total = bl.map(b => (b.x || '') + ' ' + (b.items || []).map(i => i.x || i).join(' ')).join(' ');
-    const long = total.length > (A.lang === 'th' ? 2600 : 3200);
+    const long = total.length > A.pick(3200, 2600, 1100);
     const proc = D.cat === 'news' || D.noFacts ? null : procOf((D.tag || '') + ' ' + D.title + ' ' + key);
     const imgN = bl.filter(b => b.t === 'img').length;
     const extra = (imgN === 0 && long ? (POST_PHOTOS[key] || []) : imgN <= 1 && total.length > 9000 ? (POST_PHOTOS[key] || []).slice(0, 2) : []).map(k => ph(k)).filter(Boolean);
@@ -1030,17 +1020,19 @@
     const ex = typeof extra === 'function' ? extra() : extra;
     await A.mount('#' + hostId, name, ex);
   };
-  const proportions = featurePage('proportions', 'propPageH', 'propPageP', 'proportions', () => A.mpBase ? {mpBase:A.mpBase} : {}, 'prop-s');
+  /* the sample face each face tool offers, set under Apex settings › Site settings */
+  const sample = k => (((A.d('shared') || {}).samples) || {})[k];
+  const proportions = featurePage('proportions', 'propPageH', 'propPageP', 'proportions', () => Object.assign(A.mpBase ? {mpBase:A.mpBase} : {}, sample('proportions') ? {sample:IMG(sample('proportions'))} : {}), 'prop-s');
   const filler = featurePage('filler', 'fillPageH', 'fillPageP', 'filler', {}, 'prop-s');
-  const analysis = featurePage('analysis', 'anaPageH', 'anaPageP', 'analysis', () => Object.assign(A.mpBase ? {mpBase:A.mpBase} : {}, {links:{consult:'consult.html', proportions:'proportions.html'}}), 'prop-s');
+  const analysis = featurePage('analysis', 'anaPageH', 'anaPageP', 'analysis', () => Object.assign(A.mpBase ? {mpBase:A.mpBase} : {}, sample('analysis') ? {sample:IMG(sample('analysis'))} : {}, {links:{consult:'consult.html', proportions:'proportions.html'}}), 'prop-s');
   const play = featurePage('games', 'playPageH', 'playPageP', 'games', {}, 'play-s');
   const IMPL_LINKS = {breast:'breast-implants.html', chin:'chin-implants.html', forehead:'forehead-implants.html', nose:'nose-implants.html', consult:'consult.html'};
   const implPage = (area, h, p) => featurePage('implants', h, p, 'implants', () => ({area, links:IMPL_LINKS}), 'prop-s');
   const implBreast = implPage('breast', 'implBreastH', 'implBreastP'), implChin = implPage('chin', 'implChinH', 'implChinP');
   const implForehead = implPage('forehead', 'implForeheadH', 'implForeheadP'), implNose = implPage('nose', 'implNoseH', 'implNoseP');
-  const LINKS = {bodymap:'index.html#hero', nose:'nose-implants.html', implants:'breast-implants.html', analysis:'analysis.html', proportions:'proportions.html', games:'play.html', trip:'trip.html', plan:'plan.html', consult:'consult.html'};
-  const plan = featurePage('plan', 'planPageH', 'planPageP', 'plan', {links:LINKS});
-  const trip = featurePage('trip', 'tripPageH', 'tripP', 'trip', () => Object.assign({links:LINKS}, A.param('p') ? {procedures:[A.param('p')]} : {}));
+  const LINKS = () => ({bodymap:'index.html#hero', nose:'nose-implants.html', implants:'breast-implants.html', analysis:'analysis.html', proportions:'proportions.html', games:A.on('games') ? 'play.html' : '', trip:'trip.html', plan:'plan.html', consult:'consult.html'});
+  const plan = featurePage('plan', 'planPageH', 'planPageP', 'plan', () => ({links:LINKS()}));
+  const trip = featurePage('trip', 'tripPageH', 'tripP', 'trip', () => Object.assign({links:LINKS()}, A.param('p') ? {procedures:[A.param('p')]} : {}));
   const consult = featurePage('consult', 'consultPageH', 'consultPageP', 'consult', () => ({procedure:A.param('p') || undefined, links:{privacy:'privacy.html'}}));
 
   async function notfound(){

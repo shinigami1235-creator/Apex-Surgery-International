@@ -60,73 +60,73 @@ export async function post(endpoint, payload, extra = {}) {
 }
 
 const TX = {
-  title: { en: 'Online consultation', th: 'ปรึกษาแพทย์ออนไลน์' },
-  intro: { en: 'Send your questions and photos to the Apex surgeons before you travel.', th: 'ส่งคำถามและรูปถ่ายถึงศัลยแพทย์ Apex ก่อนเดินทาง' },
-  proc: { en: 'Procedure', th: 'หัตถการ' },
-  procHint: { en: 'Which procedures are you asking about?', th: 'ต้องการปรึกษาหัตถการอะไร' },
-  branch: { en: 'Branch', th: 'สาขา' },
-  dates: { en: 'Travel dates', th: 'ช่วงเดินทาง' },
-  datesHint: { en: 'When will you be in Thailand? Leave blank if you are not sure yet.', th: 'จะอยู่ในประเทศไทยช่วงไหน เว้นว่างได้ถ้ายังไม่แน่ใจ' },
-  from: { en: 'Arrival', th: 'วันเดินทางถึง' },
-  to: { en: 'Departure', th: 'วันเดินทางกลับ' },
-  name: { en: 'Name', th: 'ชื่อ' },
-  namePh: { en: 'Example: Sarah Collins', th: 'ตัวอย่าง: สมหญิง ใจดี' },
-  country: { en: 'Country', th: 'ประเทศ' },
-  countryPh: { en: 'Example: Australia', th: 'ตัวอย่าง: ออสเตรเลีย' },
-  method: { en: 'Contact method', th: 'ช่องทางติดต่อกลับ' },
-  methodHint: { en: 'How should the clinic reply to you?', th: 'ให้คลินิกตอบกลับทางไหน' },
-  wa: { en: 'WhatsApp', th: 'WhatsApp' },
-  line: { en: 'LINE', th: 'LINE' },
-  email: { en: 'Email', th: 'อีเมล' },
-  waNum: { en: 'WhatsApp number', th: 'หมายเลข WhatsApp' },
-  waPh: { en: 'Example: +61 412 345 678', th: 'ตัวอย่าง: +66 81 234 5678' },
-  lineId: { en: 'LINE ID', th: 'LINE ID' },
-  linePh: { en: 'Example: sarah.c', th: 'ตัวอย่าง: somying.j' },
-  emailAddr: { en: 'Email address', th: 'อีเมล' },
-  emailPh: { en: 'Example: sarah@example.com', th: 'ตัวอย่าง: somying@example.com' },
-  q: { en: 'Questions', th: 'คำถาม' },
-  qHint: { en: 'What would you like the surgeon to know or answer?', th: 'อยากให้ศัลยแพทย์ทราบหรือตอบเรื่องอะไร' },
-  qPh: { en: 'Example: I had rhinoplasty 5 years ago. Can the tip be revised?', th: 'ตัวอย่าง: เคยเสริมจมูกเมื่อ 5 ปีก่อน แก้ปลายจมูกได้ไหม' },
-  photos: { en: 'Photos', th: 'รูปถ่าย' },
-  photosHint: { en: 'Take each photo in daylight with your hair pulled back.', th: 'ถ่ายในที่แสงธรรมชาติและรวบผมให้เห็นใบหน้า' },
-  photoNote: { en: 'Photos are sent once the clinic system is connected.', th: 'รูปถ่ายจะถูกส่งเมื่อเชื่อมต่อระบบของคลินิกแล้ว' },
-  photoNoteLive: { en: 'Your photos go to the surgery team with your enquiry and only staff can open them.', th: 'รูปถ่ายจะส่งถึงทีมศัลยแพทย์พร้อมคำถาม และมีแค่เจ้าหน้าที่ที่เปิดดูได้' },
-  sentH: { en: 'Enquiry sent', th: 'ส่งคำถามแล้ว' },
-  sentP: { en: 'Reference {ref}. The surgery team will contact you by {m}.', th: 'เลขอ้างอิง {ref} ทีมศัลยแพทย์จะติดต่อกลับทาง {m}' },
-  sentMore: { en: 'Want an answer sooner? Message us now.', th: 'อยากได้คำตอบเร็วขึ้น ทักหาเราได้เลย' },
-  sendFail: { en: 'The enquiry could not be sent. Send this summary on WhatsApp or LINE instead.', th: 'ส่งคำถามไม่สำเร็จ ส่งสรุปนี้ทาง WhatsApp หรือ LINE แทนได้' },
-  front: { en: 'Front', th: 'ด้านหน้า' },
-  angle: { en: '45 degrees', th: 'มุม 45 องศา' },
-  profile: { en: 'Profile', th: 'ด้านข้าง' },
-  addPhoto: { en: 'Add photo', th: 'เพิ่มรูป' },
-  change: { en: 'Change', th: 'เปลี่ยน' },
-  remove: { en: 'Remove', th: 'ลบ' },
-  photoErr: { en: 'The photo could not be read.', th: 'อ่านไฟล์รูปไม่ได้' },
-  consent: { en: 'I agree to Apex Surgery Hospital using these details, including my health questions and photos, to answer my enquiry.', th: 'ข้าพเจ้ายินยอมให้โรงพยาบาลศัลยกรรมตกแต่งเอเพ็กซ์ใช้ข้อมูลนี้ รวมถึงคำถามเรื่องสุขภาพและรูปถ่าย เพื่อตอบคำถามของข้าพเจ้า' },
-  privacy: { en: 'Privacy policy', th: 'นโยบายความเป็นส่วนตัว' },
-  submit: { en: 'Send enquiry', th: 'ส่งคำถาม' },
-  sending: { en: 'Sending', th: 'กำลังส่ง' },
-  errs: { en: 'Check these fields:', th: 'ตรวจสอบช่องต่อไปนี้' },
-  eProc: { en: 'Procedure: choose at least one.', th: 'หัตถการ: เลือกอย่างน้อยหนึ่งรายการ' },
-  eBranch: { en: 'Branch: choose one.', th: 'สาขา: เลือกหนึ่งสาขา' },
-  eDates: { en: 'Travel dates: the departure is before the arrival.', th: 'ช่วงเดินทาง: วันเดินทางกลับอยู่ก่อนวันเดินทางถึง' },
-  eName: { en: 'Name: enter your name.', th: 'ชื่อ: กรอกชื่อของคุณ' },
-  eCountry: { en: 'Country: enter your country.', th: 'ประเทศ: กรอกประเทศของคุณ' },
-  eMethod: { en: 'Contact method: choose one.', th: 'ช่องทางติดต่อกลับ: เลือกหนึ่งช่องทาง' },
-  eWa: { en: 'WhatsApp number: enter the number with its country code.', th: 'หมายเลข WhatsApp: กรอกหมายเลขพร้อมรหัสประเทศ' },
-  eLine: { en: 'LINE ID: enter your LINE ID.', th: 'LINE ID: กรอก LINE ID ของคุณ' },
-  eEmail: { en: 'Email address: the address is not valid.', th: 'อีเมล: รูปแบบอีเมลไม่ถูกต้อง' },
-  eConsent: { en: 'Consent: tick the box to send the enquiry.', th: 'ความยินยอม: ทำเครื่องหมายในช่องเพื่อส่งคำถาม' },
-  doneH: { en: 'Enquiry summary', th: 'สรุปคำถาม' },
-  doneP: { en: 'Send this summary to the clinic on WhatsApp or LINE.', th: 'ส่งสรุปนี้ถึงคลินิกทาง WhatsApp หรือ LINE' },
-  sendWa: { en: 'Send to WhatsApp', th: 'ส่งทาง WhatsApp' },
-  sendLine: { en: 'Send to LINE', th: 'ส่งทาง LINE' },
-  edit: { en: 'Edit enquiry', th: 'แก้ไขคำถาม' },
-  textHead: { en: 'Online consultation: Apex Surgery Hospital', th: 'ปรึกษาแพทย์ออนไลน์: โรงพยาบาลศัลยกรรมตกแต่งเอเพ็กซ์' },
-  contact: { en: 'Contact', th: 'ติดต่อกลับ' },
-  photoCount: { en: 'Photos ready', th: 'รูปถ่ายที่เตรียมไว้' },
-  none: { en: 'None', th: 'ไม่มี' },
-  eExtra: { en: '{q}: answer this question.', th: '{q}: ตอบคำถามนี้' }
+  title: { en: 'Online consultation', th: 'ปรึกษาแพทย์ออนไลน์', zh: '在线咨询' },
+  intro: { en: 'Send your questions and photos to the Apex surgeons before you travel.', th: 'ส่งคำถามและรูปถ่ายถึงศัลยแพทย์ Apex ก่อนเดินทาง', zh: '出行前，将您的问题和照片发送给 Apex 的外科医生。' },
+  proc: { en: 'Procedure', th: 'หัตถการ', zh: '手术项目' },
+  procHint: { en: 'Which procedures are you asking about?', th: 'ต้องการปรึกษาหัตถการอะไร', zh: '您想咨询哪些手术项目？' },
+  branch: { en: 'Branch', th: 'สาขา', zh: '分院' },
+  dates: { en: 'Travel dates', th: 'ช่วงเดินทาง', zh: '出行日期' },
+  datesHint: { en: 'When will you be in Thailand? Leave blank if you are not sure yet.', th: 'จะอยู่ในประเทศไทยช่วงไหน เว้นว่างได้ถ้ายังไม่แน่ใจ', zh: '您什么时候来泰国？如果还不确定可以留空。' },
+  from: { en: 'Arrival', th: 'วันเดินทางถึง', zh: '抵达' },
+  to: { en: 'Departure', th: 'วันเดินทางกลับ', zh: '离开' },
+  name: { en: 'Name', th: 'ชื่อ', zh: '姓名' },
+  namePh: { en: 'Example: Sarah Collins', th: 'ตัวอย่าง: สมหญิง ใจดี', zh: '例如：Sarah Collins' },
+  country: { en: 'Country', th: 'ประเทศ', zh: '国家' },
+  countryPh: { en: 'Example: Australia', th: 'ตัวอย่าง: ออสเตรเลีย', zh: '例如：澳大利亚' },
+  method: { en: 'Contact method', th: 'ช่องทางติดต่อกลับ', zh: '联系方式' },
+  methodHint: { en: 'How should the clinic reply to you?', th: 'ให้คลินิกตอบกลับทางไหน', zh: '医院应通过什么方式回复您？' },
+  wa: { en: 'WhatsApp', th: 'WhatsApp', zh: 'WhatsApp' },
+  line: { en: 'LINE', th: 'LINE', zh: 'LINE' },
+  email: { en: 'Email', th: 'อีเมล', zh: '电子邮件' },
+  waNum: { en: 'WhatsApp number', th: 'หมายเลข WhatsApp', zh: 'WhatsApp 号码' },
+  waPh: { en: 'Example: +61 412 345 678', th: 'ตัวอย่าง: +66 81 234 5678', zh: '例如：+61 412 345 678' },
+  lineId: { en: 'LINE ID', th: 'LINE ID', zh: 'LINE ID' },
+  linePh: { en: 'Example: sarah.c', th: 'ตัวอย่าง: somying.j', zh: '例如：sarah.c' },
+  emailAddr: { en: 'Email address', th: 'อีเมล', zh: '电子邮件地址' },
+  emailPh: { en: 'Example: sarah@example.com', th: 'ตัวอย่าง: somying@example.com', zh: '例如：sarah@example.com' },
+  q: { en: 'Questions', th: 'คำถาม', zh: '问题' },
+  qHint: { en: 'What would you like the surgeon to know or answer?', th: 'อยากให้ศัลยแพทย์ทราบหรือตอบเรื่องอะไร', zh: '您希望医生了解或解答什么？' },
+  qPh: { en: 'Example: I had rhinoplasty 5 years ago. Can the tip be revised?', th: 'ตัวอย่าง: เคยเสริมจมูกเมื่อ 5 ปีก่อน แก้ปลายจมูกได้ไหม', zh: '例如：我 5 年前做过鼻整形术，鼻尖可以修复吗？' },
+  photos: { en: 'Photos', th: 'รูปถ่าย', zh: '照片' },
+  photosHint: { en: 'Take each photo in daylight with your hair pulled back.', th: 'ถ่ายในที่แสงธรรมชาติและรวบผมให้เห็นใบหน้า', zh: '请在自然光下拍摄每张照片，并将头发拢到后面。' },
+  photoNote: { en: 'Photos are sent once the clinic system is connected.', th: 'รูปถ่ายจะถูกส่งเมื่อเชื่อมต่อระบบของคลินิกแล้ว', zh: '照片将在医院系统接通后发送。' },
+  photoNoteLive: { en: 'Your photos go to the surgery team with your enquiry and only staff can open them.', th: 'รูปถ่ายจะส่งถึงทีมศัลยแพทย์พร้อมคำถาม และมีแค่เจ้าหน้าที่ที่เปิดดูได้', zh: '您的照片会随咨询一并发送给手术团队，仅限工作人员查看。' },
+  sentH: { en: 'Enquiry sent', th: 'ส่งคำถามแล้ว', zh: '咨询已发送' },
+  sentP: { en: 'Reference {ref}. The surgery team will contact you by {m}.', th: 'เลขอ้างอิง {ref} ทีมศัลยแพทย์จะติดต่อกลับทาง {m}', zh: '编号 {ref}。手术团队会通过 {m} 与您联系。' },
+  sentMore: { en: 'Want an answer sooner? Message us now.', th: 'อยากได้คำตอบเร็วขึ้น ทักหาเราได้เลย', zh: '想更快得到答复？请立即给我们发消息。' },
+  sendFail: { en: 'The enquiry could not be sent. Send this summary on WhatsApp or LINE instead.', th: 'ส่งคำถามไม่สำเร็จ ส่งสรุปนี้ทาง WhatsApp หรือ LINE แทนได้', zh: '咨询无法发送。请改为通过 WhatsApp 或 LINE 发送此摘要。' },
+  front: { en: 'Front', th: 'ด้านหน้า', zh: '正面' },
+  angle: { en: '45 degrees', th: 'มุม 45 องศา', zh: '45 度' },
+  profile: { en: 'Profile', th: 'ด้านข้าง', zh: '侧面' },
+  addPhoto: { en: 'Add photo', th: 'เพิ่มรูป', zh: '添加照片' },
+  change: { en: 'Change', th: 'เปลี่ยน', zh: '更换' },
+  remove: { en: 'Remove', th: 'ลบ', zh: '删除' },
+  photoErr: { en: 'The photo could not be read.', th: 'อ่านไฟล์รูปไม่ได้', zh: '无法读取该照片。' },
+  consent: { en: 'I agree to Apex Surgery Hospital using these details, including my health questions and photos, to answer my enquiry.', th: 'ข้าพเจ้ายินยอมให้โรงพยาบาลศัลยกรรมตกแต่งเอเพ็กซ์ใช้ข้อมูลนี้ รวมถึงคำถามเรื่องสุขภาพและรูปถ่าย เพื่อตอบคำถามของข้าพเจ้า', zh: '我同意 Apex Surgery Hospital 使用这些信息（包括我的健康问题和照片）来回复我的咨询。' },
+  privacy: { en: 'Privacy policy', th: 'นโยบายความเป็นส่วนตัว', zh: '隐私政策' },
+  submit: { en: 'Send enquiry', th: 'ส่งคำถาม', zh: '发送咨询' },
+  sending: { en: 'Sending', th: 'กำลังส่ง', zh: '发送中' },
+  errs: { en: 'Check these fields:', th: 'ตรวจสอบช่องต่อไปนี้', zh: '请检查以下项目：' },
+  eProc: { en: 'Procedure: choose at least one.', th: 'หัตถการ: เลือกอย่างน้อยหนึ่งรายการ', zh: '手术项目：请至少选择一项。' },
+  eBranch: { en: 'Branch: choose one.', th: 'สาขา: เลือกหนึ่งสาขา', zh: '分院：请选择一家。' },
+  eDates: { en: 'Travel dates: the departure is before the arrival.', th: 'ช่วงเดินทาง: วันเดินทางกลับอยู่ก่อนวันเดินทางถึง', zh: '出行日期：离开日期早于抵达日期。' },
+  eName: { en: 'Name: enter your name.', th: 'ชื่อ: กรอกชื่อของคุณ', zh: '姓名：请输入您的姓名。' },
+  eCountry: { en: 'Country: enter your country.', th: 'ประเทศ: กรอกประเทศของคุณ', zh: '国家：请输入您所在的国家。' },
+  eMethod: { en: 'Contact method: choose one.', th: 'ช่องทางติดต่อกลับ: เลือกหนึ่งช่องทาง', zh: '联系方式：请选择一种。' },
+  eWa: { en: 'WhatsApp number: enter the number with its country code.', th: 'หมายเลข WhatsApp: กรอกหมายเลขพร้อมรหัสประเทศ', zh: 'WhatsApp 号码：请输入含国家区号的号码。' },
+  eLine: { en: 'LINE ID: enter your LINE ID.', th: 'LINE ID: กรอก LINE ID ของคุณ', zh: 'LINE ID：请输入您的 LINE ID。' },
+  eEmail: { en: 'Email address: the address is not valid.', th: 'อีเมล: รูปแบบอีเมลไม่ถูกต้อง', zh: '电子邮件地址：该地址无效。' },
+  eConsent: { en: 'Consent: tick the box to send the enquiry.', th: 'ความยินยอม: ทำเครื่องหมายในช่องเพื่อส่งคำถาม', zh: '同意：请勾选方框后再发送咨询。' },
+  doneH: { en: 'Enquiry summary', th: 'สรุปคำถาม', zh: '咨询摘要' },
+  doneP: { en: 'Send this summary to the clinic on WhatsApp or LINE.', th: 'ส่งสรุปนี้ถึงคลินิกทาง WhatsApp หรือ LINE', zh: '通过 WhatsApp 或 LINE 将此摘要发送给医院。' },
+  sendWa: { en: 'Send to WhatsApp', th: 'ส่งทาง WhatsApp', zh: '发送到 WhatsApp' },
+  sendLine: { en: 'Send to LINE', th: 'ส่งทาง LINE', zh: '发送到 LINE' },
+  edit: { en: 'Edit enquiry', th: 'แก้ไขคำถาม', zh: '修改咨询' },
+  textHead: { en: 'Online consultation: Apex Surgery Hospital', th: 'ปรึกษาแพทย์ออนไลน์: โรงพยาบาลศัลยกรรมตกแต่งเอเพ็กซ์', zh: '在线咨询：Apex Surgery Hospital' },
+  contact: { en: 'Contact', th: 'ติดต่อกลับ', zh: '联系方式' },
+  photoCount: { en: 'Photos ready', th: 'รูปถ่ายที่เตรียมไว้', zh: '照片已准备好' },
+  none: { en: 'None', th: 'ไม่มี', zh: '无' },
+  eExtra: { en: '{q}: answer this question.', th: '{q}: ตอบคำถามนี้', zh: '{q}：请回答此问题。' }
 };
 
 const COUNTRIES = {
@@ -286,7 +286,7 @@ const ICON = {
 };
 
 const fmtDate = (iso, lang) => !iso ? '' : new Date(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)))
-  .toLocaleDateString(lang === 'th' ? 'th-TH' : 'en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' });
+  .toLocaleDateString(({th:'th-TH', zh:'zh-CN'}[lang] || 'en-GB'), { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' });
 
 /* opts.form, set in WordPress under Apex settings › Forms:
      text   {key: wording} for this language, in place of the wording in TX
@@ -296,9 +296,9 @@ const fmtDate = (iso, lang) => !iso ? '' : new Date(Date.UTC(+iso.slice(0, 4), +
 export function mount(container, opts = {}) {
   const { wa: WHATSAPP, line: LINE_OA } = contactOf(opts);
   injectCSS('apxc-css', CSS);
-  const lang = opts.lang === 'th' ? 'th' : 'en';
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en');
   const FC = opts.form || {};
-  const T = Object.assign({}, TX, Object.fromEntries(Object.entries(FC.text || {}).filter(([k, v]) => TX[k] && typeof v === 'string' && v.trim()).map(([k, v]) => [k, { en: v, th: v }])));
+  const T = Object.assign({}, TX, Object.fromEntries(Object.entries(FC.text || {}).filter(([k, v]) => TX[k] && typeof v === 'string' && v.trim()).map(([k, v]) => [k, { en: v, th: v, zh: v }])));
   const off = k => (FC.hide || []).includes(k);
   const optional = k => (FC.optional || []).includes(k);
   const EXTRA = (FC.extra || []).filter(x => x && x.k && x.q).slice(0, 10);
@@ -352,7 +352,7 @@ export function mount(container, opts = {}) {
   const fWho = h('div', { class: 'c-f c-two' },
     h('div', null, h('label', { class: 'c-lab', for: id('name') }, L(T.name), req()), iName, err('name')),
     off('country') ? null : h('div', null, h('label', { class: 'c-lab', for: id('country') }, L(T.country), optional('country') ? null : req()), iCountry, err('country'),
-      h('datalist', { id: id('cl') }, COUNTRIES[lang].map(c => h('option', { value: c })))));
+      h('datalist', { id: id('cl') }, (COUNTRIES[lang] || COUNTRIES.en).map(c => h('option', { value: c })))));
 
   const METHOD = {
     whatsapp: { lab: T.waNum, ph: T.waPh, type: 'tel', ac: 'tel', err: T.eWa, short: T.wa },
@@ -538,7 +538,7 @@ export function mount(container, opts = {}) {
     const lines = [L(T.textHead),
       `${L(T.proc)}: ${v.procedures.map(k => procName(k, lang)).join(', ')}`,
       `${L(T.branch)}: ${L(BRANCHES[v.branch])}`];
-    if (v.from || v.to) lines.push(`${L(T.dates)}: ${[fmtDate(v.from, lang), fmtDate(v.to, lang)].filter(Boolean).join(lang === 'th' ? ' ถึง ' : ' to ')}`);
+    if (v.from || v.to) lines.push(`${L(T.dates)}: ${[fmtDate(v.from, lang), fmtDate(v.to, lang)].filter(Boolean).join(({th:' ถึง ', zh:' 至 '}[lang] || ' to '))}`);
     lines.push(`${L(T.name)}: ${v.name}`);
     if (v.country) lines.push(`${L(T.country)}: ${v.country}`);
     lines.push(`${L(T.contact)}: ${L(METHOD[v.method].short)} ${v.contact}`);
@@ -556,7 +556,7 @@ export function mount(container, opts = {}) {
     const rows = [
       [L(T.proc), v.procedures.map(k => procName(k, lang)).join(', ')],
       [L(T.branch), L(BRANCHES[v.branch])],
-      (v.from || v.to) ? [L(T.dates), [fmtDate(v.from, lang), fmtDate(v.to, lang)].filter(Boolean).join(lang === 'th' ? ' ถึง ' : ' to ')] : null,
+      (v.from || v.to) ? [L(T.dates), [fmtDate(v.from, lang), fmtDate(v.to, lang)].filter(Boolean).join(({th:' ถึง ', zh:' 至 '}[lang] || ' to '))] : null,
       [L(T.name), v.name], v.country ? [L(T.country), v.country] : null,
       [L(T.contact), `${L(METHOD[v.method].short)} ${v.contact}`],
       v.questions ? [L(T.q), v.questions] : null,

@@ -4,11 +4,11 @@ import { procIcon } from './art.js';
 import { FACTS, PROCS } from './content.js';
 
 const UI = {
-  fact: { en: 'Fact', th: 'จริง' },
-  myth: { en: 'Myth', th: 'เข้าใจผิด' },
-  level: { en: 'Level', th: 'ระดับ' },
-  two: { en: 'Two cards at once', th: 'การ์ดมาพร้อมกัน 2 ใบ' },
-  missed: { en: 'Missed', th: 'ตอบไม่ทัน' }
+  fact: { en: 'Fact', th: 'จริง', zh: '事实' },
+  myth: { en: 'Myth', th: 'เข้าใจผิด', zh: '误区' },
+  level: { en: 'Level', th: 'ระดับ', zh: '关卡' },
+  two: { en: 'Two cards at once', th: 'การ์ดมาพร้อมกัน 2 ใบ', zh: '两张卡片同时出现' },
+  missed: { en: 'Missed', th: 'ตอบไม่ทัน', zh: '未答出' }
 };
 
 const LIVES = 3;
@@ -82,12 +82,12 @@ const CSS = `
 const ARROW_L = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
 const ARROW_R = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
 
-const TITLE = { en: 'Fact Rush', th: 'จริงหรือเข้าใจผิด' };
+const TITLE = { en: 'Fact Rush', th: 'จริงหรือเข้าใจผิด', zh: '事实快答' };
 
 export default {
   id: 'factrush',
   title: TITLE,
-  how: { en: 'Swipe right for fact, left for myth.', th: 'ปัดขวาถ้าจริง ปัดซ้ายถ้าเข้าใจผิด' },
+  how: { en: 'Swipe right for fact, left for myth.', th: 'ปัดขวาถ้าจริง ปัดซ้ายถ้าเข้าใจผิด', zh: '右滑选事实，左滑选误区。' },
 
   run(host, { lang = 'en', level: startLevel = 1, rng = Math.random, signal, onHud = () => {} } = {}) {
     css('apxg-fr', CSS);

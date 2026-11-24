@@ -15,25 +15,27 @@ import { slider } from './index.js';
 
 const RULE_TH = 'ใช้เป็นตัวอย่าง ผลจากการเข้ารับการรักษาพยาบาลสำหรับผู้ป่วยเฉพาะราย';
 const RULE_EN = 'Example only. Results from treatment of an individual patient.';
-const SITE = 'https://www.apexsurgeryhospital.com/';
-const abs = u => (u && u.startsWith('~/') ? SITE + u.slice(2) : u);
+let SITE = 'https://www.apexsurgeryhospital.com/';   // the review copy; WordPress passes its own address as opts.media
+let HOME = '';
+const site = u => HOME && u.startsWith('~/wp-content/uploads/apex-media/') ? HOME : SITE;
+const abs = u => (u && u.startsWith('~/') ? site(u) + u.slice(2) : u);
 
 const T = {
-  before: { en: 'Before', th: 'ก่อน' },
-  after: { en: 'After', th: 'หลัง' },
-  featured: { en: 'Featured case', th: 'เคสแนะนำ' },
-  caseN: { en: 'Case {n} of {m}', th: 'เคสที่ {n} จาก {m}' },
-  next: { en: 'Next case', th: 'เคสถัดไป' },
-  prev: { en: 'Previous case', th: 'เคสก่อนหน้า' },
-  close: { en: 'Close', th: 'ปิด' },
-  ask: { en: 'Ask about this result', th: 'สอบถามเกี่ยวกับผลลัพธ์นี้' },
-  story: { en: 'Patient review', th: 'รีวิวจากผู้เข้ารับบริการ' },
-  all: { en: 'All', th: 'ทั้งหมด' },
-  open: { en: 'Open case {n}: {p}', th: 'เปิดเคสที่ {n}: {p}' },
-  filter: { en: 'Filter cases', th: 'กรองเคส' },
-  viewer: { en: 'Before and after case', th: 'เคสก่อนและหลัง' },
-  view: { en: 'View case', th: 'ดูเคสนี้' },
-  more: { en: 'Show all {n} cases', th: 'ดูทั้งหมด {n} เคส' }
+  before: { en: 'Before', th: 'ก่อน', zh: '术前' },
+  after: { en: 'After', th: 'หลัง', zh: '术后' },
+  featured: { en: 'Featured case', th: 'เคสแนะนำ', zh: '精选案例' },
+  caseN: { en: 'Case {n} of {m}', th: 'เคสที่ {n} จาก {m}', zh: '第 {n} 个案例，共 {m} 个' },
+  next: { en: 'Next case', th: 'เคสถัดไป', zh: '下一个案例' },
+  prev: { en: 'Previous case', th: 'เคสก่อนหน้า', zh: '上一个案例' },
+  close: { en: 'Close', th: 'ปิด', zh: '关闭' },
+  ask: { en: 'Ask about this result', th: 'สอบถามเกี่ยวกับผลลัพธ์นี้', zh: '咨询此效果' },
+  story: { en: 'Patient review', th: 'รีวิวจากผู้เข้ารับบริการ', zh: '患者评价' },
+  all: { en: 'All', th: 'ทั้งหมด', zh: '全部' },
+  open: { en: 'Open case {n}: {p}', th: 'เปิดเคสที่ {n}: {p}', zh: '打开案例 {n}：{p}' },
+  filter: { en: 'Filter cases', th: 'กรองเคส', zh: '筛选案例' },
+  viewer: { en: 'Before and after case', th: 'เคสก่อนและหลัง', zh: '术前术后对比案例' },
+  view: { en: 'View case', th: 'ดูเคสนี้', zh: '查看案例' },
+  more: { en: 'Show all {n} cases', th: 'ดูทั้งหมด {n} เคส', zh: '显示全部 {n} 个案例' }
 };
 const ICON = {
   x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
@@ -195,8 +197,10 @@ const fill = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => (o[k] ?? ''));
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export function mount(container, opts = {}) {
+  if (opts.media) SITE = opts.media;
+  if (opts.home) HOME = opts.home;
   injectCSS();
-  const lang = opts.lang === 'th' ? 'th' : 'en';
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en');
   const L = o => o[lang] || o.en;
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) { /* host handler */ } };
   const cases = (opts.cases || []).map((c, i) => Object.assign({ i, url: abs(c.src) }, c));

@@ -26,11 +26,11 @@ const KEY = 'apex.region';
 const BASE = 'base';
 
 const T = {
-  pricesFor: { en: 'Prices for', th: 'ราคาสำหรับ' },
-  empty: { en: 'This month\'s offers for {r} are sent on request. Ask on LINE or WhatsApp.', th: 'โปรโมชั่นเดือนนี้สำหรับ{r} สอบถามได้ทาง LINE หรือ WhatsApp' },
-  emptyMsg: { en: 'Hello, I would like to ask about this month\'s offers ({r} prices).', th: 'สวัสดี ขอสอบถามโปรโมชั่นเดือนนี้ (ราคา{r})' },
-  demo: { en: 'Example prices for review. Apex sets the real ones in the backend.', th: 'ราคาตัวอย่างสำหรับตรวจแบบ Apex ตั้งราคาจริงในระบบหลังบ้าน' },
-  list: { en: 'prices', th: 'ราคา' }
+  pricesFor: { en: 'Prices for', th: 'ราคาสำหรับ', zh: '价格：' },
+  empty: { en: 'This month\'s offers for {r} are sent on request. Ask on LINE or WhatsApp.', th: 'โปรโมชั่นเดือนนี้สำหรับ{r} สอบถามได้ทาง LINE หรือ WhatsApp', zh: '{r}本月优惠可按需发送，请通过 LINE 或 WhatsApp 咨询。' },
+  emptyMsg: { en: 'Hello, I would like to ask about this month\'s offers ({r} prices).', th: 'สวัสดี ขอสอบถามโปรโมชั่นเดือนนี้ (ราคา{r})', zh: '您好，我想咨询本月优惠（{r}价格）。' },
+  demo: { en: 'Example prices for review. Apex sets the real ones in the backend.', th: 'ราคาตัวอย่างสำหรับตรวจแบบ Apex ตั้งราคาจริงในระบบหลังบ้าน', zh: '示例价格，仅供审阅。实际价格由 Apex 在后台设定。' },
+  list: { en: 'prices', th: 'ราคา', zh: '价格' }
 };
 const tx = (o, lang) => (o && (o[lang] ?? o.en)) ?? '';
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -86,7 +86,7 @@ export function slice(C, country, want) {
   if (!r && want !== BASE && country) r = regions.find(x => (x.countries || []).includes(country));
   if (!r && want !== BASE && C.other && C.other !== BASE) r = find(C.other);
   const region = r ? { id: r.id, name: r.name, cur: r.cur || 'THB', adjust: +r.adjust || 0, ask: !!r.ask, mismatch: r.mismatch === 'hide' ? 'hide' : 'card' }
-    : { id: BASE, name: (C.base && C.base.name) || { en: 'Thailand', th: 'ประเทศไทย' }, cur: 'THB', adjust: 0, ask: false, mismatch: 'card' };
+    : { id: BASE, name: (C.base && C.base.name) || { en: 'Thailand', th: 'ประเทศไทย', zh: '泰国' }, cur: 'THB', adjust: 0, ask: false, mismatch: 'card' };
   const offers = {};
   Object.entries(C.offers || {}).forEach(([k, o]) => {
     const row = (o.rows || {})[region.id] || {};
@@ -94,7 +94,7 @@ export function slice(C, country, want) {
   });
   return {
     choose: C.choose !== false, demo: !!C.demo, country,
-    regions: [{ id: BASE, name: (C.base && C.base.name) || { en: 'Thailand', th: 'ประเทศไทย' } }, ...regions.map(x => ({ id: x.id, name: x.name }))],
+    regions: [{ id: BASE, name: (C.base && C.base.name) || { en: 'Thailand', th: 'ประเทศไทย', zh: '泰国' } }, ...regions.map(x => ({ id: x.id, name: x.name }))],
     region, offers
   };
 }
@@ -162,7 +162,7 @@ function message(label, d, R, ctx) {
   const p = priceText(d, ctx);
   const where = R.region.id === BASE ? '' : tx(R.region.name, ctx.lang);
   const extra = [p, where && (ctx.lang === 'th' ? `${tx(T.list, 'th')}${where}` : `${where} ${T.list.en}`)].filter(Boolean).join(', ');
-  return (ctx.lang === 'th' ? `สวัสดี ขอสอบถามโปรโมชั่น ${label}` : `Hello, I would like to ask about this offer: ${label}`) + (extra ? ` (${extra})` : '') + (ctx.lang === 'th' ? '' : '.');
+  return (ctx.lang === 'th' ? `สวัสดี ขอสอบถามโปรโมชั่น ${label}` : ctx.lang === 'zh' ? `您好，我想咨询这个优惠：${label}` : `Hello, I would like to ask about this offer: ${label}`) + (extra ? ` (${extra})` : '') + (ctx.lang === 'th' ? '' : '.');
 }
 const withMsg = (href, msg, wa) => href.split('?')[0] + (wa ? '?text=' : '?') + encodeURIComponent(msg);
 

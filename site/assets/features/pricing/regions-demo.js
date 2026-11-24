@@ -7,10 +7,10 @@
 export default {
   choose: true,
   other: 'base',
-  base: { name: { en: 'Thailand', th: 'ประเทศไทย' } },
+  base: { name: { en: 'Thailand', th: 'ประเทศไทย', zh: '泰国' } },
   regions: [
-    { id: 'anz', name: { en: 'Australia and New Zealand', th: 'ออสเตรเลียและนิวซีแลนด์' }, countries: ['AU', 'NZ'], cur: 'AUD', adjust: 15, mismatch: 'card' },
-    { id: 'gulf', name: { en: 'Gulf countries', th: 'กลุ่มประเทศอ่าวอาหรับ' }, countries: ['AE', 'SA', 'QA', 'KW', 'BH', 'OM'], cur: 'USD', ask: true, mismatch: 'card' }
+    { id: 'anz', name: { en: 'Australia and New Zealand', th: 'ออสเตรเลียและนิวซีแลนด์', zh: '澳大利亚和新西兰' }, countries: ['AU', 'NZ'], cur: 'AUD', adjust: 15, mismatch: 'card' },
+    { id: 'gulf', name: { en: 'Gulf countries', th: 'กลุ่มประเทศอ่าวอาหรับ', zh: '海湾国家' }, countries: ['AE', 'SA', 'QA', 'KW', 'BH', 'OM'], cur: 'USD', ask: true, mismatch: 'card' }
   ],
   offers: {
     'Motiva-Promotion-100000-apex-surgery.webp': { rows: { anz: { price: 4990 } } },

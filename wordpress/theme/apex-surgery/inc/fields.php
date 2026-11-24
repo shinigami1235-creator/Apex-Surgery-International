@@ -210,7 +210,7 @@ add_action( 'admin_menu', function () {
 } );
 function apex_lang_tabs( string $page, string $cur ): string {
 	$o = '<nav class="nav-tab-wrapper">';
-	foreach ( [ 'en' => 'English', 'th' => 'ไทย' ] as $l => $x ) $o .= '<a class="nav-tab' . ( $l === $cur ? ' nav-tab-active' : '' ) . '" href="' . esc_url( admin_url( 'admin.php?page=' . $page . '&lang=' . $l ) ) . '">' . esc_html( $x ) . '</a>';
+	foreach ( [ 'en' => 'English', 'th' => 'ไทย', 'zh' => '中文' ] as $l => $x ) $o .= '<a class="nav-tab' . ( $l === $cur ? ' nav-tab-active' : '' ) . '" href="' . esc_url( admin_url( 'admin.php?page=' . $page . '&lang=' . $l ) ) . '">' . esc_html( $x ) . '</a>';
 	return $o . '</nav>';
 }
 function apex_admin_lang(): string {

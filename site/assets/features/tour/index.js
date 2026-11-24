@@ -7,26 +7,28 @@
                                           and stops at "to"; "Next" plays on from the current stop to the next "to"
    open(opts) shows the same player full screen over the page, with a close button and the back button closing it. */
 
-const SITE = 'https://www.apexsurgeryhospital.com/';
+let SITE = 'https://www.apexsurgeryhospital.com/';   // the review copy; WordPress passes its own address as opts.media
+let HOME = '';
+const site = u => HOME && u.startsWith('~/wp-content/uploads/apex-media/') ? HOME : SITE;
 const FADE = 0.875;   // the cross-fade between rooms in the video, 21 frames at 24 fps
 
 const T = {
-  title: { en: '{b} branch tour', th: 'ทัวร์สาขา{b}' },
-  model: { en: '3D model built from photos of the branch', th: 'ภาพจำลอง 3 มิติ สร้างจากภาพถ่ายของสาขา' },
-  start: { en: 'Start the tour', th: 'เริ่มชม' },
-  length: { en: '{n} rooms · {s} seconds', th: '{n} ห้อง · {s} วินาที' },
-  next: { en: 'Next: {r}', th: 'ถัดไป: {r}' },
-  again: { en: 'Watch again', th: 'ดูอีกครั้ง' },
-  book: { en: 'Book a consultation', th: 'นัดปรึกษา' },
-  play: { en: 'Play', th: 'เล่น' },
-  pause: { en: 'Pause', th: 'หยุด' },
-  close: { en: 'Close', th: 'ปิด' },
-  rooms: { en: 'Rooms', th: 'ห้อง' },
-  room: { en: 'Room {n} of {m}: {r}', th: 'ห้องที่ {n} จาก {m}: {r}' },
-  loading: { en: 'Loading the tour', th: 'กำลังโหลดทัวร์' },
-  failed: { en: 'The tour video could not be loaded.', th: 'โหลดวิดีโอทัวร์ไม่สำเร็จ' },
-  retry: { en: 'Try again', th: 'ลองอีกครั้ง' },
-  progress: { en: 'Tour progress', th: 'ความคืบหน้าของทัวร์' }
+  title: { en: '{b} branch tour', th: 'ทัวร์สาขา{b}', zh: '{b}分院参观' },
+  model: { en: '3D model built from photos of the branch', th: 'ภาพจำลอง 3 มิติ สร้างจากภาพถ่ายของสาขา', zh: '根据分院照片制作的 3D 模型' },
+  start: { en: 'Start the tour', th: 'เริ่มชม', zh: '开始参观' },
+  length: { en: '{n} rooms · {s} seconds', th: '{n} ห้อง · {s} วินาที', zh: '{n} 个房间 · {s} 秒' },
+  next: { en: 'Next: {r}', th: 'ถัดไป: {r}', zh: '下一个：{r}' },
+  again: { en: 'Watch again', th: 'ดูอีกครั้ง', zh: '重新观看' },
+  book: { en: 'Book a consultation', th: 'นัดปรึกษา', zh: '预约咨询' },
+  play: { en: 'Play', th: 'เล่น', zh: '开始玩' },
+  pause: { en: 'Pause', th: 'หยุด', zh: '暂停' },
+  close: { en: 'Close', th: 'ปิด', zh: '关闭' },
+  rooms: { en: 'Rooms', th: 'ห้อง', zh: '房间' },
+  room: { en: 'Room {n} of {m}: {r}', th: 'ห้องที่ {n} จาก {m}: {r}', zh: '第 {n} 个房间，共 {m} 个：{r}' },
+  loading: { en: 'Loading the tour', th: 'กำลังโหลดทัวร์', zh: '正在加载参观内容' },
+  failed: { en: 'The tour video could not be loaded.', th: 'โหลดวิดีโอทัวร์ไม่สำเร็จ', zh: '参观视频无法加载。' },
+  retry: { en: 'Try again', th: 'ลองอีกครั้ง', zh: '重试' },
+  progress: { en: 'Tour progress', th: 'ความคืบหน้าของทัวร์', zh: '参观进度' }
 };
 
 const ICON = {
@@ -148,12 +150,14 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp
 const fill = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => o[k] != null ? o[k] : '');
 
 export function mount(container, opts = {}) {
+  if (opts.media) SITE = opts.media;
+  if (opts.home) HOME = opts.home;
   css();
-  const lang = opts.lang === 'th' ? 'th' : 'en';
-  const L = (k, o) => fill(T[k][lang], o || {});
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en');
+  const L = (k, o) => fill(T[k][lang] ?? T[k].en, o || {});
   const B = opts.branch || {};
   const base = opts.base || '';
-  const abs = u => !u ? '' : u.startsWith('~/') ? SITE + u.slice(2) : /^(img|video|features)\//.test(u) ? base + u : u;
+  const abs = u => !u ? '' : u.startsWith('~/') ? site(u) + u.slice(2) : /^(img|video|features)\//.test(u) ? base + u : u;
   const S = (B.tourStops || []).filter(s => isFinite(+s.from) && isFinite(+s.to)).map(s => ({...s, from:+s.from, to:+s.to})).sort((a, b) => a.to - b.to);
   const ev = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) {} };
   const short = B.short || B.name || '';
@@ -322,7 +326,7 @@ export function open(opts = {}) {
   const ov = document.createElement('div');
   ov.className = 'apxt-ov';
   ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
-  ov.setAttribute('aria-label', fill(T.title[opts.lang === 'th' ? 'th' : 'en'], {b:(opts.branch && (opts.branch.short || opts.branch.name)) || ''}));
+  ov.setAttribute('aria-label', fill(T.title[(['th', 'zh'].includes(opts.lang) ? opts.lang : 'en')], {b:(opts.branch && (opts.branch.short || opts.branch.name)) || ''}));
   document.body.append(ov);
   const prevOverflow = document.documentElement.style.overflow;
   document.documentElement.style.overflow = 'hidden';

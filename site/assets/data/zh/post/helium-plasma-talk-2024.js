@@ -1,0 +1,1 @@
+window.APEX=window.APEX||{};APEX._d=APEX._d||{};APEX._d["post:helium-plasma-talk-2024"]={"key": "helium-plasma-talk-2024", "title": "Somboon Waiphrip 医生受邀就“氦等离子用于下面部和颈部皮下年轻化”作专题演讲", "date": "2025-04-01", "cat": "news", "img": null, "author": "oraya choeipho", "tag": null, "blocks": [{"t": "p", "x": "于泰国整形外科医师协会第 34 届年会（ThPRS & ThSAPS 2024）"}]};

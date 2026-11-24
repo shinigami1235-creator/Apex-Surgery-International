@@ -836,7 +836,6 @@ html,body{overflow-x:clip}main>section{overflow-x:clip}
 
 
 /* ===== languages ===== */
-html[lang="zh"]{--font:"LINE Seed","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif}
 /* Thai tone marks sit above the line: give tight headings room */
 html[lang="th"] h1,html[lang="th"] h2,html[lang="th"] .h-xl,html[lang="th"] .h-l,html[lang="th"] .display,html[lang="th"] .dname{line-height:1.22;letter-spacing:-.015em}
 html[lang="th"] .hero h1{line-height:1.12}
@@ -881,3 +880,7 @@ html[lang="zh"] h1,html[lang="zh"] h2,html[lang="zh"] .h-xl,html[lang="zh"] .h-l
 /* when the links don't fit, such as with a large browser text size, the menu button takes their place (core.js sets nav-tight) */
 .hdr.nav-tight .hdr-nav{display:none}.hdr.nav-tight .burger{display:inline-flex}
 .fb-duo{grid-template-columns:repeat(auto-fit,minmax(0,500px))}
+/* Chinese: the system's own CJK fonts after LINE Seed's Latin, so numbers and English words keep the site's face */
+html[lang="zh"]{--font:"LINE Seed","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Noto Sans SC","Source Han Sans SC",sans-serif}
+html[lang="zh"] h1,html[lang="zh"] h2,html[lang="zh"] .h-xl,html[lang="zh"] .h-l,html[lang="zh"] .display,html[lang="zh"] .dname{line-height:1.28;letter-spacing:0}
+html[lang="zh"] body{line-height:1.8;word-break:normal;line-break:strict}

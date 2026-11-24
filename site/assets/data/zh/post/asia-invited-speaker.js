@@ -1,0 +1,1 @@
+window.APEX=window.APEX||{};APEX._d=APEX._d||{};APEX._d["post:asia-invited-speaker"]={"key": "asia-invited-speaker", "title": "Somboon Waiphrip 医生：唯一受邀在亚洲级活动上发表演讲的泰国整形外科医生", "date": "2025-04-01", "cat": "news", "img": null, "author": "oraya choeipho", "tag": null, "blocks": [{"t": "p", "x": "Somboon 医生荣幸地成为唯一一位受邀在印度尼西亚巴厘岛 PINOKIO ASIA 2023 发表演讲的泰国美容整形医生。"}]};

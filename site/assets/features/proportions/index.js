@@ -52,6 +52,7 @@ const STR = {
          golden:'ปากกว้างเป็น 1.618 เท่าของจมูก', lips:'ปากล่างหนาเป็น 1.6 เท่าของปากบน ฟิลเลอร์ปาก', jaw:'กรอบหน้าแคบกว่าโหนกแก้ม ดูดไขมันใบหน้าหรือปรับกรอบหน้า'},
     svc:{rhinoplasty:'เสริมจมูก', lipo:'ดูดไขมัน'},
   },
+  zh: {"change": "换一张照片", "photo": "照片", "take": "拍照", "choose": "选择照片", "sample": "示例面孔", "privacy": "尚未上传照片。", "hint": "请正对镜头，嘴唇闭合。", "emptyH": "请拍摄或选择一张正面照片。", "busy": "正在测量您的面部", "credit": "示例面孔来自 Unsplash，并非 Apex 患者", "rows": "比例", "settings": "设置", "ideal": "理想状态：", "women": "女性", "men": "男性", "amount": "用量", "guides": "参考线", "spiral": "螺旋线", "before": "术前", "after": "术后", "sim": "仅为模拟", "compare": "术前术后对比", "now": "当前", "then": "术后", "fine": "比例已合适", "apply": "应用", "save": "保存", "saveBtn": "保存到手机", "plan": "加入我的方案", "planned": "已加入我的方案", "consult": "咨询医生", "vary": "效果因人而异。", "note": "仅调整治疗能够改变的部分，眼距和颅骨形状保持不变。", "camHint": "请将面部对准轮廓线。", "shutter": "拍照", "cancel": "取消", "brand": "Apex Surgery Hospital", "warn": {"turn": "您的头部有转向。请正对镜头，以获得更准确的测量。", "mouth": "您的嘴唇未闭合。请闭上嘴唇，以获得更准确的测量。"}, "err": {"noFace": "此照片中未识别到面部。请换一张从正面拍摄、距离更近的照片。", "camera": "无法打开相机。", "read": "无法读取该照片。", "model": "面部模型无法加载。", "save": "无法保存图片。", "sample": "示例照片无法加载。"}, "match": "黄金比例匹配度", "matchP": "面部与经典比例的接近程度，包括嘴与鼻的黄金比例。", "row": {"thirds": "下巴长度", "nose": "鼻宽", "golden": "黄金比例", "lips": "唇部平衡", "jaw": "下颌线"}, "how": {"thirds": "中面部与下面部等长。可选择下巴假体、填充剂或颏成形术。", "nose": "鼻宽等于两眼之间的距离。可选择鼻整形术。", "golden": "嘴宽为鼻宽的 1.618 倍。", "lips": "下唇为上唇的 1.6 倍。可选择唇部填充。", "jaw": "下颌窄于颧骨。可选择面部吸脂术或下颌轮廓手术。"}, "svc": {"rhinoplasty": "鼻整形术", "lipo": "吸脂术"}},
 };
 
 const ICON = {
@@ -273,7 +274,7 @@ function paintSpiral(g, L, ox, oy, k, lw){
 let styleRefs = 0, styleEl = null;
 
 export function mount(container, opts = {}){
-  const lang = opts.lang === 'th' ? 'th' : 'en', S = STR[lang];
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en'), S = STR[lang] || STR.en;
   const mpBase = opts.mpBase || MP_CDN, sampleSrc = opts.sample || SAMPLE;
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) {} };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));

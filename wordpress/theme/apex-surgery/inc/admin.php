@@ -74,14 +74,14 @@ function apex_dashboard(): void {
 	}
 	if ( current_user_can( 'edit_apex_vouchers' ) ) $top[] = '<a href="' . esc_url( admin_url( 'edit.php?post_type=apex_voucher&page=apex-voucher-check' ) ) . '">' . esc_html__( 'Check a voucher', 'apex' ) . '</a>';
 	if ( $top ) echo '<p style="font-size:15px">' . implode( ' · ', $top ) . '</p>';
-	echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'To change', 'apex' ) . '</th><th>English</th><th>ไทย</th></tr></thead><tbody>';
+	echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'To change', 'apex' ) . '</th><th>English</th><th>ไทย</th><th>中文</th></tr></thead><tbody>';
 	$rows = [
-		[ __( 'Home page', 'apex' ), $page( 'home', 'en' ), $page( 'home', 'th' ) ],
-		[ __( 'About page', 'apex' ), $page( 'about', 'en' ), $page( 'about', 'th' ) ],
-		[ __( 'Header, footer, LINE, phone numbers', 'apex' ), admin_url( 'admin.php?page=apex-settings&lang=en' ), admin_url( 'admin.php?page=apex-settings&lang=th' ) ],
-		[ __( 'Buttons and labels', 'apex' ), admin_url( 'admin.php?page=apex-wording&lang=en' ), admin_url( 'admin.php?page=apex-wording&lang=th' ) ],
+		[ __( 'Home page', 'apex' ), $page( 'home', 'en' ), $page( 'home', 'th' ), $page( 'home', 'zh' ) ],
+		[ __( 'About page', 'apex' ), $page( 'about', 'en' ), $page( 'about', 'th' ), $page( 'about', 'zh' ) ],
+		[ __( 'Header, footer, LINE, phone numbers', 'apex' ), admin_url( 'admin.php?page=apex-settings&lang=en' ), admin_url( 'admin.php?page=apex-settings&lang=th' ), admin_url( 'admin.php?page=apex-settings&lang=zh' ) ],
+		[ __( 'Buttons and labels', 'apex' ), admin_url( 'admin.php?page=apex-wording&lang=en' ), admin_url( 'admin.php?page=apex-wording&lang=th' ), admin_url( 'admin.php?page=apex-wording&lang=zh' ) ],
 	];
-	foreach ( $rows as [ $label, $en, $th ] ) echo '<tr><td>' . esc_html( $label ) . '</td><td>' . ( $en ? '<a href="' . esc_url( $en ) . '">' . esc_html__( 'Edit', 'apex' ) . '</a>' : '' ) . '</td><td>' . ( $th ? '<a href="' . esc_url( $th ) . '">' . esc_html__( 'Edit', 'apex' ) . '</a>' : '' ) . '</td></tr>';
+	foreach ( $rows as $row ) { echo '<tr><td>' . esc_html( array_shift( $row ) ) . '</td>'; foreach ( $row as $u ) echo '<td>' . ( $u ? '<a href="' . esc_url( $u ) . '">' . esc_html__( 'Edit', 'apex' ) . '</a>' : '' ) . '</td>'; echo '</tr>'; }
 	echo '</tbody></table><ul style="margin-top:12px">';
 	foreach ( [ 'apex_offer' => __( 'Offers and prices: the promotions page and the home page offers', 'apex' ), 'apex_case' => __( 'Before and after photos', 'apex' ), 'apex_service' => __( 'Procedures: each service page', 'apex' ), 'post' => __( 'Articles, reviews and news', 'apex' ), 'apex_episode' => __( 'Surgery Wars episodes', 'apex' ), 'apex_branch' => __( 'Branches: addresses, phones, maps', 'apex' ), 'apex_doctor' => __( 'Doctors', 'apex' ) ] as $t => $x ) echo '<li><a href="' . esc_url( admin_url( 'edit.php?post_type=' . $t ) ) . '">' . esc_html( $x ) . '</a></li>';
 	echo '</ul><p class="description">' . esc_html__( 'Every item exists once in English and once in Thai. Use the language column in each list (or the + beside it) to open the other version.', 'apex' ) . '</p>';

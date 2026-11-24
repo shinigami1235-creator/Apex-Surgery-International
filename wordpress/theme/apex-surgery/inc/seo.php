@@ -94,7 +94,7 @@ add_action( 'wp_head', function () {
 	if ( $m['desc'] !== '' ) $out .= '<meta property="og:description" content="' . esc_attr( $m['desc'] ) . '">' . "\n";
 	if ( $canon ) $out .= '<meta property="og:url" content="' . esc_url( $canon ) . '">' . "\n";
 	$out .= '<meta property="og:image" content="' . esc_url( $m['img'] ) . '">' . "\n";
-	$out .= '<meta property="og:locale" content="' . ( apex_lang() === 'th' ? 'th_TH' : 'en_US' ) . '">' . "\n";
+	$out .= '<meta property="og:locale" content="' . ( [ 'th' => 'th_TH', 'zh' => 'zh_CN' ][ apex_lang() ] ?? 'en_US' ) . '">' . "\n";
 	$out .= '<meta property="og:locale:alternate" content="' . ( apex_lang() === 'th' ? 'en_US' : 'th_TH' ) . '">' . "\n";
 	$out .= '<meta name="twitter:card" content="summary_large_image">' . "\n";
 	echo $out;

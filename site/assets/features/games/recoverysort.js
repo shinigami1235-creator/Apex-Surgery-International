@@ -3,13 +3,13 @@ import { css, h, loop, recorder, sfx, shake, floatText, reduced, shuffle, tx, EA
 import { procIcon } from './art.js';
 import { RECOVERY, BUCKETS, PROCS } from './content.js';
 
-const TITLE = { en: 'Recovery Sort', th: 'จัดช่วงพักฟื้น' };
+const TITLE = { en: 'Recovery Sort', th: 'จัดช่วงพักฟื้น', zh: '恢复分类' };
 const UI = {
-  level: { en: 'Level', th: 'ระดับ' },
-  newTime: { en: 'New time', th: 'ช่วงเวลาใหม่' },
-  newTag: { en: 'New', th: 'ใหม่' },
-  hint: { en: 'Drag a card to its time, or tap the card and then the time.', th: 'ลากการ์ดไปยังช่วงเวลา หรือแตะการ์ดแล้วแตะช่วงเวลา' },
-  missed: { en: 'Missed', th: 'พลาด' }
+  level: { en: 'Level', th: 'ระดับ', zh: '关卡' },
+  newTime: { en: 'New time', th: 'ช่วงเวลาใหม่', zh: '新时间' },
+  newTag: { en: 'New', th: 'ใหม่', zh: '新' },
+  hint: { en: 'Drag a card to its time, or tap the card and then the time.', th: 'ลากการ์ดไปยังช่วงเวลา หรือแตะการ์ดแล้วแตะช่วงเวลา', zh: '将卡片拖到对应时间，或先点选卡片再点选时间。' },
+  missed: { en: 'Missed', th: 'พลาด', zh: '未答出' }
 };
 
 const LIVES = 3;
@@ -72,7 +72,7 @@ const CSS = `
 export default {
   id: 'recoverysort',
   title: TITLE,
-  how: { en: 'Drag each card to its recovery time.', th: 'ลากการ์ดไปยังช่วงเวลาพักฟื้นที่ถูกต้อง' },
+  how: { en: 'Drag each card to its recovery time.', th: 'ลากการ์ดไปยังช่วงเวลาพักฟื้นที่ถูกต้อง', zh: '将每张卡片拖到对应的恢复时间。' },
 
   run(host, { lang = 'en', level: startLevel = 1, rng = Math.random, signal, onHud = () => {} } = {}) {
     css('apxg-rs', CSS);

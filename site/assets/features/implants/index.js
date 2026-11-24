@@ -63,6 +63,7 @@ const STR = {
           nose:'ความหนาจากขนาดซิลิโคนเสริมสันจมูกของ Implantech 1.5 ถึง 4.5 มม.'},
     brandName:'Apex Surgery Hospital',
   },
+  zh: {"area": {"breast": "胸部", "chin": "下巴", "forehead": "额头", "nose": "鼻部"}, "areaNav": "假体预览", "now": "当前", "after": "植入后", "front": "正面", "angle": "45°", "side": "侧面", "views": "转动模型", "xray": "查看假体", "change": "显示变化", "split": "并排对比", "drag": "拖动可转动，双指张开可缩放。", "you": "您", "height": "身高", "weight": "体重", "cup": "目前罩杯", "sex": "面部", "women": "女性", "men": "男性", "implant": "假体", "brand": "品牌和系列", "profile": "侧面", "size": "尺寸", "style": "款式", "shape": "形状", "thick": "厚度", "compare": "与另一尺寸对比", "compareSize": "第二个尺寸", "save": "保存", "saveBtn": "保存到手机", "plan": "加入我的方案", "planned": "已加入我的方案", "consult": "咨询医生", "loading": "正在加载模型", "sim": "仅为模拟", "vary": "效果因人而异。医生会为您测量，并与您一起选择假体。", "cc": "cc", "each": "每侧", "wide": "宽", "proj": "前突", "tall": "高", "mm": "mm", "cm": "cm", "kg": "kg", "adds": "增加", "cupNow": "罩杯", "cupAbout": "约", "forward": "更向前", "raised": "鼻梁抬高", "tipLift": "鼻尖前移约", "fuller": "额头前移", "chinFwd": "下巴前移", "across": "横向", "taper": "中央最厚，向边缘逐渐变薄", "fit": "此假体比您约 {b} cm 的乳房基底更宽。医生通常选择不超过基底宽度的假体。", "modelCredit": ["男性 3D 头部模型改编自", "作者 lKutts，"], "estimate": "鼻尖提升为估算值，厂家均未公布该数据。", "err": {"model": "3D 模型无法加载。", "save": "无法保存图片。"}, "note": {"breast": "尺寸和形状来自 Motiva 和 Mentor 的尺寸表。假体按完整容量植入到与您身高体重相同的身体模型上。", "chin": "尺寸来自 Implantech 下巴假体目录。下巴前移的幅度略小于假体厚度，因为表面的皮肤会吸收一部分。", "forehead": "厚度参照硅胶额头假体的常用规格，中央 3 至 6 mm，向边缘逐渐变薄。", "nose": "厚度来自 Implantech 鼻背假体尺寸，1.5 至 4.5 mm。"}, "brandName": "Apex Surgery Hospital"},
 };
 
 const ICON = {
@@ -186,12 +187,12 @@ let styleRefs = 0, styleEl = null;
 const cupIndex = c => S.CUPS.indexOf(c);
 
 export function mount(container, opts = {}){
-  const lang = opts.lang === 'th' ? 'th' : 'en', T = STR[lang];
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en'), T = STR[lang] || STR.en;
   const area = AREAS.includes(opts.area) ? opts.area : 'breast', face = area !== 'breast';
   const links = Object.assign({}, LINKS, opts.links || {});
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) {} };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
-  const fmt = (x, d = 1) => (Math.round(x * Math.pow(10, d)) / Math.pow(10, d)).toLocaleString(lang === 'th' ? 'th-TH' : 'en-US', {maximumFractionDigits:d});
+  const fmt = (x, d = 1) => (Math.round(x * Math.pow(10, d)) / Math.pow(10, d)).toLocaleString(({th:'th-TH', zh:'zh-CN'}[lang] || 'en-US'), {maximumFractionDigits:d});
   if (!styleRefs++) { styleEl = document.createElement('style'); styleEl.dataset.feature = 'implants'; styleEl.textContent = CSS; document.head.append(styleEl); }
 
   /* ---------- state ---------- */
@@ -433,7 +434,7 @@ export function mount(container, opts = {}){
       if (area === 'chin') cards.push([T.chinFwd, fmt(imp.mm * .9) + ' ' + T.mm, null, true], [T.implant, `${imp.name} ${imp.code}`, `${fmt(imp.mm)} ${T.mm} · ${fmt(imp.spanMm / 10)} ${T.cm} ${T.across}`]);
       if (area === 'forehead') cards.push([T.fuller, fmt(imp.mm * .95) + ' ' + T.mm, null, true], [T.implant, `${fmt(imp.mm)} ${T.mm}`, T.taper]);
       if (area === 'nose') {
-        cards.push([T.raised, fmt(imp.mm * .92) + ' ' + T.mm, `${(NOSE.shapes.find(s => s.id === state.nose.shape) || {})[lang] || ''} · ${fmt(imp.mm)} ${T.mm}`, true]);
+        cards.push([T.raised, fmt(imp.mm * .92) + ' ' + T.mm, `${((s => s && (s[lang] || s.en))(NOSE.shapes.find(s => s.id === state.nose.shape)) || '')} · ${fmt(imp.mm)} ${T.mm}`, true]);
         if (imp.tipMm) cards.push([T.tipLift, fmt(imp.tipMm) + ' ' + T.mm, T.estimate]);
       }
       box.innerHTML = cards.map(([s, b, sm, g]) => `<div class="im-card${g ? ' gold' : ''}"><span>${esc(s)}</span><b>${esc(b)}</b>${sm ? `<small>${esc(sm)}</small>` : ''}</div>`).join('');
@@ -544,7 +545,7 @@ export function mount(container, opts = {}){
       const imp = faceImp();
       if (area === 'chin') out.push(`${imp.name} ${imp.code}: ${fmt(imp.mm)} ${T.mm} · ${T.forward} ${fmt(imp.mm * .9)} ${T.mm}`);
       if (area === 'forehead') out.push(`${T.thick} ${fmt(imp.mm)} ${T.mm}`);
-      if (area === 'nose') { out.push(`${(NOSE.shapes.find(s => s.id === state.nose.shape) || {})[lang]} · ${fmt(imp.mm)} ${T.mm}`); if (imp.tipMm) out.push(`${T.tipLift} ${fmt(imp.tipMm)} ${T.mm}`); }
+      if (area === 'nose') { out.push(`${(s => s && (s[lang] || s.en))(NOSE.shapes.find(s => s.id === state.nose.shape)) || ''} · ${fmt(imp.mm)} ${T.mm}`); if (imp.tipMm) out.push(`${T.tipLift} ${fmt(imp.tipMm)} ${T.mm}`); }
     } else {
       const a = breastImp(state.cc), L = line();
       out.push(`${L.name} ${prof().name} ${a.cc} ${T.cc} · ${fmt(a.width)} ${T.cm} ${T.wide} · ${fmt(a.projection)} ${T.cm} ${T.proj}`);

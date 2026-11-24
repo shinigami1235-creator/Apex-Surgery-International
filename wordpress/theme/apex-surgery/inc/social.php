@@ -207,6 +207,7 @@ const APEX_NETS = [ 'instagram' => 'Instagram', 'tiktok' => 'TikTok', 'facebook'
 function apex_short_date( string $d ): string {
 	$t = strtotime( $d . ' 00:00:00 UTC' );
 	if ( ! $t ) return $d;
+	if ( apex_L() === 'zh' ) return gmdate( 'n月j日', $t );
 	if ( apex_L() !== 'th' ) return gmdate( 'j M', $t );
 	$m = [ 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.' ];
 	return gmdate( 'j', $t ) . ' ' . $m[ (int) gmdate( 'n', $t ) - 1 ];

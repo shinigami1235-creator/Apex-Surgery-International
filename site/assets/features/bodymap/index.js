@@ -25,66 +25,67 @@ const STR = {
     vary: 'ผลลัพธ์อาจแตกต่างกันไปในแต่ละบุคคล',
     add: 'เพิ่มในแผนของฉัน', added: 'เพิ่มในแผนของฉันแล้ว', details: 'รายละเอียดหัตถการ', close: 'ปิด',
     loading: 'กำลังโหลด', loadError: 'โหลดโมเดลร่างกายไม่สำเร็จ', faceError: 'โหลดโมเดลใบหน้าไม่สำเร็จ'
-  }
+  },
+  zh: {"region": "身体图", "areas": "部位", "body": "身体", "female": "女性", "male": "男性", "back": "全身", "face": "面部", "hintBody": "点选部位查看相关手术。", "hintFace": "点选面部特征查看相关手术。", "concerns": "困扰", "pick": "请选择一项困扰。", "recovery": "恢复", "vary": "效果因人而异。", "add": "加入我的方案", "added": "已加入我的方案", "details": "手术详情", "close": "关闭", "loading": "加载中", "loadError": "身体模型无法加载。", "faceError": "面部模型无法加载。"},
 };
 
 /* Recovery facts come from the client's own service pages (Q&A blocks). */
 const PROC = {
-  facelift: { en: 'Facelift', th: 'ดึงหน้า', rec: {
+  facelift: { en: 'Facelift', th: 'ดึงหน้า', zh: '面部提升术', rec: {
     en: [['Light office work', 'After about 4 to 7 days'], ['No strenuous exercise', 'For 3 to 4 weeks'], ['Results last', 'About 7 to 12 years for a deep plane facelift']],
     th: [['งานออฟฟิศเบา ๆ', 'ประมาณ 4 ถึง 7 วัน'], ['งดออกกำลังกายหนัก', '3 ถึง 4 สัปดาห์'], ['ผลลัพธ์อยู่ได้', 'ประมาณ 7 ถึง 12 ปี สำหรับ Deep Plane']] } },
-  browlift: { en: 'Brow lift', th: 'ยกคิ้ว', rec: {
+  browlift: { en: 'Brow lift', th: 'ยกคิ้ว', zh: '提眉术', rec: {
     en: [['Initial recovery', '7 to 14 days'], ['No strenuous exercise', 'For 4 to 6 weeks'], ['Final shape', '3 to 6 months'], ['Results last', 'About 5 to 10 years']],
     th: [['พักฟื้นเบื้องต้น', '7 ถึง 14 วัน'], ['งดออกกำลังกายหนัก', '4 ถึง 6 สัปดาห์'], ['คิ้วเข้าที่', '3 ถึง 6 เดือน'], ['ผลลัพธ์อยู่ได้', 'ประมาณ 5 ถึง 10 ปี']] } },
-  rhinoplasty: { en: 'Rhinoplasty', th: 'เสริมจมูก', rec: {
+  rhinoplasty: { en: 'Rhinoplasty', th: 'เสริมจมูก', zh: '鼻整形术', rec: {
     en: [['Rest', 'At least 7 to 14 days'], ['Swelling eases', 'Around 2 weeks'], ['Shape settles', '1 to 3 months'], ['Clearly visible', '3 to 6 months'], ['Fully settled', '6 to 12 months'], ['Soft food', '1 to 2 weeks']],
     th: [['พักฟื้น', 'อย่างน้อย 7 ถึง 14 วัน'], ['อาการบวมเริ่มบรรเทา', 'ประมาณ 2 สัปดาห์'], ['ทรงจมูกรัดแกน', '1 ถึง 3 เดือน'], ['ผลลัพธ์เห็นชัด', '3 ถึง 6 เดือน'], ['เข้าที่สมบูรณ์', '6 ถึง 12 เดือน'], ['อาหารอ่อน', '1 ถึง 2 สัปดาห์แรก']] } },
-  eyelid: { en: 'Double eyelid surgery', th: 'ทำตาสองชั้น', rec: {
+  eyelid: { en: 'Double eyelid surgery', th: 'ทำตาสองชั้น', zh: '双眼皮手术', rec: {
     en: [['Swelling eases', '7 to 14 days'], ['Final shape', '3 to 6 months'], ['No alcohol or smoking', 'At least 2 weeks']],
     th: [['อาการบวมช้ำลดลง', '7 ถึง 14 วัน'], ['ชั้นตาเข้าที่', '3 ถึง 6 เดือน'], ['งดแอลกอฮอล์และบุหรี่', 'อย่างน้อย 2 สัปดาห์']] } },
-  breast: { en: 'Breast augmentation', th: 'เสริมหน้าอก', rec: {
+  breast: { en: 'Breast augmentation', th: 'เสริมหน้าอก', zh: '隆胸术', rec: {
     en: [['Soreness', '3 to 7 days'], ['Back to light work', 'Weeks 2 to 4'], ['Exercise', 'After about 1 to 2 months']],
     th: [['อาการปวดตึง', '3 ถึง 7 วันแรก'], ['กลับไปทำงานเบา ๆ', 'สัปดาห์ที่ 2 ถึง 4'], ['ออกกำลังกาย', 'หลังประมาณ 1 ถึง 2 เดือน']] } },
-  lipo: { en: 'Liposuction', th: 'ดูดไขมัน', rec: {
+  lipo: { en: 'Liposuction', th: 'ดูดไขมัน', zh: '吸脂术', rec: {
     en: [['Compression garment', '22 to 24 hours a day in week 1, then 12 to 18 hours a day in weeks 2 to 4'], ['Driving', 'After 3 to 7 days'], ['Results settle', '3 to 6 months']],
     th: [['ชุดกระชับ', 'วันละ 22 ถึง 24 ชั่วโมงในสัปดาห์แรก แล้ววันละ 12 ถึง 18 ชั่วโมงในสัปดาห์ที่ 2 ถึง 4'], ['ขับรถ', 'หลัง 3 ถึง 7 วัน'], ['ผลลัพธ์เข้าที่', '3 ถึง 6 เดือน']] } }
 };
 
 /* Body region ids written by the Python build (see SOURCE.md). */
 const REG = { head: 1, neck: 2, breast: 3, abdomen: 4, arms: 5, waistback: 6, hips: 7, thighs: 8, calves: 9 };
-const C = (en, th) => ({ en, th });
+const C = (en, th, zh) => ({ en, th, zh });
 
 /* a: the viewing angle around the body (0 = front, PI = back). side: which side the marker sits on. */
 const AREAS = [
-  { k: 'face', lvl: 'body', reg: [REG.head, REG.neck], a: 0, name: C('Face', 'ใบหน้า') },
-  { k: 'breast', zr: 2.4, lvl: 'body', reg: [REG.breast], a: .42, female: true, proc: 'breast', name: C('Breast', 'หน้าอก'),
-    cn: [C('Small breasts', 'หน้าอกเล็กโดยกำเนิด'), C('Uneven breasts', 'หน้าอกสองข้างไม่เท่ากัน'), C('Volume loss after pregnancy or weight loss', 'หน้าอกหย่อนคล้อยหลังมีบุตรหรือลดน้ำหนัก')] },
-  { k: 'abdomen', zr: 2.6, lvl: 'body', reg: [REG.abdomen], a: .3, proc: 'lipo', name: C('Abdomen', 'หน้าท้อง'),
-    cn: [C('Upper belly fat', 'ไขมันหน้าท้องส่วนบน'), C('Lower belly fat', 'ไขมันหน้าท้องส่วนล่าง'), C('Fat that stays after diet and exercise', 'ไขมันที่ไม่ลดแม้ควบคุมอาหารและออกกำลังกาย')] },
-  { k: 'arms', zr: 2.5, lvl: 'body', reg: [REG.arms], a: 2.05, side: 1, proc: 'lipo', name: C('Upper arms', 'ต้นแขน'),
-    cn: [C('Large upper arms', 'ต้นแขนใหญ่'), C('Loose, flabby upper arms', 'แขนย้วย')] },
-  { k: 'waistback', zr: 2.9, lvl: 'body', reg: [REG.waistback], a: 2.55, proc: 'lipo', name: C('Waist and back', 'เอวและปีกหลัง'),
-    cn: [C('Love handles', 'ไขมันห่วงยางรอบเอว'), C('Bra-line fat', 'ไขมันปลิ้นช่วงขอบเสื้อชั้นใน')] },
-  { k: 'hips', zr: 2.9, lvl: 'body', reg: [REG.hips], a: 2.75, proc: 'lipo', name: C('Hips and buttocks', 'สะโพกและบั้นท้าย'),
-    cn: [C('Wide hips', 'สะโพกผายเกินสัดส่วน'), C('Buttock shape', 'รูปทรงบั้นท้าย')] },
-  { k: 'thighs', zr: 3.4, lvl: 'body', reg: [REG.thighs], a: .55, side: 1, proc: 'lipo', name: C('Thighs', 'ต้นขา'),
-    cn: [C('Inner thighs that rub', 'ต้นขาด้านในเบียดกัน'), C('Outer thigh fat', 'ไขมันต้นขาด้านนอก')] },
-  { k: 'calves', zr: 3.2, lvl: 'body', reg: [REG.calves], a: 2.6, side: 1, proc: 'lipo', name: C('Calves', 'น่อง'),
-    cn: [C('Large calves from fat', 'น่องใหญ่จากไขมันสะสม')] },
+  { k: 'face', lvl: 'body', reg: [REG.head, REG.neck], a: 0, name: C('Face', 'ใบหน้า', '面部') },
+  { k: 'breast', zr: 2.4, lvl: 'body', reg: [REG.breast], a: .42, female: true, proc: 'breast', name: C('Breast', 'หน้าอก', '胸部'),
+    cn: [C('Small breasts', 'หน้าอกเล็กโดยกำเนิด', '先天胸部较小'), C('Uneven breasts', 'หน้าอกสองข้างไม่เท่ากัน', '两侧胸部不对称'), C('Volume loss after pregnancy or weight loss', 'หน้าอกหย่อนคล้อยหลังมีบุตรหรือลดน้ำหนัก', '产后或减重后胸部下垂、缩小')] },
+  { k: 'abdomen', zr: 2.6, lvl: 'body', reg: [REG.abdomen], a: .3, proc: 'lipo', name: C('Abdomen', 'หน้าท้อง', '腹部'),
+    cn: [C('Upper belly fat', 'ไขมันหน้าท้องส่วนบน', '上腹部脂肪'), C('Lower belly fat', 'ไขมันหน้าท้องส่วนล่าง', '下腹部脂肪'), C('Fat that stays after diet and exercise', 'ไขมันที่ไม่ลดแม้ควบคุมอาหารและออกกำลังกาย', '节食和运动也减不掉的脂肪')] },
+  { k: 'arms', zr: 2.5, lvl: 'body', reg: [REG.arms], a: 2.05, side: 1, proc: 'lipo', name: C('Upper arms', 'ต้นแขน', '上臂'),
+    cn: [C('Large upper arms', 'ต้นแขนใหญ่', '上臂粗'), C('Loose, flabby upper arms', 'แขนย้วย', '上臂松弛（拜拜肉）')] },
+  { k: 'waistback', zr: 2.9, lvl: 'body', reg: [REG.waistback], a: 2.55, proc: 'lipo', name: C('Waist and back', 'เอวและปีกหลัง', '腰部和背部'),
+    cn: [C('Love handles', 'ไขมันห่วงยางรอบเอว', '腰间赘肉'), C('Bra-line fat', 'ไขมันปลิ้นช่วงขอบเสื้อชั้นใน', '内衣边缘的副乳赘肉')] },
+  { k: 'hips', zr: 2.9, lvl: 'body', reg: [REG.hips], a: 2.75, proc: 'lipo', name: C('Hips and buttocks', 'สะโพกและบั้นท้าย', '臀部和髋部'),
+    cn: [C('Wide hips', 'สะโพกผายเกินสัดส่วน', '胯部过宽'), C('Buttock shape', 'รูปทรงบั้นท้าย', '臀部形状')] },
+  { k: 'thighs', zr: 3.4, lvl: 'body', reg: [REG.thighs], a: .55, side: 1, proc: 'lipo', name: C('Thighs', 'ต้นขา', '大腿'),
+    cn: [C('Inner thighs that rub', 'ต้นขาด้านในเบียดกัน', '大腿内侧相互摩擦'), C('Outer thigh fat', 'ไขมันต้นขาด้านนอก', '大腿外侧脂肪')] },
+  { k: 'calves', zr: 3.2, lvl: 'body', reg: [REG.calves], a: 2.6, side: 1, proc: 'lipo', name: C('Calves', 'น่อง', '小腿'),
+    cn: [C('Large calves from fat', 'น่องใหญ่จากไขมันสะสม', '脂肪型小腿粗')] },
   /* face level */
-  { k: 'facelift', zr: 1.0, lvl: 'face', a: .62, side: 1, proc: 'facelift', name: C('Face', 'ใบหน้า'),
-    cn: [C('Sagging cheeks', 'แก้มหย่อนคล้อย'), C('Deep smile lines', 'ร่องน้ำหมากลึก'), C('Jowls and a blurred jawline', 'กรอบหน้าหย่อน ไม่ชัดเหมือนเก่า')] },
-  { k: 'brows', zr: 0.85, lvl: 'face', a: .12, proc: 'browlift', name: C('Forehead and brows', 'หน้าผากและคิ้ว'),
-    cn: [C('Low or heavy brows', 'คิ้วตก'), C('Deep forehead lines', 'ริ้วรอยลึกบริเวณหน้าผาก'), C('Sagging forehead skin', 'ผิวหน้าผากหย่อนคล้อย')] },
-  { k: 'eyes', zr: 0.75, lvl: 'face', a: .18, proc: 'eyelid', name: C('Eyes', 'ดวงตา'),
-    cn: [C('Single eyelids', 'ตาชั้นเดียว'), C('Hooded upper lids', 'ตาสองชั้นหลบใน'), C('Uneven eyelid folds', 'ชั้นตาสองข้างไม่เท่ากัน'), C('Heavy, puffy upper lids', 'เปลือกตาหนา อูม จากไขมันสะสม'), C('Drooping lids with age', 'หนังตาตกตามวัย')] },
-  { k: 'nose', zr: 0.8, lvl: 'face', a: .48, proc: 'rhinoplasty', name: C('Nose', 'จมูก'),
-    cn: [C('Low bridge', 'จมูกแบน สันจมูกน้อย'), C('Short or bulbous tip', 'ปลายจมูกสั้นทู่ หรือปลายจมูกชมพู่'), C('Hump or crooked nose', 'จมูกเบี้ยวคด หรือมีฮัมพ์'), C('Wide nostrils', 'ปีกจมูกกว้างหรือบาน'), C('Problems from a previous nose surgery', 'ปัญหาจากจมูกที่เคยเสริมมาแล้ว')] },
-  { k: 'chin', zr: 0.95, lvl: 'face', a: .5, proc: 'lipo', name: C('Chin and jaw', 'เหนียงและกรอบหน้า'),
-    cn: [C('Fat under the chin', 'ไขมันใต้คาง'), C('Undefined jawline', 'กรอบหน้าไม่คมชัด')] },
+  { k: 'facelift', zr: 1.0, lvl: 'face', a: .62, side: 1, proc: 'facelift', name: C('Face', 'ใบหน้า', '面部'),
+    cn: [C('Sagging cheeks', 'แก้มหย่อนคล้อย', '面颊下垂'), C('Deep smile lines', 'ร่องน้ำหมากลึก', '法令纹深'), C('Jowls and a blurred jawline', 'กรอบหน้าหย่อน ไม่ชัดเหมือนเก่า', '下颌松垂、轮廓模糊')] },
+  { k: 'brows', zr: 0.85, lvl: 'face', a: .12, proc: 'browlift', name: C('Forehead and brows', 'หน้าผากและคิ้ว', '额头和眉部'),
+    cn: [C('Low or heavy brows', 'คิ้วตก', '眉毛下垂'), C('Deep forehead lines', 'ริ้วรอยลึกบริเวณหน้าผาก', '额头皱纹深'), C('Sagging forehead skin', 'ผิวหน้าผากหย่อนคล้อย', '额头皮肤松弛')] },
+  { k: 'eyes', zr: 0.75, lvl: 'face', a: .18, proc: 'eyelid', name: C('Eyes', 'ดวงตา', '眼部'),
+    cn: [C('Single eyelids', 'ตาชั้นเดียว', '单眼皮'), C('Hooded upper lids', 'ตาสองชั้นหลบใน', '内双'), C('Uneven eyelid folds', 'ชั้นตาสองข้างไม่เท่ากัน', '双眼皮不对称'), C('Heavy, puffy upper lids', 'เปลือกตาหนา อูม จากไขมันสะสม', '上眼睑脂肪多、浮肿'), C('Drooping lids with age', 'หนังตาตกตามวัย', '随年龄下垂的眼皮')] },
+  { k: 'nose', zr: 0.8, lvl: 'face', a: .48, proc: 'rhinoplasty', name: C('Nose', 'จมูก', '鼻部'),
+    cn: [C('Low bridge', 'จมูกแบน สันจมูกน้อย', '鼻梁低平'), C('Short or bulbous tip', 'ปลายจมูกสั้นทู่ หรือปลายจมูกชมพู่', '鼻头短或圆钝'), C('Hump or crooked nose', 'จมูกเบี้ยวคด หรือมีฮัมพ์', '驼峰鼻或歪鼻'), C('Wide nostrils', 'ปีกจมูกกว้างหรือบาน', '鼻翼宽大'), C('Problems from a previous nose surgery', 'ปัญหาจากจมูกที่เคยเสริมมาแล้ว', '鼻整形术后问题')] },
+  { k: 'chin', zr: 0.95, lvl: 'face', a: .5, proc: 'lipo', name: C('Chin and jaw', 'เหนียงและกรอบหน้า', '下巴和下颌'),
+    cn: [C('Fat under the chin', 'ไขมันใต้คาง', '双下巴脂肪'), C('Undefined jawline', 'กรอบหน้าไม่คมชัด', '下颌线不清晰')] },
   /* area ids in heads.bin follow this order: 0 face, 1 brows, 2 eyes, 3 nose, 4 chin, 5 neck */
-  { k: 'neck', zr: 1.25, lvl: 'face', reg: [REG.neck], a: .55, side: 1, proc: 'facelift', name: C('Neck', 'ลำคอ'),
-    cn: [C('Loose neck skin', 'ผิวลำคอหย่อนคล้อย'), C('Sagging skin under the chin', 'เหนียงใต้คางหย่อน'), C('Deep neck lines', 'ริ้วรอยลึกบริเวณลำคอ')] }
+  { k: 'neck', zr: 1.25, lvl: 'face', reg: [REG.neck], a: .55, side: 1, proc: 'facelift', name: C('Neck', 'ลำคอ', '颈部'),
+    cn: [C('Loose neck skin', 'ผิวลำคอหย่อนคล้อย', '颈部皮肤松弛'), C('Sagging skin under the chin', 'เหนียงใต้คางหย่อน', '下巴下方皮肤下垂'), C('Deep neck lines', 'ริ้วรอยลึกบริเวณลำคอ', '颈纹深')] }
 ];
 const AREA = Object.fromEntries(AREAS.map(a => [a.k, a]));
 const FACE_KEYS = AREAS.filter(a => a.lvl === 'face').map(a => a.k);
@@ -427,13 +428,13 @@ function hasWebGL(){
 
 /* ---------------- mount ---------------- */
 export function mount(container, opts = {}){
-  const lang = opts.lang === 'th' ? 'th' : 'en';
-  const T = STR[lang];
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en');
+  const T = STR[lang] || STR.en;
   const serviceUrl = opts.serviceUrl || (k => `service.html?p=${k}`);
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) { /* host handler error */ } };
   const uid = 'bm' + (++uidN);
   const reduced = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)').matches : false;
-  const L = o => o[lang];
+  const L = o => o[lang] ?? o.en;
 
   if (!cssRefs++) { cssEl = document.createElement('style'); cssEl.dataset.feature = 'bodymap'; cssEl.textContent = CSS; document.head.appendChild(cssEl); }
 
@@ -533,7 +534,7 @@ export function mount(container, opts = {}){
     const p = PROC[a.proc];
     box.hidden = false;
     box.querySelector('h5').textContent = L(p);
-    box.querySelector('.bm-dl').innerHTML = p.rec[lang].map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');
+    box.querySelector('.bm-dl').innerHTML = (p.rec[lang] || p.rec.en).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');
     const link = box.querySelector('.bm-link');
     link.href = serviceUrl(a.proc);
     link.innerHTML = `<span>${esc(T.details)}</span>${ic('arrow')}`;

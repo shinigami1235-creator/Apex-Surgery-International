@@ -51,7 +51,7 @@ export function h(tag, attrs, ...kids) {
   return el;
 }
 export const tx = (obj, lang) => obj == null ? '' : (typeof obj === 'string' ? obj : (obj[lang] ?? obj.en ?? ''));
-export const fmt = (n, lang) => Math.round(n || 0).toLocaleString(lang === 'th' ? 'th-TH' : 'en-US');
+export const fmt = (n, lang) => Math.round(n || 0).toLocaleString(({th:'th-TH', zh:'zh-CN'}[lang] || 'en-US'));
 
 export const reduced = () => {
   try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }

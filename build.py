@@ -95,8 +95,27 @@ META = {
         'consult': ('ปรึกษาออนไลน์ | Apex Surgery Hospital', 'ส่งรูปและวันเดินทางให้ทีมศัลยแพทย์ Apex Surgery Hospital'),
         'notfound': ('ไม่พบหน้านี้ | Apex Surgery Hospital', 'หน้าที่คุณเปิดไม่มีอยู่ในเว็บไซต์นี้'),
     },
+    'zh': {
+        'service': ('手术项目 | Apex Surgery Hospital', 'Apex Surgery Hospital 曼谷奔集分院与普吉分院提供面部提升术、提眉术、鼻整形术、双眼皮手术、隆胸术和吸脂术。'),
+        'doctor': ('我们的医生：Somboon Waiphrip 医生与 Nantapat Supapannachart 医生 | Apex Surgery Hospital', 'Somboon Waiphrip 医生，整形与重建外科医生，曾在 Ramathibodi、Siriraj 及波士顿大学接受培训。创始人 Nantapat Supapannachart 医生，美国委员会认证皮肤科医生。'),
+        'article': ('文章 | Apex Surgery Hospital', 'Apex Surgery Hospital 的文章、真实案例与新闻。'),
+        'war': ('APEX 参加 Surgery Wars | Apex Surgery Hospital', 'Workpoint 23 频道 Surgery Wars 全部 8 集，与 APEX Surgery Hospital 团队一起：视频、照片以及每位参与者所做的项目。'),
+        'analysis': ('面部分析 | Apex Surgery Hospital', '用一张照片初步了解您的皮肤与面部：皱纹、肤质、色斑、泛红、眼下、松弛、皮肤评分和皮肤年龄。仅供参考，照片不会上传。'),
+        'filler': ('填充剂模拟 | Apex Surgery Hospital', '选择想改善的部位，在 3D 头部模型上查看填充剂注射的位置和用量，以及总用量（毫升）。部位和用量参照 MD Codes 方法。仅为模拟。'),
+        'proportions': ('黄金比例 | Apex Surgery Hospital', '用经典比例看您的面部：下巴长度、鼻宽、唇部比例和下颌线。仅为模拟，照片不会上传。'),
+        'implBreast': ('乳房假体模拟 | Apex Surgery Hospital', '在按您身高和体重生成的 3D 身体上试戴 Motiva 和 Mentor 乳房假体尺寸。仅为模拟，照片不会上传。'),
+        'implChin': ('下巴假体模拟 | Apex Surgery Hospital', '在 3D 面部上查看中央型、加长型和方形硅胶下巴假体。仅为模拟，照片不会上传。'),
+        'implForehead': ('额头假体模拟 | Apex Surgery Hospital', '在 3D 面部上查看 3 至 6 毫米的硅胶额头假体。仅为模拟，照片不会上传。'),
+        'implNose': ('鼻假体模拟 | Apex Surgery Hospital', '在 3D 面部上查看 1.5 至 4.5 毫米的 I 型和 L 型硅胶鼻假体。仅为模拟，照片不会上传。'),
+        'nose': ('鼻假体模拟 | Apex Surgery Hospital', '在 3D 面部上查看 1.5 至 4.5 毫米的 I 型和 L 型硅胶鼻假体。仅为模拟。'),
+        'play': ('玩游戏赢好礼 | Apex Surgery Hospital', '五个简短的技巧小游戏。达到目标分数即可领取优惠券，到前台出示使用。'),
+        'plan': ('我的方案 | Apex Surgery Hospital', '您保存的手术项目、优惠券和行程日期。'),
+        'trip': ('行程规划 | Apex Surgery Hospital', '每个手术项目需要在泰国停留多少天、复诊时间以及何时可以回国。'),
+        'consult': ('在线咨询 | Apex Surgery Hospital', '将您的照片和行程日期发送给 Apex Surgery Hospital 的手术团队。'),
+        'notfound': ('页面未找到 | Apex Surgery Hospital', '您打开的页面在本网站上不存在。'),
+    },
 }
-CRUMB = {'en': {'home': 'Home'}, 'th': {'home': 'หน้าแรก'}}
+CRUMB = {'en': {'home': 'Home'}, 'th': {'home': 'หน้าแรก'}, 'zh': {'home': '首页'}}
 
 
 def read_data(lang, name):
@@ -149,7 +168,7 @@ def physician_ld(shared):
 
 
 def page_html(lang, fname, key, extras, prod_path, meta_id):
-    up = '../' if lang == 'th' else ''
+    up = '' if lang == 'en' else '../'
     shared = read_data(lang, 'shared') or read_data('th', 'shared')
     title, desc = None, None
     if meta_id:
@@ -166,7 +185,8 @@ def page_html(lang, fname, key, extras, prod_path, meta_id):
     pf = '' if fname == 'index.html' else fname
     en_url = PREVIEW_URL + pf
     th_url = PREVIEW_URL + 'th/' + pf
-    canon = en_url if lang == 'en' else th_url
+    zh_url = PREVIEW_URL + 'zh/' + pf
+    canon = {'en': en_url, 'th': th_url, 'zh': zh_url}[lang]
     og_img = img((read_data('th', 'home') or {}).get('hero', {}).get('src', '')) if key == 'home' else img('~/wp-content/uploads/2025/11/Apex-Surgery.webp')
 
     ld = []
@@ -182,7 +202,7 @@ def page_html(lang, fname, key, extras, prod_path, meta_id):
             ld.append(p)
     if key not in ('home', 'service', 'article', 'notfound'):
         ld.append({'@context': 'https://schema.org', '@type': 'BreadcrumbList', 'itemListElement': [
-            {'@type': 'ListItem', 'position': 1, 'name': CRUMB[lang]['home'], 'item': (PROD + ('th/' if lang == 'th' else ''))},
+            {'@type': 'ListItem', 'position': 1, 'name': CRUMB[lang]['home'], 'item': (PROD + ('' if lang == 'en' else lang + '/'))},
             {'@type': 'ListItem', 'position': 2, 'name': title.split('|')[0].strip(), 'item': canon}]})
     ld_html = '\n'.join(f'<script type="application/ld+json">{json.dumps(x, ensure_ascii=False)}</script>' for x in ld)
 
@@ -198,18 +218,18 @@ def page_html(lang, fname, key, extras, prod_path, meta_id):
 {robots}
 <link rel="alternate" hreflang="en" href="{en_url}">
 <link rel="alternate" hreflang="th" href="{th_url}">
-<link rel="alternate" hreflang="x-default" href="{en_url}">
+{'' if lang != 'zh' else '<link rel="alternate" hreflang="zh-Hans" href="' + zh_url + '">' + chr(10)}<link rel="alternate" hreflang="x-default" href="{en_url}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Apex Surgery Hospital">
 <meta property="og:title" content="{esc(title)}">
 <meta property="og:description" content="{esc(desc)}">
 <meta property="og:image" content="{esc(og_img)}">
-<meta property="og:locale" content="{'en_US' if lang == 'en' else 'th_TH'}">
+<meta property="og:locale" content="{ {'en': 'en_US', 'th': 'th_TH', 'zh': 'zh_CN'}[lang] }">
 <meta property="og:locale:alternate" content="{'th_TH' if lang == 'en' else 'en_US'}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#1F0A30">
 <link rel="icon" href="{up}assets/img/favicon.svg" type="image/svg+xml">
-<link rel="preload" href="{up}assets/fonts/LINESeed-Rg-latin.woff2" as="font" type="font/woff2" crossorigin>{'' if lang == 'en' else chr(10) + '<link rel="preload" href="' + up + 'assets/fonts/LINESeed-Rg-thai.woff2" as="font" type="font/woff2" crossorigin>'}
+<link rel="preload" href="{up}assets/fonts/LINESeed-Rg-latin.woff2" as="font" type="font/woff2" crossorigin>{'' if lang != 'th' else chr(10) + '<link rel="preload" href="' + up + 'assets/fonts/LINESeed-Rg-thai.woff2" as="font" type="font/woff2" crossorigin>'}
 <link rel="preconnect" href="https://www.apexsurgeryhospital.com">
 <link rel="stylesheet" href="{up}assets/css/base.css?v={ASSET_V}">
 <link rel="stylesheet" href="{up}assets/css/site.css?v={ASSET_V}">
@@ -239,11 +259,12 @@ MOVED = '''<!doctype html>
 
 
 def main():
-    os.makedirs(os.path.join(SITE, 'th'), exist_ok=True)
     n = 0
-    for lang in ('en', 'th'):
+    for lang in ('en', 'th', 'zh'):
+        if lang != 'en':
+            os.makedirs(os.path.join(SITE, lang), exist_ok=True)
         for fname, key, extras, prod_path, meta_id in PAGES:
-            out = os.path.join(SITE, fname) if lang == 'en' else os.path.join(SITE, 'th', fname)
+            out = os.path.join(SITE, fname) if lang == 'en' else os.path.join(SITE, lang, fname)
             with open(out, 'w', encoding='utf-8') as f:
                 # the retired nose preview forwards to the 3D nose implant viewer
                 f.write(MOVED.format(f='nose-implants.html') if key == 'nose' else page_html(lang, fname, key, extras, prod_path, meta_id))

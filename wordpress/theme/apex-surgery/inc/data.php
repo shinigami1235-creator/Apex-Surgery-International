@@ -197,6 +197,7 @@ function apex_build_shared( string $lang ): array {
 		$S['doctor'] = [ 'name' => $d['name'], 'nick' => $d['nick'], 'license' => $d['license'], 'title' => $d['title'], 'specialty' => $d['specialty'], 'photo' => $d['photo'], 'eduH' => $d['eduH'], 'edu' => $d['edu'], 'moreH' => $d['moreH'], 'more' => $d['more'] ];
 		break;
 	}
+	$S['features'] = apex_features();
 	$S['services'] = [];
 	foreach ( apex_posts( 'apex_service', $lang ) as $id ) {
 		$k = (string) get_post_meta( $id, '_apex_key', true );

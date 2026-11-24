@@ -9,14 +9,20 @@
      APEX.assets, APEX.media, APEX.links (design page names to addresses), APEX.alt (this page in each
      language), APEX.params and the content in APEX._d. The scripts then attach behaviour without drawing again. */
   A.SITE = SITE;
-  A.lang = (document.documentElement.lang || 'en').slice(0, 2) === 'th' ? 'th' : 'en';
+  A.LANGS = [['en', 'EN'], ['th', 'TH'], ['zh', '中文']];
+  A.lang = ((l => A.LANGS.some(x => x[0] === l) ? l : 'en')((document.documentElement.lang || 'en').slice(0, 2)));
+  /* a value in the page's language: Chinese falls back to English where it has none of its own */
+  A.pick = (en, th, zh) => A.lang === 'th' ? th : A.lang === 'zh' && zh != null ? zh : en;
+  A.locale = {en:'en-GB', th:'th-TH', zh:'zh-CN'};
   A.ssr = !!(document.body && document.body.hasAttribute('data-ssr'));
   A.csr = A.ssr && !!window.APEX_CSR;   // tests only: draw on top of the server's page to compare the two
-  A.root = A.lang === 'th' ? '../' : '';
+  A.root = A.lang === 'en' ? '' : '../';
   A.assets = A.assets || A.root + 'assets/';
   A.dataBase = A.assets + 'data/' + A.lang + '/';
   A.media = A.media || SITE;
-  A.img = s => !s ? '' : (s.startsWith('~/') ? A.media + s.slice(2) : /^(img|video|fonts|css|js|features)\//.test(s) ? A.assets + s : s);
+  A.home = A.home || A.media;
+  A.mediaFor = s => s.startsWith('~/wp-content/uploads/apex-media/') ? A.home : A.media;   // files copied in by Media › Images on the site are only on this site
+  A.img = s => !s ? '' : (s.startsWith('~/') ? A.mediaFor(s) + s.slice(2) : /^(img|video|fonts|css|js|features)\//.test(s) ? A.assets + s : s);
   A.esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   /* a link from content for an href: escaped, and '#' when it would run script */
   A.url = u => { const s = String(u == null ? '' : u); return /^(javascript|data|vbscript):/i.test(s.replace(/[\x00-\x20]/g, '')) ? '#' : A.esc(s); };
@@ -26,8 +32,8 @@
   A.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   A.t = k => ((A.I18N || {})[A.lang] || {})[k] || ((A.I18N || {}).en || {})[k] || k;
   A.d = id => (A._d || {})[id];
-  A.fmtNum = n => Number(n).toLocaleString(A.lang === 'th' ? 'th-TH' : 'en-US');
-  A.fmtDate = s => { try { return new Date(s + 'T00:00:00').toLocaleDateString(A.lang === 'th' ? 'th-TH' : 'en-GB', {day:'numeric', month:'long', year:'numeric'}); } catch (e) { return s; } };
+  A.fmtNum = n => Number(n).toLocaleString(A.pick('en-US', 'th-TH', 'zh-CN'));
+  A.fmtDate = s => { try { return new Date(s + 'T00:00:00').toLocaleDateString(A.locale[A.lang], {day:'numeric', month:'long', year:'numeric'}); } catch (e) { return s; } };
   /* design page names ('consult.html', 'service.html?p=facelift') to WordPress addresses; unchanged in the design */
   A.href = h => {
     const L = A.links;
@@ -53,7 +59,7 @@
   /* a YouTube player in the page's language: its menus, and the captions it picks when the viewer turns them on.
      The spoken language is the video's own; an English version is a separate video id on the English page. */
   A.ytSrc = id => `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&hl=${A.lang}&cc_lang_pref=${A.lang}`;
-  A.yt = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+  A.yt = id => (A.ytLocal && A.ytLocal[id]) || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;   // WordPress passes the copies saved in its Media Library
   A.WA = {x:'+66 88 624 1617', h:'https://wa.me/66886241617'};
 
   A.ic = (n, cls='') => {
@@ -76,8 +82,14 @@
     const file = (location.pathname.split('/').pop() || 'index.html');
     const tail = file + location.search + location.hash;
     if (code === A.lang) return tail;
-    return code === 'th' ? 'th/' + tail : '../' + tail;
+    return (A.lang === 'en' ? '' : '../') + (code === 'en' ? '' : code + '/') + tail;
   };
+  /* parts Apex switches on and off under Apex settings › Features; a part that is off is linked from nowhere.
+     Chinese stays off until the translation is checked: its pages exist, but no language switch leads there. */
+  A.FEATURE_PAGES = {'play.html':'games', 'surgery-wars.html':'wars', 'transformations.html':'wars', 'treatments.html':'treatments'};
+  A.on = k => (((A.d('shared') || {}).features) || {})[k] !== false;
+  A.pageOn = h => { const f = A.FEATURE_PAGES[String(h).split(/[?#]/)[0].split('/').pop()]; return !f || A.on(f); };
+  A.langList = () => A.LANGS.filter(([c]) => c !== 'zh' || A.on('zh') || A.lang === 'zh');
 
   /* ---------- events bridge (features call onEvent; the plan store and analytics listen) ---------- */
   A.emit = (name, data) => {
@@ -105,6 +117,8 @@
   A.featureOpts = (extra={}) => {
     const o = Object.assign({
       lang: A.lang,
+      media: A.media,   // where ~/wp-content/uploads/... files are served from: this site on WordPress
+      home: A.home,
       base: new URL(A.assets, location.href).href,
       serviceUrl: k => A.svcUrl(k),
       onEvent: (n, d) => A.emit(n, d),
@@ -155,9 +169,9 @@
     const S = A.d('shared') || {}, page = document.body.dataset.page || '';
     let el = A.qs('header.hdr'), sh = A.qs('.sheet');
     const svcs = S.services || [];
-    const langs = [['en','EN'],['th','TH']].map(([c,t]) => `<a href="${A.langHref(c)}" hreflang="${c}" lang="${c}" class="${c===A.lang?'on':''}"${c===A.lang?' aria-current="true"':''}>${t}</a>`).join('');
+    const langs = A.langList().map(([c,t]) => `<a href="${A.langHref(c)}" hreflang="${c}" lang="${c}" class="${c===A.lang?'on':''}"${c===A.lang?' aria-current="true"':''}>${t}</a>`).join('');
     if (!el) {
-    const nav = NAV.map(([h, k]) => {
+    const nav = NAV.filter(([h]) => A.pageOn(h)).map(([h, k]) => {
       const cur = k === page || (k === 'services' && page === 'service') || (k === 'articles' && page === 'article') ? ' aria-current="page"' : '';
       if (k === 'services') {
         const items = svcs.map(s => `<a class="mega-svc" href="${A.svcUrl(s.key)}"><span class="ms-ic">${s.icon ? `<img src="${A.img(s.icon)}" alt="" loading="lazy" decoding="async">` : ''}</span><span><b>${A.esc(s.short || s.name)}</b><small>${A.esc(A.lang === 'en' ? (s.name !== s.en ? s.en : '') : s.en)}</small></span></a>`).join('');
@@ -168,10 +182,10 @@
             <a href="analysis.html">${A.ic('scan-line')}${A.esc(A.t('ana'))}</a>
             <a href="proportions.html">${A.ic('gem')}${A.esc(A.t('prop'))}</a>
             <a href="breast-implants.html">${A.ic('ruler')}${A.esc(A.t('impl'))}</a>
-            <a href="play.html">${A.ic('sparkles')}${A.esc(A.t('games'))}</a>
+            ${A.on('games') ? `<a href="play.html">${A.ic('sparkles')}${A.esc(A.t('games'))}</a>` : ''}
             <a href="trip.html">${A.ic('calendar')}${A.esc(A.t('trip'))}</a>
 </div>
-          <div class="mega-foot"><a class="link-arrow" href="services.html">${A.esc(A.t('allServices'))} ${A.ic('arrow-right')}</a><a class="link-arrow" href="treatments.html">${A.esc(A.t('treatments'))} ${A.ic('arrow-right')}</a></div></div></div>`;
+          <div class="mega-foot"><a class="link-arrow" href="services.html">${A.esc(A.t('allServices'))} ${A.ic('arrow-right')}</a>${A.on('treatments') ? `<a class="link-arrow" href="treatments.html">${A.esc(A.t('treatments'))} ${A.ic('arrow-right')}</a>` : ''}</div></div></div>`;
       }
       return `<a href="${h}"${cur}>${A.esc(A.t(k))}</a>`;
     }).join('');
@@ -220,8 +234,8 @@
     sh.className = 'sheet'; sh.setAttribute('aria-label', A.t('menu'));
     const subs = svcs.map(s => `<a href="${A.svcUrl(s.key)}">${A.esc(s.short || s.name)}</a>`).join('');
     sh.innerHTML = `<div class="sheet-top">${S.logoLight ? `<img class="sheet-logo" src="${A.img(S.logoLight)}" alt="Apex Surgery Hospital" width="167" height="40">` : `<span class="logo-txt light">APEX<small>Surgery Hospital</small></span>`}<button class="close" aria-label="${A.esc(A.t('close'))}">${A.ic('close')}</button></div>
-      <nav>${NAV.map(([h, k]) => k === 'services' ? `<details><summary>${A.esc(A.t('services'))}${A.ic('chevron-down')}</summary><div class="sub"><a href="services.html">${A.esc(A.t('allServices'))}</a>${subs}<a href="treatments.html">${A.esc(A.t('treatments'))}</a></div></details>` : `<a href="${h}">${A.esc(A.t(k))}${A.ic('arrow-up-right')}</a>`).join('')}
-      <details><summary>${A.esc(A.t('tools'))}${A.ic('chevron-down')}</summary><div class="sub"><a href="filler.html">${A.esc(A.t('fill'))}</a><a href="analysis.html">${A.esc(A.t('ana'))}</a><a href="proportions.html">${A.esc(A.t('prop'))}</a><a href="breast-implants.html">${A.esc(A.t('impl'))}</a><a href="play.html">${A.esc(A.t('games'))}</a><a href="trip.html">${A.esc(A.t('trip'))}</a><a href="plan.html">${A.esc(A.t('plan'))}</a></div></details></nav>
+      <nav>${NAV.filter(([h]) => A.pageOn(h)).map(([h, k]) => k === 'services' ? `<details><summary>${A.esc(A.t('services'))}${A.ic('chevron-down')}</summary><div class="sub"><a href="services.html">${A.esc(A.t('allServices'))}</a>${subs}${A.on('treatments') ? `<a href="treatments.html">${A.esc(A.t('treatments'))}</a>` : ''}</div></details>` : `<a href="${h}">${A.esc(A.t(k))}${A.ic('arrow-up-right')}</a>`).join('')}
+      <details><summary>${A.esc(A.t('tools'))}${A.ic('chevron-down')}</summary><div class="sub"><a href="filler.html">${A.esc(A.t('fill'))}</a><a href="analysis.html">${A.esc(A.t('ana'))}</a><a href="proportions.html">${A.esc(A.t('prop'))}</a><a href="breast-implants.html">${A.esc(A.t('impl'))}</a>${A.on('games') ? `<a href="play.html">${A.esc(A.t('games'))}</a>` : ''}<a href="trip.html">${A.esc(A.t('trip'))}</a><a href="plan.html">${A.esc(A.t('plan'))}</a></div></details></nav>
       <div class="sheet-cta"><a class="btn btn-light" href="consult.html">${A.ic('message-circle')}${A.esc(A.t('consult'))}</a>
       <div class="lang" style="display:flex;justify-content:center;border-color:rgba(201,179,221,.3)">${langs}</div></div>`;
     document.body.append(sh);
@@ -273,14 +287,14 @@
         <p>${A.esc(A.lang === 'th' ? S.brandTh : (S.brandTh && S.brand ? S.brand : S.brand))}</p>
         <p class="ftr-lic">${A.esc(S.license || '')}</p>${aaci}
         <div class="ftr-socials">${(S.socials || []).map(s => `<a href="${A.url(s.h)}"${ext} aria-label="${A.esc(s.x || s.k)}">${A.socIcon(s.k)}</a>`).join('')}<a href="${A.url(A.WA.h)}"${ext} aria-label="WhatsApp">${A.ic('whatsapp')}</a></div></div>
-      <div><h2 class="ftr-h">${A.esc(A.t('ourServices'))}</h2>${svcs}<a href="treatments.html">${A.esc(A.t('treatments'))}</a><a href="analysis.html">${A.esc(A.t('ana'))}</a><a href="proportions.html">${A.esc(A.t('prop'))}</a><a href="filler.html">${A.esc(A.t('fill'))}</a><a href="breast-implants.html">${A.esc(A.t('impl'))}</a><a href="play.html">${A.esc(A.t('games'))}</a></div>
+      <div><h2 class="ftr-h">${A.esc(A.t('ourServices'))}</h2>${svcs}${A.on('treatments') ? `<a href="treatments.html">${A.esc(A.t('treatments'))}</a>` : ''}<a href="analysis.html">${A.esc(A.t('ana'))}</a><a href="proportions.html">${A.esc(A.t('prop'))}</a><a href="filler.html">${A.esc(A.t('fill'))}</a><a href="breast-implants.html">${A.esc(A.t('impl'))}</a>${A.on('games') ? `<a href="play.html">${A.esc(A.t('games'))}</a>` : ''}</div>
       ${br}
       <div><h2 class="ftr-h">${A.esc(A.t('contactLine'))}</h2><a href="${A.url(S.line && S.line.h)}"${ext} style="padding:0"><img class="qr" src="${A.img(S.line && S.line.qr)}" alt="LINE ${A.esc(S.line && S.line.x)}" loading="lazy" decoding="async" decoding="async"></a><p style="margin-top:10px">${A.esc(S.line && S.line.x)}</p>
         <a href="${A.url(A.WA.h)}"${ext}>${A.ic('whatsapp')}${A.esc(A.WA.x)}</a></div>
     </div>
     <div class="ftr-word" data-w="APEX" aria-hidden="true"></div>
     ${S.footerNote ? `<p class="ftr-note">${A.esc(S.footerNote)}</p>` : ''}
-    <div class="ftr-bot"><span>${A.esc(S.copyright || '')} · <a class="ftr-pp" href="privacy.html">${A.esc(A.t('privacy'))}</a></span><span>${[['en','EN'],['th','TH']].map(([c,t]) => `<a href="${A.langHref(c)}" hreflang="${c}" style="display:inline;padding:0 6px">${t}</a>`).join('·')}</span></div></div>`;
+    <div class="ftr-bot"><span>${A.esc(S.copyright || '')} · <a class="ftr-pp" href="privacy.html">${A.esc(A.t('privacy'))}</a></span><span>${A.langList().map(([c,t]) => `<a href="${A.langHref(c)}" hreflang="${c}" style="display:inline;padding:0 6px">${t}</a>`).join('·')}</span></div></div>`;
     document.body.append(f);
   }
 
@@ -573,7 +587,7 @@
     return all.filter(x => x.src && x.href).sort((a, b) => (b.story || 0) - (a.story || 0) || String(b.date || '').localeCompare(String(a.date || '')));
   };
   const NETS = {instagram:'Instagram', tiktok:'TikTok', facebook:'Facebook'};
-  const shortDate = d => { try { return new Date(d + 'T00:00:00').toLocaleDateString(A.lang === 'th' ? 'th-TH' : 'en-GB', {day:'numeric', month:'short'}); } catch (e) { return d; } };
+  const shortDate = d => { try { return new Date(d + 'T00:00:00').toLocaleDateString(A.locale[A.lang], {day:'numeric', month:'short'}); } catch (e) { return d; } };
   A.feedTile = (x, i) => `<a class="feed-t ph-img rv${x.story ? ' story' : ''}" data-d="${(i % 6) * 50}" href="${A.url(x.href)}" target="_blank" rel="noopener" aria-label="${A.esc(NETS[x.net] || '')}${x.date ? ', ' + A.esc(shortDate(x.date)) : ''}${x.cap ? ': ' + A.esc(x.cap) : ''}">
       <img src="${A.esc(A.img(x.src))}" alt="" loading="lazy" decoding="async"><span class="feed-net n-${A.esc(x.net)}">${A.socIcon(x.net)}</span>${x.video ? `<span class="feed-v">${A.ic('play')}</span>` : ''}${x.story ? `<span class="feed-st">${A.esc(A.t('igStory'))}</span>` : x.date ? `<span class="feed-d">${A.esc(shortDate(x.date))}</span>` : ''}</a>`;
   A.feedFollow = (k, x, h) => `<a class="feed-more rv n-${k}" href="${A.url(h)}" target="_blank" rel="noopener"><span class="fm-ic">${A.socIcon(k)}</span><b>${A.esc(x)}</b><small>${A.esc(A.t('followOn').replace('{n}', NETS[k]))}</small></a>`;
@@ -601,7 +615,7 @@
      it. That memory lives in this browser only (localStorage apex.new), so pages stay the same for everyone. */
   const NEW_KEY = 'apex.new', DAY = 864e5;
   const freshData = () => A.d('fresh') || {};
-  const freshLive = () => { const F = freshData(), now = Date.now(); return (F.items || []).filter(x => x.date && now - new Date(x.date + 'T00:00:00').getTime() < (F.days || 30) * DAY); };
+  const freshLive = () => { const F = freshData(), now = Date.now(); return (F.items || []).filter(x => (!x.href || A.pageOn(x.href)) && x.date && now - new Date(x.date + 'T00:00:00').getTime() < (F.days || 30) * DAY); };
   const newState = () => { try { const s = JSON.parse(localStorage.getItem(NEW_KEY) || '{}'); return {f:s.f || {}, v:s.v || {}}; } catch (e) { return {f:{}, v:{}}; } };
   const newSave = s => { try { localStorage.setItem(NEW_KEY, JSON.stringify(s)); } catch (e) { /* storage blocked: tags show without memory */ } };
   A.freshCard = (x, i) => {
@@ -611,7 +625,7 @@
       <span class="fresh-b"><span class="fresh-k">${A.esc(A.t('fk_' + x.kind))}</span><b class="fresh-t">${A.esc(x.title)}</b>${x.text ? `<span class="fresh-x">${A.esc(x.text)}</span>` : ''}<span class="fresh-d">${A.esc(A.t('freshAdded').replace('{d}', shortDate(x.date)))}</span></span></a>`;
   };
   A.freshSection = F => {
-    const items = (F && F.items) || [];
+    const items = ((F && F.items) || []).filter(x => !x.href || A.pageOn(x.href));   // nothing points at a part that is switched off
     if (!items.length) return '';
     const many = items.length > 3;
     return `<section class="section fresh-s" id="whats-new"><div class="wrap"><div class="shead"><div><p class="eyebrow rv">${A.esc(A.t('freshEb'))}</p><h2 class="h-xl rv">${A.esc(A.t('freshH'))}</h2><p class="reels-sub rv">${A.esc(A.t('freshP'))}</p></div>

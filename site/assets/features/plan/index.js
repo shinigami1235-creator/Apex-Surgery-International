@@ -9,56 +9,56 @@ import { PROCS, BRANCHES, t, procName, areaName, concernName, contactOf, injectC
 export { store };
 
 const T = {
-  title: { en: 'My Plan', th: 'แผนของฉัน' },
+  title: { en: 'My Plan', th: 'แผนของฉัน', zh: '我的方案' },
   hospital: { en: 'Apex Surgery Hospital', th: 'โรงพยาบาลศัลยกรรมตกแต่งเอเพ็กซ์' },
-  procs: { en: 'Procedures', th: 'หัตถการ' },
-  vouchers: { en: 'Vouchers', th: 'บัตรกำนัล' },
-  trip: { en: 'Trip', th: 'การเดินทาง' },
-  notes: { en: 'Notes', th: 'บันทึก' },
-  notesHint: { en: 'What do you want to ask the surgeon?', th: 'อยากถามศัลยแพทย์เรื่องอะไรบ้าง' },
-  notesPh: { en: 'Example: Can I fly home 10 days after rhinoplasty?', th: 'ตัวอย่าง: หลังเสริมจมูก 10 วัน บินกลับบ้านได้ไหม' },
-  remove: { en: 'Remove', th: 'ลบ' },
-  removeA: { en: 'Remove {x} from My Plan', th: 'ลบ{x}ออกจากแผน' },
-  service: { en: 'Service page', th: 'หน้าบริการ' },
-  recovery: { en: 'Recovery', th: 'การพักฟื้น' },
-  empty: { en: 'Your plan is empty.', th: 'ยังไม่มีรายการในแผนของคุณ' },
-  emptyAdd: { en: 'Add a procedure from one of these pages.', th: 'เพิ่มหัตถการได้จากหน้าเหล่านี้' },
-  bodymap: { en: 'Body map', th: 'แผนที่ร่างกาย' },
-  nose: { en: 'Nose implant viewer', th: 'จำลองซิลิโคนจมูก' },
-  games: { en: 'Games', th: 'เกม' },
-  noTrip: { en: 'No trip planned.', th: 'ยังไม่ได้วางแผนการเดินทาง' },
-  planTrip: { en: 'Plan a trip', th: 'วางแผนการเดินทาง' },
-  editTrip: { en: 'Edit trip', th: 'แก้ไขการเดินทาง' },
-  removeTrip: { en: 'Remove trip', th: 'ลบการเดินทาง' },
-  branch: { en: 'Branch', th: 'สาขา' },
-  arrival: { en: 'Arrival', th: 'วันเดินทางถึง' },
-  consult: { en: 'Consultation', th: 'วันปรึกษาแพทย์' },
-  surgery: { en: 'Surgery', th: 'วันผ่าตัด' },
-  followup: { en: 'Follow-up check', th: 'ตรวจติดตามผล' },
-  flyHome: { en: 'Earliest flight home', th: 'วันบินกลับเร็วที่สุด' },
-  confirm: { en: 'Your surgeon confirms these dates at consultation.', th: 'ศัลยแพทย์จะยืนยันวันเหล่านี้ในวันปรึกษา' },
-  code: { en: 'Code', th: 'รหัส' },
-  validUntil: { en: 'Valid until', th: 'ใช้ได้ถึง' },
-  send: { en: 'Send my plan', th: 'ส่งแผนของฉัน' },
-  wa: { en: 'Send to WhatsApp', th: 'ส่งทาง WhatsApp' },
-  line: { en: 'Send to LINE', th: 'ส่งทาง LINE' },
-  png: { en: 'Save to phone', th: 'บันทึกลงโทรศัพท์' },
-  saving: { en: 'Saving', th: 'กำลังบันทึก' },
-  saved: { en: 'Plan image saved.', th: 'บันทึกรูปแผนแล้ว' },
-  saveFail: { en: 'The plan image could not be saved.', th: 'บันทึกรูปแผนไม่สำเร็จ' },
-  itemsA: { en: '{n} items in My Plan', th: 'แผนของฉันมี {n} รายการ' },
+  procs: { en: 'Procedures', th: 'หัตถการ', zh: '手术项目' },
+  vouchers: { en: 'Vouchers', th: 'บัตรกำนัล', zh: '优惠券' },
+  trip: { en: 'Trip', th: 'การเดินทาง', zh: '行程' },
+  notes: { en: 'Notes', th: 'บันทึก', zh: '备注' },
+  notesHint: { en: 'What do you want to ask the surgeon?', th: 'อยากถามศัลยแพทย์เรื่องอะไรบ้าง', zh: '您想向医生咨询什么？' },
+  notesPh: { en: 'Example: Can I fly home 10 days after rhinoplasty?', th: 'ตัวอย่าง: หลังเสริมจมูก 10 วัน บินกลับบ้านได้ไหม', zh: '例如：隆鼻术后 10 天可以飞回家吗？' },
+  remove: { en: 'Remove', th: 'ลบ', zh: '删除' },
+  removeA: { en: 'Remove {x} from My Plan', th: 'ลบ{x}ออกจากแผน', zh: '从“我的方案”中移除 {x}' },
+  service: { en: 'Service page', th: 'หน้าบริการ', zh: '服务页面' },
+  recovery: { en: 'Recovery', th: 'การพักฟื้น', zh: '恢复' },
+  empty: { en: 'Your plan is empty.', th: 'ยังไม่มีรายการในแผนของคุณ', zh: '您的方案还是空的。' },
+  emptyAdd: { en: 'Add a procedure from one of these pages.', th: 'เพิ่มหัตถการได้จากหน้าเหล่านี้', zh: '请从这些页面添加手术项目。' },
+  bodymap: { en: 'Body map', th: 'แผนที่ร่างกาย', zh: '身体图' },
+  nose: { en: 'Nose implant viewer', th: 'จำลองซิลิโคนจมูก', zh: '鼻假体模拟器' },
+  games: { en: 'Games', th: 'เกม', zh: '游戏' },
+  noTrip: { en: 'No trip planned.', th: 'ยังไม่ได้วางแผนการเดินทาง', zh: '尚未安排行程。' },
+  planTrip: { en: 'Plan a trip', th: 'วางแผนการเดินทาง', zh: '规划行程' },
+  editTrip: { en: 'Edit trip', th: 'แก้ไขการเดินทาง', zh: '编辑行程' },
+  removeTrip: { en: 'Remove trip', th: 'ลบการเดินทาง', zh: '删除行程' },
+  branch: { en: 'Branch', th: 'สาขา', zh: '分院' },
+  arrival: { en: 'Arrival', th: 'วันเดินทางถึง', zh: '抵达' },
+  consult: { en: 'Consultation', th: 'วันปรึกษาแพทย์', zh: '咨询' },
+  surgery: { en: 'Surgery', th: 'วันผ่าตัด', zh: '手术' },
+  followup: { en: 'Follow-up check', th: 'ตรวจติดตามผล', zh: '复诊检查' },
+  flyHome: { en: 'Earliest flight home', th: 'วันบินกลับเร็วที่สุด', zh: '最早返程航班' },
+  confirm: { en: 'Your surgeon confirms these dates at consultation.', th: 'ศัลยแพทย์จะยืนยันวันเหล่านี้ในวันปรึกษา', zh: '医生将在咨询时确认这些日期。' },
+  code: { en: 'Code', th: 'รหัส', zh: '代码' },
+  validUntil: { en: 'Valid until', th: 'ใช้ได้ถึง', zh: '有效期至' },
+  send: { en: 'Send my plan', th: 'ส่งแผนของฉัน', zh: '发送我的方案' },
+  wa: { en: 'Send to WhatsApp', th: 'ส่งทาง WhatsApp', zh: '发送到 WhatsApp' },
+  line: { en: 'Send to LINE', th: 'ส่งทาง LINE', zh: '发送到 LINE' },
+  png: { en: 'Save to phone', th: 'บันทึกลงโทรศัพท์', zh: '保存到手机' },
+  saving: { en: 'Saving', th: 'กำลังบันทึก', zh: '正在保存' },
+  saved: { en: 'Plan image saved.', th: 'บันทึกรูปแผนแล้ว', zh: '方案图片已保存。' },
+  saveFail: { en: 'The plan image could not be saved.', th: 'บันทึกรูปแผนไม่สำเร็จ', zh: '方案图片保存失败。' },
+  itemsA: { en: '{n} items in My Plan', th: 'แผนของฉันมี {n} รายการ', zh: '“我的方案”中有 {n} 项' },
   nProc: { en: ['{n} procedure', '{n} procedures'], th: 'หัตถการ {n} รายการ' },
   nVouch: { en: ['{n} voucher', '{n} vouchers'], th: 'บัตรกำนัล {n} ใบ' },
-  days: { en: '{n} days', th: '{n} วัน' },
-  clearPlan: { en: 'Clear my plan', th: 'ล้างแผนของฉัน' },
-  clearAsk: { en: 'Remove every procedure, the trip and the notes from My Plan on this device? Vouchers stay.', th: 'ลบหัตถการ การเดินทาง และบันทึกทั้งหมดออกจากแผนในเครื่องนี้หรือไม่ บัตรกำนัลยังอยู่' }
+  days: { en: '{n} days', th: '{n} วัน', zh: '{n} 天' },
+  clearPlan: { en: 'Clear my plan', th: 'ล้างแผนของฉัน', zh: '清空我的方案' },
+  clearAsk: { en: 'Remove every procedure, the trip and the notes from My Plan on this device? Vouchers stay.', th: 'ลบหัตถการ การเดินทาง และบันทึกทั้งหมดออกจากแผนในเครื่องนี้หรือไม่ บัตรกำนัลยังอยู่', zh: '要从此设备上的“我的方案”中移除所有手术项目、行程和备注吗？优惠券会保留。' }
 };
 
 /* Game titles from features/games/config.js, copied so the plan loads without the games bundle. */
 const GAME_TITLES = {
-  steady: { en: 'Steady Hand', th: 'มือนิ่ง' }, proportion: { en: 'Proportion', th: 'สัดส่วน' },
-  factrush: { en: 'Fact Rush', th: 'จริงหรือเข้าใจผิด' }, recoverysort: { en: 'Recovery Sort', th: 'จัดช่วงพักฟื้น' },
-  memorymatch: { en: 'Memory Match', th: 'จับคู่ความจำ' }
+  steady: { en: 'Steady Hand', th: 'มือนิ่ง', zh: '稳手挑战' }, proportion: { en: 'Proportion', th: 'สัดส่วน', zh: '比例' },
+  factrush: { en: 'Fact Rush', th: 'จริงหรือเข้าใจผิด', zh: '事实快答' }, recoverysort: { en: 'Recovery Sort', th: 'จัดช่วงพักฟื้น', zh: '恢复分类' },
+  memorymatch: { en: 'Memory Match', th: 'จับคู่ความจำ', zh: '记忆配对' }
 };
 
 const ICON = {
@@ -150,7 +150,7 @@ const CSS = `
 
 
 
-const loc = lang => (lang === 'th' ? 'th-TH' : 'en-GB');
+const loc = lang => (({th:'th-TH', zh:'zh-CN'}[lang] || 'en-GB'));
 export function fmtDate(iso, lang, withYear = true) {
   if (!iso) return '';
   const d = typeof iso === 'number' ? new Date(iso) : new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10));
@@ -199,12 +199,12 @@ export function lineUrl(text, c = contactOf()) { return `https://line.me/R/oaMes
 export function mount(container, opts = {}) {
   const contact = contactOf(opts);
   injectCSS('apxp-css', CSS);
-  const lang = opts.lang === 'th' ? 'th' : 'en';
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en');
   const L = o => t(o, lang);
   const base = opts.base || new URL('../../', import.meta.url).href;
   const serviceUrl = typeof opts.serviceUrl === 'function' ? opts.serviceUrl : k => `service.html?p=${k}`;
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) { /* host handler error */ } };
-  const site = new URL('../', base).href + (lang === 'th' ? 'th/' : '');
+  const site = new URL('../', base).href + (lang === 'en' ? '' : lang + '/');
   const links = { bodymap: site + 'bodymap.html', nose: site + 'nose-implants.html', games: site + 'games.html', trip: site + 'trip.html', ...(opts.links || {}) };
 
   const root = h('div', { class: 'apxp', lang });
@@ -220,8 +220,8 @@ export function mount(container, opts = {}) {
     noteTimer = setTimeout(() => { selfWrite = true; store.setNotes(notes.value); selfWrite = false; }, 300);
   });
   let selfWrite = false;
-  const plural = (o, n) => { const v = o[lang]; return fill(Array.isArray(v) ? v[n === 1 ? 0 : 1] : v, { n }); };
-  const countText = (p, v) => [p ? plural(T.nProc, p) : '', v ? plural(T.nVouch, v) : ''].filter(Boolean).join(lang === 'th' ? ' ' : ' and ');
+  const plural = (o, n) => { const v = o[lang] ?? o.en; return fill(Array.isArray(v) ? v[n === 1 ? 0 : 1] : v, { n }); };
+  const countText = (p, v) => [p ? plural(T.nProc, p) : '', v ? plural(T.nVouch, v) : ''].filter(Boolean).join({th:' ', zh:'，'}[lang] || ' and ');
 
   function render() {
     const plan = store.get();
@@ -245,7 +245,7 @@ export function mount(container, opts = {}) {
         h('div', { class: 'p-go' },
           h('a', { class: 'p-btn ghost sm', href: links.bodymap }, L(T.bodymap)),
           h('a', { class: 'p-btn ghost sm', href: links.nose }, L(T.nose)),
-          h('a', { class: 'p-btn ghost sm', href: links.games }, L(T.games)))));
+          links.games ? h('a', { class: 'p-btn ghost sm', href: links.games }, L(T.games)) : null)));
     } else {
       main.append(h('section', { class: 'p-sec', 'aria-labelledby': 'apxp-ph' },
         h('h3', { id: 'apxp-ph' }, L(T.procs)),
@@ -335,7 +335,7 @@ export function mount(container, opts = {}) {
     const c = document.createElement('canvas'), x = c.getContext('2d');
     const wrapText = (txt, font, max) => {
       x.font = font;
-      const words = lang === 'th' && typeof Intl.Segmenter === 'function'
+      const words = (lang === 'th' || lang === 'zh') && typeof Intl.Segmenter === 'function'
         ? [...new Intl.Segmenter('th', { granularity: 'word' }).segment(txt)].map(s => s.segment)
         : txt.split(/(\s+)/);
       const lines = []; let cur = '';
@@ -441,7 +441,7 @@ export function mount(container, opts = {}) {
 
 /* Header badge: shows the plan item count inside el, hidden at zero. */
 export function badge(el, opts = {}) {
-  const lang = opts.lang === 'th' ? 'th' : 'en';
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en');
   const upd = () => {
     const n = store.count();
     el.textContent = n > 99 ? '99+' : String(n);

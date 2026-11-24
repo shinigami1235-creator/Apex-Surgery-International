@@ -9,6 +9,8 @@
  * 1.3.0  Apex's answers of 20 Nov 2026: the WhatsApp number +66 88 624 1617; 21 days' stay after facial bone
  *        surgery; a photo on the facelift, rhinoplasty, eye, breast and liposuction cards; the current facelift,
  *        brow lift and liposuction posters with their prices in place of the old ones
+ * 1.3.1  Apex settings › Features with the games, Surgery Wars, the non-surgical treatments page and Chinese
+ *        switched off for the launch; each procedure page's photos as its Section photos field
  */
 defined( 'ABSPATH' ) || exit;
 
@@ -137,3 +139,26 @@ add_action( 'init', function () {
 
 	apex_data_bump();
 }, 99 );
+
+add_action( 'init', function () {
+	$done = (string) get_option( 'apex_upgraded', '1.1.0' );
+	if ( version_compare( $done, '1.3.0', '<' ) || version_compare( $done, '1.3.1', '>=' ) || ! function_exists( 'apex_post_lang' ) ) return;
+	update_option( 'apex_upgraded', '1.3.1', true );
+	$D = apex_upgrade_content();
+
+	// the parts waiting for Apex start switched off; Apex settings › Features turns each on
+	if ( get_option( 'apex_features' ) === false ) update_option( 'apex_features', [ 'games' => false, 'wars' => false, 'treatments' => false, 'zh' => false ], true );
+
+	// the photos beside each procedure page's sections were in the theme's code until 1.3.0; now they are a field
+	foreach ( [ 'en', 'th' ] as $l ) foreach ( apex_posts( 'apex_service', $l ) as $id ) {
+		$k = (string) get_post_meta( $id, '_apex_key', true );
+		$want = $D[ $l ][ "svc:$k" ]['photos'] ?? null;
+		if ( $want && ! get_post_meta( $id, apex_meta_key( 'photos' ), true ) ) apex_write_post( $id, 'apex_service', [ 'photos' => $want ] );
+	}
+	// the sample faces in Face analysis and Golden proportions were fixed in the tools' code; now they are settings
+	foreach ( [ 'en', 'th' ] as $l ) {
+		$o = get_option( 'apex_shared_' . $l );
+		if ( is_array( $o ) && empty( $o['samples'] ) && ! empty( $D[ $l ]['shared']['samples'] ) ) { $o['samples'] = $D[ $l ]['shared']['samples']; update_option( 'apex_shared_' . $l, $o ); }
+	}
+	apex_data_bump();
+}, 100 );

@@ -9,26 +9,28 @@
 
 import { t } from '../plan/procedures.js';
 
-const SITE = 'https://www.apexsurgeryhospital.com/';
-const abs = u => (u && u.startsWith('~/') ? SITE + u.slice(2) : u);
+let SITE = 'https://www.apexsurgeryhospital.com/';   // the review copy; WordPress passes its own address as opts.media
+let HOME = '';
+const site = u => HOME && u.startsWith('~/wp-content/uploads/apex-media/') ? HOME : SITE;
+const abs = u => (u && u.startsWith('~/') ? site(u) + u.slice(2) : u);
 
 /* Required caption for medical before/after images, Thai rule text plus its English version. Shown in both languages. */
 const RULE_TH = 'ใช้เป็นตัวอย่าง ผลจากการเข้ารับการรักษาพยาบาลสำหรับผู้ป่วยเฉพาะราย';
 const RULE_EN = 'Example only. Results from treatment of an individual patient.';
 
 const T = {
-  title: { en: 'Before and after', th: 'ก่อนและหลัง' },
-  before: { en: 'Before', th: 'ก่อน' },
-  after: { en: 'After', th: 'หลัง' },
-  handle: { en: 'Before and after divider', th: 'เส้นแบ่งภาพก่อนและหลัง' },
-  handleV: { en: '{n}% before', th: 'ภาพก่อน {n}%' },
-  open: { en: 'Open image {n} of {m}', th: 'เปิดภาพที่ {n} จาก {m}' },
-  close: { en: 'Close', th: 'ปิด' },
-  prev: { en: 'Previous image', th: 'ภาพก่อนหน้า' },
-  next: { en: 'Next image', th: 'ภาพถัดไป' },
-  count: { en: '{n} of {m}', th: '{n} จาก {m}' },
-  failed: { en: 'The image could not be loaded.', th: 'โหลดภาพไม่สำเร็จ' },
-  viewer: { en: 'Before and after image', th: 'ภาพก่อนและหลัง' }
+  title: { en: 'Before and after', th: 'ก่อนและหลัง', zh: '术前术后对比' },
+  before: { en: 'Before', th: 'ก่อน', zh: '术前' },
+  after: { en: 'After', th: 'หลัง', zh: '术后' },
+  handle: { en: 'Before and after divider', th: 'เส้นแบ่งภาพก่อนและหลัง', zh: '术前术后对比分隔条' },
+  handleV: { en: '{n}% before', th: 'ภาพก่อน {n}%', zh: '术前 {n}%' },
+  open: { en: 'Open image {n} of {m}', th: 'เปิดภาพที่ {n} จาก {m}', zh: '打开第 {n} 张图片，共 {m} 张' },
+  close: { en: 'Close', th: 'ปิด', zh: '关闭' },
+  prev: { en: 'Previous image', th: 'ภาพก่อนหน้า', zh: '上一张图片' },
+  next: { en: 'Next image', th: 'ภาพถัดไป', zh: '下一张图片' },
+  count: { en: '{n} of {m}', th: '{n} จาก {m}', zh: '{n} / {m}' },
+  failed: { en: 'The image could not be loaded.', th: 'โหลดภาพไม่สำเร็จ', zh: '无法加载图片。' },
+  viewer: { en: 'Before and after image', th: 'ภาพก่อนและหลัง', zh: '术前术后对比图' }
 };
 
 const ICON = {
@@ -231,14 +233,16 @@ function buildSlider(item, lang, onChange) {
 
 export function slider(container, item, opts = {}) {
   injectCSS();
-  const s = buildSlider(norm(item, opts.layout), opts.lang === 'th' ? 'th' : 'en', opts.onChange);
+  const s = buildSlider(norm(item, opts.layout), (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en'), opts.onChange);
   container.append(s.el);
   return { destroy() { s.destroy(); s.el.remove(); }, set: s.set, el: s.el };
 }
 
 export function mount(container, opts = {}) {
+  if (opts.media) SITE = opts.media;
+  if (opts.home) HOME = opts.home;
   injectCSS();
-  const lang = opts.lang === 'th' ? 'th' : 'en';
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en');
   const L = o => t(o, lang);
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) { /* host handler error */ } };
   const items = (opts.items || []).map(x => norm(x, opts.layout));

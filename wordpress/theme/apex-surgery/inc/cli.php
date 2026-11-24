@@ -15,6 +15,7 @@ class Apex_CLI {
 	private array $meta = [];
 	private array $made = [];   // type => key => lang => id, for linking translations
 	private string $dir = '';
+	private array $langs = APEX_LANGS;   // --lang limits the import to one language
 
 	/**
 	 * Import the design's content.
@@ -25,8 +26,12 @@ class Apex_CLI {
 	 * [--only=<types>]
 	 * : Comma list of: settings, pages, services, posts, episodes, offers, cases, branches, doctors.
 	 *
-	 * [--no-webp]
+	 * [--[no-]webp]
 	 * : Leave JPEG and PNG photos as they are. Without it the import ends with `wp apex webp`.
+	 *
+	 * [--lang=<lang>]
+	 * : Import one language only, for example zh to add the Chinese pages to a site whose English and Thai
+	 *   Apex already edits. The other languages are left as they are; the new pages join their translations.
 	 */
 	public function import( $args, $assoc ) {
 		if ( ! function_exists( 'pll_set_post_language' ) ) WP_CLI::error( 'Polylang is not active. Run: wp plugin activate polylang' );
@@ -39,11 +44,12 @@ class Apex_CLI {
 		$this->meta = is_readable( "{$this->dir}/meta.json" ) ? json_decode( file_get_contents( "{$this->dir}/meta.json" ), true ) : [];
 		$only = isset( $assoc['only'] ) ? array_map( 'trim', explode( ',', $assoc['only'] ) ) : null;
 		$run = fn( $k ) => ! $only || in_array( $k, $only, true );
+		if ( ! empty( $assoc['lang'] ) ) { if ( ! in_array( $assoc['lang'], APEX_LANGS, true ) ) WP_CLI::error( 'Unknown language ' . $assoc['lang'] ); $this->langs = [ $assoc['lang'] ]; }
 
 		kses_remove_filters();
 		wp_defer_term_counting( true );
 		$this->languages();
-		$this->site();
+		if ( $this->langs === APEX_LANGS ) $this->site();   // a one-language import leaves the site's own settings alone
 		if ( $run( 'settings' ) ) $this->settings();
 		if ( $run( 'branches' ) ) $this->branches();
 		if ( $run( 'doctors' ) ) $this->doctors();
@@ -56,7 +62,7 @@ class Apex_CLI {
 		$this->link();
 		update_option( 'apex_upgraded', APEX_VERSION, true );   // an import already holds what inc/upgrade.php would change
 		wp_defer_term_counting( false );
-		if ( empty( $assoc['no-webp'] ) ) { $w = apex_photo_pass( false, 40 ); if ( $w['kb'] ) WP_CLI::log( "Photos: {$w['done']} saved as WebP, {$w['kb']} KB lighter" ); }
+		if ( ( $assoc['webp'] ?? true ) && empty( $assoc['no-webp'] ) ) { $w = apex_photo_pass( false, 40 ); if ( $w['kb'] ) WP_CLI::log( "Photos: {$w['done']} saved as WebP, {$w['kb']} KB lighter" ); }
 		apex_data_bump();
 		PLL()->model->clean_languages_cache();   // Polylang keeps each language's front page in its cache
 		flush_rewrite_rules( false );
@@ -66,7 +72,7 @@ class Apex_CLI {
 	/* ---------- setup ---------- */
 	private function languages(): void {
 		$have = pll_languages_list( [ 'fields' => 'slug' ] );
-		$want = [ 'en' => [ 'locale' => 'en_US', 'name' => 'English', 'slug' => 'en', 'term_group' => 0 ], 'th' => [ 'locale' => 'th', 'name' => 'ไทย', 'slug' => 'th', 'term_group' => 1 ] ];
+		$want = [ 'en' => [ 'locale' => 'en_US', 'name' => 'English', 'slug' => 'en', 'term_group' => 0 ], 'th' => [ 'locale' => 'th', 'name' => 'ไทย', 'slug' => 'th', 'term_group' => 1 ], 'zh' => [ 'locale' => 'zh_CN', 'name' => '中文', 'slug' => 'zh', 'term_group' => 2 ] ];
 		foreach ( $want as $slug => $a ) {
 			if ( in_array( $slug, $have, true ) ) continue;
 			$r = PLL()->model->languages->add( $a + [ 'no_default_cat' => true ] );
@@ -128,7 +134,11 @@ class Apex_CLI {
 		return $id;
 	}
 	private function link(): void {
-		foreach ( $this->made as $type => $keys ) foreach ( $keys as $key => $ids ) if ( count( $ids ) > 1 ) pll_save_post_translations( $ids );
+		foreach ( $this->made as $type => $keys ) foreach ( $keys as $key => $ids ) {
+			// a one-language import joins the translations the other languages already have
+			foreach ( APEX_LANGS as $l ) if ( ! isset( $ids[ $l ] ) && ( $id = $this->find( $type, (string) $key, $l ) ) ) $ids[ $l ] = $id;
+			if ( count( $ids ) > 1 ) pll_save_post_translations( $ids );
+		}
 	}
 	private function slug_of( string $path ): string {
 		$parts = array_values( array_filter( explode( '/', $path ) ) );
@@ -137,16 +147,17 @@ class Apex_CLI {
 
 	/* ---------- content ---------- */
 	private function settings(): void {
-		foreach ( APEX_LANGS as $l ) {
+		foreach ( $this->langs as $l ) {
 			$S = $this->D[ $l ]['shared'];
 			$S['whatsapp'] = $S['whatsapp'] ?? [ 'x' => '+66 88 624 1617', 'h' => 'https://wa.me/66886241617' ];
 			update_option( 'apex_shared_' . $l, [], true );
 			apex_write_option( $l, $this->pick( 'shared', $S ) );
 		}
+		if ( isset( $this->D['en']['shared']['features'] ) && get_option( 'apex_features' ) === false ) update_option( 'apex_features', array_map( 'boolval', (array) $this->D['en']['shared']['features'] ), true );
 		WP_CLI::log( 'Settings: done' );
 	}
 	private function branches(): void {
-		foreach ( APEX_LANGS as $l ) foreach ( $this->D[ $l ]['shared']['branches'] ?? [] as $i => $b ) {
+		foreach ( $this->langs as $l ) foreach ( $this->D[ $l ]['shared']['branches'] ?? [] as $i => $b ) {
 			$this->upsert( 'apex_branch', $b['key'], $l, [ 'menu_order' => $i ], 'apex_branch', $this->pick( 'apex_branch', $b ) );
 		}
 		WP_CLI::log( 'Branches: ' . count( $this->made['apex_branch'] ?? [] ) );
@@ -160,7 +171,7 @@ class Apex_CLI {
 		$en = [];
 		foreach ( $this->D['en']['team']['docs'] ?? [] as $d ) $en[ $d['key'] ] = $this->doc_slug( (string) ( $d['name'] ?? '' ), $d['key'] );
 		$fslug = $this->doc_slug( (string) ( $this->D['en']['founder']['name'] ?? '' ), 'founder' );
-		foreach ( APEX_LANGS as $l ) {
+		foreach ( $this->langs as $l ) {
 			$d = $this->D[ $l ]['shared']['doctor'] ?? null;
 			if ( $d ) $this->upsert( 'apex_doctor', 'surgeon-1', $l, [ 'menu_order' => 1 ], 'apex_doctor', [ 'kind' => 'doctor' ] + $this->pick( 'apex_doctor', $d ) );
 			$f = $this->D[ $l ]['founder'] ?? null;
@@ -174,7 +185,7 @@ class Apex_CLI {
 		WP_CLI::log( 'Doctors: ' . count( $this->made['apex_doctor'] ?? [] ) );
 	}
 	private function services(): void {
-		foreach ( APEX_LANGS as $l ) foreach ( $this->D[ $l ]['shared']['services'] ?? [] as $i => $m ) {
+		foreach ( $this->langs as $l ) foreach ( $this->D[ $l ]['shared']['services'] ?? [] as $i => $m ) {
 			$s = $this->D[ $l ][ 'svc:' . $m['key'] ] ?? null;
 			if ( ! $s ) continue;
 			$vals = $this->pick( 'apex_service', $s );
@@ -189,7 +200,7 @@ class Apex_CLI {
 		WP_CLI::log( 'Services: ' . count( $this->made['apex_service'] ?? [] ) );
 	}
 	private function category( string $cat, string $lang ): int {
-		$names = [ 'en' => [ 'review' => 'Reviews', 'blog' => 'Articles', 'news' => 'News' ], 'th' => [ 'review' => 'รีวิว', 'blog' => 'บทความ', 'news' => 'ข่าวสาร' ] ];
+		$names = [ 'en' => [ 'review' => 'Reviews', 'blog' => 'Articles', 'news' => 'News' ], 'th' => [ 'review' => 'รีวิว', 'blog' => 'บทความ', 'news' => 'ข่าวสาร' ], 'zh' => [ 'review' => '真实案例', 'blog' => '文章', 'news' => '医院新闻' ] ];
 		static $made = [];
 		if ( isset( $made[ "$cat|$lang" ] ) ) return $made[ "$cat|$lang" ];
 		$found = 0;
@@ -198,7 +209,7 @@ class Apex_CLI {
 		}
 		// Thai keeps the live site's category addresses (/th/review/...); English has its own words, since
 		// Polylang free keeps category slugs unique across languages
-		$slug = $lang === 'th' ? $cat : [ 'review' => 'reviews', 'blog' => 'articles', 'news' => 'hospital-news' ][ $cat ];
+		$slug = $lang === 'th' ? $cat : [ 'review' => 'reviews', 'blog' => 'articles', 'news' => 'hospital-news' ][ $cat ] . ( $lang === 'zh' ? '-zh' : '' );
 		if ( ! $found ) {
 			$r = wp_insert_term( $names[ $lang ][ $cat ], 'category', [ 'slug' => $slug ] );
 			if ( is_wp_error( $r ) ) WP_CLI::error( "Category $cat ($lang): " . $r->get_error_message() );
@@ -211,7 +222,7 @@ class Apex_CLI {
 		return $made[ "$cat|$lang" ] = $found;
 	}
 	private function posts(): void {
-		foreach ( APEX_LANGS as $l ) {
+		foreach ( $this->langs as $l ) {
 			$D = $this->D[ $l ];
 			$excerpts = [];
 			foreach ( $D['home']['news']['items'] ?? [] as $n ) $excerpts[ $n['key'] ] = $n['excerpt'] ?? '';
@@ -239,7 +250,7 @@ class Apex_CLI {
 		}
 	}
 	private function episodes(): void {
-		foreach ( APEX_LANGS as $l ) foreach ( $this->D[ $l ]['war']['episodes'] ?? [] as $e ) {
+		foreach ( $this->langs as $l ) foreach ( $this->D[ $l ]['war']['episodes'] ?? [] as $e ) {
 			$o = $this->D[ $l ][ 'war:' . $e['n'] ] ?? [];
 			$vals = [ 'full' => $o['title'] ?? $e['full'], 'n' => $e['n'], 'title' => $e['title'], 'seo' => $o['seo'] ?? '', 'desc' => $o['desc'] ?? $e['desc'], 'yt' => $o['yt'] ?? $e['yt'], 'cover' => $e['cover'], 'img' => $e['img'], 'photos' => $e['photos'], 'blocks' => apex_blocks_to_markup( $o['blocks'] ?? [] ) ];
 			$this->upsert( 'apex_episode', (string) $e['n'], $l, [ 'menu_order' => $e['n'] ], 'apex_episode', $vals, 'ep-' . $e['n'] );
@@ -247,7 +258,7 @@ class Apex_CLI {
 		WP_CLI::log( 'Episodes: ' . count( $this->made['apex_episode'] ?? [] ) );
 	}
 	private function offers(): void {
-		foreach ( APEX_LANGS as $l ) {
+		foreach ( $this->langs as $l ) {
 			$D = $this->D[ $l ];
 			$all = [];
 			foreach ( $D['promotions']['items'] ?? [] as $i => $p ) $all[ $p['src'] ] = [ 'p' => $p, 'onPromotions' => true, 'order' => $i + 1 ];
@@ -264,7 +275,7 @@ class Apex_CLI {
 		WP_CLI::log( 'Offers: ' . count( $this->made['apex_offer'] ?? [] ) );
 	}
 	private function cases(): void {
-		foreach ( APEX_LANGS as $l ) {
+		foreach ( $this->langs as $l ) {
 			$names = [];
 			foreach ( $this->D[ $l ]['shared']['services'] ?? [] as $s ) $names[ $s['key'] ] = $s['short'] ?? $s['name'];
 			foreach ( $this->D[ $l ]['reviews']['items'] ?? [] as $i => $c ) {
@@ -281,7 +292,7 @@ class Apex_CLI {
 		$order = 0;
 		foreach ( apex_page_types() as $key => [ $label, $en_slug, $th_slug ] ) {
 			$order++;
-			foreach ( APEX_LANGS as $l ) {
+			foreach ( $this->langs as $l ) {
 				$D = $this->D[ $l ];
 				$obj = isset( $src[ $key ] ) ? ( $D[ $src[ $key ] ] ?? [] ) : [];
 				$vals = $this->pick( 'page:' . $key, $obj );
@@ -407,4 +418,4 @@ class Apex_CLI {
 		WP_CLI::line( wp_json_encode( apex_data( $args[0], $assoc['lang'] ?? 'en' ), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
 	}
 }
-WP_CLI::add_command( 'apex', 'Apex_CLI' );
+if ( method_exists( 'WP_CLI', 'add_command' ) ) WP_CLI::add_command( 'apex', 'Apex_CLI' );

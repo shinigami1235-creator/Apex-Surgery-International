@@ -78,6 +78,7 @@ const STR = {
       model:'โหลดโมเดลใบหน้าไม่ได้', save:'บันทึกรูปไม่ได้', sample:'โหลดรูปตัวอย่างไม่ได้',
       side:'หันศีรษะไปครึ่งทางสำหรับรูปด้านข้าง', front:'รูปนี้ดูเป็นรูปด้านข้าง ใช้รูปหน้าตรงที่นี่ และเพิ่มรูปนี้ในรูปด้านข้าง'},
   },
+  zh: Object.assign({"emptyH": "请拍摄或选择一张正面照片。", "hint": "请在均匀光线下正对镜头，不化妆并关闭美颜。", "privacy": "尚未上传照片。", "take": "拍照", "choose": "选择照片", "sample": "示例面孔", "change": "换一张照片", "busy": "正在分析您的皮肤", "credit": "示例面孔来自 Unsplash，并非 Apex 患者", "photo": "照片", "sides": "侧面照片", "sidesP": "可选。在两侧各上传一张头部转向约一半的照片，可增加下颌线和鼻旁纹路的分析。", "left": "左侧", "right": "右侧", "add": "添加", "remove": "删除", "ideal": "黄金比例匹配度：", "women": "女性", "men": "男性", "save": "保存", "saveBtn": "保存到手机", "plan": "加入我的方案", "planned": "已加入我的方案", "consult": "咨询医生", "skin": "皮肤", "face": "面部", "score": "皮肤评分", "scoreP": "根据下方的检测结果得出，100 分为无瑕肌肤。", "age": "皮肤年龄", "ageP": "由面部模型根据此照片推测的年龄，并结合皮肤检测结果得出。", "golden": "黄金比例匹配度", "goldenP": "您的面部与经典比例的接近程度。", "see": "查看", "levels": ["极轻微", "轻度", "中度", "明显"], "most": "主要在", "guide": "仅供参考", "show": "在照片上显示", "name": {"lines": "细纹和皱纹", "texture": "肤质和毛孔", "spots": "色斑和均匀度", "redness": "泛红", "under": "眼下", "sag": "松弛和纹路", "shine": "油光", "lid": "上眼睑", "balance": "对称度"}, "short": {"lines": "纹路", "texture": "肤质", "spots": "色斑", "redness": "泛红", "under": "眼下", "sag": "松弛", "shine": "油光", "lid": "眼睑", "balance": "对称度"}, "desc": {"lines": "额头、眉间、外眼角及眼下的纹路。", "texture": "脸颊、鼻部和额头的细小颗粒与毛孔。", "spots": "深色斑点以及肤色的均匀程度。", "redness": "脸颊和鼻部的红色斑块。", "under": "眼下相对于脸颊的暗沉和凹陷。", "sag": "鼻旁纹路、嘴角下方的纹路、嘴角以及眉位高度。", "shine": "额头、鼻部和下巴的高光反光。", "lid": "上眼睑是否有褶皱。", "balance": "左右两侧的匹配程度。"}, "area": {"forehead": "额头", "glabella": "眉间", "crows": "外眼角", "under": "眼下", "cheeks": "脸颊", "tzone": "额头、鼻部和下巴", "folds": "鼻旁纹路", "mouth": "嘴角", "brows": "眉部", "jaw": "下颌线"}, "lid": {"clear": "褶皱明显", "faint": "褶皱较浅", "none": "未见褶皱"}, "turned": "请正对镜头以进行分析。", "withSides": "已包含您的侧面照片。", "svc": {"facelift": "面部提升术", "browlift": "提眉术", "eyelid": "眼睑手术"}, "note": "仅根据一张照片提供参考，不属于皮肤检查。光线、化妆和手机滤镜会影响分析结果。", "vary": "效果因人而异。", "camHint": "请将面部对准轮廓线。", "camSide": "将头部转向约一半，并让面部保持在轮廓线内。", "shutter": "拍照", "cancel": "取消", "brand": "Apex Surgery Hospital", "warn": {"small": "照片中的面部较小。更近的照片能更准确地分析皮肤。", "smooth": "此照片似乎经过磨皮处理。请关闭美颜，以获得更准确的结果。", "soft": "此照片偏软或模糊。更清晰的照片能更准确地分析皮肤。", "dark": "光线较暗。请面向窗户，以获得更准确的结果。", "uneven": "面部有一侧处于阴影中。请面向光源，以获得更准确的结果。", "turn": "您的头部有转向。请正对镜头，以获得更准确的结果。"}, "err": {"noFace": "此照片中未识别到面部。请换一张从正面拍摄、距离更近的照片。", "camera": "无法打开相机。", "read": "无法读取该照片。", "model": "面部模型无法加载。", "save": "无法保存图片。", "sample": "示例照片无法加载。", "side": "拍摄侧面照片时，请将头部转向约一半。", "front": "这似乎是一张侧面照片。此处请使用正面照片，并将这张添加到“侧面照片”中。"}}, {about:n => `约 ${n} 岁`, aboutH:n => `<small>约</small> ${n} <small>岁</small>`}),
 };
 
 const ICON = {
@@ -335,7 +336,7 @@ function paint(cv, work, raw, key, sides){
 let styleRefs = 0, styleEl = null;
 
 export function mount(container, opts = {}){
-  const lang = opts.lang === 'th' ? 'th' : 'en', S = STR[lang];
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en'), S = STR[lang] || STR.en;
   const mpBase = opts.mpBase || MP_CDN, faBase = opts.faBase || FA_CDN, sampleSrc = opts.sample || SAMPLE;
   const links = Object.assign({consult:'consult.html', proportions:'proportions.html'}, opts.links || {});
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) {} };

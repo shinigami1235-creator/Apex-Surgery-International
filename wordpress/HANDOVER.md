@@ -313,6 +313,39 @@ Apex settings › Forms sets the form up without code:
 - After 8 wrong passwords for one username from one connection, that login waits 15 minutes.
 - Behind Cloudflare or a load balancer every visitor arrives from the proxy's address. Set `APEX_IP_HEADER` (step 7) or the limits apply to everyone at once.
 
+## Parts switched off until Apex is ready
+
+Apex settings › Features lists the parts of the site that are built and wait for something from Apex. Each has a tick box, and 1.3.1 starts all four off:
+
+| Part | What it covers | Waiting for |
+|---|---|---|
+| Games and vouchers | The Play and win page, the games in the Try it menu, on the home page, the services page and the promotions page, and the games button in My Plan | The real prizes and scores (item 2.3) and whether the advertising approval covers the games (4.1) |
+| Surgery Wars | The Transformations page, the Surgery Wars page and its episodes, the Surgery Wars section on the home page and the Transformations link in the menu | Final approval of the episodes and the channel (3.4) |
+| Non-surgical treatments | The treatments page and its links in the Services menu, the footer, the services page and What's new | Confirmation that the October 2026 list is current (2.8) |
+| Chinese (中文) | The pages under `/zh/` and 中文 in the language switch | Palm's review of the Chinese medical text (3.2) |
+
+A part that is off has no links anywhere on the site, its pages leave the sitemap and carry `noindex`, and its addresses send a visitor to the home page (a Chinese address goes to the same page in English). Staff who are logged in can still open every hidden page and see 中文 in the switch, to check them before they go public. Tick a part and press Save to put it on the site.
+
+## Chinese
+
+The theme carries a Chinese translation of every page, made from the English with the medical terms set in one glossary. It still needs Palm's review (item 3.2) before Chinese is switched on.
+
+The Chinese pages are added once, on staging and on the live site: Apex settings › Features › Add the Chinese pages, or `wp apex import --lang=zh`. Either adds the Chinese pages, settings, offers and articles beside the English and Thai ones and leaves those untouched. After that the Chinese pages are edited like the others, with the 中文 filter in each list.
+
+## Images on the site
+
+Media › Images on the site is a checklist of every image and video the pages use, read from the content itself, with the pages each one is on. A row gets a tick once its file is in this site's uploads folder and in the Media Library. Copy all goes down the list; Copy on a row does one file.
+
+- Files from the old site (`wp-content/uploads/...`) are copied from the old site into the same folder here, so their addresses don't change.
+- Images built into the theme, sample faces from Unsplash and doctor photos on apexmedicalcenter.co.th are copied into `uploads/apex-media/`, and every page that uses them is changed to the copy.
+- YouTube thumbnails are saved into `uploads/apex-media/` and the play boxes show the saved copy.
+
+The whole list takes about six minutes on a normal connection. One file is missing on the old site itself: `2025/05/image-13.png` in the Endotine brow lift article (English and Thai). It shows as failed; replace that image in the article or remove it.
+
+Once every row is ticked, remove the `APEX_MEDIA_BASE` line from `wp-config.php`. Until then uploads load from the address it names.
+
+The video files the pages play stay on YouTube, and the photos and icons the theme draws itself (the 3D viewers, the icons and the fallback pictures) ship inside the theme folder on the same domain.
+
 ## Checks before going live
 
 From the repository root, with the staging site at `$SITE`:
@@ -337,6 +370,7 @@ Then by hand:
 7. Submit the new sitemap (`/wp-sitemap.xml`) in Search Console.
 8. Measure Core Web Vitals on staging with the cache on: PageSpeed Insights, mobile, on the home page, one service, one article and the breast implant viewer. Aim for LCP under 2.5 s, INP under 200 ms and CLS under 0.1. Search Console shows the figures from real visitors about 28 days after launch.
 9. Restore one backup to a spare copy, to know the backup works.
+10. Media › Images on the site shows every row ticked, and `APEX_MEDIA_BASE` is gone from `wp-config.php`.
 
 ## Updating the theme
 
@@ -354,6 +388,7 @@ For the developer: the design (the `site/` folder) is the source for styles, scr
 
 | Version | Date | What changed | Run `wp apex import` after installing? |
 |---|---|---|---|
+| 1.3.1 | 24 Nov 2026 | Apex settings › Features switches off the parts waiting for Apex: games and vouchers, Surgery Wars, the non-surgical treatments page and Chinese. All four start off. The site has a Chinese version, hidden until Palm reviews it. Media › Images on the site lists every image and video the pages use and copies each into the Media Library. The photos beside each procedure page's sections are now a field (Section photos), and the sample faces in Face analysis and Golden proportions are settings under Site settings, so both can be swapped and moved into the Media Library. | No. The theme switches the four parts off and fills the new fields on the first page load. The Chinese pages are added with Apex settings › Features › Add the Chinese pages, or `wp apex import --lang=zh`, which leaves English and Thai alone. |
 | 1.3.0 | 20 Nov 2026 | Apex's answers of 20 November. Each procedure page shows Apex's own photos: the treated area, a consultation and the operating room. The facelift, rhinoplasty, eye, breast and liposuction cards carry a photo, set per service under In menus and service cards › Card photo. The facelift, brow lift and liposuction offers are the current posters with their prices: 5 facelift and brow lift offers and 10 liposuction offers, the liposuction ones until 31 December 2026. An offer can show "From" before its price and has a Last day: it shows "Until 31 December 2026" under the price and leaves the site the day after. WhatsApp is +66 88 624 1617. A client from abroad stays 21 days after facial bone surgery in the trip planner. | No. The theme makes these changes on its own on the first page load after installing, and only where staging still has what 1.2.0 left: the old WhatsApp number, 14 days for facial bone surgery, an empty card photo, and the old facelift, Endotine and liposuction posters. The old offers stay under Offers, unticked from the promotions and home pages. |
 | 1.2.0 | 16 Nov 2026 | Apex's feedback of 16 November. The 2026 logo in the header, and its white version in the footer and mobile menu. The My Plan button has its own icon, apart from the menu button. Promotion pictures in What's new fill their box. The purple panel behind photos stays behind the photo on phones, and the founder's license card no longer covers the Founder profile button. Before and after photos on the results machine keep their shape. Every doctor and the founder have a page of their own at `/doctors/<name>/`, with their license number, and the license shows on every doctor card. Each service has an editable Recovery timeline. A service added later joins every procedure list, the form and the planning tools; facial bone surgery enquiries are now accepted. The consultation form is set up under Apex settings › Forms (fields, more questions, wording), Enquiries › Export downloads a CSV, and a webhook can copy each enquiry to Google Sheets. Edit links on the live site for logged-in staff. YouTube players open in the page's language. | No. The theme makes its few content changes on its own on the first page load after installing (logo, recovery timelines, doctor page addresses), and only where they are still as 1.1.0 left them, so edits made on staging stay. |
 | 1.1.0 | 15 Nov 2026 | Service banners show whole, since their text was cut at the edges. Facial bone surgery has its icon. The mobile menu, the photo viewer and the before and after zoom are native dialogs: Esc closes them, keyboard focus stays inside, and the page behind can't be reached. Service banners keep their space while they load. The admin shows the version. | Yes, once on staging, since the icon is content and staging's content was older than 1.0.0. Nobody has edited staging yet, so nothing is lost. |

@@ -6,37 +6,39 @@
 
 import { PROC_KEYS, t, procName, injectCSS, h, fill, loadData } from '../plan/procedures.js';
 
-const SITE = 'https://www.apexsurgeryhospital.com/';
+let SITE = 'https://www.apexsurgeryhospital.com/';   // the review copy; WordPress passes its own address as opts.media
+let HOME = '';
+const site = u => HOME && u.startsWith('~/wp-content/uploads/apex-media/') ? HOME : SITE;
 // '~/' is the client's media library; img/ and video/ are this site's own assets, under the assets base
 let ASSETS = '';
-const abs = u => (u && u.startsWith('~/') ? SITE + u.slice(2) : u && ASSETS && /^(img|video)\//.test(u) ? ASSETS + u : u);
+const abs = u => (u && u.startsWith('~/') ? site(u) + u.slice(2) : u && ASSETS && /^(img|video)\//.test(u) ? ASSETS + u : u);
 
 const T = {
-  title: { en: 'Client review videos', th: 'วิดีโอรีวิวจากลูกค้า' },
-  open: { en: 'Play {p} review {n} of {m}', th: 'เล่นรีวิว{p} คลิปที่ {n} จาก {m}' },
-  viewer: { en: 'Review video', th: 'วิดีโอรีวิว' },
-  close: { en: 'Close', th: 'ปิด' },
-  sound: { en: 'Sound on', th: 'เปิดเสียง' },
-  mute: { en: 'Sound off', th: 'ปิดเสียง' },
-  prev: { en: 'Previous video', th: 'วิดีโอก่อนหน้า' },
-  next: { en: 'Next video', th: 'วิดีโอถัดไป' },
-  play: { en: 'Play', th: 'เล่น' },
-  pause: { en: 'Pause', th: 'หยุด' },
-  service: { en: 'Service page', th: 'หน้าบริการ' },
-  loading: { en: 'Loading video', th: 'กำลังโหลดวิดีโอ' },
-  failed: { en: 'The video could not be loaded.', th: 'โหลดวิดีโอไม่สำเร็จ' },
-  retry: { en: 'Try again', th: 'ลองอีกครั้ง' },
-  vary: { en: 'Results may vary from person to person.', th: 'ผลลัพธ์อาจแตกต่างกันในแต่ละบุคคล' },
-  count: { en: '{n} of {m}', th: '{n} จาก {m}' },
-  none: { en: 'No review videos.', th: 'ไม่มีวิดีโอรีวิว' },
+  title: { en: 'Client review videos', th: 'วิดีโอรีวิวจากลูกค้า', zh: '客户评价视频' },
+  open: { en: 'Play {p} review {n} of {m}', th: 'เล่นรีวิว{p} คลิปที่ {n} จาก {m}', zh: '播放{p}评价视频，第 {n} 个，共 {m} 个' },
+  viewer: { en: 'Review video', th: 'วิดีโอรีวิว', zh: '评价视频' },
+  close: { en: 'Close', th: 'ปิด', zh: '关闭' },
+  sound: { en: 'Sound on', th: 'เปิดเสียง', zh: '开启声音' },
+  mute: { en: 'Sound off', th: 'ปิดเสียง', zh: '关闭声音' },
+  prev: { en: 'Previous video', th: 'วิดีโอก่อนหน้า', zh: '上一个视频' },
+  next: { en: 'Next video', th: 'วิดีโอถัดไป', zh: '下一个视频' },
+  play: { en: 'Play', th: 'เล่น', zh: '开始玩' },
+  pause: { en: 'Pause', th: 'หยุด', zh: '暂停' },
+  service: { en: 'Service page', th: 'หน้าบริการ', zh: '服务页面' },
+  loading: { en: 'Loading video', th: 'กำลังโหลดวิดีโอ', zh: '视频加载中' },
+  failed: { en: 'The video could not be loaded.', th: 'โหลดวิดีโอไม่สำเร็จ', zh: '视频无法加载。' },
+  retry: { en: 'Try again', th: 'ลองอีกครั้ง', zh: '重试' },
+  vary: { en: 'Results may vary from person to person.', th: 'ผลลัพธ์อาจแตกต่างกันในแต่ละบุคคล', zh: '效果因人而异。' },
+  count: { en: '{n} of {m}', th: '{n} จาก {m}', zh: '{n} / {m}' },
+  none: { en: 'No review videos.', th: 'ไม่มีวิดีโอรีวิว', zh: '暂无评价视频。' },
   general: { en: 'Apex Surgery Hospital', th: 'โรงพยาบาลศัลยกรรมตกแต่งเอเพ็กซ์' },
-  all: { en: 'All', th: 'ทั้งหมด' },
-  watch: { en: 'Watch', th: 'ดูคลิป' },
-  watched: { en: 'Watched', th: 'ดูแล้ว' },
-  clip: { en: 'Review {n} of {m}', th: 'รีวิวที่ {n} จาก {m}' },
-  filter: { en: 'Show reviews for', th: 'แสดงรีวิว' },
-  left: { en: 'Scroll left', th: 'เลื่อนไปทางซ้าย' },
-  right: { en: 'Scroll right', th: 'เลื่อนไปทางขวา' }
+  all: { en: 'All', th: 'ทั้งหมด', zh: '全部' },
+  watch: { en: 'Watch', th: 'ดูคลิป', zh: '观看' },
+  watched: { en: 'Watched', th: 'ดูแล้ว', zh: '已观看' },
+  clip: { en: 'Review {n} of {m}', th: 'รีวิวที่ {n} จาก {m}', zh: '评价 {n}／{m}' },
+  filter: { en: 'Show reviews for', th: 'แสดงรีวิว', zh: '查看评价：' },
+  left: { en: 'Scroll left', th: 'เลื่อนไปทางซ้าย', zh: '向左滚动' },
+  right: { en: 'Scroll right', th: 'เลื่อนไปทางขวา', zh: '向右滚动' }
 };
 
 const ICON = {
@@ -194,8 +196,10 @@ export async function itemsFromData(base, lang) {
 }
 
 export function mount(container, opts = {}) {
+  if (opts.media) SITE = opts.media;
+  if (opts.home) HOME = opts.home;
   injectCSS('apxs-css', CSS);
-  const lang = opts.lang === 'th' ? 'th' : 'en';
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en');
   const L = o => t(o, lang);
   const base = opts.base || new URL('../../', import.meta.url).href;
   ASSETS = base;

@@ -47,6 +47,13 @@ add_action( 'wp_footer', function () {
 		'an' => 'คุกกี้วิเคราะห์การใช้งาน', 'anP' => 'นับจำนวนผู้เข้าชมและหน้าที่ถูกเปิด',
 		'ad' => 'คุกกี้โฆษณา', 'adP' => 'วัดผลโฆษณาบน Google และ Facebook',
 		'link' => 'ตั้งค่าคุกกี้',
+	] : ( apex_lang() === 'zh' ? [
+		'h' => '本网站的 Cookie',
+		'p' => '我们使用网站正常运行所需的 Cookie。经您同意，我们还会使用分析 Cookie 来改进网站，并使用广告 Cookie 来衡量广告效果。您可以随时在页面底部的"Cookie 设置"中更改选择。',
+		'all' => '全部接受', 'none' => '仅必要', 'set' => '自行选择', 'save' => '保存',
+		'an' => '分析 Cookie', 'anP' => '统计访问量和被打开的页面',
+		'ad' => '广告 Cookie', 'adP' => '衡量我们在 Google 和 Facebook 上的广告效果',
+		'link' => 'Cookie 设置',
 	] : [
 		'h' => 'Cookies on this site',
 		'p' => 'We use the cookies the site needs to work. With your permission we also use analytics cookies to improve the site and advertising cookies to measure our ads. You can change your mind any time under "Cookie settings" at the foot of the page.',
@@ -54,7 +61,7 @@ add_action( 'wp_footer', function () {
 		'an' => 'Analytics cookies', 'anP' => 'Count visits and the pages people open',
 		'ad' => 'Advertising cookies', 'adP' => 'Measure our ads on Google and Facebook',
 		'link' => 'Cookie settings',
-	];
+	] );
 	?>
 <div class="ck" id="apex-ck" role="dialog" aria-modal="false" aria-labelledby="apex-ck-h" hidden>
   <div class="ck-in"><p class="ck-h" id="apex-ck-h"><?php echo esc_html( $t['h'] ); ?></p><p class="ck-p"><?php echo esc_html( $t['p'] ); ?></p>

@@ -6,7 +6,9 @@
  */
 defined( 'ABSPATH' ) || exit;
 
-const APEX_LANGS = [ 'en', 'th' ];
+const APEX_LANGS = [ 'en', 'th', 'zh' ];
+/** A value in the page's language; Chinese falls back to English where it has none of its own (core.js A.pick). */
+function apex_pick( $en, $th, $zh = null ) { $l = apex_lang(); return $l === 'th' ? $th : ( $l === 'zh' && $zh !== null ? $zh : $en ); }
 
 /** Current language: Polylang's when it is active, otherwise the ?lang= or the site default. */
 function apex_lang(): string {
@@ -81,6 +83,7 @@ function apex_fmt_date( $s ): string {
 	if ( ! $s || ! preg_match( '/^(\d{4})-(\d{2})-(\d{2})/', (string) $s, $m ) ) return (string) $s;
 	[ , $y, $mo, $d ] = $m;
 	$mo = (int) $mo; $d = (int) $d;
+	if ( apex_lang() === 'zh' ) return $y . '年' . $mo . '月' . $d . '日';
 	if ( apex_lang() === 'th' ) {
 		$th = [ 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม' ];
 		return $d . ' ' . $th[ $mo - 1 ] . ' ' . ( (int) $y + 543 );
@@ -111,6 +114,7 @@ function apex_media_base(): string {
 function apex_img( $s ): string {
 	$s = (string) ( $s ?? '' );
 	if ( $s === '' ) return '';
+	if ( str_starts_with( $s, '~/wp-content/uploads/apex-media/' ) ) return trailingslashit( get_option( 'home' ) ) . substr( $s, 2 );   // copied in by Media › Images on the site: only this site has it
 	if ( str_starts_with( $s, '~/' ) ) return apex_media_base() . substr( $s, 2 );
 	if ( preg_match( '#^(img|video|fonts|css|js|features)/#', $s ) ) return apex_asset( $s );   // a file that ships with the theme
 	return $s;
@@ -150,7 +154,8 @@ function apex_img_dims( $src ): string {
 	}
 	return $seen[ $src ] = $out;
 }
-function apex_yt( string $id ): string { return 'https://i.ytimg.com/vi/' . $id . '/hqdefault.jpg'; }
+/** A YouTube thumbnail: the copy in the Media Library once Media › Images on the site has saved it, YouTube's until then. */
+function apex_yt( string $id ): string { return ( function_exists( 'apex_yt_local' ) ? apex_yt_local( $id ) : '' ) ?: 'https://i.ytimg.com/vi/' . $id . '/hqdefault.jpg'; }
 function apex_asset( string $path ): string { return APEX_URI . '/assets/' . ltrim( $path, '/' ); }
 
 /* ---------- links ----------

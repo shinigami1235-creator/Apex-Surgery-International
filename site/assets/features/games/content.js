@@ -4,12 +4,12 @@
    Recovery times follow the service pages, which the brief lists as the client's recovery facts. */
 
 export const PROCS = {
-  facelift:    { en: 'Facelift',            th: 'ดึงหน้า' },
-  browlift:    { en: 'Brow lift',           th: 'ยกคิ้ว' },
-  rhinoplasty: { en: 'Rhinoplasty',         th: 'เสริมจมูก' },
-  eyelid:      { en: 'Double eyelid',       th: 'ตาสองชั้น' },
-  breast:      { en: 'Breast augmentation', th: 'เสริมหน้าอก' },
-  lipo:        { en: 'Liposuction',         th: 'ดูดไขมัน' }
+  facelift:    { en: 'Facelift',            th: 'ดึงหน้า', zh: '面部提升术' },
+  browlift:    { en: 'Brow lift',           th: 'ยกคิ้ว', zh: '提眉术' },
+  rhinoplasty: { en: 'Rhinoplasty',         th: 'เสริมจมูก', zh: '鼻整形术' },
+  eyelid:      { en: 'Double eyelid',       th: 'ตาสองชั้น', zh: '双眼皮' },
+  breast:      { en: 'Breast augmentation', th: 'เสริมหน้าอก', zh: '隆胸术' },
+  lipo:        { en: 'Liposuction',         th: 'ดูดไขมัน', zh: '吸脂术' }
 };
 
 const S = {
@@ -353,16 +353,16 @@ export const FACTS = [
 
 /* Recovery Sort. `level` is the level at which the bucket joins the board. `order` sorts buckets by time. */
 export const BUCKETS = {
-  d3_7:  { en: '3 to 7 days',    th: '3 ถึง 7 วัน',       order: 1,  level: 3 },
-  w1_2:  { en: '1 to 2 weeks',   th: '1 ถึง 2 สัปดาห์',   order: 2,  level: 1 },
-  w2_3:  { en: '2 to 3 weeks',   th: '2 ถึง 3 สัปดาห์',   order: 3,  level: 5 },
-  w2_4:  { en: '2 to 4 weeks',   th: '2 ถึง 4 สัปดาห์',   order: 4,  level: 1 },
-  w4_6:  { en: '4 to 6 weeks',   th: '4 ถึง 6 สัปดาห์',   order: 5,  level: 2 },
-  m1_2:  { en: '1 to 2 months',  th: '1 ถึง 2 เดือน',     order: 6,  level: 4 },
-  m3_6:  { en: '3 to 6 months',  th: '3 ถึง 6 เดือน',     order: 7,  level: 1 },
-  m6_12: { en: '6 to 12 months', th: '6 ถึง 12 เดือน',    order: 8,  level: 6 },
-  y5_10: { en: '5 to 10 years',  th: '5 ถึง 10 ปี',       order: 9,  level: 7 },
-  y7_12: { en: '7 to 12 years',  th: '7 ถึง 12 ปี',       order: 10, level: 8 }
+  d3_7:  { en: '3 to 7 days',    th: '3 ถึง 7 วัน', zh: '3 至 7 天',       order: 1,  level: 3 },
+  w1_2:  { en: '1 to 2 weeks',   th: '1 ถึง 2 สัปดาห์', zh: '1 至 2 周',   order: 2,  level: 1 },
+  w2_3:  { en: '2 to 3 weeks',   th: '2 ถึง 3 สัปดาห์', zh: '2 至 3 周',   order: 3,  level: 5 },
+  w2_4:  { en: '2 to 4 weeks',   th: '2 ถึง 4 สัปดาห์', zh: '2 至 4 周',   order: 4,  level: 1 },
+  w4_6:  { en: '4 to 6 weeks',   th: '4 ถึง 6 สัปดาห์', zh: '4 至 6 周',   order: 5,  level: 2 },
+  m1_2:  { en: '1 to 2 months',  th: '1 ถึง 2 เดือน', zh: '1 至 2 个月',     order: 6,  level: 4 },
+  m3_6:  { en: '3 to 6 months',  th: '3 ถึง 6 เดือน', zh: '3 至 6 个月',     order: 7,  level: 1 },
+  m6_12: { en: '6 to 12 months', th: '6 ถึง 12 เดือน', zh: '6 至 12 个月',    order: 8,  level: 6 },
+  y5_10: { en: '5 to 10 years',  th: '5 ถึง 10 ปี', zh: '5 至 10 年',       order: 9,  level: 7 },
+  y7_12: { en: '7 to 12 years',  th: '7 ถึง 12 ปี', zh: '7 至 12 年',       order: 10, level: 8 }
 };
 
 const R = (id, proc, b, en, th, src) => ({ id, proc, b, text: { en, th }, src });

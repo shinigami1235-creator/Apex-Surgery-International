@@ -23,6 +23,8 @@
  * inc/pricing.php   prices by country: the price lists, each visitor's list, Apex settings › Prices by country
  * inc/tracking.php  Google Tag Manager with Consent Mode v2 and the cookie banner
  * inc/media.php     uploads saved as WebP
+ * inc/mediacheck.php Media › Images on the site: every image the content uses, and a button that puts it in the Media Library
+ * inc/features.php  Apex settings › Features: parts of the site switched on when Apex is ready (games, Surgery Wars, treatments, Chinese)
  * inc/security.php  hardening
  * inc/audit.php     access log: who opened enquiries and photos, changed settings or roles
  * inc/admin.php     admin menus, columns and help
@@ -32,14 +34,14 @@
  */
 defined( 'ABSPATH' ) || exit;
 
-define( 'APEX_VERSION', '1.3.0' );   // keep in step with Version in style.css; tools/build-theme.mjs checks both
+define( 'APEX_VERSION', '1.3.1' );   // keep in step with Version in style.css; tools/build-theme.mjs checks both
 
 // the installed version, bottom right of every admin page, so Apex can tell which package is on the site
 add_filter( 'update_footer', fn( $t ) => 'Apex Surgery theme ' . APEX_VERSION . ' · ' . $t, 20 );
 define( 'APEX_DIR', __DIR__ );
 define( 'APEX_URI', get_template_directory_uri() );
 
-foreach ( [ 'helpers', 'schema', 'types', 'fields', 'blocks', 'data', 'render-shell', 'render-pages', 'seo', 'redirects', 'forms', 'leads', 'line', 'pricing', 'social', 'fresh', 'tracking', 'media', 'security', 'audit', 'admin', 'editlinks', 'upgrade' ] as $f ) {
+foreach ( [ 'helpers', 'features', 'schema', 'types', 'fields', 'blocks', 'data', 'render-shell', 'render-pages', 'seo', 'redirects', 'forms', 'leads', 'line', 'pricing', 'social', 'fresh', 'tracking', 'media', 'mediacheck', 'security', 'audit', 'admin', 'editlinks', 'upgrade' ] as $f ) {
 	require_once APEX_DIR . "/inc/$f.php";
 }
 if ( defined( 'WP_CLI' ) && WP_CLI ) {

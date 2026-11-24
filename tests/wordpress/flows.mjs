@@ -31,6 +31,26 @@ const p = await ctx.newPage();
 const errors = [];
 p.on('pageerror', e => errors.push(p.url() + ' ' + e.message));
 
+/* 0. Apex settings › Features: a part that is off has no links and its addresses go elsewhere; then all on for the rest */
+const FEAT = (() => { try { return wp('option get apex_features --format=json'); } catch (e) { return ''; } })();
+process.on('exit', () => { try { FEAT ? wp(`option update apex_features '${FEAT}' --format=json`) : wp('option delete apex_features'); } catch (e) {} });
+wp(`option update apex_features '{"games":false,"wars":false,"treatments":false,"zh":false}' --format=json`);
+{
+  const anon = await b.newContext();
+  const a = await anon.newPage();
+  await a.goto(BASE + '/');
+  const links = await a.$$eval('a[href]', x => x.map(l => l.getAttribute('href')).filter(h => /\/(play|treatments|transformations|surgery-wars|zh)\//.test(h)));
+  ok(links.length === 0, `features off: no links to the hidden parts on the home page (${links.slice(0, 3).join(' ')})`);
+  for (const [from, to] of [['/treatments/', '/'], ['/play/', '/'], ['/surgery-wars/', '/'], ['/zh/about/', '/about/']]) {
+    await a.goto(BASE + from);
+    ok(new URL(a.url()).pathname === to, `features off: ${from} goes to ${to} (${new URL(a.url()).pathname})`);
+  }
+  const sm = await (await a.request.get(BASE + '/wp-sitemap.xml')).text();
+  ok(!/\/zh\//.test(sm), 'features off: the sitemap has no Chinese sitemaps');
+  await anon.close();
+}
+wp(`option update apex_features '{"games":true,"wars":true,"treatments":true,"zh":true}' --format=json`);
+
 /* 1. consultation */
 for (const [path, lang] of [['/consultation/', 'en'], ['/th/consultation/', 'th']]) {
   const before = +wp('post list --post_type=apex_lead --post_status=any --format=count');

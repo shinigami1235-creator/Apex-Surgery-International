@@ -169,39 +169,20 @@ function apex_svc_name( array $S, ?string $k ): string {
 	return (string) $k;
 }
 const APEX_PH = [
-	'orTable' => [ 'img/apex/or-table.webp', 'The operating table at Apex Surgery Hospital', 'เตียงผ่าตัดที่ Apex Surgery Hospital' ],
-	'or' => [ 'img/hospital/bkk-or.webp', 'The operating room, Phloen Chit', 'ห้องผ่าตัด สาขาเพลินจิต' ],
-	'orEquip' => [ 'img/apex/or-equipment.webp', 'Equipment beside the operating table at Apex', 'เครื่องมือข้างเตียงผ่าตัดที่ Apex' ],
-	'orUnit' => [ 'img/apex/or-unit.webp', 'A surgical unit in the Apex operating room', 'เครื่องมือผ่าตัดในห้องผ่าตัดของ Apex' ],
-	'orLight' => [ 'img/apex/or-light.webp', 'The operating light and equipment at Apex', 'โคมไฟผ่าตัดและเครื่องมือที่ Apex' ],
-	'renuvion' => [ 'img/apex/renuvion.webp', 'The Renuvion (J-Plasma) generator at Apex', 'เครื่อง Renuvion (J-Plasma) ที่ Apex' ],
-	'room' => [ 'img/hospital/bkk-room.webp', 'A patient room, Phloen Chit', 'ห้องพักผู้ป่วย สาขาเพลินจิต' ],
-	'room2' => [ 'img/hospital/hkt-room2.webp', 'A patient room with a view, Phuket', 'ห้องพักผู้ป่วยวิวเมือง สาขาภูเก็ต' ],
-	'counter' => [ 'img/hospital/bkk-counter.webp', 'Consultation counter, Phloen Chit', 'เคาน์เตอร์ปรึกษา สาขาเพลินจิต' ],
-	'recovery' => [ 'img/hospital/bkk-recovery.webp', 'Recovery chairs, Phloen Chit', 'เก้าอี้พักฟื้น สาขาเพลินจิต' ],
+	'orTable' => [ 'img/apex/or-table.webp', 'The operating table at Apex Surgery Hospital', 'เตียงผ่าตัดที่ Apex Surgery Hospital', 'Apex Surgery Hospital 的手术台' ],
+	'or' => [ 'img/hospital/bkk-or.webp', 'The operating room, Phloen Chit', 'ห้องผ่าตัด สาขาเพลินจิต', '奔集分院手术室' ],
+	'orEquip' => [ 'img/apex/or-equipment.webp', 'Equipment beside the operating table at Apex', 'เครื่องมือข้างเตียงผ่าตัดที่ Apex', 'Apex 手术台旁的设备' ],
+	'orUnit' => [ 'img/apex/or-unit.webp', 'A surgical unit in the Apex operating room', 'เครื่องมือผ่าตัดในห้องผ่าตัดของ Apex', 'Apex 手术室内的手术设备' ],
+	'orLight' => [ 'img/apex/or-light.webp', 'The operating light and equipment at Apex', 'โคมไฟผ่าตัดและเครื่องมือที่ Apex', 'Apex 的手术灯和设备' ],
+	'renuvion' => [ 'img/apex/renuvion.webp', 'The Renuvion (J-Plasma) generator at Apex', 'เครื่อง Renuvion (J-Plasma) ที่ Apex', 'Apex 的 Renuvion (J-Plasma) 设备' ],
+	'room' => [ 'img/hospital/bkk-room.webp', 'A patient room, Phloen Chit', 'ห้องพักผู้ป่วย สาขาเพลินจิต', '奔集分院病房' ],
+	'room2' => [ 'img/hospital/hkt-room2.webp', 'A patient room with a view, Phuket', 'ห้องพักผู้ป่วยวิวเมือง สาขาภูเก็ต', '普吉分院景观病房' ],
+	'counter' => [ 'img/hospital/bkk-counter.webp', 'Consultation counter, Phloen Chit', 'เคาน์เตอร์ปรึกษา สาขาเพลินจิต', '奔集分院咨询台' ],
+	'recovery' => [ 'img/hospital/bkk-recovery.webp', 'Recovery chairs, Phloen Chit', 'เก้าอี้พักฟื้น สาขาเพลินจิต', '奔集分院恢复区座椅' ],
 ];
-/** Each procedure page: the treated area, a consultation, the operating room (Apex's photos, Nov 2026). */
-const APEX_SVC_PH = [
-	'facelift' => [ [ 'Facelift at Apex Surgery Hospital', 'ดึงหน้าที่ Apex Surgery Hospital' ], [ 'A surgeon marking a patient\'s face before a facelift', 'แพทย์มาร์กจุดบนใบหน้าผู้ป่วยก่อนดึงหน้า' ], [ 'Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex' ] ],
-	'browlift' => [ null, [ 'Dr. Somboon Waiphrip examining a patient before surgery', 'นพ.สมบูรณ์ ไหวพริบ ตรวจผู้ป่วยก่อนผ่าตัด' ], [ 'Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex' ] ],
-	'rhinoplasty' => [ [ 'The nose in side profile', 'จมูกด้านข้าง' ], [ 'A consultation at Apex Surgery Hospital', 'การให้คำปรึกษาที่ Apex Surgery Hospital' ], [ 'Revision rhinoplasty in the Apex operating room', 'การผ่าตัดแก้จมูกในห้องผ่าตัดของ Apex' ] ],
-	'eyelid' => [ [ 'Double eyelids', 'ตาสองชั้น' ], [ 'Dr. Somboon Waiphrip marking a patient before surgery', 'นพ.สมบูรณ์ ไหวพริบ มาร์กจุดก่อนผ่าตัด' ], [ 'Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex' ] ],
-	'bone' => [ null, [ 'A surgeon checking a patient\'s face before surgery', 'แพทย์ตรวจใบหน้าผู้ป่วยก่อนผ่าตัด' ], [ 'Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex' ] ],
-	'breast' => [ [ 'Breast augmentation', 'เสริมหน้าอก' ], [ 'A surgeon talking a patient through her plan', 'แพทย์อธิบายแผนการรักษาให้ผู้ป่วย' ], [ 'Breast surgery in the Apex operating room', 'การผ่าตัดเสริมหน้าอกในห้องผ่าตัดของ Apex' ] ],
-	'lipo' => [ [ 'Body contouring at Apex', 'ดูดไขมันและกระชับสัดส่วนที่ Apex' ], [ 'A surgeon assessing a patient before liposuction', 'แพทย์ประเมินผู้ป่วยก่อนดูดไขมัน' ], [ 'Surgery in the Apex operating room', 'การผ่าตัดในห้องผ่าตัดของ Apex' ] ],
-];
-function apex_svc_ph(): array {
-	static $m = null;
-	if ( $m === null ) {
-		$m = [];
-		foreach ( APEX_SVC_PH as $k => $l ) foreach ( [ 'area', 'consult', 'or' ] as $i => $w ) if ( $l[ $i ] ) $m[ "$k-$w" ] = [ "img/apex/svc/$w-$k.webp", $l[ $i ][0], $l[ $i ][1] ];
-	}
-	return $m;
-}
-function apex_svc_photos( string $key ): array { return array_values( array_filter( [ "$key-area", "$key-consult", "$key-or" ], fn( $x ) => isset( apex_svc_ph()[ $x ] ) ) ); }
 function apex_ph( ?string $k ): ?array {
-	$p = $k ? ( APEX_PH[ $k ] ?? apex_svc_ph()[ $k ] ?? null ) : null;
-	return $p ? [ 'src' => $p[0], 'alt' => apex_L() === 'th' ? $p[2] : $p[1] ] : null;
+	$p = $k ? ( APEX_PH[ $k ] ?? null ) : null;
+	return $p ? [ 'src' => $p[0], 'alt' => apex_pick( $p[1], $p[2], $p[3] ?? null ) ] : null;
 }
 const APEX_POST_PHOTOS = [
 	'smas' => [ 'orTable', 'room', 'counter' ], 'deep-plane-face-lift' => [ 'or', 'recovery' ], 'rhinoplasty-faq-questions' => [ 'counter', 'orTable' ], 'double-eyelid-surgery-facts' => [ 'orUnit', 'room2' ], 'facelift-faq' => [ 'orTable', 'counter', 'room' ], 'endotine-browlift-fact' => [ 'orLight', 'recovery' ], 'mentor-vs-motiva-breast-augmentation' => [ 'counter', 'or' ], 'forehead-lift-endotine' => [ 'orLight', 'orTable', 'counter' ], 'liposuction-facts' => [ 'renuvion', 'orEquip' ], 'nose-surgery-without-silicone' => [ 'or', 'counter' ], 'breast-augmentation-guide' => [ 'counter', 'or', 'room' ], 'endotine-browlift' => [ 'orLight', 'counter' ],
@@ -221,6 +202,7 @@ function apex_proc_of( $s ): ?string {
 function apex_clauses( $t ): array {
 	$t = (string) $t;
 	if ( apex_L() === 'th' ) return array_values( array_filter( preg_split( '/\s+/u', $t ), 'strlen' ) );
+	if ( apex_L() === 'zh' ) return preg_split( '/(?<=[。！？])/u', $t );
 	return preg_split( '/(?<!\bDr\.)(?<!\bdr\.)(?<!\bNo\.)(?<!\bno\.)(?<!\bMr\.)(?<!\bMs\.)(?<!\bMrs\.)(?<!\bSt\.)(?<!\bvs\.)(?<!\bapprox\.)(?<!\be\.g\.)(?<!\bi\.e\.)(?<=[.!?])\s+(?=[A-Z“"0-9])/u', $t );
 }
 function apex_pick_quote( array $paras, bool $skip_first = true ): string {
@@ -244,7 +226,7 @@ function apex_spoken( array $paras ): array {
 }
 function apex_pull_quote( string $q, string $cls = '' ): string { return $q !== '' ? '<figure class="pq rv ' . $cls . '"><span class="pq-mark" aria-hidden="true">' . apex_ic( 'quote' ) . '</span><blockquote><p>' . apex_e( $q ) . '</p></blockquote></figure>' : ''; }
 function apex_read_mins( string $text ): int {
-	$n = apex_L() === 'th' ? apex_len( $text ) / 800 : count( preg_split( '/\s+/u', $text ) ) / 230;
+	$n = apex_L() === 'th' ? apex_len( $text ) / 800 : ( apex_L() === 'zh' ? apex_len( $text ) / 400 : count( preg_split( '/\s+/u', $text ) ) / 230 );
 	return max( 1, (int) round( $n ) );
 }
 const APEX_ICON_RULES = [
@@ -285,7 +267,7 @@ function apex_figure( ?array $img, string $cls = '', bool $par = true ): string 
 }
 
 /* a service section: rich cards for lists, numbered steps for h3/p sequences, with a side photo */
-function apex_svc_section( array $sec, int $i, string $key, bool $alt ): string {
+function apex_svc_section( array $sec, int $i, string $key, bool $alt, array $pics = [] ): string {
 	$bl = $sec['blocks'] ?? [];
 	$first = -1;
 	foreach ( $bl as $j => $b ) if ( $b['t'] === 'list' || $b['t'] === 'h3' ) { $first = $j; break; }
@@ -321,8 +303,7 @@ function apex_svc_section( array $sec, int $i, string $key, bool $alt ): string 
 		}
 		$body = '<ul class="who-grid' . ( $n % 3 === 1 && $n > 3 ? ' odd' : '' ) . ( $is_areas ? ' areas' : '' ) . '">' . $lis . '</ul>';
 	}
-	$pk = apex_svc_photos( (string) $key )[ $i ] ?? null;
-	$pic = $pk ? apex_ph( $pk ) : null;
+	$pic = $pics[ $i ] ?? null;
 	return '<section class="section svc-sec' . ( $alt ? ' washed' : '' ) . '" id="sec-' . $i . '">
       <div class="wrap">
         <div class="ss-head' . ( $pic ? ' has-pic' : '' ) . '"><div class="ss-copy"><h2 class="h-l rv">' . apex_e( $sec['h'] ?? '' ) . '</h2>' . implode( '', array_map( fn( $p ) => '<p class="lead rv">' . apex_inl( $p ) . '</p>', $lead ) ) . '</div>' . ( $pic ? apex_figure( $pic, 'ss-pic' ) : '' ) . '</div>
@@ -371,16 +352,16 @@ function apex_post_card( array $p, int $i = 0, bool $big = false ): string {
 }
 
 /* ---------- offers ---------- */
-const APEX_OFFER_WORDS = [ [ '/Mentor/i', 'Mentor' ], [ '/Motiva/i', 'Motiva' ], [ '/MemoryGel/i', 'MemoryGel' ], [ '/Endotine/i', 'Endotine' ], [ '/LipoSlim/i', 'LipoSlim' ], [ '/J-?Plasma/i', 'J-Plasma' ], [ '/V-?Line/i', 'V-Line' ], [ '/Facial/i', 'Facial' ], [ '/deep plane|ชั้นลึก/iu', 'Deep plane', 'ชั้นลึก' ], [ '/endoscopic|ส่องกล้อง/iu', 'Endoscopic', 'ส่องกล้อง' ] ];
-const APEX_OFFER_AREA = [ [ '/ตัดหนังหน้าท้อง|tummy tuck/iu', 'Tummy tuck', 'ตัดหนังหน้าท้อง' ], [ '/sexy line/iu', 'Sexy Line', 'Sexy Line' ], [ '/หน้าท้อง|abdom/iu', 'Abdomen', 'หน้าท้อง' ], [ '/ต่อบริเวณ|per area/iu', 'Face, per area', 'หน้า ต่อบริเวณ' ], [ '/เหมาหน้า|full face/iu', 'Full face', 'เหมาหน้า' ], [ '/เหนียง|double chin|jaw/iu', 'Jaw and double chin', 'กรอบหน้าและเหนียง' ], [ '/ต้นแขน|arms/iu', 'Arms', 'ต้นแขน' ], [ '/360/u', 'Thighs 360°', 'รอบต้นขา 360 องศา' ], [ '/ต้นขา|thigh/iu', 'Thighs', 'ต้นขา' ], [ '/ปีกหลัง|back/iu', 'Back', 'ปีกหลัง' ] ];
+const APEX_OFFER_WORDS = [ [ '/Mentor/i', 'Mentor' ], [ '/Motiva/i', 'Motiva' ], [ '/MemoryGel/i', 'MemoryGel' ], [ '/Endotine/i', 'Endotine' ], [ '/LipoSlim/i', 'LipoSlim' ], [ '/J-?Plasma/i', 'J-Plasma' ], [ '/V-?Line/i', 'V-Line' ], [ '/Facial/i', 'Facial' ], [ '/deep plane|ชั้นลึก|深层/iu', 'Deep plane', 'ชั้นลึก', '深层' ], [ '/endoscopic|ส่องกล้อง|内窥镜/iu', 'Endoscopic', 'ส่องกล้อง', '内窥镜' ] ];
+const APEX_OFFER_AREA = [ [ '/ตัดหนังหน้าท้อง|tummy tuck|腹壁整形/iu', 'Tummy tuck', 'ตัดหนังหน้าท้อง', '腹壁整形' ], [ '/sexy line/iu', 'Sexy Line', 'Sexy Line', 'Sexy Line' ], [ '/หน้าท้อง|abdom|腹部/iu', 'Abdomen', 'หน้าท้อง', '腹部' ], [ '/ต่อบริเวณ|per area|每个部位/iu', 'Face, per area', 'หน้า ต่อบริเวณ', '面部单个部位' ], [ '/เหมาหน้า|full face|全脸/iu', 'Full face', 'เหมาหน้า', '全脸' ], [ '/เหนียง|double chin|jaw|双下巴|下颌/iu', 'Jaw and double chin', 'กรอบหน้าและเหนียง', '下颌线和双下巴' ], [ '/ต้นแขน|arms|手臂|上臂/iu', 'Arms', 'ต้นแขน', '上臂' ], [ '/360/u', 'Thighs 360°', 'รอบต้นขา 360 องศา', '大腿 360°' ], [ '/ต้นขา|thigh|大腿/iu', 'Thighs', 'ต้นขา', '大腿' ], [ '/ปีกหลัง|back|背部/iu', 'Back', 'ปีกหลัง', '背部' ] ];
 function apex_offer_of( array $p, array $S, ?string $cat0 = null ): array {
 	$parts = explode( '/', (string) ( $p['src'] ?? '' ) );
 	$file = rawurldecode( (string) end( $parts ) );
 	$text = ( $p['alt'] ?? '' ) . ' ' . $file;
 	$cat = ( $p['cat'] ?? '' ) ?: ( apex_proc_of( $text ) ?: $cat0 );
 	$words = [];
-	foreach ( APEX_OFFER_WORDS as $ow ) { $w = apex_L() === 'th' && ! empty( $ow[2] ) ? $ow[2] : $ow[1]; if ( preg_match( $ow[0], $text ) && ! in_array( $w, $words, true ) ) $words[] = $w; }
-	foreach ( APEX_OFFER_AREA as [ $r, $en, $th ] ) if ( preg_match( $r, $text ) ) { $words[] = apex_L() === 'th' ? $th : $en; break; }
+	foreach ( APEX_OFFER_WORDS as $ow ) { $w = apex_pick( $ow[1], ( $ow[2] ?? '' ) ?: $ow[1], $ow[3] ?? null ); if ( preg_match( $ow[0], $text ) && ! in_array( $w, $words, true ) ) $words[] = $w; }
+	foreach ( APEX_OFFER_AREA as [ $r, $en, $th, $zh ] ) if ( preg_match( $r, $text ) ) { $words[] = apex_pick( $en, $th, $zh ); break; }
 	$name = $cat ? apex_svc_name( $S, $cat ) : ( $words ? array_shift( $words ) : apex_t( 'promotions' ) );
 	$price = (float) ( $p['price'] ?? 0 );
 	if ( ! $price && preg_match( '/(?:^|[-_ ])(\d{5,6})(?=[-_ .])/', $file, $m ) ) $price = (float) $m[1];
@@ -388,7 +369,7 @@ function apex_offer_of( array $p, array $S, ?string $cat0 = null ): array {
 	$review = (bool) preg_match( '/case-review/i', $text );
 	$label = $name . ( $words ? ' · ' . implode( ' · ', $words ) : '' );
 	$price_txt = $price ? apex_fmt_num( $price ) . ' ' . apex_t( 'baht' ) : '';
-	$msg = ( apex_L() === 'th' ? "สวัสดี ขอสอบถามโปรโมชั่น $label" : "Hello, I would like to ask about this offer: $label" ) . ( $price_txt ? " ($price_txt)" : '' ) . ( apex_L() === 'th' ? '' : '.' );
+	$msg = apex_pick( "Hello, I would like to ask about this offer: $label", "สวัสดี ขอสอบถามโปรโมชั่น $label", "您好，我想咨询这个优惠：$label" ) . ( $price_txt ? " ($price_txt)" : '' ) . apex_pick( '.', '', '。' );
 	$WA = apex_wa();
 	return [ 'key' => $file, 'src' => $p['src'] ?? '', 'alt' => ( $p['alt'] ?? '' ) ?: $label, 'cat' => $cat, 'name' => $name, 'words' => $words, 'price' => $price, 'from' => ! empty( $p['from'] ), 'ends' => (string) ( $p['ends'] ?? '' ), 'allIn' => $all_in, 'review' => $review, 'label' => $label,
 		'line' => 'https://line.me/R/oaMessage/@apexsurgery/?' . apex_jsuri( $msg ), 'wa' => $WA['h'] . '?text=' . apex_jsuri( $msg ) ];
@@ -421,7 +402,7 @@ function apex_game_card(): string {
 function apex_promo_grid( array $items, array $S, array $opts = [] ): string {
 	$offers = array_map( fn( $p ) => apex_offer_of( $p, $S, $opts['cat'] ?? null ), array_values( array_filter( $items, 'apex_offer_live' ) ) );
 	$g = apex_gallery();
-	$game = ! empty( $opts['game'] );
+	$game = ! empty( $opts['game'] ) && apex_on( 'games' );
 	$cards = '';
 	foreach ( $offers as $i => $o ) $cards .= apex_offer_card( $o, $i, $g );
 	return '<div class="offer-grid' . ( count( $offers ) + ( $game ? 1 : 0 ) <= 2 ? ' few' : '' ) . '">' . $cards . ( $game ? apex_game_card() : '' ) . '</div>';
@@ -527,10 +508,10 @@ function apex_page_home( array $r ): string {
             <span class="tc-art st-art" aria-hidden="true"><img src="' . esc_url( apex_asset( 'img/stencil-side.svg' ) ) . '" alt="" loading="lazy" decoding="async"><svg viewBox="20 60 560 640"><path class="tc-prof2" d="M97.3 334C96.2 336.7 93.4 344.3 90.6 350C87.8 355.7 83.9 362 80.6 368C77.3 374 74 380 70.6 386C67.2 392 63.4 398.7 60.1 404C56.8 409.3 53.1 414.3 50.6 418C48.1 421.7 46.4 423.5 45.2 426C44 428.5 43.5 430.7 43.5 433C43.5 435.3 44.3 437.8 45.4 440C46.5 442.2 48.2 444.8 50 446.5C51.8 448.2 53.7 449 56 450C58.3 451 61.3 451.8 64 452.5C66.7 453.2 70.7 454.2 72 454.5"/></svg></span>
             <span class="tc-body"><span class="eyebrow on-night">' . $E( $T( 'nose' ) ) . '</span><b class="h-l">' . $E( $T( 'noseH' ) ) . '</b><span class="tc-p">' . $E( $T( 'noseP' ) ) . '</span>
             <span class="tc-foot"><span class="btn btn-light btn-sm">' . $E( $T( 'noseCta' ) ) . ' ' . $I( 'arrow-right' ) . '</span><small>' . $I( 'shield-check' ) . $E( $T( 'noseNote' ) ) . '</small></span></span></a>
-          <a class="tool-card tool-games rv" data-d="90" href="' . esc_url( apex_link( 'play.html' ) ) . '">
+          ' . ( apex_on( 'games' ) ? '<a class="tool-card tool-games rv" data-d="90" href="' . esc_url( apex_link( 'play.html' ) ) . '">
             <span class="tc-art dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
             <span class="tc-body"><span class="eyebrow on-night">' . $E( $T( 'gamesEb' ) ) . '</span><b class="h-m">' . $E( $T( 'gamesH' ) ) . '</b><span class="tc-p">' . $E( $T( 'gamesP' ) ) . '</span><span class="tc-list">' . $E( $T( 'gamesList' ) ) . '</span>
-            <span class="tc-foot"><span class="btn btn-light btn-sm">' . $E( $T( 'gamesCta' ) ) . ' ' . $I( 'arrow-right' ) . '</span></span></span></a>
+            <span class="tc-foot"><span class="btn btn-light btn-sm">' . $E( $T( 'gamesCta' ) ) . ' ' . $I( 'arrow-right' ) . '</span></span></span></a>' : '' ) . '
           <a class="tool-card tool-trip rv" data-d="180" href="' . esc_url( apex_link( 'trip.html' ) ) . '">
             <span class="tc-art cal2" aria-hidden="true"><svg viewBox="0 0 150 144"><rect class="cl-card" x="1" y="8" width="148" height="134" rx="14"/><path class="cl-top" d="M1 22a14 14 0 0 1 14-14h120a14 14 0 0 1 14 14v18H1z"/><rect class="cl-ring" x="36" y="2" width="7" height="15" rx="3.5"/><rect class="cl-ring" x="107" y="2" width="7" height="15" rx="3.5"/><path class="cl-plane" transform="translate(64 13) scale(.92)" d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/><path class="cl-wd" d="M18 50h6M36 50h6M54 50h6M72 50h6M90 50h6M108 50h6M126 50h6"/><rect class="cl-stay" x="30" y="75" width="108" height="16" rx="8"/><rect class="cl-stay" x="12" y="92" width="90" height="16" rx="8"/><circle class="cl-op" cx="75" cy="83" r="8.5"/><text class="cl-n" x="21" y="69.2">1</text><text class="cl-n" x="39" y="69.2">2</text><text class="cl-n" x="57" y="69.2">3</text><text class="cl-n" x="75" y="69.2">4</text><text class="cl-n" x="93" y="69.2">5</text><text class="cl-n" x="111" y="69.2">6</text><text class="cl-n" x="129" y="69.2">7</text><text class="cl-n" x="21" y="86.2">8</text><text class="cl-n on" x="39" y="86.2">9</text><text class="cl-n on" x="57" y="86.2">10</text><text class="cl-n on" x="75" y="86.2">11</text><text class="cl-n on" x="93" y="86.2">12</text><text class="cl-n on" x="111" y="86.2">13</text><text class="cl-n on" x="129" y="86.2">14</text><text class="cl-n on" x="21" y="103.2">15</text><text class="cl-n on" x="39" y="103.2">16</text><text class="cl-n on" x="57" y="103.2">17</text><text class="cl-n on" x="75" y="103.2">18</text><text class="cl-n on" x="93" y="103.2">19</text><text class="cl-n" x="111" y="103.2">20</text><text class="cl-n" x="129" y="103.2">21</text><text class="cl-n" x="21" y="120.2">22</text><text class="cl-n" x="39" y="120.2">23</text><text class="cl-n" x="57" y="120.2">24</text><text class="cl-n" x="75" y="120.2">25</text><text class="cl-n" x="93" y="120.2">26</text><text class="cl-n" x="111" y="120.2">27</text><text class="cl-n" x="129" y="120.2">28</text></svg></span>
             <span class="tc-body"><span class="eyebrow on-night">' . $E( $T( 'trip' ) ) . '</span><b class="h-m">' . $E( $T( 'tripH' ) ) . '</b><span class="tc-p">' . $E( $T( 'tripP' ) ) . '</span>
@@ -578,7 +559,7 @@ function apex_page_home( array $r ): string {
     ';
 	$W = apex_data( 'war' );
 	$eps = $W['episodes'] ?? [];
-	$o .= $eps ? '<section class="section war-home">
+	$o .= $eps && apex_on( 'wars' ) ? '<section class="section war-home">
       <div class="wrap"><div class="shead"><div><p class="eyebrow rv">' . $E( $T( 'shows' ) ) . ' · Workpoint 23</p><h2 class="h-xl rv">' . $E( $T( 'warH' ) ) . '</h2><p class="reels-sub rv">' . $E( $T( 'warLead' ) ) . '</p></div>
         <div class="rail-ctrl rv"><button type="button" id="war-prev" aria-label="' . $E( $T( 'prev' ) ) . '">' . $I( 'chevron-left' ) . '</button><button type="button" id="war-next" aria-label="' . $E( $T( 'next' ) ) . '">' . $I( 'chevron-right' ) . '</button></div></div>
       <div class="rail war-rail" id="war-rail">' . implode( '', array_map( 'apex_war_card', $eps, array_keys( $eps ) ) ) . '</div>
@@ -617,7 +598,7 @@ function apex_page_services( array $r ): string {
 	$E = 'apex_e'; $T = 'apex_t'; $I = 'apex_ic';
 	return apex_phead( ( $D['h'] ?? '' ) ?: $T( 'services' ), $T( 'servicesSub' ), [ apex_home_crumb(), [ $T( 'services' ) ] ] ) . '
       <section class="section"><div class="wrap">' . apex_svc_cards( $S ) . '
-        <a class="tx-band rv" href="' . esc_url( apex_link( 'treatments.html' ) ) . '"><span class="tx-gi">' . $I( 'sparkles' ) . '</span><span><b>' . $E( $T( 'treatments' ) ) . '</b><span>' . $E( $T( 'txBand' ) ) . '</span></span>' . $I( 'arrow-right' ) . '</a></div></section>
+        ' . ( apex_on( 'treatments' ) ? '<a class="tx-band rv" href="' . esc_url( apex_link( 'treatments.html' ) ) . '"><span class="tx-gi">' . $I( 'sparkles' ) . '</span><span><b>' . $E( $T( 'treatments' ) ) . '</b><span>' . $E( $T( 'txBand' ) ) . '</span></span>' . $I( 'arrow-right' ) . '</a>' : '' ) . '</div></section>
       <section class="section washed"><div class="wrap"><div class="shead"><h2 class="h-xl rv">' . $E( $T( 'tools' ) ) . '</h2></div>
         <div class="mini-tools">
           <a class="mini-tool rv mt-new" href="' . esc_url( apex_link( 'filler.html' ) ) . '" data-new="page:filler">' . $I( 'syringe' ) . '<b data-new-slot>' . $E( $T( 'fill' ) ) . '</b><span>' . $E( $T( 'fillPageP' ) ) . '</span></a>
@@ -625,7 +606,7 @@ function apex_page_services( array $r ): string {
           <a class="mini-tool rv" data-d="35" href="' . esc_url( apex_link( 'proportions.html' ) ) . '">' . $I( 'gem' ) . '<b>' . $E( $T( 'prop' ) ) . '</b><span>' . $E( $T( 'propPageP' ) ) . '</span></a>
           <a class="mini-tool rv" data-d="50" href="' . esc_url( apex_link( 'breast-implants.html' ) ) . '">' . $I( 'ruler' ) . '<b>' . $E( $T( 'impl' ) ) . '</b><span>' . $E( $T( 'implP' ) ) . '</span></a>
           <a class="mini-tool rv" data-d="70" href="' . esc_url( apex_link( 'trip.html' ) ) . '">' . $I( 'calendar' ) . '<b>' . $E( $T( 'trip' ) ) . '</b><span>' . $E( $T( 'tripP' ) ) . '</span></a>
-          <a class="mini-tool rv" data-d="140" href="' . esc_url( apex_link( 'play.html' ) ) . '">' . $I( 'sparkles' ) . '<b>' . $E( $T( 'games' ) ) . '</b><span>' . $E( $T( 'gamesP' ) ) . '</span></a>
+          ' . ( apex_on( 'games' ) ? '<a class="mini-tool rv" data-d="140" href="' . esc_url( apex_link( 'play.html' ) ) . '">' . $I( 'sparkles' ) . '<b>' . $E( $T( 'games' ) ) . '</b><span>' . $E( $T( 'gamesP' ) ) . '</span></a>' : '' ) . '
         </div></div></section>
       <section class="section night"><div class="wrap">' . apex_consult_band( $S ) . '</div></section>';
 }
@@ -681,7 +662,9 @@ function apex_page_service( array $r ): string {
 	$ticks = array_values( array_map( fn( $x ) => preg_replace( '/^✔\s*/u', '', $x ), array_filter( $intro, fn( $x ) => (bool) preg_match( '/^✔/u', $x ) ) ) );
 	$q = apex_len( implode( ' ', $introP ) ) > 420 ? apex_pick_quote( $introP ) : '';
 	$aa = $D['atApex'] ?? null;
-	$aaImg = $aa && ! empty( $aa['img'] ) ? [ 'src' => $aa['img'], 'alt' => ( $aa['alt'] ?? '' ) ?: ( $aa['h'] ?? '' ) ] : apex_ph( apex_svc_photos( (string) $key )[0] ?? null );
+	// the photos for the page's sections, in order (Section photos on the service)
+	$pics = array_values( array_map( fn( $x ) => [ 'src' => $x['src'], 'alt' => $x['alt'] ?? '' ], array_filter( (array) ( $D['photos'] ?? [] ), fn( $x ) => ! empty( $x['src'] ) ) ) );
+	$aaImg = $aa && ! empty( $aa['img'] ) ? [ 'src' => $aa['img'], 'alt' => ( $aa['alt'] ?? '' ) ?: ( $aa['h'] ?? '' ) ] : ( $pics[0] ?? null );
 	$secs = $D['sections'] ?? [];
 	$o = '
     <section class="svc-head">
@@ -723,7 +706,7 @@ function apex_page_service( array $r ): string {
     </section>
 
     ';
-	foreach ( $secs as $i => $sec ) $o .= apex_svc_section( $sec, $i, $key, $i % 2 === 0 );
+	foreach ( $secs as $i => $sec ) $o .= apex_svc_section( $sec, $i, $key, $i % 2 === 0, $pics );
 	if ( ! empty( $D['sources'] ) ) $o .= '
     <div class="wrap svc-src"><p class="note">' . $E( $T( 'sourcesH' ) ) . ': ' . implode( ', ', array_map( fn( $u ) => '<a href="' . esc_url( $u ) . '" target="_blank" rel="noopener">' . $E( explode( '/', preg_replace( '#^https?://(www\.)?#', '', $u ) )[0] ) . '</a>', $D['sources'] ) ) . '</p></div>';
 	$o .= '
@@ -772,7 +755,7 @@ function apex_founder_block( $F, bool $full ): string {
 	$years = implode( '', array_map( fn( $y ) => '<li><b>' . $E( $y['y'] ?? '' ) . '</b><span>' . $E( $y['x'] ?? '' ) . '</span></li>', $F['years'] ?? [] ) );
 	$roles = '';
 	foreach ( $F['roles'] ?? [] as $j => $x ) { [ $l, $t ] = apex_split_label( $x ); $roles .= '<li class="who-card role-card rv" data-d="' . ( ( $j % 2 ) * 60 ) . '"><span class="wc-ic">' . $I( apex_pick_icon( $l ?? $x, $j ) ) . '</span>' . ( $l ? '<h3>' . $E( $l ) . '</h3><p>' . $E( $t ) . '</p>' : '<p class="wc-solo">' . $E( $t ) . '</p>' ) . '</li>'; }
-	$alt = apex_L() === 'en' ? ( $F['nameTh'] ?? '' ) : ( $F['nameEn'] ?? '' );
+	$alt = apex_L() === 'th' ? ( $F['nameEn'] ?? '' ) : ( $F['nameTh'] ?? '' );
 	return '<div class="founder2" id="founder">
       <div class="f2-media rv">
         <figure class="f2-ph ph-img"><img src="' . esc_url( apex_img( $full ? ( ( $F['portrait'] ?? '' ) ?: ( $F['photo'] ?? '' ) ) : ( $F['photo'] ?? '' ) ) ) . '" alt="' . $E( $F['name'] ) . '" loading="lazy" decoding="async" decoding="async"></figure>
@@ -1007,7 +990,7 @@ function apex_article_body( array $D, string $key, array $S ): array {
 	$paras = array_values( array_map( fn( $b ) => $b['x'], array_filter( $bl, fn( $b ) => $b['t'] === 'p' ) ) );
 	$total = implode( ' ', array_map( 'apex_block_text', $bl ) );
 	$tl = apex_len( $total );
-	$long = $tl > ( apex_L() === 'th' ? 2600 : 3200 );
+	$long = $tl > apex_pick( 3200, 2600, 1100 );
 	$proc = ( $D['cat'] ?? '' ) === 'news' || ! empty( $D['noFacts'] ) ? null : apex_proc_of( ( $D['tag'] ?? '' ) . ' ' . $D['title'] . ' ' . $key );
 	$imgN = count( array_filter( $bl, fn( $b ) => $b['t'] === 'img' ) );
 	$pp = APEX_POST_PHOTOS[ $key ] ?? [];

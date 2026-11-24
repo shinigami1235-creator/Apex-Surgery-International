@@ -98,6 +98,7 @@ const STR = {
     err:{noFace:'ไม่พบใบหน้าในรูปนี้ ลองใช้รูปหน้าตรงที่ถ่ายใกล้ขึ้น', camera:'เปิดกล้องไม่ได้', read:'อ่านรูปไม่ได้',
          model:'โหลดโมเดลใบหน้าไม่ได้', save:'บันทึกรูปไม่ได้', sample:'โหลดรูปตัวอย่างไม่ได้'},
   },
+  zh: {"head": "3D 头部模型", "women": "女性", "men": "男性", "front": "正面", "q": "45°", "side": "侧面", "drag": "拖动可转动头部。", "amount": "用量", "minimum": "最小用量", "wipe": "拖动分隔线对比术前术后。", "loading": "正在加载 3D 头部模型", "webgl": "此浏览器无法显示 3D 头部模型。", "drops": "针点和提升效果按真实尺寸显示。100% 为每个部位的最小用量。", "fx": {"cheeks": "提升并支撑中面部，使脸颊看起来更饱满。", "temples": "填充额头两侧的凹陷。", "chin": "使下巴前移并略微加长。", "jowls": "使下颌线和下颌角更清晰。", "forehead": "使扁平的额头更圆润。", "brows": "支撑眉部，使眉位略微上移。", "orbit": "填充眼外侧的凹陷。", "tear": "淡化眼下的阴影。", "folds": "淡化从鼻翼到嘴角的纹路。", "lips": "增加嘴唇的丰盈度和轮廓。", "corners": "提升嘴角。", "marionette": "淡化嘴角下方的纹路。", "nose": "无需手术即可垫高鼻梁并提升鼻尖。"}, "change": "换一张照片", "photo": "照片", "take": "拍照", "choose": "选择照片", "sample": "示例面孔", "privacy": "尚未上传照片。", "hint": "正对镜头，头发拨开不遮脸。", "emptyH": "请拍摄或选择一张正面照片。", "busy": "正在识别面部", "credit": "示例照片：Unsplash", "points": "分数", "before": "术前", "after": "术后", "sim": "仅为模拟", "compare": "术前术后对比", "concerns": "您想改善哪些方面？", "concernsP": "可选一项或多项，部位和用量会随之更新。", "deep": "深纹", "deepP": "采用深度鼻唇沟的用量。", "step": {"foundation": "基础", "contour": "轮廓", "refine": "精修"}, "stepP": {"foundation": "先支撑中面部。", "contour": "再调整面部轮廓。", "refine": "最后处理细节。"}, "c": {"cheeks": "脸颊松垂或扁平", "temples": "太阳穴凹陷", "chin": "下巴短小或后缩", "jowls": "下颌松垂或双下巴", "forehead": "额头扁平", "brows": "眉位偏低", "orbit": "眼外侧凹陷", "tear": "泪沟", "folds": "深鼻唇沟", "lips": "嘴唇偏薄", "corners": "嘴角下垂", "marionette": "木偶纹", "nose": "鼻形"}, "a": {"Ck1": "颧弓", "Ck2": "颧骨", "Ck3": "脸颊前部", "Ck4": "脸颊外下侧", "Ck5": "颧骨下方", "T1": "太阳穴前部", "T2": "太阳穴后部", "C1": "下唇下方", "C2": "下巴尖", "C3": "下巴前部", "C4": "下巴中央", "C5": "下巴下侧", "C6": "下巴侧面", "Jw1": "下颌角", "Jw2": "耳前", "Jw3": "下颌线", "Jw4": "下巴旁", "Jw5": "下巴前部下方", "F1": "额头内侧", "F2": "额头外侧", "F3": "额头中央", "E1": "眉尾", "E2": "眉中", "E3": "眉头", "O1": "外眼角", "O2": "外眼角下方", "O3": "外眼角上方", "Tt1": "眼下中部", "Tt2": "眼下外侧", "Tt3": "眼下内侧", "NL1": "纹路上端", "NL2": "纹路中段", "NL3": "纹路下端", "M1": "纹路上端", "M2": "纹路中段", "M3": "纹路下端", "Lp1": "唇体", "Lp2": "唇珠", "Lp3": "唇缘", "Lp4": "上唇中央", "Lp5": "下唇两侧", "Lp6": "嘴角", "Lp7": "人中", "Lp8": "唇周纹路", "N1": "鼻基底", "N2": "两鼻孔之间", "N3": "鼻梁顶部", "N4": "鼻梁上段", "N5": "鼻梁下段"}, "total": "预估用量", "totalP": "面部两侧，每个部位按最小用量计算。", "prod": "产品", "doc": "由医生决定", "size": "{n} mL 针剂", "prodP": "Apex 使用的填充剂，按厂家列出的适用部位匹配。针剂数量按各产品的规格计算。", "ml": "mL", "syr": ["支针剂", "支针剂"], "ses": ["次", "次"], "sesP": "每次约 {n} mL", "each": "每侧", "mid": "中央", "none": "选择一项困扰，查看部位和用量。", "save": "保存", "saveBtn": "保存到手机", "plan": "加入我的方案", "planned": "已加入我的方案", "consult": "咨询医生", "vary": "仅为模拟，效果因人而异。", "ref": "部位和用量依据 Dr. Maurício de Maio 的 MD Codes™ 方法，每个部位的最小用量取自其论文。实际方案由您的医生决定。", "refLink": "de Maio M. Aesthetic Plastic Surgery 2021;45:690–709 (CC BY 4.0)", "camHint": "请将面部对准轮廓线。", "shutter": "拍照", "cancel": "取消", "brand": "Apex Surgery Hospital", "err": {"noFace": "此照片中未识别到面部。请换一张从正面拍摄、距离更近的照片。", "camera": "无法打开相机。", "read": "无法读取该照片。", "model": "面部模型无法加载。", "save": "无法保存图片。", "sample": "示例照片无法加载。"}},
 };
 
 
@@ -363,10 +364,10 @@ function headPoints(plan){
 let styleRefs = 0, styleEl = null;
 
 export function mount(container, opts = {}){
-  const lang = opts.lang === 'th' ? 'th' : 'en', S = STR[lang];
+  const lang = (['th', 'zh'].includes(opts.lang) ? opts.lang : 'en'), S = STR[lang] || STR.en;
   const emit = (n, d) => { try { opts.onEvent && opts.onEvent(n, d); } catch (e) {} };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
-  const n2 = x => (Math.round(x * 100) / 100).toLocaleString(lang === 'th' ? 'th-TH' : 'en-GB', {maximumFractionDigits:2});
+  const n2 = x => (Math.round(x * 100) / 100).toLocaleString(({th:'th-TH', zh:'zh-CN'}[lang] || 'en-GB'), {maximumFractionDigits:2});
   const plural = (w, n) => Array.isArray(w) ? w[n === 1 ? 0 : 1] : w;
   if (!styleRefs++) { styleEl = document.createElement('style'); styleEl.dataset.feature = 'filler'; styleEl.textContent = CSS; document.head.append(styleEl); }
 

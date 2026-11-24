@@ -3,7 +3,7 @@
 export default {
   choose: true,
   other: 'base',
-  base: { name: { en: 'Thailand', th: 'ประเทศไทย' } },
+  base: { name: { en: 'Thailand', th: 'ประเทศไทย', zh: '泰国' } },
   regions: [],
   offers: {}
 };

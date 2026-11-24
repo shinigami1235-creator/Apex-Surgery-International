@@ -123,7 +123,7 @@ function apex_consult_submit( WP_REST_Request $req ) {
 		'method' => in_array( $f['method'] ?? '', [ 'whatsapp', 'line', 'email' ], true ) ? $f['method'] : '',
 		'contact' => $s( 'contact', 120 ),
 		'questions' => mb_substr( sanitize_textarea_field( apex_str( $f['questions'] ?? '' ) ), 0, 3000 ),
-		'lang' => ( $f['lang'] ?? '' ) === 'th' ? 'th' : 'en',
+		'lang' => in_array( $f['lang'] ?? '', [ 'th', 'zh' ], true ) ? $f['lang'] : 'en',
 	];
 	$v['extra'] = apex_form_extra_in( $f['extra'] ?? [], $v['lang'] );
 	$missing = [];
@@ -174,9 +174,9 @@ function apex_game_config(): array {
 			'recoverysort' => [ 400, 1200, 2500 ], 'memorymatch' => [ 2400, 3800, 5000 ],
 		],
 		'prizes' => [
-			[ 'en' => 'Apex tote bag', 'th' => 'กระเป๋าผ้า Apex' ],
-			[ 'en' => 'Skincare kit', 'th' => 'ชุดผลิตภัณฑ์ดูแลผิว' ],
-			[ 'en' => 'Airport pickup (international clients)', 'th' => 'บริการรับจากสนามบิน (ลูกค้าต่างประเทศ)' ],
+			[ 'en' => 'Apex tote bag', 'th' => 'กระเป๋าผ้า Apex', 'zh' => 'Apex 帆布包' ],
+			[ 'en' => 'Skincare kit', 'th' => 'ชุดผลิตภัณฑ์ดูแลผิว', 'zh' => '护肤套装' ],
+			[ 'en' => 'Airport pickup (international clients)', 'th' => 'บริการรับจากสนามบิน (ลูกค้าต่างประเทศ)', 'zh' => '机场接机（国际客户）' ],
 		],
 		'perDay' => 4,   // 3 scored runs a day plus 1 for finishing a Learn set, as the games allow
 	];
@@ -208,13 +208,13 @@ function apex_voucher_register( WP_REST_Request $req ) {
 	if ( apex_voucher_find( $code ) ) return [ 'ok' => true, 'code' => $code, 'known' => true ];
 	if ( ! apex_rate_ok( 'voucher', (int) $cfg['perDay'], DAY_IN_SECONDS ) ) return new WP_Error( 'apex_rate', 'Daily voucher limit reached', [ 'status' => 429 ] );
 	$name = mb_substr( sanitize_text_field( apex_str( $req->get_param( 'name' ) ) ), 0, 60 );
-	$lang = $req->get_param( 'lang' ) === 'th' ? 'th' : 'en';
+	$lang = in_array( $req->get_param( 'lang' ), [ 'th', 'zh' ], true ) ? $req->get_param( 'lang' ) : 'en';
 	$id = wp_insert_post( [ 'post_type' => 'apex_voucher', 'post_status' => 'private', 'post_title' => $code ], true );
 	if ( is_wp_error( $id ) ) return new WP_Error( 'apex_save', 'Could not save', [ 'status' => 500 ] );
 	$now = time();
 	update_post_meta( $id, 'apex_voucher', wp_slash( [
 		'code' => $code, 'game' => $game, 'tier' => $tier, 'score' => $score, 'name' => $name, 'lang' => $lang,
-		'prize' => $cfg['prizes'][ $tier ][ $lang ] ?? '', 'issued' => $now, 'expires' => $now + $cfg['days'] * DAY_IN_SECONDS,
+		'prize' => $cfg['prizes'][ $tier ][ $lang ] ?? $cfg['prizes'][ $tier ]['en'] ?? '', 'issued' => $now, 'expires' => $now + $cfg['days'] * DAY_IN_SECONDS,
 		'run' => [ 'durationMs' => (int) ( $run['durationMs'] ?? 0 ), 'inputs' => (int) ( $run['inputs'] ?? 0 ), 'logLength' => (int) ( $run['logLength'] ?? 0 ) ],
 		'ip' => apex_ip_hash(),
 		// the player's reminder choice, kept only while Apex offers LINE reminders

@@ -73,6 +73,7 @@ function apex_schema( string $type ): array {
 		apex_f( 'footerNote', 'textarea', 'Footer note', [ 'h' => 'The advertising note under the footer and the promotions' ] ),
 		apex_f( 'copyright', 'text', 'Copyright line' ),
 		apex_f( 'aaci', 'group', 'AACI accreditation', [ 'f' => [ apex_f( 'src', 'image', 'Badge' ), apex_f( 'h', 'url', 'Certificate link' ), apex_f( 'alt', 'text', 'Alt text' ) ] ] ),
+		apex_f( 'samples', 'group', 'Sample faces for the face tools', [ 'h' => 'Shown when a visitor tries Face analysis or Golden proportions without a photo of their own: one person looking straight at the camera, plain background, even light, no filter, with signed consent.', 'f' => [ apex_f( 'analysis', 'image', 'Face analysis' ), apex_f( 'proportions', 'image', 'Golden proportions' ) ] ] ),
 	];
 
 	/* ---------- services ---------- */
@@ -89,6 +90,7 @@ apex_f( 'newFrom', 'date', 'New from', [ 'h' => "Shows it under What's new on th
 		apex_f( 'stay', 'number', 'Stay in Thailand after surgery (days)', [ 'h' => 'For the trip planner: how many days a client from abroad should stay after surgery before flying home, counted from the surgery day. The surgeon still confirms it at the consultation.' ] ),
 		apex_f( 'byline', 'text', 'Surgeon line', [ 'h' => 'For example: Dr. Somboon Waiphrip, License no. 22713, Apex Surgery Hospital' ] ),
 		apex_f( 'atApex', 'group', 'Introduction', [ 'f' => [ apex_f( 'h', 'text', 'Heading' ), apex_f( 'img', 'image', 'Photo' ), apex_f( 'alt', 'text', 'Photo alt text' ) ] ] ),
+		apex_f( 'photos', 'repeater', 'Section photos', [ 'h' => 'One photo per section of the page, in order: the first sits beside the first section heading, the second beside the second, and so on. The first also shows in the introduction when it has no photo of its own.', 'f' => [ apex_f( 'src', 'image', 'Photo' ), apex_f( 'alt', 'text', 'Alt text' ) ] ] ),
 		apex_f( 'intro', 'lines', 'Introduction paragraphs', [ 'h' => 'One paragraph per line. Lines starting with ✔ become ticked points.' ] ),
 		apex_f( 'tagline', 'lines', 'Tagline beside the photo', [ 'h' => 'One short line each' ] ),
 		apex_f( 'badges', 'repeater', 'Badges', [ 'f' => [ apex_f( 'src', 'image', 'Image' ), apex_f( 'alt', 'text', 'Alt text' ) ] ] ),

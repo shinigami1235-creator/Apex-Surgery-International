@@ -3,15 +3,15 @@ import { css, h, loop, recorder, sfx, shake, pop, floatText, reduced, shuffle, t
 import { procIcon } from './art.js';
 import { PAIRS, PROCS } from './content.js';
 
-const TITLE = { en: 'Memory Match', th: 'จับคู่ความจำ' };
+const TITLE = { en: 'Memory Match', th: 'จับคู่ความจำ', zh: '记忆配对' };
 const UI = {
-  level: { en: 'Level', th: 'ระดับ' },
-  memorise: { en: 'Memorise', th: 'จำตำแหน่งการ์ด' },
-  clear: { en: 'Level clear', th: 'ผ่านระดับ' },
-  timeBonus: { en: 'Time bonus', th: 'โบนัสเวลา' },
-  procedure: { en: 'Procedure', th: 'หัตถการ' },
-  fact: { en: 'Fact', th: 'ข้อมูล' },
-  timeUp: { en: 'Time up', th: 'หมดเวลา' }
+  level: { en: 'Level', th: 'ระดับ', zh: '关卡' },
+  memorise: { en: 'Memorise', th: 'จำตำแหน่งการ์ด', zh: '记住卡片位置' },
+  clear: { en: 'Level clear', th: 'ผ่านระดับ', zh: '过关' },
+  timeBonus: { en: 'Time bonus', th: 'โบนัสเวลา', zh: '时间奖励' },
+  procedure: { en: 'Procedure', th: 'หัตถการ', zh: '手术项目' },
+  fact: { en: 'Fact', th: 'ข้อมูล', zh: '事实' },
+  timeUp: { en: 'Time up', th: 'หมดเวลา', zh: '时间到' }
 };
 
 const MAX_LIVES = 5;                                   // run-wide mismatch budget; each cleared level gives one back
@@ -82,7 +82,7 @@ function buildRound(n, rng) {
 export default {
   id: 'memorymatch',
   title: TITLE,
-  how: { en: 'Match each procedure with its fact.', th: 'จับคู่หัตถการกับข้อมูลของหัตถการนั้น' },
+  how: { en: 'Match each procedure with its fact.', th: 'จับคู่หัตถการกับข้อมูลของหัตถการนั้น', zh: '将每种手术与对应的说明配对。' },
 
   run(host, { lang = 'en', level: startLevel = 1, rng = Math.random, signal, onHud = () => {} } = {}) {
     css('apxg-mm', CSS);
@@ -181,7 +181,7 @@ export default {
       const setUp = (c, up) => {
         c.up = up;
         c.el.classList.toggle('up', up);
-        c.el.setAttribute('aria-label', up ? (c.kind === 'p' ? tx(PROCS[c.proc], lang) : tx(c.pair.text, lang)) : (lang === 'th' ? 'การ์ดคว่ำ' : 'Face-down card'));
+        c.el.setAttribute('aria-label', up ? (c.kind === 'p' ? tx(PROCS[c.proc], lang) : tx(c.pair.text, lang)) : ({th:'การ์ดคว่ำ', zh:'背面朝上的卡片'}[lang] || 'Face-down card'));
       };
 
       const tap = c => {
