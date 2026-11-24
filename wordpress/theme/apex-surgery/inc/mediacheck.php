@@ -249,18 +249,21 @@ function apex_mc_take( array $files ): array {
 	foreach ( $items as $key => $it ) {
 		if ( $it['kind'] === 'old' ) { $rel = substr( $key, 3 ); $by_path[ strtolower( $rel ) ] = $key; $n = strtolower( wp_basename( $rel ) ); }
 		elseif ( $it['kind'] === 'yt' ) $n = strtolower( 'yt-' . substr( $key, 3 ) );
-		else $n = strtolower( wp_basename( (string) wp_parse_url( $key, PHP_URL_PATH ) ) );
-		$by_name[ preg_replace( '/\.[a-z0-9]+$/', '', $n ) ][] = $key;
-		$by_name[ $n ][] = $key;
+		else $n = strtolower( rawurldecode( wp_basename( (string) wp_parse_url( $key, PHP_URL_PATH ) ) ) );   // Thai file names arrive percent-encoded in addresses
+		foreach ( array_unique( [ $n, apex_mc_flat( $n ) ] ) as $m ) {
+			$by_name[ preg_replace( '/\.[a-z0-9]+$/', '', $m ) ][] = $key;
+			$by_name[ $m ][] = $key;
+		}
 	}
 	$placed = 0; $skipped = [];
 	foreach ( $files as $shown => $tmp ) {
-		$path = strtolower( str_replace( '\\', '/', (string) $shown ) );
+		$path = strtolower( str_replace( '\\', '/', rawurldecode( (string) $shown ) ) );
 		$key = '';
 		foreach ( $by_path as $rel => $k ) if ( $path === $rel || str_ends_with( $path, '/' . $rel ) ) { $key = $k; break; }
 		if ( ! $key ) {
-			$n = wp_basename( $path );
-			$hits = array_values( array_unique( $by_name[ $n ] ?? $by_name[ preg_replace( '/\.[a-z0-9]+$/', '', $n ) ] ?? [] ) );
+			$hits = [];
+			foreach ( array_unique( [ wp_basename( $path ), apex_mc_flat( wp_basename( $path ) ) ] ) as $n ) $hits = array_merge( $hits, $by_name[ $n ] ?? $by_name[ preg_replace( '/\.[a-z0-9]+$/', '', $n ) ] ?? [] );
+			$hits = array_values( array_unique( $hits ) );
 			if ( count( $hits ) === 1 ) $key = $hits[0];
 			elseif ( count( $hits ) > 1 ) { $skipped[ $shown ] = __( 'several rows have this name, so put it in its folder (wp-content/uploads/…)', 'apex' ); continue; }
 		}
@@ -269,6 +272,10 @@ function apex_mc_take( array $files ): array {
 		if ( $err ) $skipped[ $shown ] = $err; else { $placed++; unset( $by_path[ array_search( $key, $by_path, true ) ?: '' ] ); }
 	}
 	return [ $placed, $skipped ];
+}
+/** A Thai file name the way 1.3.1 saved its copy: percent-encoded, then cleaned by WordPress (นพ.x.webp -> e0b899e0b89e.….webp). */
+function apex_mc_flat( string $name ): string {
+	return strtolower( sanitize_file_name( rawurlencode( rawurldecode( $name ) ) ) );
 }
 /** The files in an upload: loose files as they are, a zip opened into a temporary folder. */
 function apex_mc_upload_files(): array {
