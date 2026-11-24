@@ -34,7 +34,7 @@
  */
 defined( 'ABSPATH' ) || exit;
 
-define( 'APEX_VERSION', '1.3.1' );   // keep in step with Version in style.css; tools/build-theme.mjs checks both
+define( 'APEX_VERSION', '1.3.2' );   // keep in step with Version in style.css; tools/build-theme.mjs checks both
 
 // the installed version, bottom right of every admin page, so Apex can tell which package is on the site
 add_filter( 'update_footer', fn( $t ) => 'Apex Surgery theme ' . APEX_VERSION . ' · ' . $t, 20 );

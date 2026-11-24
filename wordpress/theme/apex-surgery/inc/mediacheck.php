@@ -92,12 +92,12 @@ function apex_mc_scan(): array {
 		$it['raw'] = array_keys( $it['raw'] );
 		if ( $it['kind'] === 'yt' ) {
 			$id = substr( $key, 3 );
-			$it['done'] = ! empty( $local[ $id ] ) && file_exists( $up['basedir'] . '/' . substr( $local[ $id ], 21 ) );
+			$it['done'] = ! empty( $local[ $id ] ) && apex_mc_real( $up['basedir'] . '/' . substr( $local[ $id ], 21 ) );
 		} elseif ( $it['kind'] === 'old' ) {
 			$rel = substr( $key, 3 );
 			// done once the file is here, in the Media Library, and no page asks another website for it
 			$elsewhere = array_filter( $it['raw'], fn( $r ) => ! str_starts_with( $r, '~/' ) && ! str_starts_with( $r, $home ) );
-			$it['done'] = ! $elsewhere && file_exists( $up['basedir'] . '/' . $rel ) && apex_mc_attachment( $rel );
+			$it['done'] = ! $elsewhere && apex_mc_real( $up['basedir'] . '/' . $rel ) && apex_mc_attachment( $rel );
 		} else {
 			$it['done'] = false;
 		}
@@ -124,12 +124,28 @@ function apex_mc_register( string $rel ): int {
 	return (int) $id;
 }
 /** Fetch a file from the web into the uploads folder. */
+/** True when the file starts the way an image or video file does, so a web page saved under an image name fails. */
+function apex_mc_real( string $file ): bool {
+	if ( ! is_file( $file ) || filesize( $file ) < 12 ) return false;
+	$h = (string) file_get_contents( $file, false, null, 0, 512 );
+	return str_starts_with( $h, "\xFF\xD8\xFF" ) || str_starts_with( $h, "\x89PNG" ) || str_starts_with( $h, 'GIF8' )
+		|| ( str_starts_with( $h, 'RIFF' ) && substr( $h, 8, 4 ) === 'WEBP' ) || substr( $h, 4, 4 ) === 'ftyp'
+		|| str_starts_with( $h, "\x1A\x45\xDF\xA3" ) || ( preg_match( '/^\s*(<\?xml[^>]*>\s*)?(<!--.*?-->\s*)*<svg/s', $h ) === 1 );
+}
+/** Fetch a file from the web into the uploads folder. */
 function apex_mc_fetch( string $url, string $file ): string {
-	$r = wp_remote_get( $url, [ 'timeout' => 90, 'redirection' => 3, 'stream' => true, 'filename' => $file ] );
+	$r = wp_remote_get( $url, [ 'timeout' => 90, 'redirection' => 3, 'stream' => true, 'filename' => $file, 'user-agent' => 'Mozilla/5.0 (WordPress; Apex Surgery media copy)' ] );
 	if ( is_wp_error( $r ) ) { @unlink( $file ); return $r->get_error_message(); }
 	$code = (int) wp_remote_retrieve_response_code( $r );
 	if ( $code !== 200 || ! filesize( $file ) ) { @unlink( $file ); return sprintf( __( 'The address answered %d', 'apex' ), $code ); }
+	if ( ! apex_mc_real( $file ) ) { @unlink( $file ); return __( 'The other site sent a web page instead of the file (usually its "One moment, please" bot check). Upload the file with Upload files above.', 'apex' ); }
 	return '';
+}
+/** Where each copy in uploads/apex-media/ came from, so a copy that went wrong can be fetched again. */
+function apex_mc_source_of( string $rel, ?string $url = null ): string {
+	$map = (array) get_option( 'apex_mc_sources', [] );
+	if ( $url !== null ) { $map[ $rel ] = $url; update_option( 'apex_mc_sources', $map, false ); }
+	return (string) ( $map[ $rel ] ?? '' );
 }
 /**
  * Point every use of $raw at the file in this site's uploads ($rel). Fields keep the short ~/wp-content/uploads/
@@ -162,7 +178,7 @@ function apex_mc_point( array $raws, string $rel ): void {
 	apex_data_bump();
 }
 /** Put one item in the Media Library. Returns '' when done, or what went wrong. */
-function apex_mc_copy( string $key ): string {
+function apex_mc_copy( string $key, string $given = '' ): string {
 	$up = wp_upload_dir();
 	$items = apex_mc_scan();
 	if ( ! isset( $items[ $key ] ) ) return __( 'No page uses this file any more', 'apex' );
@@ -172,7 +188,9 @@ function apex_mc_copy( string $key ): string {
 		if ( ! preg_match( '/^[\w-]{6,20}$/', $id ) ) return __( 'Not a YouTube video id', 'apex' );
 		$rel = APEX_MC_DIR . "/yt-$id.jpg";
 		wp_mkdir_p( dirname( $up['basedir'] . '/' . $rel ) );
-		if ( ! file_exists( $up['basedir'] . '/' . $rel ) && ( $err = apex_mc_fetch( "https://i.ytimg.com/vi/$id/hqdefault.jpg", $up['basedir'] . '/' . $rel ) ) ) return $err;
+		$file = $up['basedir'] . '/' . $rel;
+		if ( $given ) { if ( ! apex_mc_real( $given ) ) return __( 'That file is not an image or video', 'apex' ); if ( ! @copy( $given, $file ) ) return __( 'The file could not be saved', 'apex' ); }
+		elseif ( ! apex_mc_real( $file ) ) { @unlink( $file ); if ( $err = apex_mc_fetch( "https://i.ytimg.com/vi/$id/hqdefault.jpg", $file ) ) return $err; }
 		if ( ! apex_mc_register( $rel ) ) return __( 'The file could not be added to the Media Library', 'apex' );
 		$map = (array) get_option( 'apex_yt_local', [] );
 		$map[ $id ] = '~/wp-content/uploads/' . $rel;
@@ -183,9 +201,14 @@ function apex_mc_copy( string $key ): string {
 	if ( $it['kind'] === 'old' ) {
 		$rel = substr( $key, 3 );
 		$file = $up['basedir'] . '/' . $rel;
-		if ( ! file_exists( $file ) ) {
-			wp_mkdir_p( dirname( $file ) );
-			if ( $err = apex_mc_fetch( apex_mc_source() . 'wp-content/uploads/' . implode( '/', array_map( 'rawurlencode', explode( '/', $rel ) ) ), $file ) ) return $err;
+		wp_mkdir_p( dirname( $file ) );
+		if ( $given ) { if ( ! apex_mc_real( $given ) ) return __( 'That file is not an image or video', 'apex' ); if ( ! @copy( $given, $file ) ) return __( 'The file could not be saved', 'apex' ); }
+		elseif ( ! apex_mc_real( $file ) ) {
+			@unlink( $file );   // a web page saved under the file's name by an earlier copy
+			$from = apex_mc_source_of( $rel ) ?: apex_mc_source() . 'wp-content/uploads/' . implode( '/', array_map( 'rawurlencode', explode( '/', $rel ) ) );
+			if ( str_starts_with( $rel, APEX_MC_DIR . '/img/' ) || str_starts_with( $rel, APEX_MC_DIR . '/video/' ) ) {
+				if ( ! @copy( APEX_DIR . '/assets/' . substr( $rel, strlen( APEX_MC_DIR ) + 1 ), $file ) ) return __( 'The theme file could not be copied', 'apex' );
+			} elseif ( $err = apex_mc_fetch( $from, $file ) ) return $err;
 		}
 		if ( ! apex_mc_register( $rel ) ) return __( 'The file could not be added to the Media Library', 'apex' );
 		$home = trailingslashit( home_url() );
@@ -203,12 +226,74 @@ function apex_mc_copy( string $key ): string {
 		if ( ! file_exists( "$dir/$name" ) && ! @copy( APEX_DIR . '/assets/' . $src, "$dir/$name" ) ) return __( 'The theme file could not be copied', 'apex' );
 	} else {
 		$name = wp_unique_filename( $dir, $name );
-		if ( $err = apex_mc_fetch( $key, "$dir/$name" ) ) return $err;
+		if ( $given ) { if ( ! @copy( $given, "$dir/$name" ) ) return __( 'The file could not be saved', 'apex' ); }
+		elseif ( $err = apex_mc_fetch( $key, "$dir/$name" ) ) return $err;
+		apex_mc_source_of( APEX_MC_DIR . '/' . $name, $key );
 	}
 	$rel = APEX_MC_DIR . '/' . ( $it['kind'] === 'theme' ? dirname( $src ) . '/' : '' ) . $name;
+	if ( ! apex_mc_real( $up['basedir'] . '/' . $rel ) ) { @unlink( $up['basedir'] . '/' . $rel ); return __( 'That file is not an image or video', 'apex' ); }
 	if ( ! apex_mc_register( $rel ) ) return __( 'The file could not be added to the Media Library', 'apex' );
 	apex_mc_point( $it['raw'], $rel );
 	return '';
+}
+
+/**
+ * Upload files: a zip or loose files from someone who has them (the old site's server, a laptop). Each file is
+ * matched to a row by its path or its name: wp-content/uploads/2025/05/x.webp or x.webp for an old-site file,
+ * the file name for an image on another website, yt-<video id>.jpg for a YouTube thumbnail.
+ * Returns [ placed, [ file => why it was not used ] ].
+ */
+function apex_mc_take( array $files ): array {
+	$items = array_filter( apex_mc_scan(), fn( $x ) => ! $x['done'] && $x['kind'] !== 'theme' );
+	$by_path = []; $by_name = [];
+	foreach ( $items as $key => $it ) {
+		if ( $it['kind'] === 'old' ) { $rel = substr( $key, 3 ); $by_path[ strtolower( $rel ) ] = $key; $n = strtolower( wp_basename( $rel ) ); }
+		elseif ( $it['kind'] === 'yt' ) $n = strtolower( 'yt-' . substr( $key, 3 ) );
+		else $n = strtolower( wp_basename( (string) wp_parse_url( $key, PHP_URL_PATH ) ) );
+		$by_name[ preg_replace( '/\.[a-z0-9]+$/', '', $n ) ][] = $key;
+		$by_name[ $n ][] = $key;
+	}
+	$placed = 0; $skipped = [];
+	foreach ( $files as $shown => $tmp ) {
+		$path = strtolower( str_replace( '\\', '/', (string) $shown ) );
+		$key = '';
+		foreach ( $by_path as $rel => $k ) if ( $path === $rel || str_ends_with( $path, '/' . $rel ) ) { $key = $k; break; }
+		if ( ! $key ) {
+			$n = wp_basename( $path );
+			$hits = array_values( array_unique( $by_name[ $n ] ?? $by_name[ preg_replace( '/\.[a-z0-9]+$/', '', $n ) ] ?? [] ) );
+			if ( count( $hits ) === 1 ) $key = $hits[0];
+			elseif ( count( $hits ) > 1 ) { $skipped[ $shown ] = __( 'several rows have this name, so put it in its folder (wp-content/uploads/…)', 'apex' ); continue; }
+		}
+		if ( ! $key ) { $skipped[ $shown ] = __( 'no row is waiting for this file', 'apex' ); continue; }
+		$err = apex_mc_copy( $key, $tmp );
+		if ( $err ) $skipped[ $shown ] = $err; else { $placed++; unset( $by_path[ array_search( $key, $by_path, true ) ?: '' ] ); }
+	}
+	return [ $placed, $skipped ];
+}
+/** The files in an upload: loose files as they are, a zip opened into a temporary folder. */
+function apex_mc_upload_files(): array {
+	$out = [];
+	$f = $_FILES['apex_mc_files'] ?? null;
+	if ( ! $f || ! is_array( $f['name'] ) ) return $out;
+	foreach ( $f['name'] as $i => $name ) {
+		if ( (int) $f['error'][ $i ] !== UPLOAD_ERR_OK || ! is_uploaded_file( $f['tmp_name'][ $i ] ) ) continue;
+		if ( preg_match( '/\.zip$/i', $name ) && class_exists( 'ZipArchive' ) ) {
+			$zip = new ZipArchive();
+			if ( $zip->open( $f['tmp_name'][ $i ] ) !== true ) continue;
+			$dir = get_temp_dir() . 'apex-mc-' . wp_generate_password( 8, false );
+			wp_mkdir_p( $dir );
+			for ( $j = 0; $j < $zip->numFiles; $j++ ) {
+				$entry = (string) $zip->getNameIndex( $j );
+				if ( str_ends_with( $entry, '/' ) || str_contains( $entry, '..' ) || str_starts_with( wp_basename( $entry ), '.' ) ) continue;
+				$tmp = $dir . '/' . $j . '-' . sanitize_file_name( wp_basename( $entry ) );
+				if ( file_put_contents( $tmp, $zip->getFromIndex( $j ) ) !== false ) $out[ $entry ] = $tmp;
+			}
+			$zip->close();
+		} else {
+			$out[ $name ] = $f['tmp_name'][ $i ];
+		}
+	}
+	return $out;
 }
 
 /* the play boxes show a YouTube thumbnail saved here once it has been copied */
@@ -230,6 +315,11 @@ add_action( 'wp_ajax_apex_mc_copy', function () {
 	$err ? wp_send_json_error( $err ) : wp_send_json_success();
 } );
 function apex_mc_page(): void {
+	$result = null;
+	if ( isset( $_POST['apex_mc_up'] ) && check_admin_referer( 'apex_mc_up', 'apex_mc_up' ) && current_user_can( 'upload_files' ) ) {
+		@set_time_limit( 600 );
+		$result = apex_mc_take( apex_mc_upload_files() );
+	}
 	$items = apex_mc_scan();
 	$done = count( array_filter( $items, fn( $x ) => $x['done'] ) );
 	$total = count( $items );
@@ -239,6 +329,18 @@ function apex_mc_page(): void {
 	if ( apex_media_base() !== trailingslashit( home_url() ) ) {
 		echo '<div class="notice notice-warning inline"><p>' . sprintf( esc_html__( 'wp-config.php sets APEX_MEDIA_BASE to %s, so pages still load uploads from there. Remove that line once every row is ticked.', 'apex' ), '<code>' . esc_html( apex_media_base() ) . '</code>' ) . '</p></div>';
 	}
+	if ( $result ) {
+		[ $placed, $skipped ] = $result;
+		echo '<div class="notice ' . ( $skipped ? 'notice-warning' : 'notice-success' ) . ' inline"><p>' . esc_html( sprintf( _n( '%d file added to the Media Library.', '%d files added to the Media Library.', $placed, 'apex' ), $placed ) ) . '</p>';
+		if ( $skipped ) { echo '<p>' . esc_html__( 'Not used:', 'apex' ) . '</p><ul style="list-style:disc;margin-left:20px">'; foreach ( $skipped as $f => $why ) echo '<li><code>' . esc_html( $f ) . '</code>: ' . esc_html( $why ) . '</li>'; echo '</ul>'; }
+		echo '</div>';
+	}
+	echo '<form method="post" enctype="multipart/form-data" style="margin:14px 0;padding:12px 14px;background:#fff;border:1px solid #dcdcde;max-width:820px">';
+	wp_nonce_field( 'apex_mc_up', 'apex_mc_up' );
+	echo '<p style="margin-top:0"><b>' . esc_html__( 'Upload files', 'apex' ) . '</b><br>' . esc_html__( 'For files this server cannot download, such as the media pack from Gid or a copy of the old site\'s wp-content/uploads. Choose a zip or the files themselves. Each file goes to the row with the same path or name, and that row gets its tick.', 'apex' ) . '</p>';
+	echo '<input type="file" name="apex_mc_files[]" multiple accept=".zip,image/*,video/*"> ';
+	submit_button( __( 'Upload', 'apex' ), 'secondary', 'submit', false );
+	echo ' <small>' . esc_html( sprintf( __( 'Largest upload this server takes: %s', 'apex' ), size_format( wp_max_upload_size() ) ) ) . '</small></form>';
 	echo '<p style="font-size:15px"><b id="mc-n">' . (int) $done . '</b> ' . esc_html( sprintf( __( 'of %d in the Media Library', 'apex' ), $total ) ) . ' &nbsp; ';
 	echo '<button type="button" class="button button-primary" id="mc-all"' . disabled( $done === $total, true, false ) . '>' . esc_html__( 'Copy all', 'apex' ) . '</button> ';
 	echo '<label style="margin-left:12px"><input type="checkbox" id="mc-todo" checked> ' . esc_html__( 'Show only what is still to do', 'apex' ) . '</label></p>';
@@ -250,7 +352,7 @@ function apex_mc_page(): void {
 		echo '<tr data-ref="' . esc_attr( $ref ) . '"' . ( $it['done'] ? ' data-done="1" hidden' : '' ) . '>';
 		echo '<td class="mc-tick" style="font-size:18px;color:#1a7f37">' . ( $it['done'] ? '✓' : '' ) . '</td>';
 		echo '<td>' . ( $is_video ? '<span class="dashicons dashicons-video-alt3" style="font-size:32px;width:32px;height:32px"></span>' : '<img src="' . esc_url( $src ) . '" alt="" loading="lazy" style="width:60px;height:60px;object-fit:contain;background:#f0f0f1;border-radius:4px">' ) . '</td>';
-		echo '<td><code style="word-break:break-all">' . esc_html( $shown ) . '</code><br><small>' . esc_html( $kinds[ $it['kind'] ] ) . '</small></td><td>';
+		echo '<td><code style="word-break:break-all">' . esc_html( $shown ) . '</code><br><small>' . esc_html( $it['kind'] === 'old' && str_starts_with( $ref, 'up:' . APEX_MC_DIR . '/' ) ? __( 'Copy on this site', 'apex' ) : $kinds[ $it['kind'] ] ) . '</small></td><td>';
 		$w = [];
 		foreach ( $it['where'] as $label => $edit ) $w[] = $edit ? '<a href="' . esc_url( $edit ) . '">' . esc_html( $label ) . '</a>' : esc_html( $label );
 		echo implode( '<br>', $w ) . '</td>';
