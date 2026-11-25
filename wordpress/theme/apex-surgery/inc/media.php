@@ -99,11 +99,12 @@ function apex_photo_pass( bool $dry, int $min_kb = 40, ?callable $say = null ): 
 		$file = $base . $rel;
 		if ( ! is_file( $file ) ) { $missing++; continue; }
 		$to = preg_replace( '/\.(jpe?g|png)$/i', '.webp', $file );
-		if ( is_file( $to ) && filesize( $to ) > 0 && @getimagesize( $to ) ) { $done[ $rel ] = true; continue; }   // made on an earlier run
+		if ( is_file( $to ) && filesize( $to ) > 0 && @getimagesize( $to ) ) { $done[ $rel ] = true; if ( ! $dry && function_exists( 'apex_mc_register' ) ) apex_mc_register( substr( $to, strlen( $base ) ) ); continue; }   // made on an earlier run
 		$size = filesize( $file );
 		if ( $size < $min_kb * 1024 ) continue;
 		if ( $dry ) { $done[ $rel ] = true; $kb += (int) round( $size * .7 / 1024 ); if ( $say ) $say( "  $rel  " . round( $size / 1024 ) . ' KB' ); continue; }
 		if ( ! apex_to_webp( $file, $to ) ) continue;
+		if ( function_exists( 'apex_mc_register' ) ) apex_mc_register( substr( $to, strlen( $base ) ) );   // the copy goes in the Media Library too, so Media › Images on the site keeps its tick
 		$kb += (int) round( ( $size - filesize( $to ) ) / 1024 );
 		if ( $say ) $say( "  $rel  " . round( $size / 1024 ) . ' KB -> ' . round( filesize( $to ) / 1024 ) . ' KB' );
 		$done[ $rel ] = true;

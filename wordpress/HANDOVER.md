@@ -347,6 +347,8 @@ Since 24 November 2026 apexsurgeryhospital.com and apexmedicalcenter.co.th answe
 - **Upload files** on the same screen takes a zip or the files themselves. Each file goes to the row with the same path or name: `wp-content/uploads/2025/05/x.webp` (or `x.webp` when no other row has that name) for an old-site file, the file name for an image on another website, `yt-<video id>.jpg` for a YouTube thumbnail. A zip of the old server's `wp-content/uploads` folder fills every old-site row at once.
 - Let the staging server's address through the bot check on both sites for a few minutes, then press Copy all.
 
+The old site's files came from P'Mac on 25 November 2026 and are in the 1.3.4 package as six zips of about 20 MB each for Upload files, and as one zip of all 228 files to put into `wp-content/uploads` through the host's file manager or FTP (then press Copy all, which adds files already in place without downloading). `2025/05/image-13.png` is a PNG made from the site's own WebP copy of it, since the PNG itself was gone.
+
 Once every row is ticked, remove the `APEX_MEDIA_BASE` line from `wp-config.php`. Until then uploads load from the address it names.
 
 The video files the pages play stay on YouTube, and the photos and icons the theme draws itself (the 3D viewers, the icons and the fallback pictures) ship inside the theme folder on the same domain.
@@ -393,6 +395,7 @@ For the developer: the design (the `site/` folder) is the source for styles, scr
 
 | Version | Date | What changed | Run `wp apex import` after installing? |
 |---|---|---|---|
+| 1.3.4 | 25 Nov 2026 | The daily photo pass, which saves a lighter WebP copy of each PNG and JPEG the pages use, now adds those copies to the Media Library too, so rows on Media › Images on the site keep their tick after it runs. | No. Install over 1.3.3. |
 | 1.3.3 | 24 Nov 2026 | Upload files matches Thai file names, both as written and the way 1.3.1 saved its copies, so the Apex Medical Center doctor photos go to their rows. | No. Install over 1.3.2. |
 | 1.3.2 | 24 Nov 2026 | Media › Images on the site checks that each copied file is an image or video, since both Apex sites now answer server downloads with a bot-check page. Rows holding such a page lose their tick and can be copied again. New Upload files box takes a zip or files and puts each one in its row. | No. Install over 1.3.1, then open Media › Images on the site. |
 | 1.3.1 | 24 Nov 2026 | Apex settings › Features switches off the parts waiting for Apex: games and vouchers, Surgery Wars, the non-surgical treatments page and Chinese. All four start off. The site has a Chinese version, hidden until Palm reviews it. Media › Images on the site lists every image and video the pages use and copies each into the Media Library. The photos beside each procedure page's sections are now a field (Section photos), and the sample faces in Face analysis and Golden proportions are settings under Site settings, so both can be swapped and moved into the Media Library. | No. The theme switches the four parts off and fills the new fields on the first page load. The Chinese pages are added with Apex settings › Features › Add the Chinese pages, or `wp apex import --lang=zh`, which leaves English and Thai alone. |
