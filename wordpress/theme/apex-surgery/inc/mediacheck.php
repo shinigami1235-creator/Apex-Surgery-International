@@ -106,9 +106,18 @@ function apex_mc_scan(): array {
 	uasort( $items, fn( $a, $b ) => [ $a['done'], array_key_first( $a['where'] ) ] <=> [ $b['done'], array_key_first( $b['where'] ) ] );
 	return $items;
 }
+/** The Media Library item for a file in uploads: the item itself, or the item whose smaller size (name-300x200.webp) it is. */
 function apex_mc_attachment( string $rel ): int {
 	global $wpdb;
-	return (int) $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value = %s LIMIT 1", $rel ) );
+	$id = (int) $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value = %s LIMIT 1", $rel ) );
+	if ( $id || ! preg_match( '#^(.*)-\d+x\d+\.[^./]+$#', $rel, $m ) ) return $id;
+	$like = $wpdb->esc_like( $m[1] );
+	$ids = $wpdb->get_col( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND ( meta_value LIKE %s OR meta_value LIKE %s )", $like . '.%', $like . '-scaled.%' ) );
+	foreach ( $ids as $pid ) {
+		$meta = wp_get_attachment_metadata( (int) $pid );
+		foreach ( (array) ( $meta['sizes'] ?? [] ) as $size ) if ( ( $size['file'] ?? '' ) === wp_basename( $rel ) ) return (int) $pid;
+	}
+	return 0;
 }
 /** Register a file already in the uploads folder as a Media Library item. */
 function apex_mc_register( string $rel ): int {

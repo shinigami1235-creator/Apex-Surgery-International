@@ -395,6 +395,7 @@ For the developer: the design (the `site/` folder) is the source for styles, scr
 
 | Version | Date | What changed | Run `wp apex import` after installing? |
 |---|---|---|---|
+| 1.3.5 | 26 Nov 2026 | Media › Images on the site counts the smaller sizes WordPress makes of an uploaded picture (name-1024x538.webp) as already in the Media Library, so a page using one of them no longer shows an unticked row. | No. Install over 1.3.4. |
 | 1.3.4 | 25 Nov 2026 | The daily photo pass, which saves a lighter WebP copy of each PNG and JPEG the pages use, now adds those copies to the Media Library too, so rows on Media › Images on the site keep their tick after it runs. | No. Install over 1.3.3. |
 | 1.3.3 | 24 Nov 2026 | Upload files matches Thai file names, both as written and the way 1.3.1 saved its copies, so the Apex Medical Center doctor photos go to their rows. | No. Install over 1.3.2. |
 | 1.3.2 | 24 Nov 2026 | Media › Images on the site checks that each copied file is an image or video, since both Apex sites now answer server downloads with a bot-check page. Rows holding such a page lose their tick and can be copied again. New Upload files box takes a zip or files and puts each one in its row. | No. Install over 1.3.1, then open Media › Images on the site. |
